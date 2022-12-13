@@ -1,0 +1,987 @@
+{
+  "indexEndOfDay": {
+    "result": [
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "001",
+        "baseIndexPrice": 1369.77,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 978611722,
+        "closingIndexPrice": 1362.49
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "002",
+        "baseIndexPrice": 1402.97,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 975144943.4,
+        "closingIndexPrice": 1395.51
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "003",
+        "baseIndexPrice": 130.91,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 724762.7,
+        "closingIndexPrice": 129.5
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "004",
+        "baseIndexPrice": 1803.46,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 2742015.9,
+        "closingIndexPrice": 1797.91
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "013",
+        "baseIndexPrice": 3698.84,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 168847778.6,
+        "closingIndexPrice": 3698.53
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "033",
+        "baseIndexPrice": 2697.26,
+        "indexOpeningPrice": 2682.14,
+        "high": 2686.4,
+        "low": 2646.14,
+        "overallMarketCap": 31967484.3,
+        "closingIndexPrice": 2671.33
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "041",
+        "baseIndexPrice": 1648.73,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 97856424.6,
+        "closingIndexPrice": 1635.17
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "061",
+        "baseIndexPrice": 1531.6,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 198885611.1,
+        "closingIndexPrice": 1521.44
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "073",
+        "baseIndexPrice": 2245.02,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 87980743.7,
+        "closingIndexPrice": 2212.32
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "097",
+        "baseIndexPrice": 5260.92,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 45679110,
+        "closingIndexPrice": 5181.16
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "117",
+        "baseIndexPrice": 973.12,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 52553406.6,
+        "closingIndexPrice": 964.92
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "127",
+        "baseIndexPrice": 1765.68,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 39856405.4,
+        "closingIndexPrice": 1773.14
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "137",
+        "baseIndexPrice": 1865.31,
+        "indexOpeningPrice": 1859.13,
+        "high": 1860.82,
+        "low": 1845.83,
+        "overallMarketCap": 821516508.7,
+        "closingIndexPrice": 1856.66
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "142",
+        "baseIndexPrice": 1847.23,
+        "indexOpeningPrice": 1840.19,
+        "high": 1843.92,
+        "low": 1831.04,
+        "overallMarketCap": 563839215.1,
+        "closingIndexPrice": 1842.43
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "143",
+        "baseIndexPrice": 1965.93,
+        "indexOpeningPrice": 1962.7,
+        "high": 1963.31,
+        "low": 1936.94,
+        "overallMarketCap": 257677293.6,
+        "closingIndexPrice": 1947.22
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "145",
+        "baseIndexPrice": 356.33,
+        "indexOpeningPrice": 355.47,
+        "high": 356.07,
+        "low": 353.28,
+        "overallMarketCap": 254513445.3,
+        "closingIndexPrice": 353.28
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "147",
+        "baseIndexPrice": 625.62,
+        "indexOpeningPrice": 623.02,
+        "high": 624.25,
+        "low": 617.1,
+        "overallMarketCap": 43290950.1,
+        "closingIndexPrice": 618.2
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "148",
+        "baseIndexPrice": 3113.01,
+        "indexOpeningPrice": 3095.34,
+        "high": 3105.11,
+        "low": 3076.53,
+        "overallMarketCap": 219215435.8,
+        "closingIndexPrice": 3098.01
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "149",
+        "baseIndexPrice": 932.49,
+        "indexOpeningPrice": 930.48,
+        "high": 933.43,
+        "low": 920.78,
+        "overallMarketCap": 186272896,
+        "closingIndexPrice": 922.9
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "150",
+        "baseIndexPrice": 2265.17,
+        "indexOpeningPrice": 2254.62,
+        "high": 2261.29,
+        "low": 2243.23,
+        "overallMarketCap": 414118315.6,
+        "closingIndexPrice": 2261.29
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "161",
+        "baseIndexPrice": 2455.25,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 156805522.7,
+        "closingIndexPrice": 2440.74
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "162",
+        "baseIndexPrice": 2592.97,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 153628434.7,
+        "closingIndexPrice": 2577.53
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "163",
+        "baseIndexPrice": 1393.19,
+        "indexOpeningPrice": 1393.93,
+        "high": 1397.4,
+        "low": 1381.51,
+        "overallMarketCap": 89428549.5,
+        "closingIndexPrice": 1381.51
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "164",
+        "baseIndexPrice": 3451.3,
+        "indexOpeningPrice": 3432.5,
+        "high": 3461.51,
+        "low": 3425.17,
+        "overallMarketCap": 162419158.2,
+        "closingIndexPrice": 3458.2
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "166",
+        "baseIndexPrice": 2695.21,
+        "indexOpeningPrice": 2690.79,
+        "high": 2697.27,
+        "low": 2668.25,
+        "overallMarketCap": 384327524.4,
+        "closingIndexPrice": 2671.82
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "167",
+        "baseIndexPrice": 127.71,
+        "indexOpeningPrice": 126.86,
+        "high": 127.17,
+        "low": 124.83,
+        "overallMarketCap": 42446308.6,
+        "closingIndexPrice": 124.83
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "168",
+        "baseIndexPrice": 1705.63,
+        "indexOpeningPrice": 1703.15,
+        "high": 1704.87,
+        "low": 1688.36,
+        "overallMarketCap": 954236008.3,
+        "closingIndexPrice": 1690.08
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "169",
+        "baseIndexPrice": 964.84,
+        "indexOpeningPrice": 962.55,
+        "high": 963.79,
+        "low": 955.41,
+        "overallMarketCap": 212067136.6,
+        "closingIndexPrice": 959.17
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "170",
+        "baseIndexPrice": 1203.61,
+        "indexOpeningPrice": 1204.86,
+        "high": 1204.86,
+        "low": 1182.14,
+        "overallMarketCap": 39256774.6,
+        "closingIndexPrice": 1198.38
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "171",
+        "baseIndexPrice": 2278.58,
+        "indexOpeningPrice": 2267.5,
+        "high": 2273.49,
+        "low": 2244.81,
+        "overallMarketCap": 50367657.3,
+        "closingIndexPrice": 2264.05
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "172",
+        "baseIndexPrice": 1389.84,
+        "indexOpeningPrice": 1387.83,
+        "high": 1389.47,
+        "low": 1377.03,
+        "overallMarketCap": 50301898.8,
+        "closingIndexPrice": 1385.4
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "173",
+        "baseIndexPrice": 588.08,
+        "indexOpeningPrice": 586.06,
+        "high": 586.76,
+        "low": 581.56,
+        "overallMarketCap": 219989327.3,
+        "closingIndexPrice": 583.5
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "174",
+        "baseIndexPrice": 3315.09,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 563839215.1,
+        "closingIndexPrice": 3326.77
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "175",
+        "baseIndexPrice": 1951.8,
+        "indexOpeningPrice": 1947,
+        "high": 1947.85,
+        "low": 1927.93,
+        "overallMarketCap": 890377044.3,
+        "closingIndexPrice": 1935.09
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "176",
+        "baseIndexPrice": 1335.89,
+        "indexOpeningPrice": 1333.49,
+        "high": 1335.72,
+        "low": 1320.41,
+        "overallMarketCap": 300968243.7,
+        "closingIndexPrice": 1322.06
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "177",
+        "baseIndexPrice": 2075.94,
+        "indexOpeningPrice": 2069.32,
+        "high": 2071.33,
+        "low": 2050.63,
+        "overallMarketCap": 743559910.2,
+        "closingIndexPrice": 2061.97
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "178",
+        "baseIndexPrice": 1558.77,
+        "indexOpeningPrice": 1553.4,
+        "high": 1556.46,
+        "low": 1544.1,
+        "overallMarketCap": 245476007,
+        "closingIndexPrice": 1546.4
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "179",
+        "baseIndexPrice": 2554.69,
+        "indexOpeningPrice": 2543.42,
+        "high": 2549.52,
+        "low": 2519.41,
+        "overallMarketCap": 142867807.9,
+        "closingIndexPrice": 2526.34
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "180",
+        "baseIndexPrice": 1749.65,
+        "indexOpeningPrice": 1753.67,
+        "high": 1753.67,
+        "low": 1730.66,
+        "overallMarketCap": 69770630.7,
+        "closingIndexPrice": 1742.01
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "181",
+        "baseIndexPrice": 1276.66,
+        "indexOpeningPrice": 1281.9,
+        "high": 1286.06,
+        "low": 1262.29,
+        "overallMarketCap": 46870291.3,
+        "closingIndexPrice": 1263.37
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "182",
+        "baseIndexPrice": 891.3,
+        "indexOpeningPrice": 887.09,
+        "high": 890.15,
+        "low": 878.55,
+        "overallMarketCap": 122412319.3,
+        "closingIndexPrice": 880.02
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "183",
+        "baseIndexPrice": 678.63,
+        "indexOpeningPrice": 676.49,
+        "high": 681.8,
+        "low": 669.37,
+        "overallMarketCap": 20459271,
+        "closingIndexPrice": 678.97
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "184",
+        "baseIndexPrice": 663.4,
+        "indexOpeningPrice": 662.27,
+        "high": 664.66,
+        "low": 654.21,
+        "overallMarketCap": 47544018.5,
+        "closingIndexPrice": 657.32
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "185",
+        "baseIndexPrice": 1777.85,
+        "indexOpeningPrice": 1771.44,
+        "high": 1773.41,
+        "low": 1761.08,
+        "overallMarketCap": 674992357.4,
+        "closingIndexPrice": 1769.83
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "187",
+        "baseIndexPrice": 486.11,
+        "indexOpeningPrice": 484.47,
+        "high": 484.7,
+        "low": 480.29,
+        "overallMarketCap": 246118345,
+        "closingIndexPrice": 483.34
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "188",
+        "baseIndexPrice": 1199.79,
+        "indexOpeningPrice": 1193.38,
+        "high": 1201.65,
+        "low": 1185.33,
+        "overallMarketCap": 27827467.5,
+        "closingIndexPrice": 1190.34
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "598",
+        "baseIndexPrice": 16.92,
+        "indexOpeningPrice": null,
+        "high": 18.42,
+        "low": 17.08,
+        "overallMarketCap": null,
+        "closingIndexPrice": 17.21
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "601",
+        "baseIndexPrice": 366.63,
+        "indexOpeningPrice": 366.63,
+        "high": 366.64,
+        "low": 365.71,
+        "overallMarketCap": 816089756,
+        "closingIndexPrice": 365.71
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "602",
+        "baseIndexPrice": 364.3,
+        "indexOpeningPrice": 364.21,
+        "high": 364.36,
+        "low": 363.31,
+        "overallMarketCap": 553488089,
+        "closingIndexPrice": 363.31
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "603",
+        "baseIndexPrice": 354.83,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 383189710.6,
+        "closingIndexPrice": 354.08
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "604",
+        "baseIndexPrice": 373.96,
+        "indexOpeningPrice": 373.95,
+        "high": 374.06,
+        "low": 372.77,
+        "overallMarketCap": 391944134.8,
+        "closingIndexPrice": 372.77
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "605",
+        "baseIndexPrice": 373.24,
+        "indexOpeningPrice": 372.97,
+        "high": 373.51,
+        "low": 371.76,
+        "overallMarketCap": 222333879.1,
+        "closingIndexPrice": 371.76
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "606",
+        "baseIndexPrice": 394.31,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 227139760.1,
+        "closingIndexPrice": 393.33
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "637",
+        "baseIndexPrice": 243.01,
+        "indexOpeningPrice": 242.72,
+        "high": 243.12,
+        "low": 242.72,
+        "overallMarketCap": 38308689.6,
+        "closingIndexPrice": 242.85
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "646",
+        "baseIndexPrice": 277.13,
+        "indexOpeningPrice": 276.6,
+        "high": 277.13,
+        "low": 276.41,
+        "overallMarketCap": 60477247.8,
+        "closingIndexPrice": 276.59
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "658",
+        "baseIndexPrice": 369.81,
+        "indexOpeningPrice": 369.81,
+        "high": 369.81,
+        "low": 368.43,
+        "overallMarketCap": 36163179.4,
+        "closingIndexPrice": 368.44
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "690",
+        "baseIndexPrice": 411,
+        "indexOpeningPrice": 411.02,
+        "high": 411.02,
+        "low": 410.23,
+        "overallMarketCap": 331154209.9,
+        "closingIndexPrice": 410.23
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "694",
+        "baseIndexPrice": 410.8,
+        "indexOpeningPrice": null,
+        "high": null,
+        "low": null,
+        "overallMarketCap": 57898849.1,
+        "closingIndexPrice": 408.23
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "700",
+        "baseIndexPrice": 471.6,
+        "indexOpeningPrice": 471.49,
+        "high": 471.49,
+        "low": 470.6,
+        "overallMarketCap": 290328891.2,
+        "closingIndexPrice": 470.6
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "701",
+        "baseIndexPrice": 288.92,
+        "indexOpeningPrice": 289.54,
+        "high": 289.54,
+        "low": 288.85,
+        "overallMarketCap": 40825318.7,
+        "closingIndexPrice": 288.86
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "702",
+        "baseIndexPrice": 323.88,
+        "indexOpeningPrice": 323.89,
+        "high": 323.89,
+        "low": 323.66,
+        "overallMarketCap": 81275867,
+        "closingIndexPrice": 323.82
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "703",
+        "baseIndexPrice": 419.76,
+        "indexOpeningPrice": 419.8,
+        "high": 419.8,
+        "low": 419.2,
+        "overallMarketCap": 89953536.1,
+        "closingIndexPrice": 419.2
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "704",
+        "baseIndexPrice": 623.38,
+        "indexOpeningPrice": 622.93,
+        "high": 622.93,
+        "low": 620.77,
+        "overallMarketCap": 119099488.1,
+        "closingIndexPrice": 620.86
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "707",
+        "baseIndexPrice": 360.38,
+        "indexOpeningPrice": 360.68,
+        "high": 360.9,
+        "low": 359.32,
+        "overallMarketCap": 59660035.7,
+        "closingIndexPrice": 359.43
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "708",
+        "baseIndexPrice": 338.99,
+        "indexOpeningPrice": 338.97,
+        "high": 339.05,
+        "low": 338.02,
+        "overallMarketCap": 65795695.2,
+        "closingIndexPrice": 338.02
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "709",
+        "baseIndexPrice": 350.68,
+        "indexOpeningPrice": 350.81,
+        "high": 350.86,
+        "low": 349.69,
+        "overallMarketCap": 125455730.8,
+        "closingIndexPrice": 349.7
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "710",
+        "baseIndexPrice": 377.66,
+        "indexOpeningPrice": 377.61,
+        "high": 377.61,
+        "low": 377.05,
+        "overallMarketCap": 101195862.9,
+        "closingIndexPrice": 377.07
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "711",
+        "baseIndexPrice": 352.32,
+        "indexOpeningPrice": 352.43,
+        "high": 352.45,
+        "low": 351.35,
+        "overallMarketCap": 184081218.6,
+        "closingIndexPrice": 351.35
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "712",
+        "baseIndexPrice": 356.59,
+        "indexOpeningPrice": 356.65,
+        "high": 356.72,
+        "low": 355.62,
+        "overallMarketCap": 58625487.8,
+        "closingIndexPrice": 355.62
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "713",
+        "baseIndexPrice": 328.4,
+        "indexOpeningPrice": 328.4,
+        "high": 328.67,
+        "low": 327.9,
+        "overallMarketCap": 39484236.6,
+        "closingIndexPrice": 327.93
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "714",
+        "baseIndexPrice": 352.3,
+        "indexOpeningPrice": 352.47,
+        "high": 352.49,
+        "low": 351.2,
+        "overallMarketCap": 24227386.4,
+        "closingIndexPrice": 351.2
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "715",
+        "baseIndexPrice": 357.16,
+        "indexOpeningPrice": 357.2,
+        "high": 357.2,
+        "low": 356.38,
+        "overallMarketCap": 306442995.3,
+        "closingIndexPrice": 356.38
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "716",
+        "baseIndexPrice": 352.81,
+        "indexOpeningPrice": 353.14,
+        "high": 353.22,
+        "low": 352.56,
+        "overallMarketCap": 46955960.8,
+        "closingIndexPrice": 352.56
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "717",
+        "baseIndexPrice": 353.28,
+        "indexOpeningPrice": 353.22,
+        "high": 353.22,
+        "low": 352.7,
+        "overallMarketCap": 105403553.4,
+        "closingIndexPrice": 352.72
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "718",
+        "baseIndexPrice": 361.24,
+        "indexOpeningPrice": 361.29,
+        "high": 361.37,
+        "low": 360.77,
+        "overallMarketCap": 38094830.5,
+        "closingIndexPrice": 360.77
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "719",
+        "baseIndexPrice": 395.52,
+        "indexOpeningPrice": 395.47,
+        "high": 395.48,
+        "low": 394.8,
+        "overallMarketCap": 11325237.4,
+        "closingIndexPrice": 394.87
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "720",
+        "baseIndexPrice": 369.88,
+        "indexOpeningPrice": 369.75,
+        "high": 369.79,
+        "low": 369.22,
+        "overallMarketCap": 53706044,
+        "closingIndexPrice": 369.32
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "721",
+        "baseIndexPrice": 342.07,
+        "indexOpeningPrice": 342.06,
+        "high": 342.24,
+        "low": 341.65,
+        "overallMarketCap": 43926807.4,
+        "closingIndexPrice": 341.65
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "722",
+        "baseIndexPrice": 343.68,
+        "indexOpeningPrice": 343.8,
+        "high": 343.8,
+        "low": 342.87,
+        "overallMarketCap": 64026777,
+        "closingIndexPrice": 342.87
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "723",
+        "baseIndexPrice": 363.09,
+        "indexOpeningPrice": 363.07,
+        "high": 363.22,
+        "low": 361.64,
+        "overallMarketCap": 72653332.3,
+        "closingIndexPrice": 361.64
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "724",
+        "baseIndexPrice": 401.47,
+        "indexOpeningPrice": 401.45,
+        "high": 401.5,
+        "low": 401.08,
+        "overallMarketCap": 42424823.8,
+        "closingIndexPrice": 401.08
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "725",
+        "baseIndexPrice": 368.8,
+        "indexOpeningPrice": 368.67,
+        "high": 368.71,
+        "low": 368.27,
+        "overallMarketCap": 32657345.4,
+        "closingIndexPrice": 368.34
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "726",
+        "baseIndexPrice": 364.04,
+        "indexOpeningPrice": 363.98,
+        "high": 363.98,
+        "low": 362.91,
+        "overallMarketCap": 26113693.6,
+        "closingIndexPrice": 362.93
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "727",
+        "baseIndexPrice": 394.55,
+        "indexOpeningPrice": 394.55,
+        "high": 395.05,
+        "low": 392.18,
+        "overallMarketCap": 123547941.6,
+        "closingIndexPrice": 392.18
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "728",
+        "baseIndexPrice": 408.17,
+        "indexOpeningPrice": 408.17,
+        "high": 408.9,
+        "low": 405.32,
+        "overallMarketCap": 87384762.2,
+        "closingIndexPrice": 405.32
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "729",
+        "baseIndexPrice": 461.89,
+        "indexOpeningPrice": 461.89,
+        "high": 461.89,
+        "low": 460.14,
+        "overallMarketCap": 48882934,
+        "closingIndexPrice": 460.14
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "730",
+        "baseIndexPrice": 501.24,
+        "indexOpeningPrice": 500.64,
+        "high": 500.64,
+        "low": 498.98,
+        "overallMarketCap": 70216554,
+        "closingIndexPrice": 499.12
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "731",
+        "baseIndexPrice": 334.99,
+        "indexOpeningPrice": 335.31,
+        "high": 335.36,
+        "low": 334.17,
+        "overallMarketCap": 74198910.7,
+        "closingIndexPrice": 334.22
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "732",
+        "baseIndexPrice": 362.48,
+        "indexOpeningPrice": 362.41,
+        "high": 362.44,
+        "low": 361.83,
+        "overallMarketCap": 49039037.6,
+        "closingIndexPrice": 361.86
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "733",
+        "baseIndexPrice": 388.26,
+        "indexOpeningPrice": 388.29,
+        "high": 388.29,
+        "low": 387.37,
+        "overallMarketCap": 31458883.9,
+        "closingIndexPrice": 387.42
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "734",
+        "baseIndexPrice": 357.82,
+        "indexOpeningPrice": 357.91,
+        "high": 357.93,
+        "low": 356.71,
+        "overallMarketCap": 97011994.5,
+        "closingIndexPrice": 356.71
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "735",
+        "baseIndexPrice": 329.99,
+        "indexOpeningPrice": 330.15,
+        "high": 330.18,
+        "low": 328.88,
+        "overallMarketCap": 40741394.3,
+        "closingIndexPrice": 328.88
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "736",
+        "baseIndexPrice": 358.17,
+        "indexOpeningPrice": 358.25,
+        "high": 358.31,
+        "low": 357.24,
+        "overallMarketCap": 143339824.4,
+        "closingIndexPrice": 357.25
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "737",
+        "baseIndexPrice": 374.5,
+        "indexOpeningPrice": 374.4,
+        "high": 374.5,
+        "low": 374.04,
+        "overallMarketCap": 42135737,
+        "closingIndexPrice": 374.05
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "738",
+        "baseIndexPrice": 386.85,
+        "indexOpeningPrice": 386.82,
+        "high": 386.82,
+        "low": 386.1,
+        "overallMarketCap": 59060125.9,
+        "closingIndexPrice": 386.14
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "739",
+        "baseIndexPrice": 380.32,
+        "indexOpeningPrice": 380.35,
+        "high": 380.81,
+        "low": 380.11,
+        "overallMarketCap": 6202080.3,
+        "closingIndexPrice": 380.11
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "740",
+        "baseIndexPrice": 361.37,
+        "indexOpeningPrice": 361.34,
+        "high": 361.34,
+        "low": 360.67,
+        "overallMarketCap": 369558587.2,
+        "closingIndexPrice": 360.67
+      },
+      {
+        "tradeDate": "2022-12-11T00:00:00",
+        "indexId": "800",
+        "baseIndexPrice": 278.42,
+        "indexOpeningPrice": 278.42,
+        "high": 278.46,
+        "low": 278.39,
+        "overallMarketCap": 172321400,
+        "closingIndexPrice": 278.44
+      }
+    ],
+    "total": 98
+  }
+}
