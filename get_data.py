@@ -12,12 +12,12 @@ tokenUrl = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
 #secret='7a809c498662c88a0054b767a92f0399'
 
 #"key and secret of yarden- "tel_aviv_academic"
-key='42599cb8bae3df12b563c85e4fb5a208'
-secret='cf7f46fcd91865d0f9c457e37bd7e726'
+#key='42599cb8bae3df12b563c85e4fb5a208'
+#secret='cf7f46fcd91865d0f9c457e37bd7e726'
 
 #key and secret of yarden- "roboadvisor-mta"
-#key='9791b4a859c4650efe0d77c2ed9d6919'
-#secret='e8d0264a8472c411443a6dfbcdf0992f'
+key='9791b4a859c4650efe0d77c2ed9d6919'
+secret='e8d0264a8472c411443a6dfbcdf0992f'
 
 #for getting data- GET METHOD
 baseUrl = "https://openapigw.tase.co.il/tase/prod/api/v1"
@@ -36,10 +36,13 @@ day = 27
 indexEndOfDayName = "indices-end-of-day-data/index-end-of-day-data"
 OTC_transaction_name="transactions/otc-transactions"
 endOfDayTransactionName = "transactions/transactions-end-of-day"
+mayaNoticeByDay="maya-reports-online/tase-messages-by-date"
+fundHistoryDataName="mutual-fund/history-data"
 
 #apps names without date
 shortSalesWeeklyBalanceName = "short-sales/weekly-balance"
 shortSalesHistoricalData = "short-sales/history"
+fundListName="fund/fund-list"
 
 def get_base_64_token():
     #key='7e247414e7047349d83b7b8a427c529c'
@@ -62,7 +65,9 @@ def get_tase_access_token():
 
 access_token = get_tase_access_token()
 
-
+def getFundHistoryById(appName,fundId, startyear, startmonth, startday,endyear, endmonth, endday): #/tase/prod/api/v1/index_end_of_day_data/2022/11/22
+    #return  "/"+ prefixUrl+ "/" +str(fundId)+"/"+"?startDate="+str(startyear)+"-"+str(startmonth)+str(startday)+"&endDate="+str(endyear)+"-"+str(endmonth)+"-"+str(endday)
+    return "/tase/prod/api/v1/mutual-fund/history-data/5100474?startDate=2015-12-31&endDate=2020-12-31"
 def getAppUrlWithDate(appName, year, month, day): #/tase/prod/api/v1/index_end_of_day_data/2022/11/22
     return  "/"+ prefixUrl+ "/" + appName + "/" + str(year) + "/" + str(month) + "/" + str(day)
 
@@ -95,10 +100,18 @@ def get_trade_info(appUrl,nameProduct):
 
 #GET THE DATA FROM PROJECTS
 
+#already have:
 #get_trade_info(getAppUrlWithDate(indexEndOfDayName, year, month, day),indexEndOfDayName)# index end of day data
 #get_trade_info(getAppUrlWithDate(OTC_transaction_name, year, month, day),OTC_transaction_name) # OTC transaction
-#get_trade_info(getAppUrlWithDate(endOfDayTransactionName, year, month, day),endOfDayTransactionName) # end of day transaction
 #get_trade_info(getAppUrlWithoutDate(shortSalesWeeklyBalanceName),shortSalesWeeklyBalanceName) # short sales weekly balance
+#get_trade_info(getAppUrlWithDate(mayaNoticeByDay, year, month, day),mayaNoticeByDay) # maya notice by day
+#new:
+#get_trade_info(getAppUrlWithoutDate(fundListName),fundListName) # fund list
+get_trade_info(getFundHistoryById(fundHistoryDataName,1143718,2015,12,31,2022,12,28),fundHistoryDataName) # fund history data
+
+
+#not working
+#get_trade_info(getAppUrlWithDate(endOfDayTransactionName, year, month, day),endOfDayTransactionName) # end of day transaction
 #get_trade_info(getAppUrlWithoutDate(shortSalesHistoricalData),shortSalesHistoricalData)     # short sales historical data
 
 #more relevant apps:
