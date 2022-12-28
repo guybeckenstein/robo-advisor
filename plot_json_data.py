@@ -12,7 +12,7 @@ def getJsonData(name):
 #json_data = getJsonData('weekly-balance')
 #json_data = getJsonData('index_end_of_day')
 #json_data = getJsonData('otc-transactions')
-json_data = getJsonData('history')
-df = pd.DataFrame.from_dict(json_data['indexEndOfDay'])  # Total rows: 98
-print(df)
+json_data = getJsonData('history-data')
+#df = pd.DataFrame.from_dict(json_data['indexEndOfDay'])  # Total rows: 98
+#print(df)
 # For data science: https://colab.research.google.com/drive/1meOMfgel3py4MuPHaauvVBH7ec26-Iun#scrollTo=7wEMe9LyvJLm
