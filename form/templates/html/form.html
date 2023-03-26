@@ -1,0 +1,32 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+	<link rel="stylesheet" href="{% static 'style.css' %}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form</title>
+  </head>
+  <body>
+	<section>
+		<header>
+			<h2>
+				<a href="" class="logo"><img src="{% static '/roboy-thumb@2x.jpg' %}" alt="Facebook link" height="200" width="209" /></img></a>
+			</h2>
+			<div class="navigation">
+				<a href="{% url 'homepage' %}">Home</a>
+				<a href="{% url 'about' %}">About</a>
+				<a href="{% url 'info' %}">Info</a>
+				<a href="{% url 'services' %}">Services</a>
+				<a href="{% url 'form' %}">Form</a>
+				<a href="{% url 'contact' %}">Contact</a>
+			</div>
+		</header>
+		<div class="content">
+			<div class="info">
+			</div>
+		</div>
+	</section>
+  </body>
+</html>
