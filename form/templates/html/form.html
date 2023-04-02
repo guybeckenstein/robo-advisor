@@ -12,7 +12,7 @@
 	<section>
 		<header>
 			<h2>
-				<a href="" class="logo"><img src="{% static '/roboy-thumb@2x.jpg' %}" alt="Facebook link" height="200" width="209" /></img></a>
+				<a href="" class="logo"><img src="{% static '/Logo.png' %}" alt="RoboAdviserLogo" height="256" width="205" /></img></a>
 			</h2>
 			<div class="navigation">
 				<a href="{% url 'homepage' %}">Home</a>
@@ -24,7 +24,23 @@
 			</div>
 		</header>
 		<div class="content">
-			<div class="info">
+			<div class="content">
+				<form>
+					<label>Question #1</label><br>
+					<input type="radio" id="q1_a1" name="user_answer"><label for="q1_a1" class="">Option #1</label><br>
+					<input type="radio" id="q1_a2" name="user_answer"><label for="q1_a2" class="">Option #2</label><br>
+					<input type="radio" id="q1_a3" name="user_answer"><label for="q1_a3" class="">Option #3</label><br><br>
+					<label>Question #2</label><br>
+					<input type="radio" id="q2_a1" name="user_answer"><label for="q2_a1" class="">Option #1</label><br>
+					<input type="radio" id="q2_a2" name="user_answer"><label for="q2_a2" class="">Option #2</label><br>
+					<input type="radio" id="q2_a3" name="user_answer"><label for="q2_a3" class="">Option #3</label><br><br>
+					<label>Question #3</label><br>
+					<input type="radio" id="q3_a1" name="user_answer"><label for="q3_a1" class="">Option #1</label><br>
+					<input type="radio" id="q3_a2" name="user_answer"><label for="q3_a2" class="">Option #2</label><br>
+					<input type="radio" id="q3_a3" name="user_answer"><label for="q3_a3" class="">Option #3</label><br><br>
+
+					<input type="submit" id="submit-form">
+				</form>
 			</div>
 		</div>
 	</section>
