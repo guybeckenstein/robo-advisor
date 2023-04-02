@@ -14,8 +14,8 @@ section{
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	background: url() norepeat;
-	background-color: #f0f0f0;
+	background: url("Background.png");
+    background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
 }
@@ -65,9 +65,8 @@ svg {
 }
 
 .content .info h2{
-	color: #505050;
+	color: #226A80;
 	font-size: 55px;
-	font-transform: uppercase;
 	font-weight: 800;
 	letter-spacing: 2px;
 	line-height: 60px;
