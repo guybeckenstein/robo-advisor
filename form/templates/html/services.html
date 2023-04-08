@@ -1,32 +1,11 @@
+{% extends "html/base.html" %}
+{% block content %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="UTF-8" />
-	<link rel="stylesheet" href="{% static 'style.css' %}" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Services</title>
-  </head>
-  <body>
-	<section>
-		<header>
-			<h2>
-				<a href="" class="logo"><img src="{% static '/Logo.png' %}" alt="RoboAdviserLogo" height="256" width="205" /></img></a>
-			</h2>
-			<div class="navigation">
-				<a href="{% url 'homepage' %}">Home</a>
-				<a href="{% url 'about' %}">About</a>
-				<a href="{% url 'info' %}">Info</a>
-				<a href="{% url 'services' %}">Services</a>
-				<a href="{% url 'form' %}">Form</a>
-				<a href="{% url 'contact' %}">Contact</a>
-			</div>
-		</header>
-		<div class="content">
-			<div class="info">
-			</div>
-		</div>
-	</section>
-  </body>
-</html>
+<div class="content">
+    <div class="'info">
+        <h1>Nothing...</h1>
+    </div>
+</div>
+
+{% endblock content %}

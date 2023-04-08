@@ -136,3 +136,7 @@ db.sqlite3
 
 # Run server
 runserver.log
+
+# Pycharm
+.idea
+.idea/misc.xml
