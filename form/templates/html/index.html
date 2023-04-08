@@ -1,59 +1,37 @@
+{% extends "html/base.html" %}
+{% block content %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="UTF-8" />
-	<link rel="stylesheet" href="{% static 'style.css' %}" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Robo Adviser - Smart AI Investor</title>
-  </head>
-  <body>
-	<section>
-		<header>
-			<h2>
-				<a href="" class="logo"><img src="{% static '/Logo.png' %}" alt="RoboAdviserLogo" height="256" width="205" /></img></a>
-			</h2>
-			<div class="navigation">
-				<a href="{% url 'homepage' %}">Home</a>
-				<a href="{% url 'about' %}">About</a>
-				<a href="{% url 'info' %}">Info</a>
-				<a href="{% url 'services' %}">Services</a>
-				<a href="{% url 'form' %}">Form</a>
-				<a href="{% url 'contact' %}">Contact</a>
-			</div>
-		</header>
-		<div class="content">
-			<div class="info">
-				<h2>Robo Adviser <br><span>Smart AI Investor!</span></h2>
-				<ul>
-					<p>
-						Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.<Ut enim ad<br>
-						minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit<br>
-						in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia<br>
-						deserunt mollit anim id est laborum.
-					</p>
-				</ul>
-			</div>
-		</div>
-		<div class="team-members">
-			<a>
-				<p>Guy Beckenstein</p>
-				<img src="{% static 'GuyBeckenstein.jpg' %}" alt="GuyBeckenstein" />
-			</a>
-			<a>
-				<p>Yarden Agami</p>
-				<img src="{% static 'YardenAgami.jpg' %}" alt="YardenAgami" />
-			</a>
-			<a>
-				<p>Hagai Levi</p>
-				<img src="{% static 'HagaiLevi.jpg' %}" alt="HagaiLevi" />
-			</a>
-			<a>
-				<p>Yarden Gazit</p>
-				<img src="{% static 'YardenGazit.jpg' %}" alt="YardenGazit" />
-			</a>
-		</div>
-	</section>
-  </body>
-</html>
+<div class="content">
+	<div class="info">
+		<h2>Robo Adviser <br><span>Smart AI Investor!</span></h2>
+		<ul>
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.<Ut enim ad<br>
+				minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit<br>
+				in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia<br>
+				deserunt mollit anim id est laborum.
+			</p>
+		</ul>
+	</div>
+</div>
+<div class="team-members">
+	<a>
+		<p>Guy Beckenstein</p>
+		<img src="{% static 'GuyBeckenstein.jpg' %}" alt="GuyBeckenstein" />
+	</a>
+	<a>
+		<p>Yarden Agami</p>
+		<img src="{% static 'YardenAgami.jpg' %}" alt="YardenAgami" />
+	</a>
+	<a>
+		<p>Hagai Levy</p>
+		<img src="{% static 'HagaiLevy.jpg' %}" alt="HagaiLevy" />
+	</a>
+	<a>
+		<p>Yarden Gazit</p>
+		<img src="{% static 'YardenGazit.jpg' %}" alt="YardenGazit" />
+	</a>
+</div>
+
+{% endblock content %}
