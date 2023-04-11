@@ -14,7 +14,7 @@ section{
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	background: url("Background.png");
+	background: url("../img/Background.png");
     background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
@@ -51,6 +51,23 @@ header .navigation a:not(:last-child){
 
 header .navigation a:hover{
 	background: #fff;
+}
+
+footer{
+	color: #fff;
+	position: relative;
+	top: 0;
+	width: 100%;
+	padding: 30px 100px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+footer .greeting{
+    color: #000;
+	font-weight: 500;
+	border-bottom: 2px solid #226A80;;
 }
 
 svg {
