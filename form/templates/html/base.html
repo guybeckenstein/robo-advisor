@@ -4,8 +4,9 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-	<link rel="stylesheet" href="{% static 'style.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="{% static 'js/app.js' %}" defer></script>
 	  {% if title %}
 	    <title>{{ title }}</title>
 	  {% else %}
@@ -17,7 +18,7 @@
 		<header>
 			<h2>
 				<a href="" class="logo">
-					<img src="{% static '/Logo.png' %}" alt="RoboAdviserLogo" height="256" width="205" />
+					<img src="{% static 'img/Logo.png' %}" alt="RoboAdvisorLogo" height="256" width="205" />
 				</a>
 			</h2>
 			<div class="navigation">
@@ -31,6 +32,15 @@
 		</header>
         {% block content %}
 		{% endblock %}
+		<footer>
+			<p>
+				{% if user.name %}
+				<span>Hello </span><span class="greeting">{{ user.name | title }}</span><span>!</span>
+				{% else %}
+				<span>Hello </span><span class="greeting">guest</span><span>!</span>
+				{% endif %}
+			</p>
+		</footer>
 	</section>
   </body>
 </html>
