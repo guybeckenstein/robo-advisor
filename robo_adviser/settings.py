@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'form.apps.FormConfig',
+    'users.apps.UsersConfig',
+    'feedback.apps.FeedbackConfig',
+    'phonenumber_field',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -65,9 +69,17 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'builtins': [
+                'crispy_forms.templatetags.crispy_forms_tags',
+            ],
         },
     },
 ]
+
+TEMPLATE_DIRS = (
+    '/path/to/templates/',
+    '/path/to/crispy_forms/templates/',
+)
 
 WSGI_APPLICATION = 'robo_adviser.wsgi.application'
 
@@ -119,6 +131,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Full path to a directory that we like Django to store uploaded files
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 if not DEBUG:
     STATIC_ROOT = '/static/'
 
@@ -130,3 +146,16 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGIN_REDIRECT_URL = 'homepage'
+
+LOGIN_URL = 'login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASS')

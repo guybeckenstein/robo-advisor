@@ -1,7 +1,5 @@
 from django.shortcuts import render
-# from django.shortcuts import redirect
-# from .models import Message
-# from .forms import MessageForm
+from django.contrib.auth.decorators import login_required
 
 
 def homepage(request):
@@ -12,17 +10,15 @@ def about(request):
     return render(request, 'html/about.html', {'title': 'About Us'})
 
 
-def info(request):
-    return render(request, 'html/info.html', {'title': 'Info'})
+def contact(request):
+    return render(request, 'html/contact.html', {'title': 'Contact Us'})
 
 
+@login_required
 def services(request):
     return render(request, 'html/services.html', {'title': 'Services'})
 
 
+@login_required
 def form(request):
     return render(request, 'html/form.html', {'title': 'Form'})
-
-
-def contact(request):
-    return render(request, 'html/contact.html', {'title': 'Contact Us'})
