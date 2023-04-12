@@ -22,7 +22,6 @@ from django.conf.urls.static import static
 from form import views as form_views
 from users import views as users_views
 from feedback import views as feedback_views
-from feedback.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -45,12 +44,12 @@ urlpatterns = [
          name='password_reset_complete'),
     path('profile/', users_views.profile, name='profile'),
     # Feedbacks
-    path('feedback/', FeedbackListView.as_view(), name='feedback'),
-    path('user/<str:username>', UserFeedbackListView.as_view(), name='user-feedbacks'),
-    path('feedback/<int:pk>/', FeedbackDetailView.as_view(), name='feedback-detail'),
-    path('feedback/new/', FeedbackCreateView.as_view(), name='feedback-create'),
-    path('feedback/<int:pk>/update/', FeedbackUpdateView.as_view(), name='feedback-update'),
-    path('feedback/<int:pk>/delete/', FeedbackDeleteView.as_view(), name='feedback-delete'),
+    path('feedback/', feedback_views.FeedbackListView.as_view(), name='feedback'),
+    path('user/<str:username>', feedback_views.UserFeedbackListView.as_view(), name='user-feedbacks'),
+    path('feedback/<int:pk>/', feedback_views.FeedbackDetailView.as_view(), name='feedback-detail'),
+    path('feedback/new/', feedback_views.FeedbackCreateView.as_view(), name='feedback-create'),
+    path('feedback/<int:pk>/update/', feedback_views.FeedbackUpdateView.as_view(), name='feedback-update'),
+    path('feedback/<int:pk>/delete/', feedback_views.FeedbackDeleteView.as_view(), name='feedback-delete'),
     # Homepage
     path('', form_views.homepage, name='homepage'),
     path('about/', form_views.about, name='about'),

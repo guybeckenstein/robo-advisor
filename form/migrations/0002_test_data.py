@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db import transaction
+# from django.db import transaction
 
 
 class Migration(migrations.Migration):

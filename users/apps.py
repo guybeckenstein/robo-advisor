@@ -7,3 +7,5 @@ class UsersConfig(AppConfig):
 
     def ready(self):
         import users.signals
+        x = users.signals
+        print(x)
