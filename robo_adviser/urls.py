@@ -15,15 +15,48 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path
-from form import views
+from django.conf import settings
+from django.conf.urls.static import static
+from form import views as form_views
+from users import views as users_views
+from feedback import views as feedback_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.homepage, name='homepage'),
-    path('about/', views.about, name='about'),
-    path('info/', views.info, name='info'),
-    path('services/', views.services, name='services'),
-    path('form/', views.form, name='form'),
-    path('contact/', views.contact, name='contact')
+    # User
+    path('register/', users_views.register, name='register'),
+    path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
+    path('password-reset/',
+         auth_views.PasswordResetView.as_view(template_name='users/password_reset.html'),
+         name='password_reset'),
+    path('password-reset/done/',
+         auth_views.PasswordResetDoneView.as_view(template_name='users/password_reset_done.html'),
+         name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(template_name='users/password_reset_confirm.html'),
+         name='password_reset_confirm'),
+    path('password-reset-complete/',
+         auth_views.PasswordResetCompleteView.as_view(template_name='users/password_reset_complete.html'),
+         name='password_reset_complete'),
+    path('profile/', users_views.profile, name='profile'),
+    # Feedbacks
+    path('feedback/', feedback_views.FeedbackListView.as_view(), name='feedback'),
+    path('user/<str:username>', feedback_views.UserFeedbackListView.as_view(), name='user-feedbacks'),
+    path('feedback/<int:pk>/', feedback_views.FeedbackDetailView.as_view(), name='feedback-detail'),
+    path('feedback/new/', feedback_views.FeedbackCreateView.as_view(), name='feedback-create'),
+    path('feedback/<int:pk>/update/', feedback_views.FeedbackUpdateView.as_view(), name='feedback-update'),
+    path('feedback/<int:pk>/delete/', feedback_views.FeedbackDeleteView.as_view(), name='feedback-delete'),
+    # Homepage
+    path('', form_views.homepage, name='homepage'),
+    path('about/', form_views.about, name='about'),
+    path('services/', form_views.services, name='services'),
+    path('form/', form_views.form, name='form'),
+    path('contact/', form_views.contact, name='contact'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
