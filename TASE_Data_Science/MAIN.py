@@ -5,7 +5,7 @@ from TASE import manageData
 #from TASE import User"""
 
 import manageData
-#import User
+# import User
 
 # GET INDEXES SYMBOLS
 ################################################################
@@ -47,7 +47,7 @@ def init(name, level, inverstment):
 
 """
 
-########################################################################################################################################################
+######################################################################################
 # OPERATIONS
 
 # TODO- GET NAME FROM FORM AND DEFINES IN USER CLASS

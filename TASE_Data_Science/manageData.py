@@ -91,7 +91,7 @@ def markovich(
     frame = {}
     stocksNames = {}
     israelIndexesNames = {}
-    UsaIndexesNames = {}
+    # UsaIndexesNames = {}
 
     # TODO- GET DIRECTLY FROM FORM
     print("Interested in using machine learning? 0-no, 1-yes")
@@ -134,13 +134,13 @@ def markovich(
                 price = price_forecast(df, record_percentage_to_predict, 1)  # 1-ISRAEL
             else:
                 price = df[["closingIndexPrice"]]
-            #data_var = price
+            # data_var = price
             frame[stocksNames[i]] = price
             # frame.update({str(IsraliIndexes[i]):data_var})
 
     if usaIndexesChoice == 1:
         # USA STOCKS
-        #UsaIndexesNames = convertUsaIndexToName(UsaIndexes)
+        # UsaIndexesNames = convertUsaIndexToName(UsaIndexes)
         stocksNames = UsaIndexes
         yf.pdr_override()
         start_date, end_date = getfromAndToDate(2)
@@ -560,6 +560,7 @@ def getAppUrlWithDate(
         + str(day)
     )
 
+"""
 def getAppUrlWithDateAndIndex(
     appName, startYear, startMounth, startDay, endYear, endMonth, endDay, indexName
 ):
@@ -579,7 +580,7 @@ def getAppUrlWithDateAndIndex(
         + "-"
         + str(endDay)
     )
-
+"""
 
 def getAppUrlWithDate(
     appName, year, month, day, indexId
@@ -673,10 +674,16 @@ def convertUsaIndexToName(UsaIndexes):
 # GET OTHER DATA- NOT RELEVANIC BY NOW
 
 # already have:
-# get_trade_info(getAppUrlWithoutDate(basicIndexList),setting.basicIndexList)# a list of all basic indices in tase- indices-list
-# get_trade_info(getAppUrlWithDate(basicIndexComponents, year, month, day),basicIndexComponents)- components of each index
-# get_trade_info(getAppUrlWithoutDate(basicSecuritiesList),basocSecirityList)# a list of all basic securities in tase- securities-types- not use
-# get_trade_info(getAppUrlWithoutDate(basicSecuritiesCompnayList),basicSecuritiesCompnayList)# a list of all basic securities companies in tase- companies-list- not use
+""" get_trade_info(getAppUrlWithoutDate(basicIndexList)
+,setting.basicIndexList)# a list of all basic indices in tase- indices-list """
+""" get_trade_info(getAppUrlWithDate(basicIndexComponents
+, year, month, day),basicIndexComponents)- components of each index """
+""" get_trade_info(getAppUrlWithoutDate(basicSecuritiesList)
+,basocSecirityList)
+# a list of all basic securities in tase- securities-types- not use """
+""" get_trade_info(getAppUrlWithoutDate(basicSecuritiesCompnayList)
+ ,basicSecuritiesCompnayList)
+ # a list of all basic securities companies in tase- companies-list- not use """
 # get_trade_info(indexEndOfDay,indexEndOfDay)// specific date
 """ get_trade_info(indexEndOfDayHistoryTenYearsUpToday
 ,"gsfgsfgfds/indexEndOfDayHistoryTenYearsUpTodaytelBondMaagar") """

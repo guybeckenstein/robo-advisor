@@ -1,10 +1,10 @@
 class Portfolio:
 
     # TODO: Add Portfolio class
-    indexes = {}
+    # indexes = {}
 
-    def __init__(self, i_indexes):
-        indexes = i_indexes
+    """ def __init__(self, i_indexes):
+        indexes = i_indexes """
 
     def getPortfolio(self):
         return self.Portfolio

@@ -41,7 +41,7 @@ indexEndOfDayHistoryTenYearsUpToday = "indices/eod/history/ten-years/by-index?in
 indexEndOfDayHistoryFiveYearsUpToday = (
     "indices/eod/history/five-years/by-index?indexId="
 )
- indexEndOfDayHistoryFiveYearsSpecificDate=prefixUrl+"/indices/eod/history/five-years/by-date?date="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName)
+indexEndOfDayHistoryFiveYearsSpecificDate=prefixUrl+"/indices/eod/history/five-years/by-date?date="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName)
 # past 7 days
 indexEndOfDayHistorySevenDaysUpToday = (
     prefixUrl + "/indices/eod/seven-days/by-index?indexId=" + str(indexName)
