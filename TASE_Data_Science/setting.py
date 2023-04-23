@@ -44,8 +44,7 @@ indexEndOfDayHistoryFiveYearsUpToday = (
 # past 7 days
 """indexEndOfDayHistorySevenDaysUpToday = (
     prefixUrl + "/indices/eod/seven-days/by-index?indexId=" + str(indexName)
-)  """
-
+)"""
 """indexEndOfDayHistorySevenDaySpecificDate 
 = prefixUrl+"/indices/eod//seven-days/by-date?date
 ="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """

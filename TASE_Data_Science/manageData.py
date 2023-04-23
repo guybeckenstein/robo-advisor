@@ -548,6 +548,7 @@ def getIndexHistory(appName, indexId, numOfYears):
     )
 
 
+"""
 def getAppUrlWithDate(
     appName, year, month, day
 ):  # /tase/prod/api/v1/index_end_of_day_data/2022/11/22
@@ -560,6 +561,7 @@ def getAppUrlWithDate(
         + "/"
         + str(day)
     )
+"""
 
 
 def getAppUrlWithDateAndIndex(
