@@ -20,10 +20,7 @@ prefixUrl = "/tase/prod/api/v1"
 payload = "grant_type=client_credentials&scope=tase"
 language = "he-IL"
 
-indexName = (
-#  telaviv35=142, telbondgeneral=602,allbondgeneral=601,telbondmaagar=715
-    142  
-)
+indexName = 142
 
 # SET WEIGHTS FOR WEIGHTED INDEXES
 weights = [0] * 3
@@ -41,13 +38,15 @@ indexEndOfDayHistoryTenYearsUpToday = "indices/eod/history/ten-years/by-index?in
 indexEndOfDayHistoryFiveYearsUpToday = (
     "indices/eod/history/five-years/by-index?indexId="
 )
-indexEndOfDayHistoryFiveYearsSpecificDate=prefixUrl+"/indices/eod/history/five-years/by-date?date="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName)
+"""indexEndOfDayHistoryFiveYearsSpecificDate
+=prefixUrl+"/indices/eod/history/five-years/by-date?date
+="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
 # past 7 days
-indexEndOfDayHistorySevenDaysUpToday = (
+"""indexEndOfDayHistorySevenDaysUpToday = (
     prefixUrl + "/indices/eod/seven-days/by-index?indexId=" + str(indexName)
-)
+)  """
 
-""" indexEndOfDayHistorySevenDaySpecificDate 
+"""indexEndOfDayHistorySevenDaySpecificDate 
 = prefixUrl+"/indices/eod//seven-days/by-date?date
 ="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
 # past day

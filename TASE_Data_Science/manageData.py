@@ -560,7 +560,6 @@ def getAppUrlWithDate(
         + str(day)
     )
 
-"""
 def getAppUrlWithDateAndIndex(
     appName, startYear, startMounth, startDay, endYear, endMonth, endDay, indexName
 ):
@@ -580,7 +579,6 @@ def getAppUrlWithDateAndIndex(
         + "-"
         + str(endDay)
     )
-"""
 
 def getAppUrlWithDate(
     appName, year, month, day, indexId
