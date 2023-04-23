@@ -1,10 +1,9 @@
 class Portfolio:
 
-
-#TODO: Add Portfolio class
+    # TODO: Add Portfolio class
     indexes = {}
 
-    def __init__(self,indexes):
+    def __init__(self, indexes):
         Portfolio = indexes
 
     def getPortfolio(self):
