@@ -5,8 +5,7 @@ from TASE import manageData
 #from TASE import User"""
 
 import manageData
-import User
-import setting
+#import User
 
 # GET INDEXES SYMBOLS
 ################################################################
@@ -21,6 +20,8 @@ UsaIndexes = ["Spy", "Lqd", "Gsg"]
 
 # INIT
 ################################################################
+
+"""
 def init(name, level, inverstment):
     # user = User(name,level,sybmolIndex)
     # choose command- TODO
@@ -35,7 +36,8 @@ def init(name, level, inverstment):
     elif level == 3:
         sLossR = 1.65
 
-    # table,sLoss,returns_annual=manageData.buildingPortfolio(IsraliIndexes,UsaIndexes,setting.weights[level-1],sLossR,level)
+    #table,sLoss,returns_annual=manageData.buildingPortfolio
+    (IsraliIndexes,UsaIndexes,setting.weights[level-1],sLossR,level)
     # print('retrun annual', '{:.2%}'.format(returns_annual), 'Max Loss annual' , '{:.2%}'.format(sLoss))
     # table.to_csv('table.csv')
     # manageData.plotPortfolioComponent(sybmolIndexs,setting.weights[level-1],name)#DIAGRAM
@@ -43,6 +45,7 @@ def init(name, level, inverstment):
     # manageData.plotYieldChange(table,name,inverstment)
     # TODO- SHOW DISTRIBUTION OF PORTFOLIO
 
+"""
 
 ########################################################################################################################################################
 # OPERATIONS

@@ -1,4 +1,3 @@
-import calendar
 import http.client
 import json
 import codecs
@@ -9,14 +8,11 @@ import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import quandl, math
-from sklearn import preprocessing, svm
+import math
+from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import yfinance as yf
-import seaborn as sns
-from scipy.stats import norm
-from sklearn.model_selection import cross_val_score, cross_val_predict
 
 # from py_vollib.black_scholes import black_scholes as bs
 # from py_vollib.black_scholes.greeks.analytical import delta, gamma, vega, theta, rho
@@ -49,7 +45,7 @@ def buildingPortfolio(IsraliIndexes, UsaIndexes, weights, sLossR, level):
     cov_daily = weighted_sum.std()
     cov_annual = cov_daily * 254
 
-    return table, sLoss, returns_annual
+    return table, sLoss, returns_annual, cov_annual
 
 
 def plotPctChange(table, sLoss, returns_annual, name):
@@ -138,13 +134,13 @@ def markovich(
                 price = price_forecast(df, record_percentage_to_predict, 1)  # 1-ISRAEL
             else:
                 price = df[["closingIndexPrice"]]
-            data_var = price
+            #data_var = price
             frame[stocksNames[i]] = price
             # frame.update({str(IsraliIndexes[i]):data_var})
 
     if usaIndexesChoice == 1:
         # USA STOCKS
-        UsaIndexesNames = convertUsaIndexToName(UsaIndexes)
+        #UsaIndexesNames = convertUsaIndexToName(UsaIndexes)
         stocksNames = UsaIndexes
         yf.pdr_override()
         start_date, end_date = getfromAndToDate(2)
@@ -564,7 +560,6 @@ def getAppUrlWithDate(
         + str(day)
     )
 
-
 def getAppUrlWithDateAndIndex(
     appName, startYear, startMounth, startDay, endYear, endMonth, endDay, indexName
 ):
@@ -683,21 +678,26 @@ def convertUsaIndexToName(UsaIndexes):
 # get_trade_info(getAppUrlWithoutDate(basicSecuritiesList),basocSecirityList)# a list of all basic securities in tase- securities-types- not use
 # get_trade_info(getAppUrlWithoutDate(basicSecuritiesCompnayList),basicSecuritiesCompnayList)# a list of all basic securities companies in tase- companies-list- not use
 # get_trade_info(indexEndOfDay,indexEndOfDay)// specific date
-# get_trade_info(indexEndOfDayHistoryTenYearsUpToday,"gsfgsfgfds/indexEndOfDayHistoryTenYearsUpTodaytelBondMaagar")
+""" get_trade_info(indexEndOfDayHistoryTenYearsUpToday
+,"gsfgsfgfds/indexEndOfDayHistoryTenYearsUpTodaytelBondMaagar") """
 
 
-# get_trade_info(getAppUrlWithDate(indexEndOfDayName, year, month, day),indexEndOfDayName):
+""" get_trade_info(getAppUrlWithDate(indexEndOfDayName
+, year, month, day),indexEndOfDayName): """
 # index end of day data
-# get_trade_info(getAppUrlWithDate(OTC_transaction_name, year, month, day),OTC_transaction_name):
+""" get_trade_info(getAppUrlWithDate(OTC_transaction_name
+, year, month, day),OTC_transaction_name): """
 # OTC transaction
-# get_trade_info(getAppUrlWithoutDate(shortSalesWeeklyBalanceName),shortSalesWeeklyBalanceName):
+""" get_trade_info(getAppUrlWithoutDate(shortSalesWeeklyBalanceName)
+,shortSalesWeeklyBalanceName): """
 # short sales weekly balance
 # get_trade_info(getAppUrlWithDate(mayaNoticeByDay, year, month, day),mayaNoticeByDay):
 # maya notice by day
 # new:
 # get_trade_info(getAppUrlWithoutDate(fundListName),fundListName):
 # fund list, fund history data
-# get_trade_info(getFundHistoryById(fundHistoryDataName, 1143718, 2015, 12, 31, 2022, 12, 28), fundHistoryDataName)
+""" get_trade_info(getFundHistoryById(fundHistoryDataName, 1143718
+, 2015, 12, 31, 2022, 12, 28), fundHistoryDataName) """
 
 
 # not working

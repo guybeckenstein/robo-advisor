@@ -1,4 +1,3 @@
-import datetime
 
 # for TOKEN- POST METHOD
 tokenUrl = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
@@ -22,7 +21,8 @@ payload = "grant_type=client_credentials&scope=tase"
 language = "he-IL"
 
 indexName = (
-    142  #  telaviv35=142, telbondgeneral=602,allbondgeneral=601,telbondmaagar=715
+#  telaviv35=142, telbondgeneral=602,allbondgeneral=601,telbondmaagar=715
+    142  
 )
 
 # SET WEIGHTS FOR WEIGHTED INDEXES
@@ -41,14 +41,18 @@ indexEndOfDayHistoryTenYearsUpToday = "indices/eod/history/ten-years/by-index?in
 indexEndOfDayHistoryFiveYearsUpToday = (
     "indices/eod/history/five-years/by-index?indexId="
 )
-# indexEndOfDayHistoryFiveYearsSpecificDate=prefixUrl+"/indices/eod/history/five-years/by-date?date="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName)
+ indexEndOfDayHistoryFiveYearsSpecificDate=prefixUrl+"/indices/eod/history/five-years/by-date?date="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName)
 # past 7 days
 indexEndOfDayHistorySevenDaysUpToday = (
     prefixUrl + "/indices/eod/seven-days/by-index?indexId=" + str(indexName)
 )
-# indexEndOfDayHistorySevenDaySpecificDate = prefixUrl+"/indices/eod//seven-days/by-date?date="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName)
+
+""" indexEndOfDayHistorySevenDaySpecificDate 
+= prefixUrl+"/indices/eod//seven-days/by-date?date
+="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
 # past day
-# indexEndOfDay=prefixUrl+"/indices/eod/history/ten-years/by-date?date="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) #specific day
+""" indexEndOfDay=prefixUrl+"/indices/eod/history/ten-years/by-date?date
+="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
 
 
 OTC_transaction_name = "transactions/otc-transactions"
