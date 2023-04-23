@@ -1,3 +1,4 @@
+
 import http.client
 import json
 import codecs
@@ -582,6 +583,7 @@ def getAppUrlWithDateAndIndex(
     )
 
 
+"""
 def getAppUrlWithDate(
     appName, year, month, day, indexId
 ):  # /tase/prod/api/v1/index_end_of_day_data/2022/11/22?indexId=142
@@ -596,6 +598,7 @@ def getAppUrlWithDate(
         + "?indexId="
         + str(indexId)
     )
+"""
 
 
 def getAppUrlWithoutDate(appName):  # /tase/prod/api/v1/short-sales/weekly-balance
