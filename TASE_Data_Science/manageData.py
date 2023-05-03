@@ -154,8 +154,6 @@ def convertDataToTables(newPortfolio, israeliIndexesChoice, usaIndexesChoice, re
     # USA STOCKS
 
     if usaIndexesChoice == 1:
-
-        stocksNames = usaIndexes
         yf.pdr_override()
         start_date, end_date = getfromAndToDate(numOfYearsHistory)
         for stock in usaIndexes:
@@ -237,7 +235,6 @@ def forcastSpecificStock(stock, isIsraeliStock, numOfYearsHistory):
     if isIsraeliStock:
         # GET INDEXES DATA AUTOMATICALLY FROM TASE-API
         # indexesData=manageData.setPortfolioData("get_past_10_years_history",sybmolIndexs)
-        IsraeliIndexesData = getIndexesDataManuallyFromJSON(stock)
         df = pd.DataFrame(stock["indexEndOfDay"]["result"])
         df["tradeDate"] = pd.to_datetime(df["tradeDate"])
         df.set_index("tradeDate", inplace=True)
@@ -254,12 +251,6 @@ def forcastSpecificStock(stock, isIsraeliStock, numOfYearsHistory):
 
 # plot graph
 def plotMarkovichPortfolioGraph(df, sharpe_portfolio, min_variance_port, max_returns, max_vols, newPortfolio):
-
-    # find min Volatility & max sharpe values in the dataframe (df)
-    min_volatility = df["Volatility"].min()
-    max_sharpe = df["Sharpe Ratio"].max()
-    max_return = df["Returns"].max()
-    max_vol = df["Volatility"].max()
 
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     figSize_X = 10
@@ -301,7 +292,6 @@ def plotMarkovichPortfolioGraph(df, sharpe_portfolio, min_variance_port, max_ret
 
     # ------------------ Pritning 3 optimal Protfolios -----------------------
     # Setting max_X, max_Y to act as relative border for window size
-    stocksNames = newPortfolio.getStocksSymbols()
     sectorsNames = newPortfolio.getSectorsNames()
     lowWeight = min_variance_port.iloc[0][3:]
     mediumWeight = sharpe_portfolio.iloc[0][3:]
@@ -315,16 +305,16 @@ def plotMarkovichPortfolioGraph(df, sharpe_portfolio, min_variance_port, max_ret
 
     # stocksStrHigh
     for i in range(len(sectorsNames)):
-            weight = highSectorsWeight[i] * 100
-            stocksStrHigh += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        weight = highSectorsWeight[i] * 100
+        stocksStrHigh += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocksStrMedium
     for i in range(len(sectorsNames)):
-            weight = mediumSectorsWeight[i] * 100
-            stocksStrMedium += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        weight = mediumSectorsWeight[i] * 100
+        stocksStrMedium += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocksStrLow
     for i in range(len(sectorsNames)):
-            weight = lowSectorsWeight[i] * 100
-            stocksStrLow += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        weight = lowSectorsWeight[i] * 100
+        stocksStrLow += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
 
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         plt.figtext(
@@ -744,7 +734,7 @@ def convertUsaIndexToName(UsaIndexes):
 
 # GET OTHER DATA- NOT RELEVANIC BY NOW
 
-def getFundHistoryById(
+"""def getFundHistoryById(
     appName, fundId, startyear, startmonth, startday, endyear, endmonth, endday
 ):  # /tase/prod/api/v1/index_end_of_day_data/2022/11/22
-    return "/tase/prod/api/v1/mutual-fund/history-data/5100474?startDate=2015-12-31&endDate=2020-12-31"
+    return "/tase/prod/api/v1/mutual-fund/history-data/5100474?startDate=2015-12-31&endDate=2020-12-31"""

@@ -51,8 +51,8 @@ class Portfolio:
             usaStocksIndexes.extend(self.__sectors[i].getStocks())
         return usaStocksIndexes
 
-    def getStocksSymbols(self):
-        return self.__stocksSymbols
+    """def getStocksSymbols(self):
+        return self.__stocksSymbols"""
 
     def getclosingPricesTable(self):
         return self.__closingPricesTable

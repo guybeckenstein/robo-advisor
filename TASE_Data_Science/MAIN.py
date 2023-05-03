@@ -8,7 +8,7 @@ import User as User
 
 ######################################################################################
 
-def init(sectorsNames, stocksSymbols):
+def init(_sectorsNames, _stocksSymbols):
 
     # GET BASIC DATA FROM TERMINAL- TODO- get the data from site-form
 
@@ -21,7 +21,7 @@ def init(sectorsNames, stocksSymbols):
         name,
         ) = manageData.getDataFromForm()
 
-    newPortfolio = Portfolio.Portfolio(levelOfRisk, investmentAmount, stocksSymbols, sectorsNames)
+    newPortfolio = Portfolio.Portfolio(levelOfRisk, investmentAmount, _stocksSymbols, _sectorsNames)
 
     # get data from api and convert it to tables
 
@@ -46,7 +46,7 @@ def init(sectorsNames, stocksSymbols):
         weighted_low,
         weighted_medium,
         weighted_high,
-        ) = manageData.markovichModel(setting.Num_porSimulation, pctChangeTable, stocksSymbols)
+        ) = manageData.markovichModel(setting.Num_porSimulation, pctChangeTable, _stocksSymbols)
 
     # plot all portfolios options by markovich model
 
