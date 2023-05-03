@@ -1,67 +1,152 @@
-"""
-import sys
-sys.path.append('/path/TASE-API/TASE')
-from TASE import manageData
-#from TASE import User"""
-
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import setting
 import manageData
-# import User
+import Portfolio as Portfolio
+import User as User
 
-# GET INDEXES SYMBOLS
-################################################################
-# TODO- FIND BEST STOCKS AND INDEXES-FEATURES
-
-# SET INDEXES MANUUALLY-alternative - only for now
-IsraliIndexes = [142, 601, 602]  # ],715]
-UsaIndexes = ["Spy", "Lqd", "Gsg"]
-################################################################
-
-# WEIGHTS DEFINED IN SETTING, TODO- SET FROM MARKOVIZ
-
-# INIT
-################################################################
-
-"""
-def init(name, level, inverstment):
-    # user = User(name,level,sybmolIndex)
-    # choose command- TODO
-    # command="get_past_10_years_history"
-    # User.setPortfolioData(command)
-
-    # building portfolio
-    if level == 1:
-        sLossR = 1.4
-    elif level == 2:
-        sLossR = 1.5
-    elif level == 3:
-        sLossR = 1.65
-
-    #table,sLoss,returns_annual=manageData.buildingPortfolio
-    (IsraliIndexes,UsaIndexes,setting.weights[level-1],sLossR,level)
-    # print('retrun annual', '{:.2%}'.format(returns_annual), 'Max Loss annual' , '{:.2%}'.format(sLoss))
-    # table.to_csv('table.csv')
-    # manageData.plotPortfolioComponent(sybmolIndexs,setting.weights[level-1],name)#DIAGRAM
-    # manageData.plotPctChange(table['weighted_sum'],sLoss,returns_annual,name)
-    # manageData.plotYieldChange(table,name,inverstment)
-    # TODO- SHOW DISTRIBUTION OF PORTFOLIO
-
-"""
 
 ######################################################################################
-# OPERATIONS
 
-# TODO- GET NAME FROM FORM AND DEFINES IN USER CLASS
-name = "Yarden"
+def init(sectorsNames, stocksSymbols):
 
-# Markviz and prediction
-record_percentage_to_predict = 0.3
-manageData.markovich(
-    2000, IsraliIndexes, UsaIndexes, record_percentage_to_predict, name
-)
+    # GET BASIC DATA FROM TERMINAL- TODO- get the data from site-form
 
-# TODO- GET LEVEL OF RISK FROM FORM
+    (
+        levelOfRisk,
+        investmentAmount,
+        machineLearningOpt,
+        israeliIndexesChoice,
+        usaIndexesChoice,
+        name,
+        ) = manageData.getDataFromForm()
 
-# GET LEVEL OF RISK FROM USER
-# level=manageData.getLevelFromTerminal()
-# inverstment=manageData.getInverstmentFromTerminal()
-# init(name,3,1000)
+    newPortfolio = Portfolio.Portfolio(levelOfRisk, investmentAmount, stocksSymbols, sectorsNames)
+
+    # get data from api and convert it to tables
+
+    (closingPricesTable, pctChangeTable) = \
+        manageData.convertDataToTables(
+        newPortfolio,
+        israeliIndexesChoice,
+        usaIndexesChoice,
+        setting.record_percentage_to_predict,
+        numOfYearsHistory,
+        machineLearningOpt,
+        )
+
+    # use markovich model to find the best portfolios
+
+    (
+        df,
+        sharpe_portfolio,
+        min_variance_port,
+        max_returns,
+        max_vols,
+        weighted_low,
+        weighted_medium,
+        weighted_high,
+        ) = manageData.markovichModel(setting.Num_porSimulation, pctChangeTable, stocksSymbols)
+
+    # plot all portfolios options by markovich model
+
+    manageData.plotMarkovichPortfolioGraph(
+        df,
+        sharpe_portfolio,
+        min_variance_port,
+        max_returns,
+        max_vols,
+        newPortfolio,
+        )
+
+    # plot distributions of the 3 best portfolios that returned from markovich model
+
+    manageData.plotDistributionOfPortfolio(weighted_low, weighted_medium, weighted_high)
+
+    # TODO -add option- use jini model to find the best portfolios
+
+    # building portfolio according to the level of risk
+
+    (pctChangeTable, stock_weights, annualReturns, volatility,
+     sharpe) = manageData.buildingPortfolio(
+        pctChangeTable,
+        sharpe_portfolio,
+        min_variance_port,
+        max_returns,
+        levelOfRisk,
+        investmentAmount,
+        )
+
+    # creates new user
+
+    newPortfolio.updateStocksData(
+        closingPricesTable,
+        pctChangeTable,
+        stock_weights,
+        annualReturns,
+        volatility,
+        sharpe,
+        )
+    user = User.User(name, newPortfolio)
+
+    # PLOT the selected portfolio
+
+    manageData.plotbb_strategy_Portfolio(pctChangeTable)
+    print(pctChangeTable.describe())
+    user.plotPortfolioComponent()  # DIAGRAM
+    user.plotInvestmentPortfolioYield()  # plot portfolio yield
+
+
+# manageData.price_forecast(pctChangeTable, name, stocksNames, annualReturns, volatility, sharpe, stocks_weights)
+######################################################################################
+
+# set manually
+
+stocksSymbols = [  # TODO -NEW FEATURES- creates features to scan good stocks and indexes and fit them to the portfolio
+    142,
+    601,
+    602,
+    700,
+    701,
+    702,
+    'SPY',
+    'IEI',
+    'LQD',
+    'Gsg',
+    ]
+numOfYearsHistory = 10
+sectorsNames = setting.sectorsNames  # TODO - manage sectors names (add or remove) and fit them to the portfolio
+command = {
+    'createNewUser': 1,
+    'forcastSpecificStock': 2,
+    'updateUserData': 3,
+    'plotbb_strategy_stock': 4,
+    }
+
+# operations- TODO- operates from the site
+
+selection = command['createNewUser']
+if selection == 1:
+
+    # creates new user and build portfolio
+
+    init(sectorsNames, stocksSymbols)
+elif selection == 2:
+
+    # forcast specific stock
+
+    manageData.forcastSpecificStock(142, 1, 10)  # 1 if is israeli stock, 0 if usa stock
+elif selection == 3:
+
+    # update user data
+    # manageData.updateUserData()
+
+    pass
+elif selection == 4:
+
+    # plot specific stock
+
+    stock = 'APPL'
+    manageData.plotbb_strategy_stock('stock')
+
+######################################################################################

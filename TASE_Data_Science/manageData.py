@@ -1,4 +1,3 @@
-
 import http.client
 import json
 import codecs
@@ -14,159 +13,58 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import yfinance as yf
-
-# from py_vollib.black_scholes import black_scholes as bs
-# from py_vollib.black_scholes.greeks.analytical import delta, gamma, vega, theta, rho
-
+import seaborn as sns
 import setting
 
 
-def buildingPortfolio(IsraliIndexes, UsaIndexes, weights, sLossR, level):
+def buildingPortfolio(pctChangeTable, sharpe_portfolio, min_variance_port, max_returns, level, investment):
 
-    # TODO- GET DIRECTLY FROM API
-    # GET INDEXES DATA MANUALLY FROM JSON FILES THAT DOWNLOADED FROM TASE-API
-    IsraeliIndexesData = getIndexesDataManuallyFromJSON(IsraliIndexes)
+    stock_weights = {}
+    annualReturns = 0
+    volatility = 0
+    sharpe = 0
 
-    frame = {}
-    for i, stock in enumerate(IsraeliIndexesData):
-        df = pd.DataFrame(stock["indexEndOfDay"]["result"])
-        df["tradeDate"] = pd.to_datetime(df["tradeDate"])
-        df.set_index("tradeDate", inplace=True)
-        data_var = df[["closingIndexPrice"]].pct_change().copy()
-        frame.update({str(IsraliIndexes[i]): data_var})
+    if level == 1:
+        stock_weights = min_variance_port.iloc[0][3:]
+        annualReturns = min_variance_port.iloc[0][0]
+        volatility = min_variance_port.iloc[0][1]
+        sharpe = min_variance_port.iloc[0][2]
 
-    table = pd.concat(frame.values(), axis=1, keys=frame.keys())
-    # sum the column and multiply by the weight
-    weighted_sum = (table * weights[level - 1]).sum(axis=1)
-    table["weighted_sum"] = weighted_sum
+    elif level == 2:
+        stock_weights = sharpe_portfolio.iloc[0][3:]
+        annualReturns = sharpe_portfolio.iloc[0][0]
+        volatility = sharpe_portfolio.iloc[0][1]
+        sharpe = sharpe_portfolio.iloc[0][2]
 
-    returns_daily = weighted_sum.mean()  # averge change
+    elif level == 3:
+        stock_weights = max_returns.iloc[0][3:]
+        annualReturns = max_returns.iloc[0][0]
+        volatility = max_returns.iloc[0][1]
+        sharpe = max_returns.iloc[0][2]
+
+    pctChangeTable["weighted_sum_selected"] = np.dot(stock_weights, pctChangeTable.T)
+    pctChangeTable["yield"] = pctChangeTable["weighted_sum_selected"]
+    pctChangeTable["yield"].iloc[0] = investment
+    for i in range(1, len(pctChangeTable["weighted_sum_selected"].values)):
+        change = pctChangeTable["weighted_sum_selected"].values.item(i) + 1
+        lastValue = pctChangeTable["yield"].iloc[i - 1]
+        newValue = lastValue * change
+        pctChangeTable["yield"].iloc[i] = newValue
+
+    return pctChangeTable, stock_weights, annualReturns, volatility, sharpe
+
+
+def markovichModel(Num_porSimulation, pctChangeTable, stocksSymbols):
+
+    stocksNames = []
+    for symbol in stocksSymbols:
+        if type(symbol) == int:
+            stocksNames.append(str(symbol))
+        else:
+            stocksNames.append(symbol)
+
+    returns_daily = pctChangeTable
     returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
-    sLoss = returns_annual - sLossR * returns_annual
-    cov_daily = weighted_sum.std()
-    cov_annual = cov_daily * 254
-
-    return table, sLoss, returns_annual, cov_annual
-
-
-def plotPctChange(table, sLoss, returns_annual, name):
-    plt.title("Hello, " + name + "! This is your yield portfolio")
-    table.plot(figsize=(10, 8))
-    plt.axhline(y=sLoss, color="r", linestyle="-")
-    plt.axhline(y=returns_annual, color="g", linestyle="-")
-    plt.show()
-
-
-def plotPortfolioComponent(indexes, weights, name):  # TODO-FIX HEBREW TEXT
-    plt.title("Hello, " + name + "! This is your portfolio")
-    stocksNames = {}
-    for i, index in enumerate(indexes):
-        stocksNames[i] = getNameByIndexNumber(index)
-    plt.pie(
-        weights,
-        labels=stocksNames.values(),
-        autopct="%1.1f%%",
-        shadow=True,
-        startangle=140,
-    )
-    plt.axis("equal")
-    plt.show()
-
-
-def plotYieldChange(table, name, investment):
-    plt.title("Hello, " + name + "! This is your yield portfolio")
-    # creates a new column called yield, and sets in the row 4 the value of the inverstment
-    table["yield"] = table["weighted_sum"].copy()
-    table["yield"].iloc[0] = investment
-    for i in range(1, len(table["weighted_sum"])):
-        lastValue = table["yield"].iloc[i - 1]
-        table["yield"].iloc[i] = lastValue * (table["weighted_sum"].iloc[i] + 1)
-    table["yield"].plot(figsize=(10, 8))
-    table.to_csv("table.csv")
-    plt.show()
-
-
-def markovich(
-    Num_porSimulation, IsraliIndexes, UsaIndexes, record_percentage_to_predict, name
-):
-    frame = {}
-    stocksNames = {}
-    israelIndexesNames = {}
-    # UsaIndexesNames = {}
-
-    # TODO- GET DIRECTLY FROM FORM
-    print("Interested in using machine learning? 0-no, 1-yes")
-    machineLearning = int(input())
-    while machineLearning != 0 and machineLearning != 1:
-        print("Please enter 0 or 1")
-        machineLearning = int(input())
-
-    print("include israel indexes? 0-no, 1-yes")
-    israeliIndexesChoice = int(input())
-    while israeliIndexesChoice != 0 and israeliIndexesChoice != 1:
-        print("Please enter 0 or 1")
-        israeliIndexesChoice = int(input())
-
-    print("include usa indexes? 0-no, 1-yes")
-    usaIndexesChoice = int(input())
-    while usaIndexesChoice != 0 and usaIndexesChoice != 1:
-        print("Please enter 0 or 1")
-        usaIndexesChoice = int(input())
-
-    if israeliIndexesChoice == 1:
-        israelIndexesNames = list(convertIsraeliIndexToName(IsraliIndexes))
-        stocksNames = list(stocksNames) + israelIndexesNames
-
-        # TODO- FIX LIMIT NUM OF REQUESTS TO TASE-API
-        # GET INDEXES DATA AUTOMATICALLY FROM TASE-API
-        # indexesData=manageData.setPortfolioData("get_past_10_years_history",sybmolIndexs)
-
-        # ISRAEL STOCKS
-        # GET INDEXES DATA MANUALLY FROM JSON FILES THAT DOWNLOADED FROM TASE-API
-        IsraeliIndexesData = getIndexesDataManuallyFromJSON(IsraliIndexes)
-
-        # create table
-
-        for i, stock in enumerate(IsraeliIndexesData):
-            df = pd.DataFrame(stock["indexEndOfDay"]["result"])
-            df["tradeDate"] = pd.to_datetime(df["tradeDate"])
-            df.set_index("tradeDate", inplace=True)
-            if machineLearning == 1:
-                price = price_forecast(df, record_percentage_to_predict, 1)  # 1-ISRAEL
-            else:
-                price = df[["closingIndexPrice"]]
-            # data_var = price
-            frame[stocksNames[i]] = price
-            # frame.update({str(IsraliIndexes[i]):data_var})
-
-    if usaIndexesChoice == 1:
-        # USA STOCKS
-        # UsaIndexesNames = convertUsaIndexToName(UsaIndexes)
-        stocksNames = UsaIndexes
-        yf.pdr_override()
-        start_date, end_date = getfromAndToDate(2)
-        for stock in UsaIndexes:
-            df = yf.download(stock, start=start_date, end=end_date)
-            if machineLearning == 1:
-                price = price_forecast(df, record_percentage_to_predict, 0)  # 0 -USA
-            else:
-                price = df[["Adj Close"]]
-            frame[stock] = price
-
-    if israeliIndexesChoice == 1 and usaIndexesChoice == 1:
-        stocksNames = list(israelIndexesNames) + UsaIndexes
-
-    table = pd.concat(frame.values(), axis=1, keys=frame.keys())
-    table.to_csv("Out123.csv")
-    # plt.plot(pd.DataFrame(frame))
-    # pd.DataFrame(frame).to_csv('Out.csv')
-
-    returns_daily = table.pct_change()
-    returns_daily.to_csv("Out1.csv")
-    returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
-    returns_annual.to_csv("Out2.csv")
-
-    # get daily and covariance of returns of the stock
     cov_daily = returns_daily.cov()
     cov_annual = cov_daily * 254
 
@@ -177,8 +75,8 @@ def markovich(
     stock_weights = []
 
     # set the number of combinations for imaginary portfolios
-    num_assets = len(stocksNames)
-    num_portfolios = Num_porSimulation  # Change porfolio numbers here
+    num_assets = len(stocksSymbols)
+    num_portfolios = Num_porSimulation
 
     # set random seed for reproduction's sake
     np.random.seed(101)
@@ -213,22 +111,155 @@ def markovich(
     column_order = ["Returns", "Volatility", "Sharpe Ratio"] + [
         stock + " Weight" for stock in stocksNames
     ]
-
     # reorder dataframe columns
     df = df[column_order]
 
-    # plot frontier, max sharpe & min Volatility values with a scatterplot
+    sharpe_portfolio = df.loc[df["Sharpe Ratio"] == df["Sharpe Ratio"].max()]  # medium risk
+    min_variance_port = df.loc[df["Volatility"] == df["Volatility"].min()]  # low risk
+    max_returns = df.loc[df["Returns"] == df["Returns"].max()]  # high level
+    max_vols = df.loc[df["Volatility"] == df["Volatility"].max()]
+
+    # get 3 portfolios weights
+    weighted_low = np.dot(min_variance_port.iloc[0][3:], pctChangeTable.T)
+    weighted_medium = np.dot(sharpe_portfolio.iloc[0][3:], pctChangeTable.T)
+    weighted_high = np.dot(max_returns.iloc[0][3:], pctChangeTable.T)
+
+    return df, sharpe_portfolio, min_variance_port, max_returns, max_vols, weighted_low, weighted_medium, weighted_high
+
+
+def convertDataToTables(newPortfolio, israeliIndexesChoice, usaIndexesChoice, record_percentage_to_predict,
+                        numOfYearsHistory, machineLearningOpt):
+    frame = {}
+    stocksNames = newPortfolio.getStocksSymbols()
+    israeliIndexes = newPortfolio.getIsraeliStocksIndexes()
+    usaIndexes = newPortfolio.getUsaStocksIndexes()
+
+    # ISRAEL STOCKS
+
+    if israeliIndexesChoice == 1:
+        # israelIndexesNames = {}
+        # israelIndexesNames = list(convertIsraeliIndexToName(israeliIndexes))
+        # stocksNames = list(stocksNames) + israelIndexesNames
+        IsraeliIndexesData = getIsraeliIndexesData("get_past_10_years_history", israeliIndexes)
+        for i, stock in enumerate(IsraeliIndexesData):
+            df = pd.DataFrame(stock["indexEndOfDay"]["result"])
+            df["tradeDate"] = pd.to_datetime(df["tradeDate"])
+            df.set_index("tradeDate", inplace=True)
+            if machineLearningOpt == 1:
+                DF, price = price_forecast(df, record_percentage_to_predict, 1)  # 1-ISRAEL
+            else:
+                price = df[["closingIndexPrice"]]
+            frame[stocksNames[i]] = price
+
+    # USA STOCKS
+
+    if usaIndexesChoice == 1:
+
+        stocksNames = usaIndexes
+        yf.pdr_override()
+        start_date, end_date = getfromAndToDate(numOfYearsHistory)
+        for stock in usaIndexes:
+            df = yf.download(stock, start=start_date, end=end_date)
+            if machineLearningOpt == 1:
+                DF, price = price_forecast(df, record_percentage_to_predict, 0)  # 0 -USA
+            else:
+                price = df[["Adj Close"]]
+            frame[stock] = price
+
+    closingPricesTable = pd.concat(frame.values(), axis=1, keys=frame.keys())
+    pctChangeTable = closingPricesTable.pct_change()
+    pctChangeTable.fillna(0, inplace=True)
+
+    return closingPricesTable, pctChangeTable
+
+
+def price_forecast(df, record_percentage_to_predict, isIsraeliStock):
+
+    if isIsraeliStock == 1:
+        df["HL_PCT"] = (df["high"] - df["low"]) / df["low"] * 100.0
+        df["PCT_change"] = (
+            (df["closingIndexPrice"] - df["indexOpeningPrice"])
+            / df["indexOpeningPrice"]
+            * 100.0
+        )
+
+        df = df[["closingIndexPrice", "HL_PCT", "PCT_change"]]
+
+        forecast_col = "closingIndexPrice"
+
+    else:
+        df["HL_PCT"] = (df["High"] - df["Low"]) / df["Low"] * 100.0
+        df["PCT_change"] = (df["Close"] - df["Open"]) / df["Open"] * 100.0
+
+        df = df[["Adj Close", "HL_PCT", "PCT_change", "Volume"]]
+
+        forecast_col = "Adj Close"
+
+    df.fillna(value=-99999, inplace=True)
+    forecast_out = int(math.ceil(record_percentage_to_predict * len(df)))
+    df["label"] = df[forecast_col].shift(-forecast_out)
+    print(df.head())
+
+    X = np.array(df.drop(["label"], 1))
+    X = preprocessing.scale(X)
+    X_lately = X[-forecast_out:]
+    X = X[:-forecast_out]
+    df.dropna(inplace=True)
+
+    y = np.array(df["label"])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=record_percentage_to_predict
+    )
+    clf = LinearRegression()
+    clf.fit(X_train, y_train)
+    confidence = clf.score(X_test, y_test)
+    print(confidence)
+    forecast_set = clf.predict(X_lately)
+    df["Forecast"] = np.nan
+
+    last_date = df.iloc[-1].name
+    last_unix = last_date.timestamp()
+    one_day = 86400
+    next_unix = last_unix + one_day
+
+    for i in forecast_set:
+        next_date = datetime.datetime.fromtimestamp(next_unix)
+        next_unix += 86400
+        df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+
+    col = df["Forecast"]
+    col = col.dropna()
+    return df, col
+
+
+def forcastSpecificStock(stock, isIsraeliStock, numOfYearsHistory):
+    if isIsraeliStock:
+        # GET INDEXES DATA AUTOMATICALLY FROM TASE-API
+        # indexesData=manageData.setPortfolioData("get_past_10_years_history",sybmolIndexs)
+        IsraeliIndexesData = getIndexesDataManuallyFromJSON(stock)
+        df = pd.DataFrame(stock["indexEndOfDay"]["result"])
+        df["tradeDate"] = pd.to_datetime(df["tradeDate"])
+        df.set_index("tradeDate", inplace=True)
+        df, col = price_forecast(df, setting.record_percentage_to_predict, 1)
+        plotpriceForcast(stock, df, 1)
+
+    else:
+        yf.pdr_override()
+        start_date, end_date = getfromAndToDate(numOfYearsHistory)
+        df = yf.download(stock, start=start_date, end=end_date)
+        df, col = price_forecast(df, setting.record_percentage_to_predict, 0)
+        plotpriceForcast(stock, df, 0)
+
+
+# plot graph
+def plotMarkovichPortfolioGraph(df, sharpe_portfolio, min_variance_port, max_returns, max_vols, newPortfolio):
+
     # find min Volatility & max sharpe values in the dataframe (df)
     min_volatility = df["Volatility"].min()
-    # min_volatility1 = df['Volatility'].min()+1
     max_sharpe = df["Sharpe Ratio"].max()
     max_return = df["Returns"].max()
     max_vol = df["Volatility"].max()
-    # use the min, max values to locate and create the two special portfolios
-    sharpe_portfolio = df.loc[df["Sharpe Ratio"] == max_sharpe]
-    min_variance_port = df.loc[df["Volatility"] == min_volatility]
-    max_returns = df.loc[df["Returns"] == max_return]
-    max_vols = df.loc[df["Volatility"] == max_vol]
 
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     figSize_X = 10
@@ -267,23 +298,43 @@ def markovich(
     plt.ylabel("Expected Returns Percentage %")
     plt.title("Efficient Frontier")
     plt.subplots_adjust(bottom=0.4)
+
     # ------------------ Pritning 3 optimal Protfolios -----------------------
     # Setting max_X, max_Y to act as relative border for window size
+    stocksNames = newPortfolio.getStocksSymbols()
+    sectorsNames = newPortfolio.getSectorsNames()
+    lowWeight = min_variance_port.iloc[0][3:]
+    mediumWeight = sharpe_portfolio.iloc[0][3:]
+    highWeight = max_returns.iloc[0][3:]
+    stocksStrHigh = ""
+    stocksStrLow = ""
+    stocksStrMedium = ""
+    highSectorsWeight = newPortfolio.returnSectorsWeightsAccordingToStocksWeights(highWeight)
+    lowSectorsWeight = newPortfolio.returnSectorsWeightsAccordingToStocksWeights(lowWeight)
+    mediumSectorsWeight = newPortfolio.returnSectorsWeightsAccordingToStocksWeights(mediumWeight)
 
-    red_num = df.index[df["Returns"] == max_return]
-    yellow_num = df.index[df["Volatility"] == min_volatility]
-    green_num = df.index[df["Sharpe Ratio"] == max_sharpe]
-    multseries = pd.Series(
-        [1, 1, 1] + [100 for stock in stocksNames],
-        index=["Returns", "Volatility", "Sharpe Ratio"]
-        + [stock + " Weight" for stock in stocksNames],
-    )
+    # stocksStrHigh
+    for i in range(len(sectorsNames)):
+            weight = highSectorsWeight[i] * 100
+            stocksStrHigh += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
+    # stocksStrMedium
+    for i in range(len(sectorsNames)):
+            weight = mediumSectorsWeight[i] * 100
+            stocksStrMedium += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
+    # stocksStrLow
+    for i in range(len(sectorsNames)):
+            weight = lowSectorsWeight[i] * 100
+            stocksStrLow += sectorsNames[i] + "(" + str("{:.2f}".format(weight)) + "%),\n "
+
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         plt.figtext(
             0.2,
             0.15,
             "Max returns Porfolio: \n"
-            + df.loc[red_num[0]].multiply(multseries).to_string(),
+            + "Returns: " + str(round(max_returns.iloc[0][0], 2)) + "%\n"
+            + "Volatility: " + str(round(max_returns.iloc[0][1], 2)) + "%\n"
+            + "Sharpe Ratio: " + str(round(max_returns.iloc[0][2], 2)) + "\n"
+            + stocksStrHigh,
             bbox=dict(facecolor="red", alpha=0.5),
             fontsize=11,
             style="oblique",
@@ -296,7 +347,10 @@ def markovich(
             0.45,
             0.15,
             "Safest Portfolio: \n"
-            + df.loc[yellow_num[0]].multiply(multseries).to_string(),
+            + "Returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
+            + "Volatility: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
+            + "Sharpe Ratio: " + str(round(min_variance_port.iloc[0][2], 2)) + "\n"
+            + stocksStrLow,
             bbox=dict(facecolor="yellow", alpha=0.5),
             fontsize=11,
             style="oblique",
@@ -309,7 +363,10 @@ def markovich(
             0.7,
             0.15,
             "Sharpe  Portfolio: \n"
-            + df.loc[green_num[0]].multiply(multseries).to_string(),
+            + "Returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
+            + "Volatility: " + str(round(sharpe_portfolio.iloc[0][1], 2)) + "%\n"
+            + "Sharpe Ratio: " + str(round(sharpe_portfolio.iloc[0][2], 2)) + "\n"
+            + stocksStrMedium,
             bbox=dict(facecolor="green", alpha=0.5),
             fontsize=11,
             style="oblique",
@@ -321,180 +378,155 @@ def markovich(
     plt.show()
 
 
-def price_forecast(df, record_percentage_to_predict, isIsrael):
+def plotpriceForcast(stockSymbol, df, isIsraeliStock):
 
-    if isIsrael == 1:
-        df["HL_PCT"] = (df["high"] - df["low"]) / df["low"] * 100.0
-        df["PCT_change"] = (
-            (df["closingIndexPrice"] - df["indexOpeningPrice"])
-            / df["indexOpeningPrice"]
-            * 100.0
-        )
-
-        # df = df[['Adj Close', 'HL_PCT', 'PCT_change', 'Volume']]
-        df = df[["closingIndexPrice", "HL_PCT", "PCT_change"]]
-
-        forecast_col = "closingIndexPrice"
-        # forecast_col = 'Adj. Close'
-        df.fillna(value=-99999, inplace=True)
-        forecast_out = int(math.ceil(record_percentage_to_predict * len(df)))
-        df["label"] = df[forecast_col].shift(-forecast_out)
-        print(df.head())
-        # df['Adj Close'].plot()
-
-        X = np.array(df.drop(["label"], 1))
-        X = preprocessing.scale(X)
-        X_lately = X[-forecast_out:]
-        X = X[:-forecast_out]
-        df.dropna(inplace=True)
-
-        y = np.array(df["label"])
-
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=record_percentage_to_predict
-        )
-        # clf =  svm.SVR() # #LinearRegression()
-        clf = LinearRegression()
-        clf.fit(X_train, y_train)
-        confidence = clf.score(X_test, y_test)
-        print(confidence)
-        forecast_set = clf.predict(X_lately)
-        df["Forecast"] = np.nan
-
-        last_date = df.iloc[-1].name
-        last_unix = last_date.timestamp()
-        one_day = 86400
-        next_unix = last_unix + one_day
-
-        for i in forecast_set:
-            next_date = datetime.datetime.fromtimestamp(next_unix)
-            next_unix += 86400
-            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
-
-        # df['closingIndexPrice'].plot()
-    # df['Forecast'].plot()
-    # plt.legend(loc=4)
-    # plt.xlabel('Date')
-    # plt.ylabel('Price')
-    # plt.show()
+    if isIsraeliStock:
+        df['closingIndexPrice'].plot()
     else:
-        df["HL_PCT"] = (df["High"] - df["Low"]) / df["Low"] * 100.0
-        df["PCT_change"] = (df["Close"] - df["Open"]) / df["Open"] * 100.0
-
-        df = df[["Adj Close", "HL_PCT", "PCT_change", "Volume"]]
-
-        forecast_col = "Adj Close"
-        # forecast_col = 'Adj. Close'
-        df.fillna(value=-99999, inplace=True)
-        forecast_out = int(math.ceil(record_percentage_to_predict * len(df)))
-        df["label"] = df[forecast_col].shift(-forecast_out)
-        print(df.head())
-        # df['Adj Close'].plot()
-
-        X = np.array(df.drop(["label"], 1))
-        X = preprocessing.scale(X)
-        X_lately = X[-forecast_out:]
-        X = X[:-forecast_out]
-        df.dropna(inplace=True)
-
-        y = np.array(df["label"])
-
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=record_percentage_to_predict
-        )
-        # clf =  svm.SVR() # #LinearRegression()
-        clf = LinearRegression()
-        clf.fit(X_train, y_train)
-        confidence = clf.score(X_test, y_test)
-        print(confidence)
-        forecast_set = clf.predict(X_lately)
-        df["Forecast"] = np.nan
-
-        last_date = df.iloc[-1].name
-        last_unix = last_date.timestamp()
-        one_day = 86400
-        next_unix = last_unix + one_day
-
-        for i in forecast_set:
-            next_date = datetime.datetime.fromtimestamp(next_unix)
-            next_unix += 86400
-            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
-
-        # df['Adj Close'].plot()
-    # df['Forecast'].plot()
-    # plt.legend(loc=4)
-    # plt.xlabel('Date')
-    # plt.ylabel('Price')
-    # plt.show()
-
-    col = df["Forecast"]
-    col = col.dropna()
-    return col
+        df['Adj Close'].plot()
+    df['Forecast'].plot()
+    plt.title(stockSymbol + " Stock Price Forecast")
+    plt.legend(loc=4)
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.show()
 
 
-def getNameByIndexNumber(indexNumber):
-    # Load the JSON data from the file
-    jsonData = getJsonData("DB/indicesList")
-    result = [
-        item["indexName"]
-        for item in jsonData["indicesList"]["result"]
-        if item["indexId"] == indexNumber
-    ]
-    # makes it from right to left
-    name = result[0]
-    return name
+def plotDistributionOfStocks(stockNames, pctChangeTable):
 
-
-def setPortfolioData(command, sybmolIndex):
-
-    portfolio = []
-    if command == "get_past_10_years_history":
-        for i in range(len(sybmolIndex)):
-            appUrl = getIndexHistory(
-                setting.indexEndOfDayHistoryTenYearsUpToday, sybmolIndex[i], 10
-            )
-            portfolio[i] = getSymbolInfo(
-                appUrl, "pastTenYearsHistory" + str(sybmolIndex[i])
-            )
-    # TOOD: add more commands
-
-    return portfolio
-
-
-def getIndexesDataManuallyFromJSON(sybmolIndexs):  # FOR ISRAELI STOCKS
-    portfolio = [0] * len(sybmolIndexs)
-    for i in range(len(sybmolIndexs)):
-        portfolio[i] = getJsonData("DB/History" + str(sybmolIndexs[i]))
-    return portfolio
-
-
-def plotPortfolioGraph(json_data):
-
-    df = pd.DataFrame(json_data["indexEndOfDay"]["result"])
-    df["tradeDate"] = pd.to_datetime(df["tradeDate"])
-    df.set_index("tradeDate", inplace=True)
-    df["closingIndexPrice"].pct_change().plot()
+    plt.subplots(figsize=(8, 8))
+    plt.legend()
+    plt.xlabel('Return', fontsize=12)
+    plt.ylabel('Distribution', fontsize=12)
+    for i in range(len(stockNames)):
+        sns.distplot(pctChangeTable[stockNames[i]], kde=True, hist=False, rug=False, label=stockNames[i])
     plt.grid(True)
     plt.legend()
     plt.show()
 
 
-def getfromAndToDate(numOfYears):
-    today = datetime.datetime.now()
-    startYear = today.year - numOfYears
-    startMounth = today.month
-    startDay = today.day
-    endYear = today.year
-    endMonth = today.month
-    endDay = today.day
-    fromDate = str(startYear) + "-" + str(startMounth) + "-" + str(startDay)
-    toDate = str(endYear) + "-" + str(endMonth) + "-" + str(endDay)
+def plotDistributionOfPortfolio(weighted_low, weighted_medium, weighted_high):
+    plt.subplots(figsize=(8, 8))
+    plt.legend()
+    plt.xlabel('Return', fontsize=12)
+    plt.ylabel('Distribution', fontsize=12)
+    sns.distplot(weighted_low, kde=True, hist=False, rug=False, label="low risk")
+    sns.distplot(weighted_medium, kde=True, hist=False, rug=False, label="high risk")
+    sns.distplot(weighted_high, kde=True, hist=False, rug=False, label="high risk")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
-    return fromDate, toDate
+
+def getIsraeliIndexesData(command, israeliIndexes):
+    JsonDataList = [0] * len(israeliIndexes)
+    if command == "get_past_10_years_history":
+        for i in range(len(israeliIndexes)):
+            appUrl = getIndexHistory(
+                setting.indexEndOfDayHistoryTenYearsUpToday, israeliIndexes[i], 10
+            )
+            JsonDataList[i] = getSymbolInfo(appUrl)
+        # return JsonDataList - TODO - fix , makes unlimited requests
+        return getIndexesDataManuallyFromJSON(israeliIndexes)
+    # TOOD: add more commands
+
+    # return JsonDataList
 
 
-# Connect to TASE API and get json data
-def getSymbolInfo(appUrl, nameProduct):
+def createJsonDataFromTase(indexId, nameFile):
+    appUrl = getIndexHistory(setting.indexEndOfDayHistoryTenYearsUpToday, indexId, 10)
+    jsonData = getSymbolInfo(appUrl)
+    createsJsonFile(jsonData, nameFile)
+
+
+def implement_bb_strategy(data, lower_bb, upper_bb):
+    buy_price = []
+    sell_price = []
+    bb_signal = []
+    signal = 0
+
+    for i in range(len(data)):
+        if data[i - 1] > lower_bb[i - 1] and data[i] < lower_bb[i]:
+            if signal != 1:
+                buy_price.append(data[i])
+                sell_price.append(np.nan)
+                signal = 1
+                bb_signal.append(signal)
+            else:
+                buy_price.append(np.nan)
+                sell_price.append(np.nan)
+                bb_signal.append(0)
+        elif data[i - 1] < upper_bb[i - 1] and data[i] > upper_bb[i]:
+            if signal != -1:
+                buy_price.append(np.nan)
+                sell_price.append(data[i])
+                signal = -1
+                bb_signal.append(signal)
+            else:
+                buy_price.append(np.nan)
+                sell_price.append(np.nan)
+                bb_signal.append(0)
+        else:
+            buy_price.append(np.nan)
+            sell_price.append(np.nan)
+            bb_signal.append(0)
+
+    return buy_price, sell_price, bb_signal
+
+
+def plotbb_strategy_stock(stockName, start="2009-12-01", end="2021-01-01"):
+    stockprices = yf.download(stockName, start, end)
+    stockprices['MA50'] = stockprices['Adj Close'].rolling(window=50).mean()
+    stockprices['50dSTD'] = stockprices['Adj Close'].rolling(window=50).std()
+    stockprices['Upper'] = stockprices['MA50'] + (stockprices['50dSTD'] * 2)
+    stockprices['Lower'] = stockprices['MA50'] - (stockprices['50dSTD'] * 2)
+
+    stockprices = stockprices.dropna()
+    stockprices = stockprices.iloc[51:]
+
+    buy_price, sell_price, bb_signal = implement_bb_strategy(stockprices['Adj Close'], stockprices['Lower'],
+                                                             stockprices['Upper'])
+
+    stockprices[['Adj Close', 'Lower', 'Upper']].plot(figsize=(10, 4))
+    plt.scatter(stockprices.index, buy_price, marker='^', color='green', label='BUY', s=200)
+    plt.scatter(stockprices.index, sell_price, marker='v', color='red', label='SELL', s=200)
+    plt.show()
+
+    print("number of green :")
+    print(np.count_nonzero(~np.isnan(buy_price)))
+    print("number of red :")
+    print(np.count_nonzero(~np.isnan(sell_price)))
+
+    print("ID : 208604694")
+
+
+def plotbb_strategy_Portfolio(pctChangeTable):
+    stockprices = pctChangeTable
+    stockprices['Adj Close'] = pctChangeTable['yield']
+    stockprices['MA50'] = stockprices['Adj Close'].rolling(window=50).mean()
+    stockprices['50dSTD'] = stockprices['Adj Close'].rolling(window=50).std()
+    stockprices['Upper'] = stockprices['MA50'] + (stockprices['50dSTD'] * 2)
+    stockprices['Lower'] = stockprices['MA50'] - (stockprices['50dSTD'] * 2)
+
+    stockprices = stockprices.dropna()
+    stockprices = stockprices.iloc[51:]
+
+    buy_price, sell_price, bb_signal = implement_bb_strategy(stockprices['Adj Close'], stockprices['Lower'],
+                                                             stockprices['Upper'])
+
+    stockprices[['Adj Close', 'Lower', 'Upper']].plot(figsize=(10, 4))
+    plt.scatter(stockprices.index, buy_price, marker='^', color='green', label='BUY', s=200)
+    plt.scatter(stockprices.index, sell_price, marker='v', color='red', label='SELL', s=200)
+    plt.show()
+
+    print("number of green :")
+    print(np.count_nonzero(~np.isnan(buy_price)))
+    print("number of red :")
+    print(np.count_nonzero(~np.isnan(sell_price)))
+
+
+# Connect to TASE API and get json data from appUrl
+def getSymbolInfo(appUrl):
     conn = http.client.HTTPSConnection("openapigw.tase.co.il")
     payload = ""
     headers = {
@@ -508,9 +540,7 @@ def getSymbolInfo(appUrl, nameProduct):
     # Decode the bytes object to a string
     json_string = data.decode("utf-8")
     json_obj = json.loads(json_string)
-
     return json_obj
-    # createsJsonFile(json_obj, nameProduct)
 
 
 # Auth
@@ -548,22 +578,6 @@ def getIndexHistory(appName, indexId, numOfYears):
     )
 
 
-"""
-def getAppUrlWithDate(
-    appName, year, month, day
-):  # /tase/prod/api/v1/index_end_of_day_data/2022/11/22
-    return (
-        getAppUrlWithoutDate(appName)
-        + "/"
-        + str(year)
-        + "/"
-        + str(month)
-        + "/"
-        + str(day)
-    )
-"""
-
-
 def getAppUrlWithDateAndIndex(
     appName, startYear, startMounth, startDay, endYear, endMonth, endDay, indexName
 ):
@@ -585,41 +599,51 @@ def getAppUrlWithDateAndIndex(
     )
 
 
-"""
-def getAppUrlWithDate(
-    appName, year, month, day, indexId
-):  # /tase/prod/api/v1/index_end_of_day_data/2022/11/22?indexId=142
-    return (
-        getAppUrlWithoutDate(appName)
-        + "/"
-        + str(year)
-        + "/"
-        + str(month)
-        + "/"
-        + str(day)
-        + "?indexId="
-        + str(indexId)
-    )
-"""
-
-
 def getAppUrlWithoutDate(appName):  # /tase/prod/api/v1/short-sales/weekly-balance
     return setting.prefixUrl + "/" + appName
 
 
-def getFundHistoryById(
-    appName, fundId, startyear, startmonth, startday, endyear, endmonth, endday
-):  # /tase/prod/api/v1/index_end_of_day_data/2022/11/22
-    return "/tase/prod/api/v1/mutual-fund/history-data/5100474?startDate=2015-12-31&endDate=2020-12-31"
+def getfromAndToDate(numOfYears):
+    today = datetime.datetime.now()
+    startYear = today.year - numOfYears
+    startMounth = today.month
+    startDay = today.day
+    endYear = today.year
+    endMonth = today.month
+    endDay = today.day
+    fromDate = str(startYear) + "-" + str(startMounth) + "-" + str(startDay)
+    toDate = str(endYear) + "-" + str(endMonth) + "-" + str(endDay)
+
+    return fromDate, toDate
 
 
 # Other functions
+def getNameByIndexNumber(indexNumber):
+    # Load the JSON data from the file
+    jsonData = getJsonData("DB/indicesList")
+    result = [
+        item["indexName"]
+        for item in jsonData["indicesList"]["result"]
+        if item["indexId"] == indexNumber
+    ]
+    # makes it from right to left
+    name = result[0]
+    return name
+
+
+def getIndexesDataManuallyFromJSON(sybmolIndexs):  # FOR ISRAELI STOCKS
+    portfolio = [0] * len(sybmolIndexs)
+    for i in range(len(sybmolIndexs)):
+        portfolio[i] = getJsonData("DB/History" + str(sybmolIndexs[i]))
+    return portfolio
+
+
 def createsJsonFile(json_obj, nameProduct):
     # Open a file in write mode
     parts = nameProduct.split("/")
     last_element = parts[-1]
     with open(
-        last_element + ".json", "w"
+        "DB/"+last_element + ".json", "w"
     ) as f:  # Use the `dump()` function to write the JSON data to the file
         json.dump(json_obj, f)
 
@@ -630,7 +654,24 @@ def getJsonData(name):
     return json_data
 
 
-def getLevelFromTerminal():
+def getDataFromForm():  # not it from terminal
+    name = getName()
+    level = getLevelOfRisk()
+    amount = getInverstmentAmount()
+    machineLearningOpt = getMachineLearningOption()
+    # israeliIndexesChoice, usaIndexesChoice=getTypeOFindexes()  -TODO - DELETE OR USE MANUALLY
+    israeliIndexesChoice = 1
+    usaIndexesChoice = 1
+    return level, amount, machineLearningOpt, israeliIndexesChoice, usaIndexesChoice, name
+
+
+def getName():
+    print("enter name")
+    name = input()
+    return name
+
+
+def getLevelOfRisk():
     print("enter Level of risk\n1-LOW\n2-MEDIUM\n3-HIGH")
     level = int(input())
     while level < 1 or level > 3:
@@ -639,13 +680,38 @@ def getLevelFromTerminal():
     return level
 
 
-def getInverstmentFromTerminal():
+def getInverstmentAmount():
     print("enter amount of money to invest")
     amount = int(input())
     while amount < 1:
         print("enter amount of money to invest")
         amount = int(input())
     return amount
+
+
+def getMachineLearningOption():
+    print("Interested in using machine learning? 0-no, 1-yes")
+    machineLearningOpt = int(input())
+    while machineLearningOpt != 0 and machineLearningOpt != 1:
+        print("Please enter 0 or 1")
+        machineLearningOpt = int(input())
+    return machineLearningOpt
+
+
+def getTypeOFindexes():
+    print("do you want to include israel indexes? 0-no, 1-yes")
+    israeliIndexesChoice = int(input())
+    while israeliIndexesChoice != 0 and israeliIndexesChoice != 1:
+        print("Please enter 0 or 1")
+        israeliIndexesChoice = int(input())
+
+    print("do you want to include usa indexes? 0-no, 1-yes")
+    usaIndexesChoice = int(input())
+    while usaIndexesChoice != 0 and usaIndexesChoice != 1:
+        print("Please enter 0 or 1")
+        usaIndexesChoice = int(input())
+
+    return israeliIndexesChoice, usaIndexesChoice
 
 
 def convertIsraeliIndexToName(IsraliIndexes):
@@ -678,44 +744,7 @@ def convertUsaIndexToName(UsaIndexes):
 
 # GET OTHER DATA- NOT RELEVANIC BY NOW
 
-# already have:
-""" get_trade_info(getAppUrlWithoutDate(basicIndexList)
-,setting.basicIndexList)# a list of all basic indices in tase- indices-list """
-""" get_trade_info(getAppUrlWithDate(basicIndexComponents
-, year, month, day),basicIndexComponents)- components of each index """
-""" get_trade_info(getAppUrlWithoutDate(basicSecuritiesList)
-,basocSecirityList)
-# a list of all basic securities in tase- securities-types- not use """
-""" get_trade_info(getAppUrlWithoutDate(basicSecuritiesCompnayList)
- ,basicSecuritiesCompnayList)
- # a list of all basic securities companies in tase- companies-list- not use """
-# get_trade_info(indexEndOfDay,indexEndOfDay)// specific date
-""" get_trade_info(indexEndOfDayHistoryTenYearsUpToday
-,"gsfgsfgfds/indexEndOfDayHistoryTenYearsUpTodaytelBondMaagar") """
-
-
-""" get_trade_info(getAppUrlWithDate(indexEndOfDayName
-, year, month, day),indexEndOfDayName): """
-# index end of day data
-""" get_trade_info(getAppUrlWithDate(OTC_transaction_name
-, year, month, day),OTC_transaction_name): """
-# OTC transaction
-""" get_trade_info(getAppUrlWithoutDate(shortSalesWeeklyBalanceName)
-,shortSalesWeeklyBalanceName): """
-# short sales weekly balance
-# get_trade_info(getAppUrlWithDate(mayaNoticeByDay, year, month, day),mayaNoticeByDay):
-# maya notice by day
-# new:
-# get_trade_info(getAppUrlWithoutDate(fundListName),fundListName):
-# fund list, fund history data
-""" get_trade_info(getFundHistoryById(fundHistoryDataName, 1143718
-, 2015, 12, 31, 2022, 12, 28), fundHistoryDataName) """
-
-
-# not working
-# get_trade_info(getAppUrlWithDate(endOfDayTransactionName, year, month, day),endOfDayTransactionName):
-# end of day transaction
-# get_trade_info(getAppUrlWithoutDate(shortSalesHistoricalData),shortSalesHistoricalData):
-# short sales historical data
-
-# more relevant apps:
+def getFundHistoryById(
+    appName, fundId, startyear, startmonth, startday, endyear, endmonth, endday
+):  # /tase/prod/api/v1/index_end_of_day_data/2022/11/22
+    return "/tase/prod/api/v1/mutual-fund/history-data/5100474?startDate=2015-12-31&endDate=2020-12-31"

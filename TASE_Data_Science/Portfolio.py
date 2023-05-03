@@ -1,85 +1,200 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import Sector as Sector
+
+
 class Portfolio:
 
-    # TODO: Add Portfolio class
-    # indexes = {}
+    # private members
+    # list of Sector
 
-    """ def __init__(self, i_indexes):
-        indexes = i_indexes """
+    __sectors = []
+    __levelOfRisk = 1
+    __investmentAmount = 0
+    __stocksSymbols = []
+    __stocksWeights = []
+    __closingPricesTable = []
+    __pctChangeTable = []
+    __annualReturns = None
+    __volatility = None
+    __sharpe = None
 
-    def getPortfolio(self):
-        return self.Portfolio
+    def __init__(self, levelOfRisk, investmentAmount, stocksSymbols, sectorsNames):
+        self.__levelOfRisk = levelOfRisk
+        self.__investmentAmount = investmentAmount
+        self.__stocksSymbols = stocksSymbols
+        self.setSectors(sectorsNames)
 
-    def getPortfolioName(self):
-        return self.PortfolioName
+    # GETTERS
 
-    def getPortfolioID(self):
-        return self.PortfolioID
+    def getLevelOfRisk(self):
+        return self.__levelOfRisk
 
-    def getPortfolioCode(self):
-        return self.PortfolioCode
+    def getInvestmentAmount(self):
+        return self.__investmentAmount
 
-    def getPortfolioType(self):
-        return self.PortfolioType
+    def getStocksSymbols(self):
+        return self.__stocksSymbols
 
-    def getPortfolioStatus(self):
-        return self.PortfolioStatus
+    def getSectors(self):
+        return self.__sectors
 
-    def getPortfolioDate(self):
-        return self.PortfolioDate
+    def getIsraeliStocksIndexes(self):
+        israeliStcoksIndexes = []
+        for i in range(3):
+            israeliStcoksIndexes.extend(self.__sectors[i].getStocks())
+        return israeliStcoksIndexes
 
-    def getPortfolioValue(self):
-        return self.PortfolioValue
+    def getUsaStocksIndexes(self):
+        usaStocksIndexes = []
+        for i in range(3, 6):
+            usaStocksIndexes.extend(self.__sectors[i].getStocks())
+        return usaStocksIndexes
 
-    def getPortfolioValueDate(self):
-        return self.PortfolioValueDate
+    def getStocksSymbols(self):
+        return self.__stocksSymbols
 
-    def getPortfolioValueTime(self):
-        return self.PortfolioValueTime
+    def getclosingPricesTable(self):
+        return self.__closingPricesTable
 
-    def getPortfolioValueCurrency(self):
-        return self.PortfolioValueCurrency
+    def getPctChangeTable(self):
+        return self.__pctChangeTable
 
-    def getPortfolioValueCurrencyRate(self):
-        return self.PortfolioValueCurrencyRate
+    def getPortfolioStats(self):
+        return self.__annualReturns, self.__volatility, self.__sharpe
 
-    def getPortfolioValueCurrencyRateDate(self):
-        return self.PortfolioValueCurrencyRateDate
+    def getStocksWeights(self):
+        return self.__stocksWeights
 
-    def getPortfolioValueCurrencyRateTime(self):
-        return self.PortfolioValueCurrencyRateTime
+    def getSector(self, sectorName):
+        for sector in self.__sectors:
+            if sector.getName() == sectorName:
+                return sector
+        return None
 
-    def getPortfolioValueCurrencyRateSource(self):
-        return self.PortfolioValueCurrencyRateSource
+    def getSectorByIndex(self, index):
+        return self.__sectors[index]
 
-    def getPortfolioValueCurrencyRateSourceName(self):
-        return self.PortfolioValueCurrencyRateSourceName
+    def getSectorStocks(self, sectorName):
+        for sector in self.__sectors:
+            if sector.getName() == sectorName:
+                return sector.getStocks()
+        return None
 
-    def getPortfolioValueCurrencyRateSourceID(self):
-        return self.PortfolioValueCurrencyRateSourceID
+    def getSectorStocksByIndex(self, index):
+        return self.__sectors[index].getStocks()
 
-    def getPortfolioValueCurrencyRateSourceCode(self):
-        return self.PortfolioValueCurrencyRateSourceCode
+    def getSectorWeight(self, sectorName):
+        for sector in self.__sectors:
+            if sector.getName() == sectorName:
+                return sector.getWeight()
+        return None
 
-    def getPortfolioValueCurrencyRateSourceType(self):
-        return self.PortfolioValueCurrencyRateSourceType
+    def getSectorWeightByIndex(self, index):
+        return self.__sectors[index].getWeight()
 
-    def getPortfolioValueCurrencyRateSourceStatus(self):
-        return self.PortfolioValueCurrencyRateSourceStatus
+    def getSectorsWeights(self):
+        weights = []
+        for sector in self.__sectors:
+            weights.append(sector.getWeight())
+        return weights
 
-    def getPortfolioValueCurrencyRateSourceDate(self):
-        return self.PortfolioValueCurrencyRateSourceDate
+    def getSectorsNames(self):
+        names = []
+        for sector in self.__sectors:
+            names.append(sector.getName())
+        return names
 
-    def getPortfolioValueCurrencyRateSourceValue(self):
-        return self.PortfolioValueCurrencyRateSourceValue
+    # SETTERS and UPDATERS
 
-    def getPortfolioValueCurrencyRateSourceValueDate(self):
-        return self.PortfolioValueCurrencyRateSourceValueDate
+    def updateStocksData(self, closingPricesTable, pctChangeTable, stock_weights, annualReturns, volatility, sharpe):
+        self.setTables(closingPricesTable, pctChangeTable)
+        self.setStocksWeights(stock_weights)
+        self.__annualReturns = annualReturns
+        self.__volatility = volatility
+        self.__sharpe = sharpe
 
-    def getPortfolioValueCurrencyRateSourceValueTime(self):
-        return self.PortfolioValueCurrencyRateSourceValueTime
+        for i in range(len(self.__stocksSymbols)):
+            for j in range(len(self.__sectors)):
+                if self.__stocksSymbols[i] in self.__sectors[j].getStocks():
+                    self.__sectors[j].addWeight(self.__stocksWeights[i])
 
-    def getPortfolioValueCurrencyRateSourceValueCurrency(self):
-        return self.PortfolioValueCurrencyRateSourceValueCurrency
+    def setSectors(self, sectors):
+        for i in range(len(sectors)):
+            self.setSector(sectors[i])
+        self.arrangeStocksToSectors()
 
-    def getPortfolioValueCurrencyRateSourceValueCurrencyRate(self):
-        return self.PortfolioValueCurrencyRate
+    def updateLevelOfRisk(self, levelOfRisk):
+        self.__levelOfRisk = levelOfRisk
+
+    def updateInvestmentAmount(self, investmentAmount):
+        self.__investmentAmount = investmentAmount
+
+    def setStocksWeights(self, stocksWeights):
+        self.__stocksWeights = stocksWeights
+
+    def setSector(self, name):
+        sector = Sector.Sector(name)
+        self.__sectors.append(sector)
+
+    def setSectorWeight(self, name, weight):
+        for i in range(len(self.__sectors)):
+            if self.__sectors[i].getName() == name:
+                self.__sectors[i].setWeight(weight)
+
+    def setSectorWeightByIndex(self, index, weight):
+        self.__sectors[index].setWeight(weight)
+
+    def setSectorsWeights(self, SectorsWeights):
+        for i in range(len(SectorsWeights)):
+            self.setSectorWeightByIndex(i, SectorsWeights[i])
+
+    def setSectorStocks(self, name, stocks):
+        for i in range(len(self.__sectors)):
+            if self.__sectors[i].getName() == name:
+                self.__sectors[i].setStocks(stocks)
+
+    def setSectorStockByIndex(self, index, stock):
+        self.__sectors[index].addStock(stock)
+
+    def setTables(self, closingPricesTable, pctChangeTable):
+        self.__closingPricesTable = closingPricesTable
+        self.__pctChangeTable = pctChangeTable
+
+    def arrangeStock(self, stock):
+        if type(stock) == int:
+            if stock < 600:
+                self.setSectorStockByIndex(0, stock)
+            elif stock < 700:
+                self.setSectorStockByIndex(1, stock)
+            else:
+                self.setSectorStockByIndex(2, stock)
+        else:
+            if stock == 'SPY':  # TODO DEFINE LIST OF USA INDEXES
+                self.setSectorStockByIndex(3, stock)
+            elif stock == 'Gsg':
+                self.setSectorStockByIndex(5, stock)
+            else:
+                self.setSectorStockByIndex(4, stock)
+
+    def arrangeStocksToSectors(self):
+        if len(self.__stocksSymbols) > 0:
+            for stock in self.__stocksSymbols:
+                self.arrangeStock(stock)
+
+    def addStockSymbol(self, stockSymbol):
+        self.arrangeStock(stockSymbol)
+
+    def removeStockSymbol(self, stockSymbol):
+        for i in range(len(self.__sectors)):
+            if stockSymbol in self.__sectors[i].getStocks():
+                self.__sectors[i].getStocks().remove(stockSymbol)
+
+    def returnSectorsWeightsAccordingToStocksWeights(self, stocksWeights):
+        sectorsWeights = [0.0] * len(self.__sectors)
+        for i in range(len(self.__sectors)):
+            sectorsWeights[i] = 0
+            for j in range(len(self.__stocksSymbols)):
+                if self.__stocksSymbols[j] in self.__sectors[i].getStocks():
+                    sectorsWeights[i] += stocksWeights[j]
+        return sectorsWeights

@@ -6,13 +6,13 @@ tokenUrl = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
 # key = '7e247414e7047349d83b7b8a427c529c'
 # secret = '7a809c498662c88a0054b767a92f0399'
 
-# "key and secret of yarden - "tel_aviv_academic"
-# key = '42599cb8bae3df12b563c85e4fb5a208'
-# secret = 'cf7f46fcd91865d0f9c457e37bd7e726'
+# "key and secret of yardet1998 - "robo-advisor"
+key = 'fb4577af7a020ad0e443632a102003d4'
+secret = '038af8b13e67a0fd0cbdbb1cdcb973c6'
 
 # key and secret of yarden - "roboadvisor-mta"
-key = "9791b4a859c4650efe0d77c2ed9d6919"
-secret = "e8d0264a8472c411443a6dfbcdf0992f"
+# key = "9791b4a859c4650efe0d77c2ed9d6919"
+# secret = "e8d0264a8472c411443a6dfbcdf0992f"
 
 # for getting data - GET METHOD
 baseUrl = "https://openapigw.tase.co.il/tase/prod/api/v1"
@@ -22,9 +22,11 @@ language = "he-IL"
 
 indexName = 142
 
-# SET WEIGHTS FOR WEIGHTED INDEXES
-weights = [0] * 3
-weights = [[0.1, 0.5, 0.4], [0.3, 0.3, 0.4], [0.5, 0.1, 0.4]]
+Num_porSimulation = 2000
+record_percentage_to_predict = 0.3
+
+sectorsNames = ["Israel stocks", "Israel general bonds", "Israel government bonds", "US stocks", "US bonds",
+                "US commodity"]
 
 # apps names with date
 basicIndexComponents = "basic-indices/index-components-basic/" + str(
