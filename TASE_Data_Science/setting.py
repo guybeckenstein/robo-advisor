@@ -37,20 +37,18 @@ basicSecuritiesCompnayTrade = "basic-securities/trade-securities-list"  # not wo
 # past 10 years
 indexEndOfDayHistoryTenYearsUpToday = "indices/eod/history/ten-years/by-index?indexId="
 # past 5 years
-indexEndOfDayHistoryFiveYearsUpToday = (
-    "indices/eod/history/five-years/by-index?indexId="
-)
-"""indexEndOfDayHistoryFiveYearsSpecificDate
-=prefixUrl+"/indices/eod/history/five-years/by-date?date
-="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
+indexEndOfDayHistoryFiveYearsUpToday = "indices/eod/history/five-years/by-index?indexId="
+# indexEndOfDayHistoryFiveYearsSpecificDate
+# =prefixUrl+"/indices/eod/history/five-years/by-date?date
+# ="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
 # past 7 days
 # indexEndOfDayHistorySevenDaysUpToday = (prefixUrl + "/indices/eod/seven-days/by-index?indexId=" + str(indexName))
-""" indexEndOfDayHistorySevenDaySpecificDate 
-= prefixUrl+"/indices/eod//seven-days/by-date?date
-="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
+# indexEndOfDayHistorySevenDaySpecificDate
+# prefixUrl+"/indices/eod//seven-days/by-date?date
+# ="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
 # past day
-"""indexEndOfDay=prefixUrl+"/indices/eod/history/ten-years/by-date?date
-="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
+# indexEndOfDay=prefixUrl+"/indices/eod/history/ten-years/by-date?date
+# ="+str(year)+"-"+str(month)+"-"+str(day)+"&indexId="+str(indexName) """
 
 
 OTC_transaction_name = "transactions/otc-transactions"
