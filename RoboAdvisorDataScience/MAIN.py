@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
         elif selection == 4:
             manageData.expertMenu()
-            # clear screen - TODO
+            clear()
             selection = manageData.selectedMenuOption()
             while selection != exitLoopOperation:
                 if selection == 1:
@@ -106,6 +106,7 @@ if __name__ == '__main__':
 
             else:
                 break
+        clear()
         manageData.mainMenu()
         selection = manageData.selectedMenuOption()
 
