@@ -24,7 +24,8 @@ indexName = 142
 
 Num_porSimulation = 2000
 record_percentage_to_predict = 0.3
-
+usersJsonName = "DB/users"
+numOfYearsHistory = 10
 sectorsNames = ["Israel stocks", "Israel general bonds", "Israel government bonds", "US stocks", "US bonds",
                 "US commodity"]
 
