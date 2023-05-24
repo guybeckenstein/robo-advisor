@@ -8,8 +8,8 @@ class ResponseApiTwitter:
             'Hold': self.hold,
         }
 
-    def __init__(self, stock, buy=float('inf'),sell=float('inf') ,hold=float('inf')):
+    def __init__(self, stock, buy=float('inf'), sell=float('inf'), hold=float('inf')):
         self.stock = stock
-        self.buy = buy *10
-        self.sell = sell*10
-        self.hold = hold*10
+        self.buy = buy * 10
+        self.sell = sell * 10
+        self.hold = hold * 10

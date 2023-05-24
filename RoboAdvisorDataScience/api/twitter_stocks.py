@@ -137,13 +137,10 @@ class TwitterStocks(MethodResource, Resource):
         y_temp = [c_buy, c_sell, c_hold]
         return y_temp
 
-
     @marshal_with(InputSchemaTwitter)  # marshalling with marshmallow library
     @use_kwargs(InputSchemaTwitter, location=('query'))
-
     def get(self, stock_symbol, start_date, end_date):
         sentimentScourResult = self.sentimentScoure(stock_symbol, start_date, end_date)
-        responseToTheApi = ResponseApiTwitter(stock_symbol,sentimentScourResult[0],sentimentScourResult[1],sentimentScourResult[2])
-
+        responseToTheApi = ResponseApiTwitter(stock_symbol, sentimentScourResult[0], sentimentScourResult[1],
+                                              sentimentScourResult[2])
         return jsonify(responseToTheApi.__str__())
-

@@ -10,10 +10,12 @@ import json
 import codecs
 from api import Sector as Sector
 from util import taseUtil
+import ta
 
 
 def getBestPortfolios(optionalPortfolios):
-    return [optionalPortfolios['Safest Portfolio'],optionalPortfolios['Sharpe Portfolio'], optionalPortfolios['Max Risk Porfolio']]
+    return [optionalPortfolios['Safest Portfolio'], optionalPortfolios['Sharpe Portfolio'],
+            optionalPortfolios['Max Risk Porfolio']]
 
 
 def getBestWeightsColumn(optionalPortfolios, pctChangeTable):
@@ -21,39 +23,43 @@ def getBestWeightsColumn(optionalPortfolios, pctChangeTable):
     low = np.dot(optionalPortfolios[0].iloc[0][3:], pctChangeTable.T)
     medium = np.dot(optionalPortfolios[1].iloc[0][3:], pctChangeTable.T)
     high = np.dot(optionalPortfolios[2].iloc[0][3:], pctChangeTable.T)
+
     return [low, medium, high]
+
 
 def getThreeBestweights(optionalPortfolios):
     weighted_low = optionalPortfolios[0].iloc[0][3:]
     weighted_medium = optionalPortfolios[1].iloc[0][3:]
     weighted_high = optionalPortfolios[2].iloc[0][3:]
+
     return [weighted_low, weighted_medium, weighted_high]
 
 
 def choosePortfolioByRiskScore(optionalPortfoliosList, riskScore):
-        if 0 < riskScore <= 4:
-            return optionalPortfoliosList[0]
-        if 5 < riskScore <= 7:
-            return optionalPortfoliosList[1]
-        if riskScore > 7:
-            return optionalPortfoliosList[2]
+    if 0 < riskScore <= 4:
+        return optionalPortfoliosList[0]
+    if 5 < riskScore <= 7:
+        return optionalPortfoliosList[1]
+    if riskScore > 7:
+        return optionalPortfoliosList[2]
 
 
 def buildReturnGiniPortfoliosDic(df):
-        returnDic = {'Max Risk Porfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
-        min_gini = df['Gini'].min()
-        max_sharpe = df['Sharpe Ratio'].max()
-        max_profolio_annual = df['Profolio_annual'].max()
+    returnDic = {'Max Risk Porfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
+    min_gini = df['Gini'].min()
+    max_sharpe = df['Sharpe Ratio'].max()
+    max_profolio_annual = df['Profolio_annual'].max()
 
-        # use the min, max values to locate and create the two special portfolios
-        sharpe_portfolio = df.loc[df['Sharpe Ratio'] == max_sharpe]
-        safe_portfolio = df.loc[df['Gini'] == min_gini]
-        max_portfolio = df.loc[df['Profolio_annual'] == max_profolio_annual]
+    # use the min, max values to locate and create the two special portfolios
+    sharpe_portfolio = df.loc[df['Sharpe Ratio'] == max_sharpe]
+    safe_portfolio = df.loc[df['Gini'] == min_gini]
+    max_portfolio = df.loc[df['Profolio_annual'] == max_profolio_annual]
 
-        returnDic['Max Risk Porfolio'] = max_portfolio
-        returnDic['Safest Portfolio'] = safe_portfolio
-        returnDic['Sharpe Portfolio'] = sharpe_portfolio
-        return returnDic
+    returnDic['Max Risk Porfolio'] = max_portfolio
+    returnDic['Safest Portfolio'] = safe_portfolio
+    returnDic['Sharpe Portfolio'] = sharpe_portfolio
+
+    return returnDic
 
 
 def buildReturnMarkowitzPortfoliosDic(df):
@@ -70,11 +76,11 @@ def buildReturnMarkowitzPortfoliosDic(df):
     returnDic['Max Risk Porfolio'] = max_portfolio
     returnDic['Safest Portfolio'] = safe_portfolio
     returnDic['Sharpe Portfolio'] = sharpe_portfolio
+
     return returnDic
 
 
-def convertDataToTables(stocksNames, record_percentage_to_predict,
-        numOfYearsHistory, machineLearningOpt):
+def convertDataToTables(stocksNames, record_percentage_to_predict, numOfYearsHistory, machineLearningOpt):
     frame = {}
     yf.pdr_override()
     start_date, end_date = getfromAndToDate(numOfYearsHistory)
@@ -117,14 +123,16 @@ def getSectorsDataFromFile():
 def setSectors(stocksSymbols):
     sectorsData = getSectorsDataFromFile()
     sectorsList = []
-    if(len(sectorsData))>0:
+
+    if (len(sectorsData)) > 0:
         for i in range(len(sectorsData)):
             sector = Sector.Sector(sectorsData[i]['sectorName'])
-            for j in range (len(stocksSymbols)):
+            for j in range(len(stocksSymbols)):
                 if stocksSymbols[j] in sectorsData[i]['stocks']:
                     sector.addStock(stocksSymbols[j])
-            if len(sector.getStocks())>0:
+            if len(sector.getStocks()) > 0:
                 sectorsList.append(sector)
+
     return sectorsList
 
 
@@ -135,13 +143,16 @@ def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stoc
         for j in range(len(stockSymbols)):
             if stockSymbols[j] in sectorsList[i].getStocks():
                 sectorsWeights[i] += stocksWeights[j]
+
     return sectorsWeights
 
 
 def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeights):
     sectorsWeightsList = []
     for i in range(len(threeBestStocksWeights)):
-        sectorsWeightsList.append(returnSectorsWeightsAccordingToStocksWeights(sectorsList, stocksSymbols, threeBestStocksWeights[i]))
+        sectorsWeightsList.append(returnSectorsWeightsAccordingToStocksWeights(sectorsList, stocksSymbols,
+                                                                               threeBestStocksWeights[i]))
+
     return sectorsWeightsList
 
 
@@ -158,14 +169,8 @@ def getfromAndToDate(numOfYears):
     return fromDate, toDate
 
 
-def getIsraeliIndexesData(command, israeliIndexes):# get israli indexes data from tase
+def getIsraeliIndexesData(command, israeliIndexes):  # get israeli indexes data from tase
     return taseUtil.getIsraeliIndexesData(command, israeliIndexes)
-
-
-def getJsonData(name):
-    with codecs.open(name + ".json", "r", encoding="utf-8") as file:
-        json_data = json.load(file)
-    return json_data
 
 
 def convertUsaIndexToName(UsaIndexes):
@@ -177,8 +182,7 @@ def convertUsaIndexToName(UsaIndexes):
     return UsaIndexesNames.values()
 
 
-def price_forecast(df, record_percentage_to_predict, isDataFromTase):
-
+def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTase):
     if isDataFromTase == 1:
         df["HL_PCT"] = (df["high"] - df["low"]) / df["low"] * 100.0
         df["PCT_change"] = (
@@ -296,7 +300,6 @@ def scanGoodStocks():
     # Get the ticker symbols for the top 2000 stocks
     tickers = nasdaq_2000['symbol'].to_list()
 
-
     # Create an empty DataFrame to store the results
     results = pd.DataFrame(columns=["Ticker", "Price", "50-Day MA", "200-Day MA", "52-Week High", "RSI", "Avg Volume"])
 
@@ -335,7 +338,7 @@ def scanGoodStocks():
                                                           "50-Day MA": ma50.iloc[-1], "200-Day MA": ma200.iloc[-1],
                                                           "52-Week High": high52, "RSI": rsi.iloc[-1],
                                                           "Avg Volume": avg_volume}, ignore_index=True)
-        except:
+        finally:
             pass
 
     # Sort the results by RSI in descending order
@@ -381,22 +384,11 @@ def findBestStocks():
      # Get the ticker symbols for the filtered stocks
      tickers = filtered_stocks['symbol'].to_list()"""
     # Fetch the list of NASDAQ tickers from Yahoo Finance
-    #nasdaq_tickers = yf.Tickers('^IXIC').tickers
+    # nasdaq_tickers = yf.Tickers('^IXIC').tickers
     # Convert the dictionary of Ticker objects to a list of Ticker objects
-    #ticker_list = list(nasdaq_tickers.values())
-    #tickers = [ticker.ticker for ticker in ticker_list]
-    tickers = [ "TA35.TA",
-    "TA90.TA",
-    'SPY',
-    'QQQ',
-    'rut',
-    'IEI',
-    'LQD',
-    'Gsg',
-    'GLD',
-    'OIL']
-
-
+    # ticker_list = list(nasdaq_tickers.values())
+    # tickers = [ticker.ticker for ticker in ticker_list]
+    tickers = ["TA35.TA", "TA90.TA", 'SPY', 'QQQ', 'rut', 'IEI', 'LQD', 'Gsg', 'GLD', 'OIL']
 
     # Fetch the historical data for the filtered stocks
     data = yf.download(tickers, start="2022-05-15", end="2023-05-15")

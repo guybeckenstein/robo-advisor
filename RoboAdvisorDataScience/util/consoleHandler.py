@@ -1,3 +1,4 @@
+
 def getUserBasicDataFromForm():  # not it from terminal
     amount = getInverstmentAmount()
     machineLearningOpt = getMachineLearningOption()
@@ -5,14 +6,10 @@ def getUserBasicDataFromForm():  # not it from terminal
     return amount, machineLearningOpt, modelOption
 
 
-def getNumOfUsersInDB():
-    jsonData = getJsonData(setting.usersJsonName)
-    return len(jsonData['usersList'])
-
-
 def getName():
     print("enter name")
     name = input()
+
     return name
 
 
@@ -22,6 +19,7 @@ def getInverstmentAmount():
     while amount < 1:
         print("enter amount of money to invest")
         amount = int(input())
+
     return amount
 
 
@@ -31,6 +29,7 @@ def getMachineLearningOption():
     while machineLearningOpt != 0 and machineLearningOpt != 1:
         print("Please enter 0 or 1")
         machineLearningOpt = int(input())
+
     return machineLearningOpt
 
 
@@ -40,6 +39,7 @@ def getNumOfYearsHistory():
     while numOfYears < 1:
         print("enter number of years for history")
         numOfYears = int(input())
+
     return numOfYears
 
 
@@ -49,6 +49,7 @@ def getModelOption():
     while modelOption != 1 and modelOption != 2:
         print("Please enter 1 or 2")
         modelOption = int(input())
+
     return modelOption
 
 
@@ -74,7 +75,7 @@ def getScoreByAnswerFromUser(stringToShow):
     print(stringToShow)
     answer = int(input())
     validAnswerInputForm(answer)
-    count+= answer
+    count += answer
 
     return count
 
@@ -87,13 +88,14 @@ def validAnswerInputForm(answer):
 
 def selectedMenuOptValid(selectedMenuOpt, fromRange, toRange):
     while selectedMenuOpt < fromRange or selectedMenuOpt > toRange:
-        print("Please enter"+fromRange +"-"+toRange)
+        print("Please enter"+fromRange + "-"+toRange)
         selectedMenuOpt = int(input())
+
     return selectedMenuOpt
 
 
 def selectedMenuOption():
-    return int(input("Enter your selection: ")) #TODO -GET FROM SITE
+    return int(input("Enter your selection: "))  # TODO -GET FROM SITE
 
 
 def mainMenu():
@@ -116,5 +118,3 @@ def expertMenu():
     print("5. plot markovich graph")
     print("6. plot gini graph")
     print("8. Exit")
-
-

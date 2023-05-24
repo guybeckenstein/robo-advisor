@@ -61,7 +61,7 @@ class Portfolio:
         return self.__annualReturns
 
     def getMaxLoss(self):
-        return self.__annualReturns- 1.65 * self.__annualVolatility
+        return self.__annualReturns - 1.65 * self.__annualVolatility
 
     def getVolatility(self):
         return self.__annualVolatility
@@ -74,27 +74,30 @@ class Portfolio:
 
     def getIsraeliStocksIndexes(self):
         israeliStcoksIndexes = []
+
         for i in range(3):
             israeliStcoksIndexes.extend(self.__sectors[i].getStocks())
+
         return israeliStcoksIndexes
 
     def getIsraeliBondsStocksIndexes(self):
         israeliBondsStcoksIndexes = []
+
         for i in range(1, 2):
             israeliBondsStcoksIndexes.extend(self.__sectors[i].getStocks())
+
         return israeliBondsStcoksIndexes
 
     def getUsaStocksIndexes(self):
         usaStocksIndexes = []
+
         for i in range(3, 6):
             usaStocksIndexes.extend(self.__sectors[i].getStocks())
+
         return usaStocksIndexes
 
     def getPortfolioStats(self):
         return self.__annualReturns, self.__annualVolatility, self.__annualSharpe, self.getMaxLoss()
-
-    def getStocksWeights(self):
-        return self.__stocksWeights
 
     def getSector(self, sectorName):
         for sector in self.__sectors:
@@ -125,20 +128,24 @@ class Portfolio:
 
     def getSectorsWeights(self):
         weights = []
+
         for sector in self.__sectors:
             weights.append(sector.getWeight())
+
         return weights
 
     def getSectorsNames(self):
         names = []
+
         for sector in self.__sectors:
             names.append(sector.getName())
+
         return names
 
     def getPortfolioData(self):
-        return self.__levelOfRisk, self.__startingInvestmentAmount, self.__stocksSymbols, self.getSectorsNames()\
-            , self.getSectorsWeights(), self.__stocksWeights, self.__annualReturns, self.getMaxLoss(), \
-               self.__annualVolatility, self.__annualSharpe, self.getTotalChange(), self.getMonthlyChange(), \
+        return self.__levelOfRisk, self.__startingInvestmentAmount, self.__stocksSymbols, self.getSectorsNames(),\
+               self.getSectorsWeights(), self.__stocksWeights, self.__annualReturns, self.getMaxLoss(),\
+               self.__annualVolatility, self.__annualSharpe, self.getTotalChange(), self.getMonthlyChange(),\
                self.getDailyChange(), self.getSelectedModel(), self.getMachineLearningOpt()
 
     # get changes
@@ -150,7 +157,6 @@ class Portfolio:
         yearlyYields = self.__pctChangeTable['yield_selected'].resample('M').first()
         yearlyChanges = yearlyYields.pct_change().dropna() * 100
         return yearlyChanges[-1]
-
 
     def getMonthlyChange(self):
         monthlyYields = self.__pctChangeTable['yield_selected'].resample('M').first()
@@ -164,20 +170,19 @@ class Portfolio:
         return self.__pctChangeTable['yield_selected'].iloc[-1] - self.__pctChangeTable['yield_selected'].iloc[0]
 
     def getYearlyValueChange(self):
-        return self.getYearlyPctChangeTable()["yield_selected"].iloc[-1] - self.getYearlyPctChangeTable()["yield_selected"].iloc[-2]
+        return self.getYearlyPctChangeTable()["yield_selected"].iloc[-1] - self.getYearlyPctChangeTable()
+        ["yield_selected"].iloc[-2]
 
     def getMonthlyValueChange(self):
-        return self.getMonthlyPctChangeTable()["yield_selected"].iloc[-1] - self.getMonthlyPctChangeTable()["yield_selected"].iloc[-2]
+        return self.getMonthlyPctChangeTable()["yield_selected"].iloc[-1] - self.getMonthlyPctChangeTable()
+        ["yield_selected"].iloc[-2]
 
     def getDailyValueChange(self):
         return self.__pctChangeTable['yield_selected'].iloc[-1] - self.__pctChangeTable['yield_selected'].iloc[-2]
 
-    #get tables
+    # get tables
     def getclosingPricesTable(self):
         return self.__closingPricesTable
-
-    def getPctChangeTable(self):
-        return self.__pctChangeTable
 
     def getMonthlyPctChangeTable(self):
         table = self.__pctChangeTable.resample('M').apply(lambda x: (x[-1] / x[0] - 1) * 100)
@@ -187,8 +192,8 @@ class Portfolio:
         return self.__pctChangeTable.resample('Y').apply(lambda x: (x[-1] / x[0] - 1) * 100)
 
     # SETTERS and UPDATERS
-
-    def updateStocksData(self, closingPricesTable, pctChangeTable, stockWeights, annualReturns, annualVolatility, annualSharpe):
+    def updateStocksData(self, closingPricesTable, pctChangeTable, stockWeights, annualReturns,
+                         annualVolatility, annualSharpe):
         self.setTables(closingPricesTable, pctChangeTable)
         self.setStocksWeights(stockWeights)
         self.__annualReturns = annualReturns
@@ -204,11 +209,11 @@ class Portfolio:
                     self.__sectors[j].addWeight(self.__stocksWeights[i])
 
     def setSectors(self, sectorsData):
-        if(len(sectorsData))>0:
-            sectorsData=sectorsData['sectorsList']['result']
+        if (len(sectorsData)) > 0:
+            sectorsData = sectorsData['sectorsList']['result']
             for i in range(len(sectorsData)):
                 self.setSector(sectorsData[i]['sectorName'])
-                for j in range (len(self.__stocksSymbols)):
+                for j in range(len(self.__stocksSymbols)):
                     if self.__stocksSymbols[j] in sectorsData[i]['stocks']:
                         self.setSectorStockByIndex(i, self.__stocksSymbols[j])
 
@@ -258,7 +263,7 @@ class Portfolio:
 
     def addStockSymbol(self, stockSymbol):
 
-        #TODO VALIDATION
+        # TODO VALIDATION
 
         for i in range(len(self.__sectors)):
             if stockSymbol in self.__sectors[i].getStocks():

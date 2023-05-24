@@ -7,6 +7,7 @@ from api import Portfolio as Portfolio
 
 
 class User:
+
     __name = ""
     __myPortfolio = Portfolio.Portfolio(1, 0, [], [], 1, 0)
 
@@ -65,8 +66,8 @@ class User:
                 fontname="Arial",
                 wrap=True,
             )
-        table["yield_selected"].plot(figsize=figSize, grid=True, color="green", linewidth=2, label="yield", legend=True,
-                            linestyle="dashed")
+        table["yield_selected"].plot(figsize=figSize, grid=True, color="green", linewidth=2, label="yield",
+                                     legend=True, linestyle="dashed")
 
         plt.subplots_adjust(bottom=0.4)
 
@@ -95,12 +96,12 @@ class User:
     def updateJsonFile(self, jsonName):
         jsonData = self.getJsonData(jsonName)
 
-        levelOfRisk, startingInvestmentAmount, stocksSymbols, sectorsNames\
-            , sectorsWeights, stocksWeights, annualReturns, annualMaxLoss,\
-        annualVolatility, annualSharpe, totalChange, monthlyChange, dailyChange, selectedModel,\
-        machineLearningOpt = self.__myPortfolio.getPortfolioData()
+        (levelOfRisk, startingInvestmentAmount, stocksSymbols, sectorsNames, sectorsWeights, stocksWeights,
+         annualReturns, annualMaxLoss, annualVolatility, annualSharpe, totalChange, monthlyChange,
+         dailyChange, selectedModel, machineLearningOpt) = self.__myPortfolio.getPortfolioData()
 
         # Create a new dictionary
+
         new_user_data = {
             "levelOfRisk": levelOfRisk,
             "startingInvestmentAmount": startingInvestmentAmount,
@@ -122,4 +123,3 @@ class User:
 
         with open(jsonName + ".json", 'w') as f:
             json.dump(jsonData, f, indent=4)
-

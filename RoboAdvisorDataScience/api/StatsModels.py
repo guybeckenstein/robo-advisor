@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-import datetime
 from util import apiUtil
 
 
 class StatsModels:
+
     _df = None
     _portfoliosDic = None
     _threeBestPortfolios = None
@@ -14,10 +14,11 @@ class StatsModels:
     _BestStocksWeightsColumn = None
     _modelName = None
 
-
-    def __init__(self, stocksSymbols, sectorsList, Num_porSimulation, record_percentage_to_predict, numOfYearsHistory, machineLearningOpt, modelName):
+    def __init__(self, stocksSymbols, sectorsList, Num_porSimulation, record_percentage_to_predict,
+                 numOfYearsHistory, machineLearningOpt, modelName):
         self._modelName = modelName
-        self._closingPricesTable = apiUtil.convertDataToTables(stocksSymbols,record_percentage_to_predict, numOfYearsHistory, machineLearningOpt) #download data
+        self._closingPricesTable = apiUtil.convertDataToTables(stocksSymbols, record_percentage_to_predict,
+                                                               numOfYearsHistory, machineLearningOpt)  # download data
         if modelName == "Markowitz":
             self._df = self.GetOptimalPortfolioByMarkowitz(Num_porSimulation, self._closingPricesTable, stocksSymbols)
             self._portfoliosDic = apiUtil.buildReturnMarkowitzPortfoliosDic(self._df)
@@ -25,10 +26,11 @@ class StatsModels:
             self._df = self.GetOptimalPortfolioByGini(Num_porSimulation, self._closingPricesTable, stocksSymbols)
             self._portfoliosDic = apiUtil.buildReturnGiniPortfoliosDic(self._df)
         self._threeBestPortfolios = apiUtil.getBestPortfolios(self._portfoliosDic)
-        self._BestStocksWeightsColumn = apiUtil.getBestWeightsColumn(self._threeBestPortfolios, self._closingPricesTable.pct_change())
+        self._BestStocksWeightsColumn = apiUtil.getBestWeightsColumn(self._threeBestPortfolios,
+                                                                     self._closingPricesTable.pct_change())
         self._threeBestStocksWeights = apiUtil.getThreeBestweights(self._threeBestPortfolios)
-        self._threeBestSectorsWeights = apiUtil.getThreeBestSectorsWeights(sectorsList, stocksSymbols, self._threeBestStocksWeights)
-
+        self._threeBestSectorsWeights = apiUtil.getThreeBestSectorsWeights(sectorsList, stocksSymbols,
+                                                                           self._threeBestStocksWeights)
 
     def GetOptimalPortfolioByMarkowitz(self, Num_porSimulation, closingPricesTable, stocksSymbols):
         stocksNames = []
@@ -155,6 +157,7 @@ class StatsModels:
 
             # reorder dataframe columns
             df = df[column_order]
+
             return df
 
     def getDf(self):
@@ -176,7 +179,7 @@ class StatsModels:
         return self._BestStocksWeightsColumn
 
     def getFinalPortfolio(self, riskScore):
-        return utilApi.choosePortfolioByRiskScore(self._threeBestPortfolios, riskScore)
+        return apiUtil.choosePortfolioByRiskScore(self._threeBestPortfolios, riskScore)
 
     def getClosingPricesTable(self):
         return self._closingPricesTable
@@ -194,8 +197,7 @@ class StatsModels:
             max_vol_portfolio = self._df.loc[self._df['Gini'] == max_vol]
         return max_vol_portfolio
 
-
-    #def get(self):
-        #pass
-        #response = ResponseApi("Markowitz", final_invest_portfolio, amountToInvest, datetime.datetime.now())
-        #return jsonify(response.__str__())
+    # def get(self):
+        # pass
+        # response = ResponseApi("Markowitz", final_invest_portfolio, amountToInvest, datetime.datetime.now())
+        # return jsonify(response.__str__())
