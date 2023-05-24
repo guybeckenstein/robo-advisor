@@ -123,7 +123,7 @@ def setSectors(stocksSymbols):
             for j in range (len(stocksSymbols)):
                 if stocksSymbols[j] in sectorsData[i]['stocks']:
                     sector.addStock(stocksSymbols[j])
-            if(len(sector.getStocks())>0):
+            if len(sector.getStocks())>0:
                 sectorsList.append(sector)
     return sectorsList
 
@@ -290,7 +290,7 @@ def scanGoodStocks():
     max_price = 1000  # maximum price (in dollars)
 
     # Download the list of all tickers from Yahoo Finance
-    tickers = yf.Tickers("") # not work
+    yf.Tickers("")
     # Fetch the list of top 2000 stocks listed on NASDAQ
     nasdaq_2000 = pd.read_csv('https://www.nasdaq.com/api/v1/screener?page=1&pageSize=2000')
     # Get the ticker symbols for the top 2000 stocks

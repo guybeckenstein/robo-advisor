@@ -34,9 +34,6 @@ def createsNewUser(name, stocksSymbols, numOfYearsHistory):
 
     sectorsData = getJsonData("api/resources/sectors") # TODO REMOVE
     sectorsList = setSectors(stocksSymbols)
-    levelOfRisk = 1
-    finalPortfolio = []
-    statsModels = None
 
     # GET BASIC DATA FROM TERMINAL- TODO- get the data from site-form
     investmentAmount, machineLearningOpt, modelOption = getUserBasicDataFromForm()
@@ -100,7 +97,6 @@ def refreshUserData(user):
  #############################################################################################################
 #3 - plot user portfolio - TODO- PLOT FROM SITE
 def plotUserPortfolio(user):
-    portfolio = user.getPortfolio()
     plt = user.plotPortfolioComponent()
     plotFunctions.plot(plt)
     plt = user.plotInvestmentPortfolioYield()
@@ -161,7 +157,7 @@ def scanGoodStocks():
 def plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, modelOption):
     sectorsList = setSectors(stocksSymbols)
 
-    if(modelOption == "Markowitz"):
+    if modelOption == "Markowitz":
         statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, setting.Num_porSimulation,
                                               setting.record_percentage_to_predict, numOfYearsHistory,
                                               machineLearningOpt, "Markowitz")
@@ -178,7 +174,7 @@ def plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, mod
     max_vols = statsModels.getMaxVols()
     df = statsModels.getDf()
 
-    if(modelOption == "Markowitz"):
+    if modelOption == "Markowitz":
         plotFunctions.plotMarkowitzGraph(sectorsList, threeBestSectorsWeights, min_variance_port,
                                          sharpe_portfolio, max_returns, max_vols, df)
     else:
@@ -217,8 +213,6 @@ def getUserFromDB(userName):
     annualSharpe = userData['annualSharpe']
 
     # TODO - if each user has different sectors make sector data using sectorsNames and sectorsWeights
-    sectorsNames = userData['sectorsNames']
-    sectorsWeights = userData['sectorsWeights']
     sectorsData = getJsonData("api/resources/sectors")# universal from file
 
     # get data from api and convert it to tables
@@ -267,7 +261,6 @@ def getDataFromForm(statModel, sectorsList, yieldsList, pctChangeTable):  # TODO
 
     threeBestPortfolosList = statModel.getThreeBestPortfolios()
     threeBestSectorsWeights = statModel.getThreeBestSectorsWeights()
-    stringToShow = ""
     count = 0
 
     # question 1
