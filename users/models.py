@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
 
+IMG_SIZE = 256
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -14,7 +16,7 @@ class Profile(models.Model):
         super().save(args, kwargs)
 
         img = Image.open(self.image.path)
-        if (img.height > 256) or (img.width > 256):
-            output_size = (256, 256)
+        if (img.height > IMG_SIZE) or (img.width > IMG_SIZE):
+            output_size = (IMG_SIZE, IMG_SIZE)
             img.thumbnail(output_size)
             img.save(self.image.path)
