@@ -8,17 +8,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import json
 import codecs
-from api import Sector as Sector
-from util import taseUtil
+from RoboAdvisorDataScience.api import Sector
+import taseUtil
 import ta
 
 
-def getBestPortfolios(optionalPortfolios):
+def getBestPortfolios(optionalPortfolios) -> list:
     return [optionalPortfolios['Safest Portfolio'], optionalPortfolios['Sharpe Portfolio'],
             optionalPortfolios['Max Risk Porfolio']]
 
 
-def getBestWeightsColumn(optionalPortfolios, pctChangeTable):
+def getBestWeightsColumn(optionalPortfolios, pctChangeTable) -> list:
     pctChangeTable.dropna(inplace=True)
     low = np.dot(optionalPortfolios[0].iloc[0][3:], pctChangeTable.T)
     medium = np.dot(optionalPortfolios[1].iloc[0][3:], pctChangeTable.T)
@@ -27,7 +27,7 @@ def getBestWeightsColumn(optionalPortfolios, pctChangeTable):
     return [low, medium, high]
 
 
-def getThreeBestweights(optionalPortfolios):
+def getThreeBestWeights(optionalPortfolios):
     weighted_low = optionalPortfolios[0].iloc[0][3:]
     weighted_medium = optionalPortfolios[1].iloc[0][3:]
     weighted_high = optionalPortfolios[2].iloc[0][3:]
@@ -83,7 +83,7 @@ def buildReturnMarkowitzPortfoliosDic(df):
 def convertDataToTables(stocksNames, record_percentage_to_predict, numOfYearsHistory, machineLearningOpt):
     frame = {}
     yf.pdr_override()
-    start_date, end_date = getfromAndToDate(numOfYearsHistory)
+    start_date, end_date = getFromAndToDates(numOfYearsHistory)
 
     for i, stock in enumerate(stocksNames):
         if type(stock) == int:
@@ -120,7 +120,7 @@ def getSectorsDataFromFile():
     return sectorsData['sectorsList']['result']
 
 
-def setSectors(stocksSymbols):
+def setSectors(stocksSymbols) -> list:
     sectorsData = getSectorsDataFromFile()
     sectorsList = []
 
@@ -136,7 +136,7 @@ def setSectors(stocksSymbols):
     return sectorsList
 
 
-def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stocksWeights):
+def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stocksWeights) -> list:
     sectorsWeights = [0.0] * len(sectorsList)
     for i in range(len(sectorsList)):
         sectorsWeights[i] = 0
@@ -147,7 +147,7 @@ def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stoc
     return sectorsWeights
 
 
-def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeights):
+def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeights) -> list:
     sectorsWeightsList = []
     for i in range(len(threeBestStocksWeights)):
         sectorsWeightsList.append(returnSectorsWeightsAccordingToStocksWeights(sectorsList, stocksSymbols,
@@ -156,7 +156,7 @@ def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeight
     return sectorsWeightsList
 
 
-def getfromAndToDate(numOfYears):
+def getFromAndToDates(numOfYears) -> tuple[str, str]:
     today = datetime.datetime.now()
     startYear = today.year - numOfYears
     startMounth = today.month

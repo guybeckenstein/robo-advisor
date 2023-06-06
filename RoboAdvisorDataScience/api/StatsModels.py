@@ -28,7 +28,7 @@ class StatsModels:
         self._threeBestPortfolios = apiUtil.getBestPortfolios(self._portfoliosDic)
         self._BestStocksWeightsColumn = apiUtil.getBestWeightsColumn(self._threeBestPortfolios,
                                                                      self._closingPricesTable.pct_change())
-        self._threeBestStocksWeights = apiUtil.getThreeBestweights(self._threeBestPortfolios)
+        self._threeBestStocksWeights = apiUtil.getThreeBestWeights(self._threeBestPortfolios)
         self._threeBestSectorsWeights = apiUtil.getThreeBestSectorsWeights(sectorsList, stocksSymbols,
                                                                            self._threeBestStocksWeights)
 

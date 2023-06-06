@@ -6,14 +6,14 @@ def getUserBasicDataFromForm():  # not it from terminal
     return amount, machineLearningOpt, modelOption
 
 
-def getName():
+def getName() -> str:
     print("enter name")
     name = input()
 
     return name
 
 
-def getInverstmentAmount():
+def getInverstmentAmount() -> int:
     print("enter amount of money to invest")
     amount = int(input())
     while amount < 1:
@@ -23,7 +23,7 @@ def getInverstmentAmount():
     return amount
 
 
-def getMachineLearningOption():
+def getMachineLearningOption() -> int:
     print("Interested in using machine learning? 0-no, 1-yes")
     machineLearningOpt = int(input())
     while machineLearningOpt != 0 and machineLearningOpt != 1:
@@ -33,7 +33,7 @@ def getMachineLearningOption():
     return machineLearningOpt
 
 
-def getNumOfYearsHistory():
+def getNumOfYearsHistory() -> int:
     print("enter number of years for history")
     numOfYears = int(input())
     while numOfYears < 1:
@@ -43,7 +43,7 @@ def getNumOfYearsHistory():
     return numOfYears
 
 
-def getModelOption():
+def getModelOption() -> int:
     print("choose model: 1 - markovich, 2 - gini\n")
     modelOption = int(input())
     while modelOption != 1 and modelOption != 2:
@@ -53,7 +53,7 @@ def getModelOption():
     return modelOption
 
 
-def getTypeOFindexes():
+def getTypeOFindexes() -> tuple[int, int]:
     print("do you want to include israel indexes? 0-no, 1-yes")
     israeliIndexesChoice = int(input())
     while israeliIndexesChoice != 0 and israeliIndexesChoice != 1:
@@ -69,7 +69,7 @@ def getTypeOFindexes():
     return israeliIndexesChoice, usaIndexesChoice
 
 
-def getScoreByAnswerFromUser(stringToShow):
+def getScoreByAnswerFromUser(stringToShow) -> int:
     count = 0
 
     print(stringToShow)
@@ -80,13 +80,13 @@ def getScoreByAnswerFromUser(stringToShow):
     return count
 
 
-def validAnswerInputForm(answer):
+def validAnswerInputForm(answer) -> None:
     while answer < 1 or answer > 3:
         print("Please enter 1,2 or 3")
         answer = int(input())
 
 
-def selectedMenuOptValid(selectedMenuOpt, fromRange, toRange):
+def selectedMenuOptValid(selectedMenuOpt, fromRange, toRange) -> int:
     while selectedMenuOpt < fromRange or selectedMenuOpt > toRange:
         print("Please enter"+fromRange + "-"+toRange)
         selectedMenuOpt = int(input())
@@ -94,11 +94,11 @@ def selectedMenuOptValid(selectedMenuOpt, fromRange, toRange):
     return selectedMenuOpt
 
 
-def selectedMenuOption():
+def selectedMenuOption() -> int:
     return int(input("Enter your selection: "))  # TODO -GET FROM SITE
 
 
-def mainMenu():
+def mainMenu() -> None:
     # operations- TODO- operates from the site
     print("Welcome to the stock market simulator")
     print("Please select one of the following options:")
@@ -109,7 +109,7 @@ def mainMenu():
     print("8. Exit")
 
 
-def expertMenu():
+def expertMenu() -> None:
     print("Please select one of the following options:")
     print("1. Forcast specific stock")
     print("2. Plot specific stock")

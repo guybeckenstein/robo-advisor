@@ -1,4 +1,3 @@
-
 # for TOKEN- POST METHOD
 tokenUrl = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
 

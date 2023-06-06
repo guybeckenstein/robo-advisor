@@ -7,7 +7,7 @@ import re
 import requests
 import base64
 import datetime
-from util import setting
+from RoboAdvisorDataScience.util import setting
 
 
 # UTILITY FOR TASE- tel aviv stock exchange
