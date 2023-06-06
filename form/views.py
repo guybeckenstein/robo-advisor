@@ -3,22 +3,22 @@ from django.contrib.auth.decorators import login_required
 
 
 def homepage(request):
-    return render(request, 'html/index.html', {})
+    return render(request, 'form/index.html', {})
 
 
 def about(request):
-    return render(request, 'html/about.html', {'title': 'About Us'})
+    return render(request, 'form/about.html', {'title': 'About Us'})
 
 
 def contact(request):
-    return render(request, 'html/contact.html', {'title': 'Contact Us'})
+    return render(request, 'form/contact.html', {'title': 'Contact Us'})
 
 
 @login_required
 def services(request):
-    return render(request, 'html/services.html', {'title': 'Services'})
+    return render(request, 'form/services.html', {'title': 'Services'})
 
 
 @login_required
 def form(request):
-    return render(request, 'html/form.html', {'title': 'Form'})
+    return render(request, 'form/form.html', {'title': 'Form'})

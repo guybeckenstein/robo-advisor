@@ -32,15 +32,22 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Automatic apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'form.apps.FormConfig',
-    'users.apps.UsersConfig',
+    # Created apps
+    'analytics.apps.AnalyticsConfig',
     'feedback.apps.FeedbackConfig',
+    'form.apps.FormConfig',
+    'investment.apps.InvestmentConfig',
+    'investment_portfolio.apps.InvestmentPortfolioConfig',
+    'users.apps.UsersConfig',
+    'watchlist.apps.WatchlistConfig',
+    # Third party apps
     'crispy_forms',
 ]
 
