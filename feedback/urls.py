@@ -9,4 +9,3 @@ urlpatterns = [
     path('feedback/<int:pk>/update/', views.FeedbackUpdateView.as_view(), name='feedback-update'),
     path('feedback/<int:pk>/delete/', views.FeedbackDeleteView.as_view(), name='feedback-delete'),
 ]
-views
