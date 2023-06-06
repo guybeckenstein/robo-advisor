@@ -1,0 +1,38 @@
+{
+	"sectorsList": {
+		"result": [
+			{
+				"sectorName": "Israel stocks",
+				"taseSector": "מניות ישראל",
+				"stocks": [142, 143,"TA35.TA","TA90.TA"]
+			},
+			{
+				"sectorName": "Israel general bonds",
+				"taseSector": "אגרות חוב כללי - ישראל",
+				"stocks": [601, 602]
+			},
+			{
+				"sectorName": "Israel government bonds",
+				"taseSector": "אגרות חוב ממשלתי - ישראל",
+				"stocks": [700,701,702]
+			},
+			{
+				"sectorName": "US stocks",
+				"taseSector": "מניות - ארהב",
+				"stocks": ["SPY", "QQQ", "^RUT","AMD", "AI", "AMZN", "AAPL", "NVDA", "TSLA", "MSFT", "GOOG"]
+
+			},
+			{
+				"sectorName": "US bonds",
+				"taseSector": "אגרות חוב כללי - ארהב",
+				"stocks": ["IMI","LQD"]
+			},
+			{
+				"sectorName": "US commodity",
+				"taseSector": "סחורות - ארהב",
+				"stocks": ["GLD","OIL","GSG"]
+			}
+
+		]
+	}
+}
