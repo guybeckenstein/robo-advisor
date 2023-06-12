@@ -7,7 +7,7 @@ import re
 import requests
 import base64
 import datetime
-from util import setting
+from RoboAdvisorDataScience.util import setting
 
 
 # UTILITY FOR TASE- tel aviv stock exchange
@@ -20,7 +20,7 @@ def getIsraeliIndexesData(command, israeliIndexes):  # get israli indexes data f
                 setting.indexEndOfDayHistoryTenYearsUpToday, israeliIndexes[i], 10
             )
             JsonDataList[i] = getSymbolInfo(appUrl)
-        # return JsonDataList - TODO - fix , makes unlimited requests"""
+        return JsonDataList""" #- TODO - fix , makes unlimited requests
 
     return getIndexesDataManuallyFromJSON(israeliIndexes)
 

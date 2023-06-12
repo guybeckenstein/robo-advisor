@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 from matplotlib import pyplot as plt
-from api import Portfolio as Portfolio
+from RoboAdvisorDataScience.api import Portfolio as Portfolio
 
 
 class User:

@@ -19,6 +19,6 @@ def services(request):
     return render(request, 'html/services.html', {'title': 'Services'})
 
 
-@login_required
+#@login_required
 def form(request):
     return render(request, 'html/form.html', {'title': 'Form'})

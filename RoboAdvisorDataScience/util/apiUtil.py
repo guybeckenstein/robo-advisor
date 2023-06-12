@@ -8,8 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import json
 import codecs
-from api import Sector as Sector
-from util import taseUtil
+from RoboAdvisorDataScience.api import Sector as Sector
+from RoboAdvisorDataScience.util import taseUtil
 import ta
 
 
@@ -87,7 +87,7 @@ def convertDataToTables(stocksNames, record_percentage_to_predict, numOfYearsHis
 
     for i, stock in enumerate(stocksNames):
         if type(stock) == int:
-            IsraeliStockData = getIsraeliIndexesData("get_past_10_years_history", stock)
+            IsraeliStockData = getIsraeliIndexesData("get_past_10_years_history", [stock])
             df = pd.DataFrame(IsraeliStockData["indexEndOfDay"]["result"])
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
             df.set_index("tradeDate", inplace=True)
@@ -220,6 +220,23 @@ def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTas
         X, y, test_size=record_percentage_to_predict
     )
     clf = LinearRegression()
+    """
+    models = [LogisticRegression(), SVC(
+kernel='poly', probability=True), XGBClassifier()]
+
+for i in range(3):
+models[i].fit(X_train, Y_train)
+
+print(f'{models[i]} : ')
+print('Training Accuracy : ', metrics.roc_auc_score(
+	Y_train, models[i].predict_proba(X_train)[:,1]))
+print('Validation Accuracy : ', metrics.roc_auc_score(
+	Y_valid, models[i].predict_proba(X_valid)[:,1]))
+print()
+metrics.plot_confusion_matrix(models[0], X_valid, Y_valid)
+plt.show()
+
+    """
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)
     print(confidence)

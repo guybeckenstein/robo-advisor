@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from api import Sector as Sector
+from RoboAdvisorDataScience.api import Sector as Sector
 import datetime
 
 

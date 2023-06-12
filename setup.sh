@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+##!/bin/bash -ex
 # The -e option would make our script exit with an error if any command
 # fails while the -x option makes verbosely it output what it does
 
@@ -19,4 +19,4 @@ pipenv install pillow
 # fork" so that our app stays up after the setup script finishes.
 # The app logs are redirected to the 'runserver.log' file.
 (setsid pipenv run \
-	python manage.py runserver 0.0.0.0:8000 > runserver.log 2>&1 &)
+	python manage.py runserver 0.0.0.0:8080 > runserver.log 2>&1 &)

@@ -6,9 +6,9 @@ name = "pypi"
 [packages]
 django = "*"
 django-crispy-forms = "*"
-django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 django-bootstrap4 = "*"
 pillow = "*"
+django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 
 [dev-packages]
 flake8 = "*"

@@ -1,22 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from util import manageData
+from RoboAdvisorDataScience.util import manageData
 import os
 
 ######################################################################################
 
 clear = os.system('cls')
-
-# israel bonds stocks: ( not updated because of limit requests in tase
-
-"""
-    601,
-    602,
-    700,
-    701,
-    702,
-"""
 
 stocksSymbols = [  # TODO -NEW FEATURES- creates features to scan good stocks and indexes and fit them to the portfolio
     'TA35.TA',
@@ -29,16 +19,21 @@ stocksSymbols = [  # TODO -NEW FEATURES- creates features to scan good stocks an
     'Gsg',
     'GLD',
     'OIL',
+    601,
+    602,
+    700,
+    701,
+    702,
     ]
 
 numOfYearsHistory = 10
 
 ######################################################################################
-
+# app.run(host='0.0.0.0', port=8080, debug=True)
 if __name__ == '__main__':
-
-    # app.run(host='0.0.0.0', port=8000, debug=True)
-
+    # run python manage.py runserver 127.0.0.1:8080
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    os.system('python '+dir_path+'manage.py runserver 127.0.0.1:8080')
     manageData.mainMenu()
     selection = manageData.selectedMenuOption()
     exitLoopOperation = 8

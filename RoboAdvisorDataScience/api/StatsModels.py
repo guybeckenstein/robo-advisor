@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from util import apiUtil
+from RoboAdvisorDataScience.util import apiUtil
 
 
 class StatsModels:

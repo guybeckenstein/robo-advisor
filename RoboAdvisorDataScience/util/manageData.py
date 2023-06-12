@@ -2,21 +2,21 @@ import json
 import pandas as pd
 import numpy as np
 import yfinance as yf
-from util import setting
-from util import taseUtil
-from util import consoleHandler
-from util import apiUtil
-from util import plotFunctions
-from api import Portfolio as Portfolio
-from api import User as User
-from api import StatsModels as StatsModels
+from RoboAdvisorDataScience.util import setting
+from RoboAdvisorDataScience.util import taseUtil
+from RoboAdvisorDataScience.util import consoleHandler
+from RoboAdvisorDataScience.util import apiUtil
+from RoboAdvisorDataScience.util import plotFunctions
+from RoboAdvisorDataScience.api import Portfolio as Portfolio
+from RoboAdvisorDataScience.api import User as User
+from RoboAdvisorDataScience.api import StatsModels as StatsModels
 
 ######################################################################################
 # 1 - create new user by form
 
 
 def createsNewUser(name, stocksSymbols, numOfYearsHistory):
-
+    setting
     sectorsData = getJsonData("api/resources/sectors")  # TODO REMOVE
     sectorsList = setSectors(stocksSymbols)
 
@@ -294,7 +294,7 @@ def createsJsonFile(json_obj, nameProduct):
     parts = nameProduct.split("/")
     last_element = parts[-1]
     with open(
-        "api/resources/"+last_element + ".json", "w"
+        "RoboAdvisorDataScience/api/resources/"+last_element + ".json", "w"
     ) as f:  # Use the `dump()` function to write the JSON data to the file
         json.dump(json_obj, f)
 

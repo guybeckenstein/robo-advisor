@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+"""from marshmallow import Schema, fields
 
 
 class InputSchema(Schema):
@@ -9,4 +9,4 @@ class InputSchema(Schema):
 class InputSchemaTwitter(Schema):
     stock_symbol = fields.Str()
     start_date = fields.Date()
-    end_date = fields.Date()
+    end_date = fields.Date()"""
