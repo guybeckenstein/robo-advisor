@@ -8,7 +8,7 @@ MAX_ANSWER = 3
 
 class Questionnaire(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    user_id = models.OneToOneField(User, on_delete=models.RESTRICT)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT)
     answer_1 = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER), MaxValueValidator(MAX_ANSWER)])
     answer_2 = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER), MaxValueValidator(MAX_ANSWER)])
     answer_3 = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER), MaxValueValidator(MAX_ANSWER)])
