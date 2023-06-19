@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
                     stockName = manageData.getName()
                     numOfYearsHistory = manageData.getNumOfYearsHistory()
-                    (staringDate, todayDate) = manageData.getfromAndToDate(numOfYearsHistory)
+                    (staringDate, todayDate) = manageData.getFromAndToDate(numOfYearsHistory)
                     manageData.plotbb_strategy_stock(str(stockName), staringDate, todayDate)
 
                 elif selection == 3:

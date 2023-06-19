@@ -9,11 +9,6 @@ sudo -n dnf install -y pipenv
 cd /vagrant
 # Install dependencies with Pipenv
 pipenv sync --dev
-pipenv install django-crispy-forms
-pipenv install django-bootstrap4
-pipenv install django-phonenumber-field[phonenumberslite]
-pipenv install django-phonenumber-field[phonenumbers]
-pipenv install pillow
 
 # run our app. setsid, the parentheses and "&" are used to perform a "double
 # fork" so that our app stays up after the setup script finishes.

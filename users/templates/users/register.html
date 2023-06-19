@@ -1,4 +1,4 @@
-{% extends "html/base.html" %}
+{% extends "form/base.html" %}
 {% load crispy_forms_tags %}
 {% load static %}
 
@@ -11,8 +11,8 @@
 			{% csrf_token %}
 			<fieldset class="form-group">
 				<legend class="border-bottom mb-4">Join Today</legend>
-				{{ form }}
-				<!--crispy forms doesn't work-->
+				{{ form|crispy }}
+				<!-- TODO: add crispy forms -->
 			</fieldset>
 			<div class="form-group">
 				<button class="btn btn-outline-info" type="submit">Sign Up</button>
