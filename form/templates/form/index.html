@@ -1,0 +1,47 @@
+{% extends "form/base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="content">
+    <div class="info">
+      <h2>
+        Robo Advisor <br>
+        <span>
+  	    Smart AI Investor!
+  	  </span>
+  	</h2>
+      <ul>
+      <p>
+        The website was developed within the fintech laboratory at the "Tel Aviv Jaffa Academic College" for research purposes only.
+        The recommendations of the system should not be considered as the implementation of an action, but everyone must consult with a qualified advisor on behalf of the Securities Authority
+      </p>
+      </ul>
+    </div>
+  </div>
+  <div class="team-members">
+    <a>
+      <p>
+        Guy Beckenstein
+	  </p>
+      <img src="{% static 'img/GuyBeckenstein.jpg' %}" alt="GuyBeckenstein">
+    </a>
+    <a>
+      <p>
+        Yarden Agami
+	  </p>
+      <img src="{% static 'img/YardenAgami.jpg' %}" alt="YardenAgami">
+    </a>
+    <a>
+      <p>
+        Hagai Levy
+	  </p>
+      <img src="{% static 'img/HagaiLevy.jpg' %}" alt="HagaiLevy">
+    </a>
+    <a>
+      <p>
+        Yarden Gazit
+	  </p>
+      <img src="{% static 'img/YardenGazit.jpg' %}" alt="YardenGazit">
+    </a>
+  </div>
+{% endblock content %}
