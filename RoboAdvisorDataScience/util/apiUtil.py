@@ -8,17 +8,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import json
 import codecs
-from RoboAdvisorDataScience.api import Sector as Sector
-from RoboAdvisorDataScience.util import taseUtil
+from RoboAdvisorDataScience.api import Sector
+from RoboAdvisorDataScience.util import apiUtil, taseUtil
 import ta
+from typing import Tuple
 
 
-def getBestPortfolios(optionalPortfolios):
+def getBestPortfolios(optionalPortfolios) -> list:
     return [optionalPortfolios['Safest Portfolio'], optionalPortfolios['Sharpe Portfolio'],
             optionalPortfolios['Max Risk Porfolio']]
 
 
-def getBestWeightsColumn(optionalPortfolios, pctChangeTable):
+def getBestWeightsColumn(optionalPortfolios, pctChangeTable) -> list:
     pctChangeTable.dropna(inplace=True)
     low = np.dot(optionalPortfolios[0].iloc[0][3:], pctChangeTable.T)
     medium = np.dot(optionalPortfolios[1].iloc[0][3:], pctChangeTable.T)
@@ -27,7 +28,7 @@ def getBestWeightsColumn(optionalPortfolios, pctChangeTable):
     return [low, medium, high]
 
 
-def getThreeBestweights(optionalPortfolios):
+def getThreeBestWeights(optionalPortfolios):
     weighted_low = optionalPortfolios[0].iloc[0][3:]
     weighted_medium = optionalPortfolios[1].iloc[0][3:]
     weighted_high = optionalPortfolios[2].iloc[0][3:]
@@ -83,11 +84,11 @@ def buildReturnMarkowitzPortfoliosDic(df):
 def convertDataToTables(stocksNames, record_percentage_to_predict, numOfYearsHistory, machineLearningOpt):
     frame = {}
     yf.pdr_override()
-    start_date, end_date = getfromAndToDate(numOfYearsHistory)
+    start_date, end_date = getFromAndToDates(numOfYearsHistory)
 
     for i, stock in enumerate(stocksNames):
         if type(stock) == int:
-            IsraeliStockData = getIsraeliIndexesData("get_past_10_years_history", [stock])
+            IsraeliStockData = getIsraeliIndexesData("get_past_10_years_history", stock)
             df = pd.DataFrame(IsraeliStockData["indexEndOfDay"]["result"])
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
             df.set_index("tradeDate", inplace=True)
@@ -120,7 +121,7 @@ def getSectorsDataFromFile():
     return sectorsData['sectorsList']['result']
 
 
-def setSectors(stocksSymbols):
+def setSectors(stocksSymbols) -> list:
     sectorsData = getSectorsDataFromFile()
     sectorsList = []
 
@@ -136,7 +137,7 @@ def setSectors(stocksSymbols):
     return sectorsList
 
 
-def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stocksWeights):
+def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stocksWeights) -> list:
     sectorsWeights = [0.0] * len(sectorsList)
     for i in range(len(sectorsList)):
         sectorsWeights[i] = 0
@@ -147,7 +148,7 @@ def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stoc
     return sectorsWeights
 
 
-def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeights):
+def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeights) -> list:
     sectorsWeightsList = []
     for i in range(len(threeBestStocksWeights)):
         sectorsWeightsList.append(returnSectorsWeightsAccordingToStocksWeights(sectorsList, stocksSymbols,
@@ -156,7 +157,7 @@ def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeight
     return sectorsWeightsList
 
 
-def getfromAndToDate(numOfYears):
+def getFromAndToDates(numOfYears) -> tuple[str, str]:
     today = datetime.datetime.now()
     startYear = today.year - numOfYears
     startMounth = today.month
@@ -220,23 +221,6 @@ def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTas
         X, y, test_size=record_percentage_to_predict
     )
     clf = LinearRegression()
-    """
-    models = [LogisticRegression(), SVC(
-kernel='poly', probability=True), XGBClassifier()]
-
-for i in range(3):
-models[i].fit(X_train, Y_train)
-
-print(f'{models[i]} : ')
-print('Training Accuracy : ', metrics.roc_auc_score(
-	Y_train, models[i].predict_proba(X_train)[:,1]))
-print('Validation Accuracy : ', metrics.roc_auc_score(
-	Y_valid, models[i].predict_proba(X_valid)[:,1]))
-print()
-metrics.plot_confusion_matrix(models[0], X_valid, Y_valid)
-plt.show()
-
-    """
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)
     print(confidence)

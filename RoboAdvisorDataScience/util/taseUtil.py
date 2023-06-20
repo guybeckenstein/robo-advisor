@@ -13,16 +13,16 @@ from RoboAdvisorDataScience.util import setting
 # UTILITY FOR TASE- tel aviv stock exchange
 
 def getIsraeliIndexesData(command, israeliIndexes):  # get israli indexes data from tase
-    """JsonDataList = [0] * len(israeliIndexes)
+    JsonDataList = [israeliIndexes]
     if command == "get_past_10_years_history":
-        for i in range(len(israeliIndexes)):
+        for i in range(len(JsonDataList)):
             appUrl = getIndexHistory(
-                setting.indexEndOfDayHistoryTenYearsUpToday, israeliIndexes[i], 10
+                setting.indexEndOfDayHistoryTenYearsUpToday, JsonDataList[i], 10
             )
             JsonDataList[i] = getSymbolInfo(appUrl)
-        return JsonDataList""" #- TODO - fix , makes unlimited requests
-
-    return getIndexesDataManuallyFromJSON(israeliIndexes)
+        # return JsonDataList - TODO - fix , makes unlimited requests
+    return JsonDataList[0]
+    #return getIndexesDataManuallyFromJSON(israeliIndexes)
 
 
 def getSymbolInfo(appUrl):

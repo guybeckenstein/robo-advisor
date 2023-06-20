@@ -1,4 +1,4 @@
-"""from flask import jsonify
+from flask import jsonify
 from flask_apispec import marshal_with, MethodResource, use_kwargs
 from flask_restful import Resource
 from app.api.myResponses import InputSchemaTwitter
@@ -143,4 +143,4 @@ class TwitterStocks(MethodResource, Resource):
         sentimentScourResult = self.sentimentScoure(stock_symbol, start_date, end_date)
         responseToTheApi = ResponseApiTwitter(stock_symbol, sentimentScourResult[0], sentimentScourResult[1],
                                               sentimentScourResult[2])
-        return jsonify(responseToTheApi.__str__())"""
+        return jsonify(responseToTheApi.__str__())

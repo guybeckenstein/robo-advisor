@@ -1,22 +1,18 @@
 import json
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import yfinance as yf
-from RoboAdvisorDataScience.util import setting
-from RoboAdvisorDataScience.util import taseUtil
-from RoboAdvisorDataScience.util import consoleHandler
-from RoboAdvisorDataScience.util import apiUtil
-from RoboAdvisorDataScience.util import plotFunctions
-from RoboAdvisorDataScience.api import Portfolio as Portfolio
-from RoboAdvisorDataScience.api import User as User
-from RoboAdvisorDataScience.api import StatsModels as StatsModels
+from RoboAdvisorDataScience.api import Portfolio, StatsModels, User
+
+from RoboAdvisorDataScience.util import apiUtil, consoleHandler, plotFunctions, setting, taseUtil
 
 ######################################################################################
 # 1 - create new user by form
 
 
 def createsNewUser(name, stocksSymbols, numOfYearsHistory):
-    setting
+
     sectorsData = getJsonData("api/resources/sectors")  # TODO REMOVE
     sectorsList = setSectors(stocksSymbols)
 
@@ -57,7 +53,7 @@ def createsNewUser(name, stocksSymbols, numOfYearsHistory):
 #############################################################################################################
 # 2 refresh user data
 
-def refreshUserData(user):
+def refreshUserData(user) -> None:
 
     portfolio = user.getPortfolio()
     pctChangeTable = portfolio.getPctChangeTable()
@@ -79,7 +75,7 @@ def refreshUserData(user):
 # 3 - plot user portfolio - TODO- PLOT FROM SITE
 
 
-def plotUserPortfolio(user):
+def plotUserPortfolio(user) -> None:
     plt = user.plotPortfolioComponent()
     plotFunctions.plot(plt)
     plt = user.plotInvestmentPortfolioYield()
@@ -91,44 +87,44 @@ def plotUserPortfolio(user):
 # EXPERT - 1
 
 
-def forcastSpecificStock(stock, isDataComeFromTase, numOfYearsHistory):
+def forcastSpecificStock(stock, isDataComeFromTase, numOfYearsHistory) -> None:
     if isDataComeFromTase:
         df = pd.DataFrame(stock["indexEndOfDay"]["result"])
         df["tradeDate"] = pd.to_datetime(df["tradeDate"])
         df.set_index("tradeDate", inplace=True)
         df, col = price_forecast(df, setting.record_percentage_to_predict, 1)
-        plotpriceForcast(stock, df, 1)
+        plotPriceForcast(stock, df, 1)
 
     else:
         yf.pdr_override()
-        start_date, end_date = getfromAndToDate(numOfYearsHistory)
+        start_date, end_date = getFromAndToDate(numOfYearsHistory)
         df = yf.download(stock, start=start_date, end=end_date)
         df, col = price_forecast(df, setting.record_percentage_to_predict, 0)
-        plotpriceForcast(stock, df, 0)
+        plotPriceForcast(stock, df, 0)
 
 #############################################################################################################
 # EXPERT -2
 
 
-def plotbb_strategy_stock(stockName, start="2009-01-01", end="2023-01-01"):
-    stockprices = yf.download(stockName, start, end)
-    stockprices['MA50'] = stockprices['Adj Close'].rolling(window=50).mean()
-    stockprices['50dSTD'] = stockprices['Adj Close'].rolling(window=50).std()
-    stockprices['Upper'] = stockprices['MA50'] + (stockprices['50dSTD'] * 2)
-    stockprices['Lower'] = stockprices['MA50'] - (stockprices['50dSTD'] * 2)
+def plotbb_strategy_stock(stockName, start="2009-01-01", end="2023-01-01") -> None:
+    stock_prices = yf.download(stockName, start, end)
+    stock_prices['MA50'] = stock_prices['Adj Close'].rolling(window=50).mean()
+    stock_prices['50dSTD'] = stock_prices['Adj Close'].rolling(window=50).std()
+    stock_prices['Upper'] = stock_prices['MA50'] + (stock_prices['50dSTD'] * 2)
+    stock_prices['Lower'] = stock_prices['MA50'] - (stock_prices['50dSTD'] * 2)
 
-    stockprices = stockprices.dropna()
-    stockprices = stockprices.iloc[51:]
+    stock_prices = stock_prices.dropna()
+    stock_prices = stock_prices.iloc[51:]
 
-    buy_price, sell_price, bb_signal = apiUtil.implement_bb_strategy(stockprices['Adj Close'],
-                                                                     stockprices['Lower'], stockprices['Upper'])
-    plotFunctions.plotbb_strategy_stock(stockprices, buy_price, sell_price)
+    buy_price, sell_price, bb_signal = apiUtil.implement_bb_strategy(stock_prices['Adj Close'],
+                                                                     stock_prices['Lower'], stock_prices['Upper'])
+    plotFunctions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
 
 #############################################################################################################
 # 4 -3
 
 
-def createJsonDataFromTase(indexId, nameFile):
+def createJsonDataFromTase(indexId, nameFile) -> None:
     jsonData = taseUtil.getJsonDataFromTase(indexId, nameFile)
     createsJsonFile(jsonData, nameFile)
 
@@ -136,17 +132,17 @@ def createJsonDataFromTase(indexId, nameFile):
 # EXPERT -4
 
 
-def findBestStocks():
+def findBestStocks() -> None:
     plotFunctions.plotTopStocks(apiUtil.findBestStocks())
 
 
-def scanGoodStocks():
+def scanGoodStocks() -> None:
     plotFunctions.plotTopStocks(apiUtil.scanGoodStocks())
 ############################################################################################################
 # EXPERT- 5&6
 
 
-def plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, modelOption):
+def plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, modelOption) -> None:
     sectorsList = setSectors(stocksSymbols)
 
     if modelOption == "Markowitz":
@@ -235,7 +231,7 @@ def findUserInList(userName, usersList):
     return None
 
 
-def getNumOfUsersInDB():
+def getNumOfUsersInDB() -> int:
     jsonData = getJsonData(setting.usersJsonName)
 
     return len(jsonData['usersList'])
@@ -257,8 +253,8 @@ def updatePctChangeTable(statModel, pctChangeTable, investment):
     return [yield_low, yield_medium, yield_high]
 
 
-def getDataFromForm(statModel, sectorsList, yieldsList, pctChangeTable):  # TODO - get from form instead of console
-
+def getDataFromForm(statModel, sectorsList, yieldsList, pctChangeTable) -> int:
+    # TODO - get from form instead of console
     threeBestPortfolosList = statModel.getThreeBestPortfolios()
     threeBestSectorsWeights = statModel.getThreeBestSectorsWeights()
     count = 0
@@ -280,7 +276,7 @@ def getDataFromForm(statModel, sectorsList, yieldsList, pctChangeTable):  # TODO
     return getLevelOfRiskByForm(count)
 
 
-def getLevelOfRiskByForm(count):
+def getLevelOfRiskByForm(count: int) -> int:
     if count <= 4:
         return 1
     elif count <= 7:
@@ -289,12 +285,12 @@ def getLevelOfRiskByForm(count):
         return 3
 
 
-def createsJsonFile(json_obj, nameProduct):
+def createsJsonFile(json_obj, nameProduct) -> None:
     # Open a file in write mode
     parts = nameProduct.split("/")
     last_element = parts[-1]
     with open(
-        "RoboAdvisorDataScience/api/resources/"+last_element + ".json", "w"
+        "api/resources/"+last_element + ".json", "w"
     ) as f:  # Use the `dump()` function to write the JSON data to the file
         json.dump(json_obj, f)
 
@@ -324,12 +320,12 @@ def getJsonData(name):
     return apiUtil.getJsonData(name)
 
 
-def getfromAndToDate(numOfYears):
-    return apiUtil.getfromAndToDate(numOfYears)
+def getFromAndToDate(numOfYears) -> tuple[str, str]:
+    return apiUtil.getFromAndToDates(numOfYears)
 
 
 # plot functions
-def plotThreePortfoliosGraph(threeBestPortfolosList, threeBestSectorsWeights, sectorsList, pctChangeTable):
+def plotThreePortfoliosGraph(threeBestPortfolosList, threeBestSectorsWeights, sectorsList, pctChangeTable) -> None:
     min_variance_port = threeBestPortfolosList[0]
     sharpe_portfolio = threeBestPortfolosList[1]
     max_returns = threeBestPortfolosList[2]
@@ -337,19 +333,19 @@ def plotThreePortfoliosGraph(threeBestPortfolosList, threeBestSectorsWeights, se
                                            threeBestSectorsWeights, sectorsList, pctChangeTable)
 
 
-def plotDistributionOfStocks(stockNames, pctChangeTable):
+def plotDistributionOfStocks(stockNames, pctChangeTable) -> None:
     plotFunctions.plotDistributionOfStocks(stockNames, pctChangeTable)
 
 
-def plotDistributionOfPortfolio(yieldsList):
+def plotDistributionOfPortfolio(yieldsList) -> None:
     plotFunctions.plotDistributionOfPortfolio(yieldsList)
 
 
-def plotbb_strategy_Portfolio(pctChangeTable, newPortfolio):
+def plotbb_strategy_Portfolio(pctChangeTable, newPortfolio) -> None:
     plotFunctions.plotbb_strategy_Portfolio(pctChangeTable, newPortfolio)
 
 
-def plotpriceForcast(stockSymbol, df, isDataGotFromTase):
+def plotPriceForcast(stockSymbol, df, isDataGotFromTase) -> None:
     plotFunctions.plotpriceForcast(stockSymbol, df, isDataGotFromTase)
 
 
@@ -363,11 +359,11 @@ def getUserBasicDataFromForm():
     return consoleHandler.getUserBasicDataFromForm()
 
 
-def mainMenu():
+def mainMenu() -> None:
     consoleHandler.mainMenu()
 
 
-def expertMenu():
+def expertMenu() -> None:
     consoleHandler.expertMenu()
 
 

@@ -16,7 +16,11 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm()
-    return render(request, 'users/register.html', {'form': form, 'crispy': True})
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'users/register.html', context=context)
 
 
 def login(request):

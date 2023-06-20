@@ -5,13 +5,15 @@ name = "pypi"
 
 [packages]
 django = "*"
-django-crispy-forms = "*"
-django-bootstrap4 = "*"
 pillow = "*"
-django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
+crispy-bootstrap5 = "*"
 
 [dev-packages]
 flake8 = "*"
+pytest = "*"
+pytest-django = "*"
+django = "*"
+django-pytest = "*"
 
 [requires]
 python_version = "3.9"

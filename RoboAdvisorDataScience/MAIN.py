@@ -8,7 +8,22 @@ import os
 
 clear = os.system('cls')
 
+# israel bonds stocks: ( not updated because of limit requests in tase
+
+"""
+    601,
+    602,
+    700,
+    701,
+    702,
+"""
+
 stocksSymbols = [  # TODO -NEW FEATURES- creates features to scan good stocks and indexes and fit them to the portfolio
+    601,
+    602,
+    700,
+    701,
+    702,
     'TA35.TA',
     'TA90.TA',
     'SPY',
@@ -19,21 +34,16 @@ stocksSymbols = [  # TODO -NEW FEATURES- creates features to scan good stocks an
     'Gsg',
     'GLD',
     'OIL',
-    601,
-    602,
-    700,
-    701,
-    702,
     ]
 
 numOfYearsHistory = 10
 
 ######################################################################################
-# app.run(host='0.0.0.0', port=8080, debug=True)
+
 if __name__ == '__main__':
-    # run python manage.py runserver 127.0.0.1:8080
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    os.system('python '+dir_path+'manage.py runserver 127.0.0.1:8080')
+
+    # app.run(host='0.0.0.0', port=8000, debug=True)
+
     manageData.mainMenu()
     selection = manageData.selectedMenuOption()
     exitLoopOperation = 8
@@ -80,7 +90,7 @@ if __name__ == '__main__':
 
                     stockName = manageData.getName()
                     numOfYearsHistory = manageData.getNumOfYearsHistory()
-                    (staringDate, todayDate) = manageData.getfromAndToDate(numOfYearsHistory)
+                    (staringDate, todayDate) = manageData.getFromAndToDate(numOfYearsHistory)
                     manageData.plotbb_strategy_stock(str(stockName), staringDate, todayDate)
 
                 elif selection == 3:
