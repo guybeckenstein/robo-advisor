@@ -210,12 +210,11 @@ def getUserFromDB(userName):
     userPortfolio = Portfolio.Portfolio(levelOfRisk, startingInvestmentAmount, stocksSymbols, sectorsData,
                                         selectedModel, machineLearningOpt)
     pctChangeTable = closingPricesTable.pct_change()
-
     pctChangeTable.dropna(inplace=True)
     weighted_sum = np.dot(stocksWeights, pctChangeTable.T)
     pctChangeTable["weighted_sum_"+str(levelOfRisk)] = weighted_sum
     pctChangeTable["yield_"+str(levelOfRisk)] = weighted_sum
-    makesYieldColumn(pctChangeTable["yield_"+str(levelOfRisk)], weighted_sum, startingInvestmentAmount)
+    pctChangeTable["yield_"+str(levelOfRisk)] = makesYieldColumn(pctChangeTable["yield_"+str(levelOfRisk)], weighted_sum, startingInvestmentAmount)
     userPortfolio.updateStocksData(closingPricesTable, pctChangeTable, stocksWeights, annualReturns,
                                    annualVolatility, annualSharpe)
     user = User.User(userName, userPortfolio)
@@ -249,6 +248,10 @@ def updatePctChangeTable(statModel, pctChangeTable, investment):
     yield_low = makesYieldColumn(pctChangeTable["yield_1"], weighted_low, investment)
     yield_medium = makesYieldColumn(pctChangeTable["yield_2"], weighted_medium, investment)
     yield_high = makesYieldColumn(pctChangeTable["yield_3"], weighted_high, investment)
+    pctChangeTable["yield_1"] = yield_low
+    pctChangeTable["yield_2"] = yield_medium
+    pctChangeTable["yield_3"] = yield_high
+
 
     return [yield_low, yield_medium, yield_high]
 

@@ -277,7 +277,7 @@ def plotThreePortfoliosGraph(min_variance_port, sharpe_portfolio, max_returns, t
     figSize_Y = 8
     figSize = (figSize_X, figSize_Y)
     plt.style.use("seaborn-dark")
-    plt.xlabel("Datte")
+    plt.xlabel("Date")
     plt.ylabel("Expected Returns")
     plt.title("3 best portfolios")
 

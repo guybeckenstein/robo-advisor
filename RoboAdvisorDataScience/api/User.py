@@ -1,9 +1,9 @@
 import codecs
 import json
-
 import pandas as pd
 from matplotlib import pyplot as plt
 from RoboAdvisorDataScience.api import Portfolio as Portfolio
+from RoboAdvisorDataScience.util import apiUtil as apiUtil
 
 
 class User:

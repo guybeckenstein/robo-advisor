@@ -6,18 +6,6 @@ import os
 
 ######################################################################################
 
-clear = os.system('cls')
-
-# israel bonds stocks: ( not updated because of limit requests in tase
-
-"""
-    601,
-    602,
-    700,
-    701,
-    702,
-"""
-
 stocksSymbols = [  # TODO -NEW FEATURES- creates features to scan good stocks and indexes and fit them to the portfolio
     601,
     602,
