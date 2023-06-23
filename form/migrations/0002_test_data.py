@@ -4,6 +4,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    """dependencies = [
         ('form', '0001_initial'),
-    ]
+    ]"""

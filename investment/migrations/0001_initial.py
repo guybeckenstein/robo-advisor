@@ -7,7 +7,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    initial = True
+    """initial = True
 
     dependencies = [
         ('investment_portfolio', '0001_initial'),
@@ -30,4 +30,4 @@ class Migration(migrations.Migration):
                 'db_table': 'Investment',
             },
         ),
-    ]
+    ]"""
