@@ -10,6 +10,7 @@
     <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <script src="{% static 'js/app.js' %}" defer></script> <!-- Only relevant if we use JS -->
+    <link rel="icon" type="image/x-icon" href="{% static 'img/Logo.png' %}">
     {% if title %}
       <title>
         {{ title }}
@@ -25,7 +26,7 @@
       <!-- Navigation bar -->
       <header>
         <h2>
-          <a href="" class="logo">
+          <a href="{% url 'homepage' %}" class="logo">
             <img src="{% static 'img/Logo.png' %}" alt="RoboAdvisorLogo" height="256" width="205">
           </a>
         </h2>
@@ -68,7 +69,7 @@
         {% endfor %}
       {% endif %}
       <!-- Main content -->
-      <div style="">
+      <div>
         {% block content %}
         {% endblock %}
       </div>

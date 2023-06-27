@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
-*{
+* {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
 	font-family: "Poppins", sans-serif;
 }
 
-section{
+section {
 	position: relative;
 	width: 100%;
 	min-height: 100vh;
@@ -20,7 +20,7 @@ section{
 	background-position: center;
 }
 
-header{
+header {
 	position: relative;
 	top: 0;
 	width: 100%;
@@ -30,11 +30,11 @@ header{
 	align-items: center;
 }
 
-header .logo{
+header .logo {
 	position: relative;
 }
 
-header .navigation a{
+header .navigation a {
 	color: #000;
 	text-decoration: none;
 	font-weight: 500;
@@ -45,15 +45,15 @@ header .navigation a{
 	transition-property: background;
 }
 
-header .navigation a:not(:last-child){
+header .navigation a:not(:last-child) {
 	margin-right: 30px;
 }
 
-header .navigation a:hover{
+header .navigation a:hover {
 	background: #fff;
 }
 
-footer{
+footer {
 	color: #fff;
 	position: relative;
 	bottom: 5px;
@@ -64,24 +64,24 @@ footer{
 	align-items: center;
 }
 
-footer .greeting{
+footer .greeting {
     color: #000;
 	font-weight: 500;
 	border-bottom: 2px solid #226A80;;
 }
 
-svg{
+svg {
     height: 50px;
     border-color: blue;
     background-color: yellow;
 }
 
-.content{
-	max-width: 650px;
+.content {
+	max-width: 800px;
 	margin: 60px 100px;
 }
 
-.content .info h2{
+.content .info h2 {
 	color: #226A80;
 	font-size: 55px;
 	font-weight: 800;
@@ -90,19 +90,19 @@ svg{
 	margin-bottom: 30px;
 }
 
-.content .info h2 span{
+.content .info h2 span {
 	color: #fff;
 	font-size: 50px;
 	font-weight: 600;
 }
 
-.content .info p{
+.content .info p {
 	font-size: 16px;
 	font-weight: 500;
 	margin-bottom: 40px;
 }
 
-.content .info-btn button{
+.content .info-btn button {
 	color: #fff;
 	background: #226A80;
 	text-decoration: none;
@@ -118,18 +118,18 @@ svg{
 	margin-top:10px;
 }
 
-.content .info-btn button:hover{
+.content .info-btn button:hover {
 	background: #0C4F60;
 }
 
-.team-members{
+.team-members {
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	margin: auto;
 }
 
-.team-members a{
+.team-members a {
 	position: relative;
 	color: #111;
 	font-size: 25px;
@@ -139,21 +139,21 @@ svg{
 	text-align: center;
 }
 
-.team-members a:not(:last-child){
+.team-members a:not(:last-child) {
 	margin-right: 60px;
 }
 
-.team-members a:hover{
+.team-members a:hover {
 	transform: scale(1.1);
 }
 
-.team-members a p{
+.team-members a p {
 	justify-content: center;
 	align-items: center;
 	margin-left: none;
 }
 
-.team-members a img{
+.team-members a img {
 	justify-content: center;
 	align-items: center;
     border-radius: 80px;
@@ -161,7 +161,7 @@ svg{
     width: 142px;
 }
 
-.media-icons{
+.media-icons {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -169,17 +169,17 @@ svg{
 }
 
 
-.media-icons a{
+.media-icons a {
 	position: relative;
 	color: #111;
 	transition: 0.3s;
 	transition-property: transform;
 }
 
-.media-icons a:not(:last-child){
+.media-icons a:not(:last-child) {
 	margin-right: 60px;
 }
 
-.media-icons a:hover{
+.media-icons a:hover {
 	transform: scale(1.5);
 }

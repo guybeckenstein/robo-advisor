@@ -20,4 +20,4 @@ def services(request):
 
 @login_required
 def form(request):
-    return render(request, 'core/form.html', context={'title': 'Form'})
+    return render(request, 'core/capital_market_form.html', context={'title': 'Capital Market Form'})
