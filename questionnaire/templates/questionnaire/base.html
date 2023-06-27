@@ -36,12 +36,6 @@
           <a href="{% url 'about' %}">
             About
           </a>
-          <a href="{% url 'feedback' %}">
-            Feedbacks
-          </a>
-          <a href="{% url 'contact' %}">
-            Contact
-          </a>
           {% if user.is_authenticated %}
             <a href="{% url 'profile' %}">
               Profile

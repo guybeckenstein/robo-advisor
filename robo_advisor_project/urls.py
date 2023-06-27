@@ -1,4 +1,4 @@
-"""robo_advisor URL Configuration
+"""robo_advisor_project URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -40,10 +40,9 @@ urlpatterns = [
          name='password_reset_complete'),
 
     path('', include('analytics.urls')),
-    path('', include('feedback.urls')),
-    path('', include('form.urls')),
     path('', include('investment.urls')),
     path('', include('investment_portfolio.urls')),
+    path('', include('questionnaire.urls')),
     path('', include('users.urls')),
     path('', include('watchlist.urls')),
 ]

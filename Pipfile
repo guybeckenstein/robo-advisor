@@ -7,6 +7,8 @@ name = "pypi"
 django = "*"
 pillow = "*"
 crispy-bootstrap5 = "*"
+pytest-lazy-fixture = "*"
+pytest-django = "*"
 
 [dev-packages]
 flake8 = "*"
