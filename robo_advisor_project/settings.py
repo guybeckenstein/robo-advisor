@@ -41,10 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Created apps
     'analytics.apps.AnalyticsConfig',
-    'questionnaire.apps.QuestionnaireConfig',
+    'core.apps.CoreConfig',
     'investment.apps.InvestmentConfig',
     'investment_portfolio.apps.InvestmentPortfolioConfig',
-    'users.apps.UsersConfig',
+    'user.apps.UserConfig',
     'watchlist.apps.WatchlistConfig',
     # Third party apps
     "crispy_bootstrap5",

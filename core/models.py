@@ -16,3 +16,13 @@ class Questionnaire(models.Model):
 
     class Meta:
         db_table = 'Questionnaire'
+
+
+class TeamMember(models.Model):
+    id = models.BigAutoField(primary_key=True, verbose_name="ID")
+    alt = models.CharField(max_length=20, unique=True)
+    full_name = models.CharField(max_length=20, unique=True)
+    img = models.CharField(max_length=30, unique=True)
+
+    class Meta:
+        db_table = 'TeamMember'

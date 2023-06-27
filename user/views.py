@@ -20,11 +20,11 @@ def register(request):
     context = {
         'form': form,
     }
-    return render(request, 'users/register.html', context=context)
+    return render(request, 'user/register.html', context=context)
 
 
 def login(request):
-    # TODO: make this function prevent logged-in users from entering 'login' page
+    # TODO: make this function prevent logged-in user from entering 'login' page
     if request.user.is_authenticated:
         return redirect('homepage')
     else:
@@ -58,4 +58,4 @@ def profile(request):
         'p_form': p_form
     }
 
-    return render(request, 'users/profile.html', context)
+    return render(request, 'user/profile.html', context)
