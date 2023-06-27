@@ -33,7 +33,10 @@ def capital_market_form(request):
             context = {'title': 'Fill Form', 'form': CapitalMarketForm(form_type='create')}
             return render(request, 'core/capital_market_form_create.html', context=context)
         else:
-            context = {'title': 'Update Filled Form', 'form': CapitalMarketForm(form_type='update', instance=questionnaire)}
+            context = {
+                'title': 'Update Filled Form',
+                'form': CapitalMarketForm(form_type='update', instance=questionnaire)
+            }
             return render(request, 'core/capital_market_form_update.html', context=context)
     elif request.method == 'POST':
         if questionnaire is None:  # CREATE
