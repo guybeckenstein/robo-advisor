@@ -18,13 +18,46 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='InvestmentPortfolio',
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=30)),
-                ('total_investment_amount', models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0)])),
-                ('current_value', models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0)])),
-                ('return_on_investment', models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0)])),
-                ('investment_strategy', models.CharField(choices=[('STRATEGY1', 'STRATEGY1'), ('STRATEGY2', 'STRATEGY2'), ('STRATEGY3', 'STRATEGY3')], max_length=20)),
-                ('user_id', models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, to=settings.AUTH_USER_MODEL)),
+                (
+                    'id', models.BigAutoField(primary_key=True, serialize=False, verbose_name='ID')
+                ),
+                (
+                    'name', models.CharField(max_length=30)
+                ),
+                (
+                    'total_investment_amount', models.IntegerField(
+                        blank=True,
+                        null=True,
+                        validators=[django.core.validators.MinValueValidator(0)]
+                    )
+                ),
+                (
+                    'current_value', models.IntegerField(
+                        blank=True,
+                        null=True,
+                        validators=[django.core.validators.MinValueValidator(0)]
+                    )
+                ),
+                (
+                    'return_on_investment', models.IntegerField(
+                        blank=True,
+                        null=True,
+                        validators=[django.core.validators.MinValueValidator(0)]
+                    )
+                ),
+                (
+                    'investment_strategy', models.CharField(choices=[
+                        ('STRATEGY1', 'STRATEGY1'),
+                        ('STRATEGY2', 'STRATEGY2'),
+                        ('STRATEGY3', 'STRATEGY3')
+                    ], max_length=20)
+                ),
+                (
+                    'user_id', models.OneToOneField(
+                        on_delete=django.db.models.deletion.RESTRICT,
+                        to=settings.AUTH_USER_MODEL
+                    )
+                ),
             ],
             options={
                 'db_table': 'InvestmentPortfolio',
