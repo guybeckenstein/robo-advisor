@@ -11,7 +11,7 @@ class Analytics(models.Model):
         RANGE2 = ('RANGE2', 'RANGE2')
         RANGE3 = ('RANGE3', 'RANGE3')
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    user_id = models.OneToOneField(User, on_delete=models.RESTRICT)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT)
     investment = models.OneToOneField(Investment, on_delete=models.RESTRICT)
     date_range = models.CharField(max_length=10, choices=DateRange.choices)
     # performance_metrics = ...

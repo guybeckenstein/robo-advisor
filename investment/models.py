@@ -12,7 +12,7 @@ class Investment(models.Model):
         SYMBOL3 = ('SYMBOL3', 'SYMBOL3')
 
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    portfolio_id = models.OneToOneField(InvestmentPortfolio, on_delete=models.RESTRICT)
+    portfolio = models.OneToOneField(InvestmentPortfolio, on_delete=models.RESTRICT)
     name = models.CharField(max_length=30)
     company = models.CharField(max_length=30)
     stock_symbol = models.CharField(max_length=10, choices=StockSymbol.choices)

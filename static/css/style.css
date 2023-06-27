@@ -183,3 +183,31 @@ svg {
 .media-icons a:hover {
 	transform: scale(1.5);
 }
+
+.asteriskField {
+    color: red;
+}
+
+#capital-market-form {
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+.capital-market-form-label, .asteriskField {
+    font-weight: 800;
+    font-size: 20px;
+    background-color: rgb(245, 245, 245);
+}
+
+.capital-market-form-radio {
+    border-bottom: solid 2px rgb(230, 230, 230);
+}
+
+.capital-market-form-radio div input {
+    border: solid 2px rgb(100, 100, 100);
+}
+
+.capital-market-form-radio div label {
+    font-weight: 600;
+    color: rgb(50, 50, 50);
+}

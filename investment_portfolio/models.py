@@ -11,7 +11,7 @@ class InvestmentPortfolio(models.Model):
         STRATEGY3 = ('STRATEGY3', 'STRATEGY3')
 
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    user_id = models.OneToOneField(User, on_delete=models.RESTRICT)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT)
     name = models.CharField(max_length=30)
     total_investment_amount = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     current_value = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])

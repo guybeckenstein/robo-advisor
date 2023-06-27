@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                     'date',
                     models.DateTimeField(auto_now_add=True)),
                 (
-                    'portfolio_id',
+                    'portfolio',
                     models.OneToOneField(
                         on_delete=django.db.models.deletion.RESTRICT,
                         to='investment_portfolio.investmentportfolio'

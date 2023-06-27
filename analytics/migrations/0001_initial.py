@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                     models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, to='investment.investment')
                 ),
                 (
-                    'user_id',
+                    'user',
                     models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, to=settings.AUTH_USER_MODEL)
                 ),
             ],
