@@ -68,6 +68,15 @@ class Migration(migrations.Migration):
                         ]
                     ),
                 ),
+                (
+                    "answers_sum",
+                    models.IntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(3),
+                            django.core.validators.MaxValueValidator(9),
+                        ]
+                    ),
+                ),
                 ("date", models.DateTimeField(auto_now_add=True)),
                 (
                     "user",

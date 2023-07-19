@@ -1,2 +1,2 @@
-# robo-adviser
+# robo-advisor
 Final project for the Fintech workshop

@@ -12,6 +12,7 @@ class Questionnaire(models.Model):
     answer_1 = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER), MaxValueValidator(MAX_ANSWER)])
     answer_2 = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER), MaxValueValidator(MAX_ANSWER)])
     answer_3 = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER), MaxValueValidator(MAX_ANSWER)])
+    answers_sum = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER * 3), MaxValueValidator(MAX_ANSWER * 3)])
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:

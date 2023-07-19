@@ -49,7 +49,9 @@ def capital_market_form(request):
             form.save()
             return redirect('homepage')
         else:  # CREATE and UPDATE
-            context = {'form': form}
+            context = {
+                'form': form,
+            }
             ctx = {}
             ctx.update(csrf(request))
             form_html = render_crispy_form(form=context['form'], context=ctx)
