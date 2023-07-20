@@ -21,6 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
     # User authentication
     path('login/', auth_views.LoginView.as_view(template_name='user/login.html'), name='login'),
@@ -38,7 +39,7 @@ urlpatterns = [
     path('password-reset-complete/',
          auth_views.PasswordResetCompleteView.as_view(template_name='user/password_reset_complete.html'),
          name='password_reset_complete'),
-
+    # More URLs modules
     path('', include('analytics.urls')),
     path('', include('investment.urls')),
     path('', include('investment_portfolio.urls')),

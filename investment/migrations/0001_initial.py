@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                     models.DateTimeField(auto_now_add=True)),
                 (
                     'portfolio',
-                    models.OneToOneField(
+                    models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
                         to='investment_portfolio.investmentportfolio'
                     )
