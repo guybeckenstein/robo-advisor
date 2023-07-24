@@ -1,64 +1,40 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import pandas as pd
 
-from RoboAdvisorDataScience.util import manageData
-import os
-
-######################################################################################
-
-stocksSymbols = [  # TODO -NEW FEATURES- creates features to scan good stocks and indexes and fit them to the portfolio
-    601,
-    602,
-    700,
-    701,
-    702,
-    'TA35.TA',
-    'TA90.TA',
-    'SPY',
-    'QQQ',
-    '^RUT',
-    'IEI',
-    'LQD',
-    'Gsg',
-    'GLD',
-    'OIL',
-    ]
-
-numOfYearsHistory = 10
-
-######################################################################################
+from RoboAdvisorDataScience.util import manageData, apiUtil
+from RoboAdvisorDataScience.util import setting
 
 if __name__ == '__main__':
-
-    # app.run(host='0.0.0.0', port=8000, debug=True)
-
+    manageData.updateAllTables(setting.stocksSymbols, setting.numOfYearsHistory)  # TODO -MAKE DAILY RUNNING
+if __name__ == '__main__':
     manageData.mainMenu()
     selection = manageData.selectedMenuOption()
     exitLoopOperation = 8
 
     while selection != exitLoopOperation:
 
-        if selection == 1:
-            name = manageData.getName()
-            user = manageData.createsNewUser(name, stocksSymbols, numOfYearsHistory)  # plot results
-            manageData.plotUserPortfolio(user)
+        if selection == 1:  # TODO MAKES AUTOMACTIC WITH DAILY RUNNING
+
+            name = manageData.getName()  # TODO- NAME OF USER
+            # GET BASIC DATA FROM TERMINAL- TODO- get the data from site-form
+            investmentAmount, machineLearningOpt, modelOption = manageData.getUserBasicDataFromForm()
+            manageData.createsNewUser(name, setting.stocksSymbols, investmentAmount, machineLearningOpt,
+                                      modelOption)
         elif selection == 2:
-
-            # TODO GET USER FROM LIST IN DJANGO PROJECT
-            # update exist user data using model markovich or gini
-
             name = manageData.getName()
-            selectedUser = manageData.getUserFromDB(name)
-            manageData.refreshUserData(selectedUser)  # TODO - FIX
+            electedUser = manageData.getUserFromDB(name)
+            manageData.refreshUserData(selectedUser)
+
+
         elif selection == 3:
 
-            # TODO GET USER FROM LIST IN DJANGO PROJECT
             # plot user portfolio's data
-
             name = manageData.getName()
             selectedUser = manageData.getUserFromDB(name)
             if selectedUser is not None:
                 manageData.plotUserPortfolio(selectedUser)
+
         elif selection == 4:
 
             manageData.expertMenu()
@@ -67,7 +43,6 @@ if __name__ == '__main__':
                 if selection == 1:
 
                     # forcast specific stock using machine learning
-
                     stockName = manageData.getName()
                     numOfYearsHistory = manageData.getNumOfYearsHistory()
                     manageData.forcastSpecificStock(str(stockName), 0, numOfYearsHistory)
@@ -75,7 +50,6 @@ if __name__ == '__main__':
                 elif selection == 2:
 
                     # plotbb_strategy_stock for specific stock
-
                     stockName = manageData.getName()
                     numOfYearsHistory = manageData.getNumOfYearsHistory()
                     (staringDate, todayDate) = manageData.getFromAndToDate(numOfYearsHistory)
@@ -85,34 +59,31 @@ if __name__ == '__main__':
 
                     # TODO- IN PROGRESS
                     # add history of index's data from taske(json file)
-
-                    indexid = 143
-                    manageData.createJsonDataFromTase(143, 'History' + str(indexid))
+                    indexid = input("enter index:")
+                    manageData.createJsonDataFromTase(indexid, 'History' + str(indexid))
 
                 elif selection == 4:
 
                     # TODO- IN PROGRESS
                     # manageData.scanGoodStocks()
-
                     manageData.findBestStocks()
 
                 elif selection == 5:
 
                     # plot markovich graph
-
                     numOfYearsHistory = manageData.getNumOfYearsHistory()
                     machineLearningOpt = manageData.getMachineLearningOption()
-                    manageData.plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, 'Markowitz')
+                    manageData.plotStatModelGraph(setting.stocksSymbols, machineLearningOpt,
+                                                  'Markowitz')
 
                 elif selection == 6:
 
                     # plot gini graph
-
                     numOfYearsHistory = manageData.getNumOfYearsHistory()
                     machineLearningOpt = manageData.getMachineLearningOption()
-                    manageData.plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, 'Gini')
-                else:
+                    manageData.plotStatModelGraph(setting.stocksSymbols, machineLearningOpt, 'Gini')
 
+                else:
                     break
                 manageData.expertMenu()
                 selection = manageData.selectedMenuOption()

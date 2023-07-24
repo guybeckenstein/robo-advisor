@@ -1,29 +1,46 @@
-import yfinance as yf
+import codecs
+import datetime
+import json
+import math
+
 import numpy as np
 import pandas as pd
-import datetime
-import math
-from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-import json
-import codecs
-from RoboAdvisorDataScience.api import Sector
-from RoboAdvisorDataScience.util import apiUtil, taseUtil
 import ta
-from typing import Tuple
+import yfinance as yf
+from sklearn import preprocessing
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+
+from RoboAdvisorDataScience.api import Sector
+from RoboAdvisorDataScience.util import taseUtil
+from RoboAdvisorDataScience.util import setting
 
 
-def getBestPortfolios(optionalPortfolios) -> list:
-    return [optionalPortfolios['Safest Portfolio'], optionalPortfolios['Sharpe Portfolio'],
-            optionalPortfolios['Max Risk Porfolio']]
+def getBestPortfolios(df, modelName) -> list:
+    if modelName == 'Markowitz':
+        optionalPortfolios = [buildReturnMarkowitzPortfoliosDic(df[0]),
+                              buildReturnMarkowitzPortfoliosDic(df[1]),
+                              buildReturnMarkowitzPortfoliosDic(df[2])]
+    else:
+        optionalPortfolios = [buildReturnGiniPortfoliosDic(df[0]),
+                              buildReturnGiniPortfoliosDic(df[1]),
+                                buildReturnGiniPortfoliosDic(df[2])]
+    return [optionalPortfolios[0]['Safest Portfolio'], optionalPortfolios[1]['Sharpe Portfolio'],
+            optionalPortfolios[2]['Max Risk Porfolio']]
 
 
-def getBestWeightsColumn(optionalPortfolios, pctChangeTable) -> list:
+def getBestWeightsColumn(stocksSymbols, sectorsList, optionalPortfolios, pctChangeTable) -> list:
     pctChangeTable.dropna(inplace=True)
-    low = np.dot(optionalPortfolios[0].iloc[0][3:], pctChangeTable.T)
-    medium = np.dot(optionalPortfolios[1].iloc[0][3:], pctChangeTable.T)
+    stock_sectors = setStockSectors(stocksSymbols, sectorsList)
     high = np.dot(optionalPortfolios[2].iloc[0][3:], pctChangeTable.T)
+    medium = np.dot(optionalPortfolios[1].iloc[0][3:], pctChangeTable.T)
+    pctChangeTableLow = pctChangeTable.copy()
+    for i in range(len(stock_sectors)):
+        if stock_sectors[i] == "US commodity":
+            pctChangeTableLow = pctChangeTableLow.drop(stocksSymbols[i], axis=1)
+    low = np.dot(optionalPortfolios[0].iloc[0][3:], pctChangeTableLow.T)
+
+
 
     return [low, medium, high]
 
@@ -107,6 +124,12 @@ def convertDataToTables(stocksNames, record_percentage_to_predict, numOfYearsHis
 
     closingPricesTable = pd.concat(frame.values(), axis=1, keys=frame.keys())
 
+    #convert to csv
+    if(machineLearningOpt):
+        closingPricesTable.to_csv(setting.machineLearningLocation + 'closing_prices.csv', index=True, header=True)
+    else:
+        closingPricesTable.to_csv(setting.nonMachineLearningLocation + 'closing_prices.csv', index=True, header=True)
+
     return closingPricesTable
 
 
@@ -137,16 +160,52 @@ def setSectors(stocksSymbols) -> list:
     return sectorsList
 
 
+def setStockSectors(stocksSymbols, sectorList) -> list:
+    stock_sectors = []  # TODO - FIX ORDER
+    for symbol in stocksSymbols:
+        found_sector = False
+        for sector in sectorList:
+            if symbol in sector.getStocks():
+                stock_sectors.append(sector.getName())
+                found_sector = True
+                break
+        if not found_sector:
+            stock_sectors.append(None)
+
+    return stock_sectors
+
+
 def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stocksWeights) -> list:
     sectorsWeights = [0.0] * len(sectorsList)
     for i in range(len(sectorsList)):
         sectorsWeights[i] = 0
-        for j in range(len(stockSymbols)):
-            if stockSymbols[j] in sectorsList[i].getStocks():
-                sectorsWeights[i] += stocksWeights[j]
+        #get from stocksWeights the each symbol name without weight
+
+        for j in range(len(stocksWeights.index)):
+
+            first_component = stocksWeights.index[j].split()[0]
+
+            # Check if the first component can be converted to an integer
+            try:
+                first_component_int = int(first_component)
+                # The first component is a valid integer, use it for integer comparison
+                if first_component_int in sectorsList[i].getStocks():
+                    sectorsWeights[i] += stocksWeights[j]
+            except ValueError:
+                # The first component is not a valid integer, use it for string comparison
+                if first_component in sectorsList[i].getStocks():
+                    sectorsWeights[i] += stocksWeights[j]
 
     return sectorsWeights
 
+
+def dropStocksFromUsCommoditySector(stocksSymbols, stock_sectors):
+    new_stocksSymbols = []
+    for i in range(len(stock_sectors)):
+        if stock_sectors[i] != "US commodity":
+            new_stocksSymbols.append(stocksSymbols[i])
+
+    return new_stocksSymbols
 
 def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeights) -> list:
     sectorsWeightsList = []
@@ -185,6 +244,11 @@ def convertUsaIndexToName(UsaIndexes):
 
 def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTase):
     if isDataFromTase == 1:
+        # Fill NaN values in 'indexOpeningPrice' with corresponding 'base indexprice'
+        df["indexOpeningPrice"].fillna(df["baseIndexPrice"], inplace=True)
+        df["high"].fillna(df["closingIndexPrice"], inplace=True)
+        df["low"].fillna(df["closingIndexPrice"], inplace=True)
+
         df["HL_PCT"] = (df["high"] - df["low"]) / df["low"] * 100.0
         df["PCT_change"] = (
             (df["closingIndexPrice"] - df["indexOpeningPrice"])
@@ -209,7 +273,7 @@ def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTas
     df["label"] = df[forecast_col].shift(-forecast_out)
     print(df.head())
 
-    X = np.array(df.drop(["label"], 1))
+    X = np.array(df.drop(columns=["label"]))
     X = preprocessing.scale(X)
     X_lately = X[-forecast_out:]
     X = X[:-forecast_out]
@@ -235,7 +299,13 @@ def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTas
     for i in forecast_set:
         next_date = datetime.datetime.fromtimestamp(next_unix)
         next_unix += 86400
-        df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+        #df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+        # Create a list of NaN values with the appropriate length (excluding the last column)
+        nan_values = [np.nan] * (len(df.columns) - 1)
+        # Append the value of i to the list of NaN values
+        nan_values.append(i)
+        # Assign the list of values to the next_date row using loc
+        df.loc[next_date] = nan_values
 
     col = df["Forecast"]
     col = col.dropna()

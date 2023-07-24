@@ -404,6 +404,10 @@ def plotDistributionOfPortfolio(yieldsList):
     # monthlyCompoundedReturns[i] = (1 + monthlyChanges[i]).cumprod() - 1
 
     for i in range(len(yieldsList)):
+        # Convert the index to datetime if it's not already in the datetime format
+        if not pd.api.types.is_datetime64_any_dtype(yieldsList[i].index):
+            yieldsList[i].index = pd.to_datetime(yieldsList[i].index)
+
         monthlyYields[i] = yieldsList[i].resample('M').first()
         monthlyChanges[i] = monthlyYields[i].pct_change().dropna() * 100
         df_describes[i] = monthlyChanges[i].describe().drop(["count"], axis=0)

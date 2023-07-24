@@ -25,7 +25,7 @@
 			{
 				"sectorName": "US bonds",
 				"taseSector": "אגרות חוב כללי - ארהב",
-				"stocks": ["IMI","LQD"]
+				"stocks": ["IEI","LQD"]
 			},
 			{
 				"sectorName": "US commodity",

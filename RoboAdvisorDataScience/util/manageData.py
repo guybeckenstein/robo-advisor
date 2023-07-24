@@ -1,37 +1,221 @@
 import json
-
 import numpy as np
 import pandas as pd
 import yfinance as yf
+from datetime import date
 from RoboAdvisorDataScience.api import Portfolio, StatsModels, User
-
 from RoboAdvisorDataScience.util import apiUtil, consoleHandler, plotFunctions, setting, taseUtil
 
+
 ######################################################################################
-# 1 - create new user by form
+# update all tables
+def updateAllTables(stocksSymbols, numOfYearsHistory):  # build DB for withdraw
+    today = date.today()
+    formatted_date = today.strftime("%Y-%m-%d")
+    updateClosingPricesTables(formatted_date, stocksSymbols, numOfYearsHistory)
+    updateDfTables(formatted_date, stocksSymbols)
 
 
-def createsNewUser(name, stocksSymbols, numOfYearsHistory):
+def updateClosingPricesTables(formatted_date_today, stocksSymbols, numOfYearsHistory):
+    with open(setting.bucketRepositoriy + "lastUpdatedClosingPrice.txt", "r") as file:
+        lastUpdatedDateClosingPrices = file.read().strip()
+    if lastUpdatedDateClosingPrices != formatted_date_today:
+        apiUtil.convertDataToTables(stocksSymbols, setting.record_percentage_to_predict,
+                                    numOfYearsHistory, machineLearningOpt=0)
+        print("updateClosingPricesTables: without maching learning")
+        apiUtil.convertDataToTables(stocksSymbols, setting.record_percentage_to_predict,
+                                    numOfYearsHistory, machineLearningOpt=1)
+        print("updateClosingPricesTables: including maching learning")
+    with open(setting.bucketRepositoriy + "lastUpdatedClosingPrice.txt", "w") as file:
+        file.write(formatted_date_today)
 
-    sectorsData = getJsonData("api/resources/sectors")  # TODO REMOVE
-    sectorsList = setSectors(stocksSymbols)
+
+def updateDfTables(formatted_date_today, stocksSymbols):
+    with open(setting.bucketRepositoriy + "lastUpdatedDftables.txt", "r") as file:
+        lastUpdatedDftables = file.read().strip()
+    if lastUpdatedDftables != formatted_date_today:
+        sectorsList = apiUtil.setSectors(stocksSymbols)
+
+        # without maching learning
+        closingPricesTable = getClosingPricesTable(machineLearningOpt=0)
+        # Markowitz
+        updateThreeLevelDfTables(machingLearningOpt=0, modelName="Markowitz",
+                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                 closingPricesTable=closingPricesTable)
+        # Gini
+        updateThreeLevelDfTables(machingLearningOpt=0, modelName="Gini",
+                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                 closingPricesTable=closingPricesTable)
+
+        # Including maching learning
+        closingPricesTable = getClosingPricesTable(machineLearningOpt=0)
+        # Markowitz
+        updateThreeLevelDfTables(machingLearningOpt=1, modelName="Markowitz",
+                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                 closingPricesTable=closingPricesTable)
+        # Gini
+        updateThreeLevelDfTables(machingLearningOpt=1, modelName="Gini",
+                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                 closingPricesTable=closingPricesTable)
+
+        with open(setting.bucketRepositoriy + "lastUpdatedDftables.txt", "w") as file:
+            file.write(formatted_date_today)
+
+
+def updateThreeLevelDfTables(machingLearningOpt, modelName, stocksSymbols, sectorsList,
+                             closingPricesTable):
+    # high risk
+    updateSpecificDfTable(machingLearningOpt=machingLearningOpt, modelName=modelName, stocksSymbols=stocksSymbols,
+                          sectorsList=sectorsList, levelOfRisk="high", maxPercentCommodity=1,
+                          maxPercentStocks=1, closingPricesTable=closingPricesTable)
+    # medium risk
+    updateSpecificDfTable(machingLearningOpt=machingLearningOpt, modelName=modelName, stocksSymbols=stocksSymbols,
+                          sectorsList=sectorsList, levelOfRisk="medium",
+                          maxPercentCommodity=setting.limitPercentMediumRiskCommodity,
+                          maxPercentStocks=setting.limitPercentMediumRiskStocks, closingPricesTable=closingPricesTable)
+    # low risk
+    updateSpecificDfTable(machingLearningOpt=machingLearningOpt, modelName=modelName, stocksSymbols=stocksSymbols,
+                          sectorsList=sectorsList, levelOfRisk="low",
+                          maxPercentCommodity=setting.limitPercenLowRiskCommodity,
+                          maxPercentStocks=setting.limitPercenLowRiskStocks, closingPricesTable=closingPricesTable)
+
+
+def updateSpecificDfTable(machingLearningOpt, modelName, stocksSymbols, sectorsList, levelOfRisk,
+                          maxPercentCommodity, maxPercentStocks, closingPricesTable):
+    if machingLearningOpt:
+        locationForSaving = setting.machineLearningLocation
+    else:
+        locationForSaving = setting.nonMachineLearningLocation
+
+    if maxPercentCommodity <= 0:
+        stock_sectors = apiUtil.setStockSectors(stocksSymbols, sectorsList)
+        filtered_stocks = []
+        for i in range(len(stock_sectors)):
+            if stock_sectors[i] != "US commodity":
+                filtered_stocks.append(stocksSymbols[i])
+            else:
+                closingPricesTable = closingPricesTable.drop(stocksSymbols[i], axis=1)
+        stocksSymbols = filtered_stocks
+
+    statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, closingPricesTable,
+                                          setting.Num_porSimulation, setting.min_Num_porSimulation,
+                                          maxPercentCommodity,
+                                          maxPercentStocks, modelName)
+    df = statsModels.getDf()
+    df.to_csv(locationForSaving + modelName + '_df_' + levelOfRisk + '.csv')
+    # TODO - Maybe save the protfolio table
+
+
+def getClosingPricesTable(machineLearningOpt):
+    if machineLearningOpt:
+        closingPricesTable = pd.read_csv(setting.machineLearningLocation + 'closing_prices.csv', index_col=0)
+    else:
+        closingPricesTable = pd.read_csv(setting.nonMachineLearningLocation + 'closing_prices.csv', index_col=0)
+    closingPricesTable = closingPricesTable.iloc[1:]
+    closingPricesTable = closingPricesTable.apply(pd.to_numeric, errors='coerce')
+    return closingPricesTable
+
+
+def getThreeLevelDfTables(machineLearningOpt, modelName):
+    lowRiskDfTable = getDfTable(machineLearningOpt, modelName, "low")
+    mediumRiskDfTable = getDfTable(machineLearningOpt, modelName, "medium")
+    highRiskDfTable = getDfTable(machineLearningOpt, modelName, "high")
+
+    return [lowRiskDfTable, mediumRiskDfTable, highRiskDfTable]
+
+
+def getDfTable(machineLearningOpt, modelName, levelOfRisk):
+    if machineLearningOpt:
+        dfTable = pd.read_csv(setting.machineLearningLocation + modelName + '_df_' + levelOfRisk + '.csv')
+    else:
+        dfTable = pd.read_csv(setting.nonMachineLearningLocation + modelName + '_df_' + levelOfRisk + '.csv')
+    dfTable = dfTable.iloc[:, 1:]
+    dfTable = dfTable.apply(pd.to_numeric, errors='coerce')
+    return dfTable
+
+#############################################################
+# manual commands
+# 1
+def createsNewUser(name, stocksSymbols, investmentAmount, machineLearningOpt, modelOption):
+    sectorsData = taseUtil.getJsonData("api/resources/sectors")
+    sectorsList = apiUtil.setSectors(stocksSymbols)
+    closingPricesTable = getClosingPricesTable(machineLearningOpt=machineLearningOpt)
+    df = getThreeLevelDfTables(machineLearningOpt, setting.modelName[modelOption - 1])
+    threeBestPortfolios = apiUtil.getBestPortfolios(df, modelName=setting.modelName[modelOption - 1])
+    bestStocksWeightsColumn = apiUtil.getBestWeightsColumn(stocksSymbols, sectorsList, threeBestPortfolios,
+                                                           closingPricesTable.pct_change())
+    threeBestStocksWeights = apiUtil.getThreeBestWeights(threeBestPortfolios)
+    threeBestSectorsWeights = apiUtil.getThreeBestSectorsWeights(sectorsList, setting.stocksSymbols,
+                                                                 threeBestStocksWeights)
+    pctChangeTable = closingPricesTable.pct_change()
+    yieldList = updatePctChangeTable(bestStocksWeightsColumn, pctChangeTable, investmentAmount)
+
+    # TODO - MOVE TO SITE
+    # TODO - change yield list to percent
+    levelOfRisk = getDataFromForm(threeBestPortfolios, threeBestSectorsWeights, sectorsList, yieldList, pctChangeTable)
+
+    finalPortfolio = threeBestPortfolios[levelOfRisk - 1]
+    if levelOfRisk == 1:
+        # drop from stocksSymbols the stocks that are in Us COmmodity SECTOR
+        stocksSymbols = apiUtil.dropStocksFromUsCommoditySector(stocksSymbols,
+                                                                apiUtil.setStockSectors(stocksSymbols, sectorsList))
+    newPortfolio = Portfolio.Portfolio(levelOfRisk, investmentAmount, stocksSymbols, sectorsData, modelOption,
+                                       machineLearningOpt)
+    newPortfolio.updateStocksData(closingPricesTable, pctChangeTable,
+                                  finalPortfolio.iloc[0][3:], finalPortfolio.iloc[0][0],
+                                  finalPortfolio.iloc[0][1], finalPortfolio.iloc[0][2])
+    user = User.User(name, newPortfolio)
+    user.updateJsonFile("DB/users")
+
+    return user
+
+
+#############################################################################################################
+# 2 refresh user data
+def refreshUserData(user) -> None:
+
+    portfolio = user.getPortfolio()
+    pctChangeTable = portfolio.getPctChangeTable()
+    returns_daily = pctChangeTable
+    weights = portfolio.getStocksWeights()
+    returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
+    cov_daily = returns_daily.cov()
+    cov_annual = cov_daily * 254
+    returns = np.dot(weights, returns_annual[:-4])
+    volatility = np.sqrt(np.dot(weights, np.dot(cov_annual[:-4], weights))) # TODO - FIX PROBLEM
+    sharpe = returns / volatility
+    portfolio.updateStocksData(portfolio.getclosingPricesTable(), pctChangeTable, weights,
+                               returns_annual, volatility, sharpe)
+    user.updatePortfolio(portfolio)
+
+
+"""def updateTableOfPortfolios():
+    sectorsData = taseUtil.getJsonData("api/resources/sectors")  # TODO REMOVE
+    sectorsList = taseUtil.setSectors(setting.stocksSymbols)
 
     # GET BASIC DATA FROM TERMINAL- TODO- get the data from site-form
-    investmentAmount, machineLearningOpt, modelOption = getUserBasicDataFromForm()
-    newPortfolio = Portfolio.Portfolio(1, investmentAmount, stocksSymbols, sectorsData, modelOption, machineLearningOpt)
+    investmentAmount, machineLearningOpt, modelOption = taseUtil.getUserBasicDataFromForm()
+    newPortfolio = Portfolio.Portfolio(1, investmentAmount, taseUtil.stocksSymbols, sectorsData, modelOption,
+                                       machineLearningOpt)
 
     # use models to find the best portfolios
     if modelOption == 1:
         # use markovich model to find the best portfolios
-        statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, setting.Num_porSimulation,
+        statsModels = StatsModels.StatsModels(setting.stocksSymbols, taseUtil.sectorsList, setting.Num_porSimulation,
                                               setting.record_percentage_to_predict,
-                                              numOfYearsHistory, machineLearningOpt, "Markowitz")
+                                              setting.numOfYearsHistory, 0, setting.limitPercenLowRiskCommodity
+                                              , setting.limitPercentMediumRiskCommodity,
+                                              setting.limitPercenLowRiskStocks,
+                                              setting.limitPercentMediumRiskStocks, "Markowitz")
 
     else:
         # use gini model to find the best portfolios
-        statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, setting.Num_porSimulation,
+        statsModels = StatsModels.StatsModels(setting.stocksSymbols, sectorsList, setting.Num_porSimulation,
                                               setting.record_percentage_to_predict,
-                                              numOfYearsHistory, machineLearningOpt, "Gini")
+                                              setting.numOfYearsHistory, 0, setting.limitPercenLowRiskCommodity
+                                              , setting.limitPercentMediumRiskCommodity,
+                                              setting.limitPercenLowRiskStocks,
+                                              setting.limitPercentMediumRiskStocks, "Gini")
 
     closingPricesTable = statsModels.getClosingPricesTable()
     pctChangeTable = statsModels.getPctChangeTable()
@@ -44,42 +228,21 @@ def createsNewUser(name, stocksSymbols, numOfYearsHistory):
     newPortfolio.updateStocksData(closingPricesTable, pctChangeTable,
                                   finalPortfolio.iloc[0][3:], finalPortfolio.iloc[0][0],
                                   finalPortfolio.iloc[0][1], finalPortfolio.iloc[0][2])
-    user = User.User(name, newPortfolio)
+    user = User.User("yarden", newPortfolio)
     user.updateJsonFile("DB/users")
 
-    return user
+    return user"""
 
-
-#############################################################################################################
-# 2 refresh user data
-
-def refreshUserData(user) -> None:
-
-    portfolio = user.getPortfolio()
-    pctChangeTable = portfolio.getPctChangeTable()
-    returns_daily = pctChangeTable
-    weights = portfolio.getStocksWeights()
-    returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
-    cov_daily = returns_daily.cov()
-    cov_annual = cov_daily * 254
-    returns = np.dot(weights, returns_annual[:-4])
-    volatility = np.sqrt(np.dot(weights, np.dot(cov_annual[:-4], weights)))
-    sharpe = returns / volatility
-    # find the level of risk according to the user's choice
-    # build the portfolio according to the level of risk
-    portfolio.updateStocksData(portfolio.getclosingPricesTable(), pctChangeTable, weights,
-                               returns_annual, volatility, sharpe)
-    user.updatePortfolio(portfolio)
 
 #############################################################################################################
 # 3 - plot user portfolio - TODO- PLOT FROM SITE
-
 
 def plotUserPortfolio(user) -> None:
     plt = user.plotPortfolioComponent()
     plotFunctions.plot(plt)
     plt = user.plotInvestmentPortfolioYield()
     plotFunctions.plot(plt)
+
 
 #############################################################################################################
 # 4- EXPERT OPTIONS:
@@ -102,6 +265,7 @@ def forcastSpecificStock(stock, isDataComeFromTase, numOfYearsHistory) -> None:
         df, col = price_forecast(df, setting.record_percentage_to_predict, 0)
         plotPriceForcast(stock, df, 0)
 
+
 #############################################################################################################
 # EXPERT -2
 
@@ -120,6 +284,7 @@ def plotbb_strategy_stock(stockName, start="2009-01-01", end="2023-01-01") -> No
                                                                      stock_prices['Lower'], stock_prices['Upper'])
     plotFunctions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
 
+
 #############################################################################################################
 # 4 -3
 
@@ -127,6 +292,7 @@ def plotbb_strategy_stock(stockName, start="2009-01-01", end="2023-01-01") -> No
 def createJsonDataFromTase(indexId, nameFile) -> None:
     jsonData = taseUtil.getJsonDataFromTase(indexId, nameFile)
     createsJsonFile(jsonData, nameFile)
+
 
 #############################################################################################################
 # EXPERT -4
@@ -138,24 +304,33 @@ def findBestStocks() -> None:
 
 def scanGoodStocks() -> None:
     plotFunctions.plotTopStocks(apiUtil.scanGoodStocks())
+
+
 ############################################################################################################
 # EXPERT- 5&6
 
 
-def plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, modelOption) -> None:
+def plotStatModelGraph(stocksSymbols, machineLearningOpt, modelOption) -> None:
     sectorsList = setSectors(stocksSymbols)
 
-    if modelOption == "Markowitz":
-        statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, setting.Num_porSimulation,
-                                              setting.record_percentage_to_predict, numOfYearsHistory,
-                                              machineLearningOpt, "Markowitz")
-    else:
-        statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, setting.Num_porSimulation,
-                                              setting.record_percentage_to_predict,
-                                              numOfYearsHistory, machineLearningOpt, "Gini")
+    closingPricesTable = getClosingPricesTable(machineLearningOpt)
 
-    ThreePortfoliosList = statsModels.getThreeBestPortfolios()
-    threeBestSectorsWeights = statsModels.getThreeBestSectorsWeights()
+    if modelOption == "Markowitz":
+        statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, closingPricesTable,
+                                              setting.Num_porSimulation,
+                                              setting.min_Num_porSimulation,
+                                              1, 1, "Markowitz")
+    else:
+        statsModels = StatsModels.StatsModels(stocksSymbols, sectorsList, closingPricesTable,
+                                              setting.Num_porSimulation,
+                                              setting.min_Num_porSimulation,
+                                              1, 1, "Gini")
+    df = statsModels.getDf()
+    ThreePortfoliosList = apiUtil.getBestPortfolios(df, modelName=setting.modelName[modelOption - 1])
+    threeBestStocksWeights = apiUtil.getThreeBestWeights(ThreePortfoliosList)
+    threeBestSectorsWeights = apiUtil.getThreeBestSectorsWeights(sectorsList, setting.stocksSymbols,
+                                                                 threeBestStocksWeights)
+
     min_variance_port = ThreePortfoliosList[0]
     sharpe_portfolio = ThreePortfoliosList[1]
     max_returns = ThreePortfoliosList[2]
@@ -168,6 +343,8 @@ def plotStatModelGraph(stocksSymbols, numOfYearsHistory, machineLearningOpt, mod
     else:
         plotFunctions.plotGiniGraph(sectorsList, threeBestSectorsWeights, min_variance_port,
                                     sharpe_portfolio, max_returns, max_vols, df)
+
+
 ############################################################################################################
 # UTILITY FUNCTIONS
 ############################################################################################################
@@ -205,16 +382,16 @@ def getUserFromDB(userName):
     sectorsData = getJsonData("api/resources/sectors")  # universal from file
 
     # get data from api and convert it to tables
-    closingPricesTable = convertDataToTables(stocksSymbols, setting.record_percentage_to_predict,
-                                             setting.numOfYearsHistory, machineLearningOpt)
+    closingPricesTable = getClosingPricesTable(int(machineLearningOpt))
     userPortfolio = Portfolio.Portfolio(levelOfRisk, startingInvestmentAmount, stocksSymbols, sectorsData,
                                         selectedModel, machineLearningOpt)
     pctChangeTable = closingPricesTable.pct_change()
     pctChangeTable.dropna(inplace=True)
     weighted_sum = np.dot(stocksWeights, pctChangeTable.T)
-    pctChangeTable["weighted_sum_"+str(levelOfRisk)] = weighted_sum
-    pctChangeTable["yield_"+str(levelOfRisk)] = weighted_sum
-    pctChangeTable["yield_"+str(levelOfRisk)] = makesYieldColumn(pctChangeTable["yield_"+str(levelOfRisk)], weighted_sum, startingInvestmentAmount)
+    pctChangeTable["weighted_sum_" + str(levelOfRisk)] = weighted_sum
+    pctChangeTable["yield_" + str(levelOfRisk)] = weighted_sum
+    pctChangeTable["yield_" + str(levelOfRisk)] = makesYieldColumn(pctChangeTable["yield_" + str(levelOfRisk)],
+                                                                   weighted_sum, startingInvestmentAmount)
     userPortfolio.updateStocksData(closingPricesTable, pctChangeTable, stocksWeights, annualReturns,
                                    annualVolatility, annualSharpe)
     user = User.User(userName, userPortfolio)
@@ -236,8 +413,8 @@ def getNumOfUsersInDB() -> int:
     return len(jsonData['usersList'])
 
 
-def updatePctChangeTable(statModel, pctChangeTable, investment):
-    [weighted_low, weighted_medium, weighted_high] = statModel.getBestStocksWeightsColumn()
+def updatePctChangeTable(bestStocksWeightsColumn, pctChangeTable, investment):
+    [weighted_low, weighted_medium, weighted_high] = bestStocksWeightsColumn
     pctChangeTable.dropna(inplace=True)
     pctChangeTable["weighted_sum_1"] = weighted_low
     pctChangeTable["weighted_sum_2"] = weighted_medium
@@ -252,14 +429,11 @@ def updatePctChangeTable(statModel, pctChangeTable, investment):
     pctChangeTable["yield_2"] = yield_medium
     pctChangeTable["yield_3"] = yield_high
 
-
     return [yield_low, yield_medium, yield_high]
 
 
-def getDataFromForm(statModel, sectorsList, yieldsList, pctChangeTable) -> int:
+def getDataFromForm(threeBestPortfolosList, threeBestSectorsWeights, sectorsList, yieldsList, pctChangeTable) -> int:
     # TODO - get from form instead of console
-    threeBestPortfolosList = statModel.getThreeBestPortfolios()
-    threeBestSectorsWeights = statModel.getThreeBestSectorsWeights()
     count = 0
 
     # question 1
@@ -272,7 +446,7 @@ def getDataFromForm(statModel, sectorsList, yieldsList, pctChangeTable) -> int:
     count += getScoreByAnswerFromUser(stringToShow)
 
     # question 3
-    stringToShow = "Which graph do you prefer?\nsaftest - 1, sharpe - 2, max return - 3 ?\n"
+    stringToShow = "Which graph do you prefer?\nsaftest - 1, sharpest - 2, max return - 3 ?\n"
     plotThreePortfoliosGraph(threeBestPortfolosList, threeBestSectorsWeights, sectorsList, pctChangeTable)
     count += getScoreByAnswerFromUser(stringToShow)
 
@@ -293,7 +467,7 @@ def createsJsonFile(json_obj, nameProduct) -> None:
     parts = nameProduct.split("/")
     last_element = parts[-1]
     with open(
-        "api/resources/"+last_element + ".json", "w"
+            "api/resources/" + last_element + ".json", "w"
     ) as f:  # Use the `dump()` function to write the JSON data to the file
         json.dump(json_obj, f)
 
@@ -354,6 +528,7 @@ def plotPriceForcast(stockSymbol, df, isDataGotFromTase) -> None:
 
 def getScoreByAnswerFromUser(stringToShow):
     return consoleHandler.getScoreByAnswerFromUser(stringToShow)
+
 
 # input from user functions(currently from console)
 

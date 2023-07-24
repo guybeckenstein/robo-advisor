@@ -1,0 +1,25 @@
+{% extends "form/base.html" %}
+{% block content %}
+{% load static %}
+
+<div class="content">
+	<div class="info">
+		<form action="{% url 'createPortfolio' %}" method="post">
+			{% csrf_token %}
+
+			<!-- Include your form fields here -->
+			<label>Enter starting investment amount</label><br>
+			<input type="text" id="q1_a1" name="user_answer_1" pattern="^[1-9][0-9]*$" required><label for="q1_a1" class=""></label><br>
+			<label>Which stats model do you prefer?</label><br>
+			<input type="radio" id="q2_a1" name="user_answer_2" value="Markowitz"><label for="q2_a1" class="">Markowitz</label><br>
+			<input type="radio" id="q2_a2" name="user_answer_2" value="Gini"><label for="q2_a2" class="">Gini</label><br>
+			<label>Interested in using machine learning?</label><br>
+			<input type="radio" id="q3_a1" name="user_answer_3" value="yes"><label for="q3_a1" class="">yes</label><br>
+			<input type="radio" id="q3_a2" name="user_answer_3" value="no"><label for="q3_a2" class="">no</label><br>
+
+			<input type="submit" value="Submit">
+		</form>
+	</div>
+</div>
+
+{% endblock content %}

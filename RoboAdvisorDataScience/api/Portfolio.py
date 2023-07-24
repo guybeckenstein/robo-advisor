@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import pandas as pd
+
 from RoboAdvisorDataScience.api import Sector as Sector
 import datetime
 
@@ -151,17 +153,22 @@ class Portfolio:
     # get changes
     def getTotalChange(self):
         totalChange = (self.getTotalValueChange()+self.__startingInvestmentAmount)/self.__startingInvestmentAmount
+        totalChange = totalChange * 100 - 100
         return totalChange
 
     def getYearlyChange(self):
-        yearlyYields = self.__pctChangeTable['yield_selected'].resample('M').first()
+        self.__pctChangeTable['yield_selected'].index = pd.to_datetime(self.__pctChangeTable['yield_selected'].index)
+        yearlyYields = self.__pctChangeTable['yield_selected'].resample('Y').first()
         yearlyChanges = yearlyYields.pct_change().dropna() * 100
         return yearlyChanges[-1]
 
     def getMonthlyChange(self):
+        self.__pctChangeTable['yield_selected'].index = pd.to_datetime(self.__pctChangeTable['yield_selected'].index)
         monthlyYields = self.__pctChangeTable['yield_selected'].resample('M').first()
         monthlyChanges = monthlyYields.pct_change().dropna() * 100
         return monthlyChanges[-1]
+
+
 
     def getDailyChange(self):
         return self.__pctChangeTable['weighted_sum_selected'].iloc[-1]
