@@ -24,6 +24,7 @@ def services(request):
 
 @login_required
 def capital_market_form(request):
+    # Each user fills this form, and it gets a rating from 3 to 9
     try:
         questionnaire = Questionnaire.objects.get(user=request.user)
     except Questionnaire.DoesNotExist:
@@ -41,8 +42,10 @@ def capital_market_form(request):
     elif request.method == 'POST':
         if questionnaire is None:  # CREATE
             form = CapitalMarketForm(request.POST)
+            # TODO: connect to relevant part in the logic Backend
         else:  # UPDATE
             form = CapitalMarketForm(request.POST, instance=questionnaire)
+            # TODO: connect to relevant part in the logic Backend
 
         if form.is_valid():  # CREATE and UPDATE
             form.instance.user = request.user
