@@ -52,14 +52,14 @@ def capital_market_form(request):
             form = CapitalMarketForm(request.POST)
         else:  # UPDATE
             form = CapitalMarketForm(request.POST, instance=questionnaire)
-        # DEBUGGING, without this the code won't work
-        print("Form errors:", form.errors)
-        # Sum answers' values
-        answer_1_value = int(form.cleaned_data['answer_1'])
-        answer_2_value = int(form.cleaned_data['answer_2'])
-        answer_3_value = int(form.cleaned_data['answer_3'])
-        answers_sum = answer_1_value + answer_2_value + answer_3_value
         if form.is_valid():  # CREATE and UPDATE
+            # DEBUGGING, without this the code won't work
+            print("Form errors:", form.errors)
+            # Sum answers' values
+            answer_1_value = int(form.cleaned_data['answer_1'])
+            answer_2_value = int(form.cleaned_data['answer_2'])
+            answer_3_value = int(form.cleaned_data['answer_3'])
+            answers_sum = answer_1_value + answer_2_value + answer_3_value
             # Form instance
             form.instance.user = request.user
             form.instance.answers_sum = answers_sum
