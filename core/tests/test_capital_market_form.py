@@ -7,7 +7,7 @@ from django.template import Template, Context
 from django.urls import reverse
 
 from core.models import Questionnaire
-from user.models import UserPreferences
+from user.models import UserPreferencesA
 
 
 @pytest.mark.django_db
@@ -63,4 +63,4 @@ class TestCapitalMarketForm:
     def sign_in(client, create_user_default: User, create_user_preferences_non_default: Callable) -> None:
         user: User = create_user_default
         client.force_login(user)
-        user_preferences: UserPreferences = create_user_preferences_non_default(user, 0, 0)
+        user_preferences: UserPreferencesA = create_user_preferences_non_default(user, 0, 0)

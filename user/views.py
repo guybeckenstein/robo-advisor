@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
 from .forms import UserRegisterForm, UserUpdateForm, UserPreferencesForm
-from .models import UserPreferences
+from .models import UserPreferencesA
 
 
 def register(request):
@@ -48,8 +48,8 @@ def logout(request):
 def profile(request):
     # Each user fills this form, and it gets a rating from 3 to 9
     try:
-        preferences = UserPreferences.objects.get(user=request.user)
-    except UserPreferences.DoesNotExist:
+        preferences = UserPreferencesA.objects.get(user=request.user)
+    except UserPreferencesA.DoesNotExist:
         preferences = None
     if request.method == 'GET':
         if preferences is None:

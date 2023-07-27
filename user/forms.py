@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.utils.html import format_html
 
-from .models import UserPreferences
+from .models import UserPreferencesA
 
 # TODO: make a User model that its unique field is `email` and not `username`; i.e. we don't need username at all
 
@@ -93,5 +93,5 @@ class UserPreferencesForm(forms.ModelForm):
             self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     class Meta:
-        model = UserPreferences
+        model = UserPreferencesA
         fields = ['ml_answer', 'model_answer']

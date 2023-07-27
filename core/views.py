@@ -7,7 +7,7 @@ from django.template.context_processors import csrf
 from backend_api.util import manageData
 from core.forms import CapitalMarketForm
 from core.models import TeamMember, Questionnaire
-from user.models import UserPreferences
+from user.models import UserPreferencesA
 
 
 def homepage(request):
@@ -27,8 +27,8 @@ def services(request):
 @login_required
 def capital_market_form(request):
     try:
-        user_preferences_instance = UserPreferences.objects.get(user=request.user)
-    except UserPreferences.DoesNotExist:
+        user_preferences_instance = UserPreferencesA.objects.get(user=request.user)
+    except UserPreferencesA.DoesNotExist:
         raise Http404
 
     # Each user fills this form, and it gets a rating from 3 to 9
@@ -36,7 +36,7 @@ def capital_market_form(request):
         questionnaire = Questionnaire.objects.get(user=request.user)
     except Questionnaire.DoesNotExist:
         questionnaire = None
-        # Retrieve the UserPreferences instance for the current user
+        # Retrieve the UserPreferencesA instance for the current user
     if request.method == 'GET':
         if questionnaire is None:
             context = {'title': 'Fill Form', 'form': CapitalMarketForm(form_type='create', user_preferences_instance=user_preferences_instance)}
