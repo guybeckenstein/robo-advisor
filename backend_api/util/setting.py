@@ -30,11 +30,11 @@ stocksSymbols = [
 
 # DB
 nameOfBucket = '1'
-bucketRepositoriy = 'DB/Bucket'+nameOfBucket+'/'
+bucketRepositoriy = 'backend_api/DB/Bucket' + nameOfBucket + '/'
 machineLearningLocation = bucketRepositoriy + 'includingMachineLearning/'
 nonMachineLearningLocation = bucketRepositoriy + 'withoutMachineLearning/'
 
-usersJsonName = "DB/users"  # where to save the users details
+usersJsonName = "backend_api/DB/users"  # where to save the users details
 ############################################
 # setting for api-tase connection and apps:
 tokenUrl = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"

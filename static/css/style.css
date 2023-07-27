@@ -211,3 +211,11 @@ svg {
     font-weight: 600;
     color: rgb(50, 50, 50);
 }
+
+.capital-market-form-img {
+    width: 500px;
+}
+
+.capital-market-form-img img {
+    width: 100%;
+}

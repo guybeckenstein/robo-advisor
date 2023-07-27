@@ -2,10 +2,10 @@ import json
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from datetime import date
-from api import Portfolio, StatsModels, User
-from typing import Tuple
-from util import apiUtil, consoleHandler, plotFunctions, setting
+from backend_api.api import Portfolio, StatsModels, User
+from backend_api.util import apiUtil, consoleHandler, plotFunctions, setting
+
+STATIC_FILES_LOCATION = 'static/img/graphs/'
 
 
 ######################################################################################
@@ -37,13 +37,13 @@ def createsNewUser(name: str, stocksSymbols: list, investmentAmount: int,
 
 def plotUserPortfolio(user) -> None:
     # pie chart of sectors weights
-    plt = user.plotPortfolioComponent()
-    plotFunctions.plot(plt)# TODO plot at site
+    plt_instance = user.plotPortfolioComponent()
+    plotFunctions.plot(plt_instance)# TODO plot at site
     # chart of stocks weights
-    plt = user.plotPortfolioComponentStocks()
-    plotFunctions.plot(plt)  # TODO plot at site
-    plt = user.plotInvestmentPortfolioYield()
-    plotFunctions.plot(plt)# TODO plot at site
+    plt_instance = user.plotPortfolioComponentStocks()
+    plotFunctions.plot(plt_instance)  # TODO plot at site
+    plt_instance = user.plotInvestmentPortfolioYield()
+    plotFunctions.plot(plt_instance)# TODO plot at site
 
 
 #############################################################################################################
@@ -58,15 +58,15 @@ def forcastSpecificStock(stock:str, isDataComeFromTase:bool, numOfYearsHistory:i
         df["tradeDate"] = pd.to_datetime(df["tradeDate"])
         df.set_index("tradeDate", inplace=True)
         df, col = price_forecast(df, setting.record_percentage_to_predict, 1)
-        plt = plotPriceForcast(stock, df, 1)
+        plt_instance = plotPriceForcast(stock, df, 1)
 
     else:
         yf.pdr_override()
         start_date, end_date = getFromAndToDate(numOfYearsHistory)
         df = yf.download(stock, start=start_date, end=end_date)
         df, col = price_forecast(df, setting.record_percentage_to_predict, 0)
-        plt = plotPriceForcast(stock, df, 0)
-    plotFunctions.plot(plt)  # TODO plot at site
+        plt_instance = plotPriceForcast(stock, df, 0)
+    plotFunctions.plot(plt_instance)  # TODO plot at site
 
 
 #############################################################################################################
@@ -85,21 +85,21 @@ def plotbb_strategy_stock(stockName:str, start="2009-01-01", end="2023-01-01") -
 
     buy_price, sell_price, bb_signal = apiUtil.implement_bb_strategy(stock_prices['Adj Close'],
                                                                      stock_prices['Lower'], stock_prices['Upper'])
-    plt = plotFunctions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
-    plotFunctions.plot(plt)  # TODO plot at site
+    plt_instance = plotFunctions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
+    plotFunctions.plot(plt_instance)  # TODO plot at site
 
 #############################################################################################################
 # EXPERT -4
 
 
 def findBestStocks() -> None:
-    plt = plotFunctions.plotTopStocks(apiUtil.findBestStocks())
-    plotFunctions.plot(plt)  # TODO plot at site
+    plt_instance = plotFunctions.plotTopStocks(apiUtil.findBestStocks())
+    plotFunctions.plot(plt_instance)  # TODO plot at site
 
 
 def scanGoodStocks() -> None:
-    plt = plotFunctions.plotTopStocks(apiUtil.scanGoodStocks())
-    plotFunctions.plot(plt)  # TODO plot at site
+    plt_instance = plotFunctions.plotTopStocks(apiUtil.scanGoodStocks())
+    plotFunctions.plot(plt_instance)  # TODO plot at site
 
 
 ############################################################################################################
@@ -134,13 +134,13 @@ def plotStatModelGraph(stocksSymbols: list, machineLearningOpt: int, modelOption
     df = statsModels.getDf()
 
     if modelOption == "Markowitz":
-        plt = plotFunctions.plotMarkowitzGraph(sectorsList, threeBestSectorsWeights, min_variance_port,
+        plt_instance = plotFunctions.plotMarkowitzGraph(sectorsList, threeBestSectorsWeights, min_variance_port,
                                          sharpe_portfolio, max_returns, max_vols, df)
     else:
-        plt = plotFunctions.plotGiniGraph(sectorsList, threeBestSectorsWeights, min_variance_port,
+        plt_instance = plotFunctions.plotGiniGraph(sectorsList, threeBestSectorsWeights, min_variance_port,
                                     sharpe_portfolio, max_returns, max_vols, df)
 
-    plotFunctions.plot(plt)# TODO plot at site
+    plotFunctions.plot(plt_instance)# TODO plot at site
 
 
 ############################################################################################################
@@ -150,7 +150,7 @@ def plotStatModelGraph(stocksSymbols: list, machineLearningOpt: int, modelOption
 
 # Get extended data information from Db (csv tables)
 def getExtendedDataFromDB(stocksSymbols: list, machineLearningOpt: int, modelOption: int):
-    sectorsData = apiUtil.getJsonData("api/resources/sectors")
+    sectorsData = apiUtil.getJsonData("backend_api/api/resources/sectors")
     sectorsList = apiUtil.setSectors(stocksSymbols)
     closingPricesTable = getClosingPricesTable(machineLearningOpt=machineLearningOpt)
     df = getThreeLevelDfTables(machineLearningOpt, setting.modelName[modelOption - 1])
@@ -222,7 +222,7 @@ def getUserFromDB(userName: str)-> User.User:
     annualReturns = userData['annualReturns']
     annualVolatility = userData['annualVolatility']
     annualSharpe = userData['annualSharpe']
-    sectorsData = getJsonData("api/resources/sectors")  # universal from file
+    sectorsData = getJsonData("backend_api/api/resources/sectors")  # universal from file
 
     closingPricesTable = getClosingPricesTable(int(machineLearningOpt))
     userPortfolio = Portfolio.Portfolio(levelOfRisk, startingInvestmentAmount, stocksSymbols, sectorsData,
@@ -331,7 +331,7 @@ def getJsonData(name):
     return apiUtil.getJsonData(name)
 
 
-def getFromAndToDate(numOfYears) -> Tuple[str, str]:
+def getFromAndToDate(numOfYears) -> tuple[str, str]:
     return apiUtil.getFromAndToDates(numOfYears)
 
 
@@ -340,29 +340,29 @@ def plotThreePortfoliosGraph(threeBestPortfolosList, threeBestSectorsWeights, se
     min_variance_port = threeBestPortfolosList[0]
     sharpe_portfolio = threeBestPortfolosList[1]
     max_returns = threeBestPortfolosList[2]
-    plt = plotFunctions.plotThreePortfoliosGraph(min_variance_port, sharpe_portfolio, max_returns,
+    plt_instance = plotFunctions.plotThreePortfoliosGraph(min_variance_port, sharpe_portfolio, max_returns,
                                            threeBestSectorsWeights, sectorsList, pctChangeTable)
-    plotFunctions.plot(plt)# TODO plot at site
+    plotFunctions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'three_portfolios.png')
 
 
 def plotDistributionOfStocks(stockNames, pctChangeTable) -> None:
-    plt = plotFunctions.plotDistributionOfStocks(stockNames, pctChangeTable)
-    plotFunctions.plot(plt)# TODO plot at site
+    plt_instance = plotFunctions.plotDistributionOfStocks(stockNames, pctChangeTable)
+    plotFunctions.plot(plt_instance)# TODO plot at site
 
 
-def plotDistributionOfPortfolio(yieldsList) -> None:
-    plt = plotFunctions.plotDistributionOfPortfolio(yieldsList)
-    plotFunctions.plot(plt)# TODO plot at site
+def plotDistributionOfPortfolio(distribution_graph) -> None:
+    plt_instance = plotFunctions.plotDistributionOfPortfolio(distribution_graph)
+    plotFunctions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'distribution_graph.png')
 
 
 def plotbb_strategy_Portfolio(pctChangeTable, newPortfolio) -> None:
-    plt = plotFunctions.plotbb_strategy_Portfolio(pctChangeTable, newPortfolio)
-    plotFunctions.plot(plt)# TODO plot at site
+    plt_instance = plotFunctions.plotbb_strategy_Portfolio(pctChangeTable, newPortfolio)
+    plotFunctions.plot(plt_instance)# TODO plot at site
 
 
 def plotPriceForcast(stockSymbol, df, isDataGotFromTase) -> None:
-    plt = plotFunctions.plotpriceForcast(stockSymbol, df, isDataGotFromTase)
-    plotFunctions.plot(plt)# TODO plot at site
+    plt_instance = plotFunctions.plotpriceForcast(stockSymbol, df, isDataGotFromTase)
+    plotFunctions.plot(plt_instance)# TODO plot at site
 
 
 def getScoreByAnswerFromUser(stringToShow: str)-> int:

@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from util import apiUtil
+from backend_api.util import apiUtil
 
 
 class StatsModels:

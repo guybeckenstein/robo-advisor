@@ -1,4 +1,3 @@
-
 def getName() -> str:
     print("enter name")
     name = input()

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from api import Sector as Sector
+from backend_api.api import Sector as Sector
 import datetime
 
 

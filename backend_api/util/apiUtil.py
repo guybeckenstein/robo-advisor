@@ -9,7 +9,7 @@ import yfinance as yf
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from api import Sector
+from backend_api.api import Sector
 from typing import Tuple
 
 
@@ -102,7 +102,7 @@ def getJsonData(name):
 
 
 def getSectorsDataFromFile():
-    sectorsData = getJsonData("api/resources/sectors")
+    sectorsData = getJsonData("backend_api/api/resources/sectors")
     return sectorsData['sectorsList']['result']
 
 

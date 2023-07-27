@@ -441,5 +441,9 @@ def plotTopStocks(topStocks):
     print(topStocks)
 
 
-def plot(plt):
-    plt.show()
+def plot(plt_instance):
+    plt_instance.show()
+
+
+def save_graphs(plt_instance, file_name):
+    plt_instance.savefig(file_name, format='png')

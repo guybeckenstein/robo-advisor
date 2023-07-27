@@ -45,7 +45,7 @@ if __name__ == '__main__':
             closingPricesTable, threeBestPortfolios, pctChangeTable)
 
             # add user to DB(json file)
-            newUser.updateJsonFile("DB/users")
+            newUser.updateJsonFile("backend_api/DB/users")
             # TODO use sqlite instead of json file or makes conversion from json to sqlite
 
 
