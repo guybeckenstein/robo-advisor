@@ -10,19 +10,16 @@ from django.urls import reverse_lazy
 
 class CapitalMarketForm(forms.ModelForm):
     answer_1 = forms.ChoiceField(
-        choices=((1, '1'), (2, '2'), (3, '3')),
+        choices=((1, '0-1'), (2, '2-3'), (3, '4-100')),
         widget=forms.RadioSelect(),
-        label='Question #1: ...',
     )
     answer_2 = forms.ChoiceField(
-        choices=((1, '1'), (2, '2'), (3, '3')),
+        choices=((1, 'Low risk'), (2, 'Medium risk'), (3, 'High risk')),
         widget=forms.RadioSelect(),
-        label='Question #2: ...',
     )
     answer_3 = forms.ChoiceField(
-        choices=((1, '1'), (2, '2'), (3, '3')),
+        choices=((1, 'Safest'), (2, 'Sharpest'), (3, 'Maximum return')),
         widget=forms.RadioSelect(),
-        label='Question #3: ...',
     )
 
     def __init__(self, *args, **kwargs):
@@ -35,9 +32,10 @@ class CapitalMarketForm(forms.ModelForm):
             'hx-target': '#capital-market-form',
             'hx-swap': 'outerHTML'
         }
-        self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">Question #1: ...</span>')
-        self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">Question #2: ...</span>')
-        self.fields['answer_3'].label = format_html('<span class="capital-market-form-label">Question #3: ...</span>')
+        # TODO: make dynamic code that updates CSV files from `/backend-api/DB/...`
+        self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">Question #1: For how many years do you want to invest?</span>')
+        self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">Question #2: Which distribution do you prefer?</span>')
+        self.fields['answer_3'].label = format_html('<span class="capital-market-form-label">Question #3: What is your preferable graph?</span>')
 
         if form_type == 'create':
             self.helper.layout = Layout(
