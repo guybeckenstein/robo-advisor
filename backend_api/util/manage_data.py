@@ -2,6 +2,7 @@ import json
 import numpy as np
 import pandas as pd
 import yfinance as yf
+from typing import Tuple
 from backend_api.api import portfolio, stats_models, user
 from backend_api.util import api_util, console_handler, plot_functions, settings
 
@@ -13,7 +14,6 @@ STATIC_FILES_LOCATION = 'static/img/graphs/'
 def create_new_user(name: str, stocks_symbols: list, investment_amount: int, is_machine_learning: int,
                     model_option: int, level_of_risk: int, sectors_data, sectors: list, closing_prices_table,
                     three_best_portfolios, pct_change_table) -> user.User:
-
     final_portfolio = three_best_portfolios[level_of_risk - 1]
     if level_of_risk == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
@@ -57,14 +57,14 @@ def forecast_specific_stock(stock: str, is_data_come_from_tase: bool, num_of_yea
         df = pd.DataFrame(stock["indexEndOfDay"]["result"])
         df["tradeDate"] = pd.to_datetime(df["tradeDate"])
         df.set_index("tradeDate", inplace=True)
-        df, col = price_forecast(df, settings.record_percentage_to_predict, 1)
+        df, col = price_forecast(df, settings.RECORD_PERCENT_TO_PREDICT, 1)
         plt_instance = plot_price_forecast(stock, df, 1)
 
     else:
         yf.pdr_override()
         start_date, end_date = get_from_and_to_date(num_of_years_history)
         df = yf.download(stock, start=start_date, end=end_date)
-        df, col = price_forecast(df, settings.record_percentage_to_predict, 0)
+        df, col = price_forecast(df, settings.RECORD_PERCENT_TO_PREDICT, 0)
         plt_instance = plot_price_forecast(stock, df, 0)
     plot_functions.plot(plt_instance)  # TODO plot at site
 
@@ -87,6 +87,7 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
                                                                       stock_prices['Lower'], stock_prices['Upper'])
     plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
     plot_functions.plot(plt_instance)  # TODO plot at site
+
 
 #############################################################################################################
 # EXPERT -4
@@ -113,16 +114,16 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
 
     if model_option == "Markowitz":
         curr_stats_models = stats_models.StatsModels(stocks_symbols, sectors, closing_prices_table,
-                                                     settings.num_por_simulation, settings.min_num_por_simulation,
+                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
                                                      1, 1, "Markowitz")
     else:
         curr_stats_models = stats_models.StatsModels(stocks_symbols, sectors, closing_prices_table,
-                                                     settings.num_por_simulation, settings.min_num_por_simulation,
+                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
                                                      1, 1, "Gini")
     df = curr_stats_models.get_df()
-    three_best_portfolios: list = api_util.get_best_portfolios(df, model_name=settings.model_name[model_option - 1])
+    three_best_portfolios: list = api_util.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
     three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
-    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors, settings.stocks_symbols,
+    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors, settings.STOCKS_SYMBOLS,
                                                                          three_best_stocks_weights)
 
     min_variance_port = three_best_portfolios[0]
@@ -149,15 +150,15 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     """
     Get extended data information from DB (CSV tables)
     """
-    sectors_data = api_util.get_json_data("backend_api/api/resources/sectors")
+    sectors_data = api_util.get_json_data(settings.SECTORS_LOCATION)
     sectors: list = api_util.set_sectors(stocks_symbols)
     closing_prices_table = get_closing_prices_table(is_machine_learning=is_machine_learning)
-    df = get_three_level_df_tables(is_machine_learning, settings.model_name[model_option - 1])
-    three_best_portfolios = api_util.get_best_portfolios(df, model_name=settings.model_name[model_option - 1])
+    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1])
+    three_best_portfolios = api_util.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
     best_stocks_weights_column = api_util.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
                                                                   closing_prices_table.pct_change())
     three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
-    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors, settings.stocks_symbols,
+    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors, settings.STOCKS_SYMBOLS,
                                                                          three_best_stocks_weights)
     pct_change_table = closing_prices_table.pct_change()
     yields: list = update_pct_change_table(best_stocks_weights_column, pct_change_table)
@@ -169,9 +170,9 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
 # Tables according to stocks symbols
 def get_closing_prices_table(is_machine_learning: int) -> pd.DataFrame:
     if is_machine_learning == 1:
-        closing_prices_table = pd.read_csv(settings.machine_learning_location + 'closing_prices.csv', index_col=0)
+        closing_prices_table = pd.read_csv(settings.MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0)
     else:
-        closing_prices_table = pd.read_csv(settings.non_machine_learning_location + 'closing_prices.csv', index_col=0)
+        closing_prices_table = pd.read_csv(settings.NON_MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0)
     closing_prices_table = closing_prices_table.iloc[1:]
     closing_prices_table = closing_prices_table.apply(pd.to_numeric, errors='coerce')
     return closing_prices_table
@@ -193,9 +194,9 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str) -> pd
     get specific df table from csv file according to machine learning option, model name and level of risk
     """
     if is_machine_learning:
-        df_table = pd.read_csv(settings.machine_learning_location + model_name + '_df_' + level_of_risk + '.csv')
+        df_table = pd.read_csv(settings.MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv')
     else:
-        df_table = pd.read_csv(settings.non_machine_learning_location + model_name + '_df_' + level_of_risk + '.csv')
+        df_table = pd.read_csv(settings.NON_MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv')
     df_table = df_table.iloc[:, 1:]
     df_table = df_table.apply(pd.to_numeric, errors='coerce')
     return df_table
@@ -205,7 +206,7 @@ def get_all_users() -> list:
     """
     Get all users with their portfolios details from json file
     """
-    json_data = get_json_data(settings.users_json_name)
+    json_data = get_json_data(settings.USERS_JSON_NAME)
     num_of_user = len(json_data['usersList'])
     users_data = json_data['usersList']
     users: list = [] * num_of_user
@@ -219,7 +220,7 @@ def get_user_from_db(user_name: str):
     """
     Get specific user by his name with his portfolio details from json file
     """
-    json_data = get_json_data(settings.users_json_name)
+    json_data = get_json_data(settings.USERS_JSON_NAME)
     if user_name not in json_data['usersList']:
         print("User not found")
         return None
@@ -260,7 +261,7 @@ def find_user_in_list(user_name: str, users: list):
 
 
 def get_num_of_users_in_db() -> int:
-    json_data = get_json_data(settings.users_json_name)
+    json_data = get_json_data(settings.USERS_JSON_NAME)
     return len(json_data['usersList'])
 
 
@@ -321,7 +322,7 @@ def creates_json_file(json_obj, name_product: str) -> None:
     last_element: str = parts[-1]
     with open("api/resources/" + last_element + ".json", "w") as f:
         json.dump(json_obj, f)  # Use the `dump()` function to write the JSON data to the file
-        
+
 
 # api utility functions
 def set_sectors(stocks_symbols):
@@ -340,7 +341,7 @@ def get_json_data(name):
     return api_util.get_json_data(name)
 
 
-def get_from_and_to_date(num_of_years) -> tuple[str, str]:
+def get_from_and_to_date(num_of_years):  # TODO FIX RETURN TUPLE
     return api_util.get_from_and_to_dates(num_of_years)
 
 

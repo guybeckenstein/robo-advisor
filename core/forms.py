@@ -4,7 +4,7 @@ from crispy_forms.layout import Submit, Layout, Div, HTML
 from django import forms
 from django.utils.html import format_html
 
-from backend_api.util import manage_data, settings
+from backend_api.util import manage_data, settings as backend_settings
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 
@@ -74,7 +74,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user_preferences_instance = kwargs.pop('user_preferences_instance', None)
-        # self.get_questionnaire_graphs(kwargs)
+        self.get_questionnaire_graphs(user_preferences_instance)
 
         # Form
         form_type = kwargs.pop('form_type', 'create')
@@ -126,11 +126,11 @@ class InvestmentPreferencesForm(forms.ModelForm):
             self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     @staticmethod
-    def get_questionnaire_graphs(user_preferences_instance, kwargs):
+    def get_questionnaire_graphs(user_preferences_instance):
         # User preferences
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        db_tuple = manage_data.get_extended_data_from_db(settings.stocks_symbols, ml_answer, model_answer)
+        db_tuple = manage_data.get_extended_data_from_db(backend_settings.STOCKS_SYMBOLS, ml_answer, model_answer)
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yield_list = db_tuple
         # Saves two graphs

@@ -1,6 +1,6 @@
 from crispy_forms.utils import render_crispy_form
 from django.http import Http404, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
@@ -69,14 +69,14 @@ def capital_market_algorithm_preferences_form(request):
 @login_required
 def capital_market_investment_preferences_form(request):
     try:
-        user_preferences_instance = QuestionnaireB.objects.get(user=request.user)
-    except QuestionnaireB.DoesNotExist:
-        raise Http404
+        user_preferences_instance = get_object_or_404(QuestionnaireA, user=request.user)
+    except Http404:
+        return HttpResponse("You must have an instance of QuestionnaireA to fill this form.", status=404)
 
     # Each user fills this form, and it gets a rating from 3 to 9
     try:
-        questionnaire = QuestionnaireA.objects.get(user=request.user)
-    except QuestionnaireA.DoesNotExist:
+        questionnaire = QuestionnaireB.objects.get(user=request.user)
+    except QuestionnaireB.DoesNotExist:
         questionnaire = None
         # Retrieve the UserPreferencesA instance for the current user
     if request.method == 'GET':
@@ -98,9 +98,16 @@ def capital_market_investment_preferences_form(request):
             return render(request, 'core/capital_market_form_update.html', context=context)
     elif request.method == 'POST':
         if questionnaire is None:  # CREATE
-            form = InvestmentPreferencesForm(request.POST)
+            form = InvestmentPreferencesForm(
+                request.POST,
+                user_preferences_instance=user_preferences_instance
+            )
         else:  # UPDATE
-            form = InvestmentPreferencesForm(request.POST, instance=questionnaire)
+            form = InvestmentPreferencesForm(
+                request.POST,
+                user_preferences_instance=user_preferences_instance,
+                instance=questionnaire
+            )
         if form.is_valid():  # CREATE and UPDATE
             # DEBUGGING, without this the code won't work
             print("Form errors:", form.errors)

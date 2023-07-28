@@ -12,11 +12,9 @@ class QuestionnaireA(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
     user = models.OneToOneField(User, on_delete=models.RESTRICT)
     ml_answer = models.IntegerField(
-        default=PREFERENCES_MIN,
         validators=[MinValueValidator(PREFERENCES_MIN), MaxValueValidator(PREFERENCES_MAX)]
     )
     model_answer = models.IntegerField(
-        default=PREFERENCES_MIN,
         validators=[MinValueValidator(PREFERENCES_MIN), MaxValueValidator(PREFERENCES_MAX)]
     )
     date = models.DateTimeField(auto_now_add=True)

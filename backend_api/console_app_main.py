@@ -17,7 +17,7 @@ if __name__ == '__main__':
             investment_amount: int = 1000  # manage_data.get_investment_amount()
 
             # Extended data from DB (CSV Tables)
-            tables = manage_data.get_extended_data_from_db(settings.stocks_symbols, machine_learning_opt, model_option)
+            tables = manage_data.get_extended_data_from_db(settings.STOCKS_SYMBOLS, machine_learning_opt, model_option)
             sectors_data, sectors_list, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
                 pct_change_table, yield_list = tables
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
             # creates new user with portfolio details
             new_user = manage_data.create_new_user(
-                login_name, settings.stocks_symbols, investment_amount, machine_learning_opt, model_option,
+                login_name, settings.STOCKS_SYMBOLS, investment_amount, machine_learning_opt, model_option,
                 level_of_risk, sectors_data, sectors_list, closing_prices_table, three_best_portfolios, pct_change_table
             )
 
@@ -95,13 +95,13 @@ if __name__ == '__main__':
                     # plot Markowitz graph
                     num_of_years_history = manage_data.get_num_of_years_history()
                     machine_learning_opt = manage_data.get_machine_learning_option()
-                    manage_data.plot_stat_model_graph(settings.stocks_symbols, machine_learning_opt, 'Markowitz')
+                    manage_data.plot_stat_model_graph(settings.STOCKS_SYMBOLS, machine_learning_opt, 'Markowitz')
 
                 elif selection == 6:
                     # plot Gini graph
                     num_of_years_history = manage_data.get_num_of_years_history()
                     machine_learning_opt = manage_data.get_machine_learning_option()
-                    manage_data.plot_stat_model_graph(settings.stocks_symbols, machine_learning_opt, 'Gini')
+                    manage_data.plot_stat_model_graph(settings.STOCKS_SYMBOLS, machine_learning_opt, 'Gini')
 
                 else:
                     break
