@@ -1,5 +1,4 @@
 from django.contrib import admin
-from .models import UserPreferencesA, UserPreferencesB
+from .models import InvestorUser
 
-admin.site.register(UserPreferencesA)
-admin.site.register(UserPreferencesB)
+admin.site.register(InvestorUser)
