@@ -39,12 +39,19 @@ def capital_market_form(request):
         # Retrieve the UserPreferencesA instance for the current user
     if request.method == 'GET':
         if questionnaire is None:
-            context = {'title': 'Fill Form', 'form': CapitalMarketForm(form_type='create', user_preferences_instance=user_preferences_instance)}
+            context = {
+                'title': 'Fill Form',
+                'form': CapitalMarketForm(form_type='create', user_preferences_instance=user_preferences_instance)
+            }
             return render(request, 'core/capital_market_form_create.html', context=context)
         else:
             context = {
                 'title': 'Update Filled Form',
-                'form': CapitalMarketForm(form_type='update', instance=questionnaire, user_preferences_instance=user_preferences_instance)
+                'form': CapitalMarketForm(
+                    form_type='update',
+                    instance=questionnaire,
+                    user_preferences_instance=user_preferences_instance
+                )
             }
             return render(request, 'core/capital_market_form_update.html', context=context)
     elif request.method == 'POST':
@@ -65,13 +72,13 @@ def capital_market_form(request):
             form.instance.answers_sum = answers_sum
             form.save()
             # Backend
-            level_of_risk = manageData.get_level_of_risk_by_score(answers_sum)
+            level_of_risk = manage_data.get_level_of_risk_by_score(answers_sum)
             # TODO: create new user instance in the database, with the following (lines 70-74) parameters
-            # newUser = manageData.createsNewUser(loginName, setting.stocksSymbols,
-            #                                     investmentAmount, machineLearningOpt, modelOption, levelOfRisk,
-            #                                     sectorsData, sectorsList,
-            #                                     closingPricesTable, threeBestPortfolios, pctChangeTable)
-            # newUser.updateJsonFile("backend_api/DB/users")
+            # new_user = manage_data.create_new_user(
+            #     login_name, settings.stocks_symbols, investment_amount, machine_learning_opt, model_option,
+            #     level_of_risk, sectors_data, sectors, closing_prices_table, three_best_portfolios, pct_change_table
+            # )
+            # new_user.update_json_file("backend_api/DB/users")
             # Frontend
             return redirect('homepage')
         else:  # CREATE and UPDATE

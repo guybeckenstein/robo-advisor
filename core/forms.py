@@ -40,13 +40,23 @@ class CapitalMarketForm(forms.ModelForm):
             'hx-swap': 'outerHTML'
         }
         # TODO: make dynamic code that updates CSV files from `/backend_api/DB/...`
-        self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">Question #1: For how many years do you want to invest?</span>')
+        self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
+                                                    'Question #1: For how many years do you want to invest?'
+                                                    '</span>')
         first_graph = f"{settings.STATIC_URL}img/graphs/distribution_graph.png"
-        self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">Question #2: Which distribution do you prefer?</span>'
-                                                    f'<div class="capital-market-form-label capital-market-form-img"><img src="{first_graph}"></div>')
+        self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
+                                                    'Question #2: Which distribution do you prefer?'
+                                                    '</span>'
+                                                    f'<div class="capital-market-form-label capital-market-form-img">'
+                                                    f'<img src="{first_graph}">'
+                                                    f'</div>')
         second_graph = f"{settings.STATIC_URL}img/graphs/three_portfolios.png"
-        self.fields['answer_3'].label = format_html('<span class="capital-market-form-label">Question #3: What is your preferable graph?</span>'
-                                                    f'<div class="capital-market-form-label capital-market-form-img"><img src="{second_graph}"></div>')
+        self.fields['answer_3'].label = format_html('<span class="capital-market-form-label">'
+                                                    'Question #3: What is your preferable graph?'
+                                                    '</span>'
+                                                    f'<div class="capital-market-form-label capital-market-form-img">'
+                                                    f'<img src="{second_graph}">'
+                                                    f'</div>')
 
         if form_type == 'create':
             self.helper.layout = Layout(
@@ -68,15 +78,19 @@ class CapitalMarketForm(forms.ModelForm):
             )
             self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
-    def get_questionnaire_graphs(self, user_preferences_instance, kwargs):
+    @staticmethod
+    def get_questionnaire_graphs(user_preferences_instance, kwargs):
         # User preferences
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        db_tuple = manageData.get_extended_data_from_db(setting.stocksSymbols, ml_answer, model_answer)
-        sectorsData, sectorsList, closingPricesTable, threeBestPortfolios, threeBestSectorsWeights, pctChangeTable, yieldList = db_tuple
+        db_tuple = manage_data.get_extended_data_from_db(settings.stocks_symbols, ml_answer, model_answer)
+        sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
+            pct_change_table, yield_list = db_tuple
         # Saves two graphs
-        manageData.plot_distribution_of_portfolio(yieldList)
-        manageData.plot_three_portfolios_graph(threeBestPortfolios, threeBestSectorsWeights, sectorsList, pctChangeTable)
+        manage_data.plot_distribution_of_portfolio(yield_list)
+        manage_data.plot_three_portfolios_graph(
+            three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table
+        )
 
     class Meta:
         model = Questionnaire
