@@ -19,18 +19,6 @@ def create_user_default():
 
 
 @pytest.fixture(scope='function')
-def create_user_non_default() -> User:
-    user = User.objects.create_user(
-        username='testuser',
-        email='test@email.com',
-        password='testPassword123!',
-        first_name='Test',
-        last_name='User',
-    )
-    return user
-
-
-@pytest.fixture(scope='function')
 def create_user_non_default() -> Callable[[str, str, str, User, str], User]:
     def _user_factory(username: str, email: str, password: str, user: User, last_name: str) -> User:
         user = User.objects.create(

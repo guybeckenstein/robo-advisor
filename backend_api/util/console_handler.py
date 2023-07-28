@@ -1,11 +1,11 @@
-def getName() -> str:
+def get_name() -> str:
     print("enter name")
     name = input()
 
     return name
 
 
-def getInvestmentAmount() -> int:
+def get_investment_amount() -> int:
     print("enter amount of money to invest")
     amount = int(input())
     while amount < 1:
@@ -15,58 +15,58 @@ def getInvestmentAmount() -> int:
     return amount
 
 
-def getMachineLearningOption() -> int:
+def get_machine_learning_option() -> int:
     print("Interested in using machine learning? 0-no, 1-yes")
-    machineLearningOpt = int(input())
-    while machineLearningOpt != 0 and machineLearningOpt != 1:
+    is_machine_learning = int(input())
+    while is_machine_learning != 0 and is_machine_learning != 1:
         print("Please enter 0 or 1")
-        machineLearningOpt = int(input())
+        is_machine_learning = int(input())
 
-    return machineLearningOpt
+    return is_machine_learning
 
 
-def getNumOfYearsHistory() -> int:
+def get_num_of_years_history() -> int:
     print("enter number of years for history")
-    numOfYears = int(input())
-    while numOfYears < 1:
+    num_of_years = int(input())
+    while num_of_years < 1:
         print("enter number of years for history")
-        numOfYears = int(input())
+        num_of_years = int(input())
 
-    return numOfYears
+    return num_of_years
 
 
-def getModelOption() -> int:
-    print("choose model: 1 - markovich, 2 - gini\n")
-    modelOption = int(input())
-    while modelOption != 1 and modelOption != 2:
+def get_model_option() -> int:
+    print("choose model: 1 - Markowitz, 2 - Gini\n")
+    model_option = int(input())
+    while model_option != 1 and model_option != 2:
         print("Please enter 1 or 2")
-        modelOption = int(input())
+        model_option = int(input())
 
-    return modelOption
+    return model_option
 
 
-def getScoreByAnswerFromUser(stringToShow) -> int:
+def get_score_by_answer_from_user(string_to_show) -> int:
     count = 0
 
-    print(stringToShow)
+    print(string_to_show)
     answer = int(input())
-    validAnswerInputForm(answer)
+    valid_answer_input_form(answer)
     count += answer
 
     return count
 
 
-def validAnswerInputForm(answer) -> None:
+def valid_answer_input_form(answer) -> None:
     while answer < 1 or answer > 3:
-        print("Please enter 1,2 or 3")
+        print("Please enter 1, 2 or 3")
         answer = int(input())
 
 
-def selectedMenuOption() -> int:
+def selected_menu_option() -> int:
     return int(input("Enter your selection: "))  # TODO -GET FROM SITE
 
 
-def mainMenu() -> None:
+def main_menu() -> None:
     # operations- TODO- operates from the site
     print("Welcome to the stock market simulator")
     print("Please select one of the following options:")
@@ -77,12 +77,12 @@ def mainMenu() -> None:
     print("8. Exit")
 
 
-def expertMenu() -> None:
+def expert_menu() -> None:
     print("Please select one of the following options:")
-    print("1. Forcast specific stock")
+    print("1. Forecast specific stock")
     print("2. Plot specific stock")
     print("3. Add new history of data's index from tase(json)")
     print("4. makes scanner and find stocks with good result")
-    print("5. plot markovich graph")
-    print("6. plot gini graph")
+    print("5. plot Markowitz graph")
+    print("6. plot Gini graph")
     print("8. Exit")

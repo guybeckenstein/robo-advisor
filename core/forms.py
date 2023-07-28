@@ -4,7 +4,7 @@ from crispy_forms.layout import Submit, Layout, Div, HTML
 from django import forms
 from django.utils.html import format_html
 
-from backend_api.util import manageData, setting
+from backend_api.util import manage_data, settings
 from core.models import Questionnaire
 from django.urls import reverse_lazy
 
@@ -72,11 +72,11 @@ class CapitalMarketForm(forms.ModelForm):
         # User preferences
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        db_tuple = manageData.getExtendedDataFromDB(setting.stocksSymbols, ml_answer, model_answer)
+        db_tuple = manageData.get_extended_data_from_db(setting.stocksSymbols, ml_answer, model_answer)
         sectorsData, sectorsList, closingPricesTable, threeBestPortfolios, threeBestSectorsWeights, pctChangeTable, yieldList = db_tuple
         # Saves two graphs
-        manageData.plotDistributionOfPortfolio(yieldList)
-        manageData.plotThreePortfoliosGraph(threeBestPortfolios, threeBestSectorsWeights, sectorsList, pctChangeTable)
+        manageData.plot_distribution_of_portfolio(yieldList)
+        manageData.plot_three_portfolios_graph(threeBestPortfolios, threeBestSectorsWeights, sectorsList, pctChangeTable)
 
     class Meta:
         model = Questionnaire

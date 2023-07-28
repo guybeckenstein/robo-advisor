@@ -9,126 +9,125 @@ import yfinance as yf
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from backend_api.api import Sector
+from backend_api.api import sector
 from typing import Tuple
 
 
-def getBestPortfolios(df, modelName:str) -> list:
-    if modelName == 'Markowitz':
-        optionalPortfolios = [buildReturnMarkowitzPortfoliosDic(df[0]),
-                              buildReturnMarkowitzPortfoliosDic(df[1]),
-                              buildReturnMarkowitzPortfoliosDic(df[2])]
+def get_best_portfolios(df, model_name: str) -> list:
+    if model_name == 'Markowitz':
+        optional_portfolios = [build_return_markowitz_portfolios_dic(df[0]),
+                               build_return_markowitz_portfolios_dic(df[1]),
+                               build_return_markowitz_portfolios_dic(df[2])]
     else:
-        optionalPortfolios = [buildReturnGiniPortfoliosDic(df[0]),
-                              buildReturnGiniPortfoliosDic(df[1]),
-                                buildReturnGiniPortfoliosDic(df[2])]
-    return [optionalPortfolios[0]['Safest Portfolio'], optionalPortfolios[1]['Sharpe Portfolio'],
-            optionalPortfolios[2]['Max Risk Porfolio']]
+        optional_portfolios = [build_return_gini_portfolios_dic(df[0]),
+                               build_return_gini_portfolios_dic(df[1]),
+                               build_return_gini_portfolios_dic(df[2])]
+    return [optional_portfolios[0]['Safest Portfolio'], optional_portfolios[1]['Sharpe Portfolio'],
+            optional_portfolios[2]['Max Risk Portfolio']]
 
 
-def getBestWeightsColumn(stocksSymbols, sectorsList, optionalPortfolios, pctChangeTable) -> list:
-    pctChangeTable.dropna(inplace=True)
-    stock_sectors = setStockSectors(stocksSymbols, sectorsList)
-    high = np.dot(optionalPortfolios[2].iloc[0][3:], pctChangeTable.T)
-    medium = np.dot(optionalPortfolios[1].iloc[0][3:], pctChangeTable.T)
-    pctChangeTableLow = pctChangeTable.copy()
+def get_best_weights_column(stocks_symbols, sectors_list, optional_portfolios, pct_change_table) -> list:
+    pct_change_table.dropna(inplace=True)
+    stock_sectors = set_stock_sectors(stocks_symbols, sectors_list)
+    high = np.dot(optional_portfolios[2].iloc[0][3:], pct_change_table.T)
+    medium = np.dot(optional_portfolios[1].iloc[0][3:], pct_change_table.T)
+    pct_change_table_low = pct_change_table.copy()
     for i in range(len(stock_sectors)):
         if stock_sectors[i] == "US commodity":
-            pctChangeTableLow = pctChangeTableLow.drop(stocksSymbols[i], axis=1)
-    low = np.dot(optionalPortfolios[0].iloc[0][3:], pctChangeTableLow.T)
-
-
-
+            pct_change_table_low = pct_change_table_low.drop(stocks_symbols[i], axis=1)
+    low = np.dot(optional_portfolios[0].iloc[0][3:], pct_change_table_low.T)
     return [low, medium, high]
 
 
-def getThreeBestWeights(optionalPortfolios):
-    weighted_low = optionalPortfolios[0].iloc[0][3:]
-    weighted_medium = optionalPortfolios[1].iloc[0][3:]
-    weighted_high = optionalPortfolios[2].iloc[0][3:]
+def get_three_best_weights(optional_portfolios):
+    weighted_low = optional_portfolios[0].iloc[0][3:]
+    weighted_medium = optional_portfolios[1].iloc[0][3:]
+    weighted_high = optional_portfolios[2].iloc[0][3:]
 
     return [weighted_low, weighted_medium, weighted_high]
 
 
-def choosePortfolioByRiskScore(optionalPortfoliosList, riskScore):
-    if 0 < riskScore <= 4:
-        return optionalPortfoliosList[0]
-    if 5 < riskScore <= 7:
-        return optionalPortfoliosList[1]
-    if riskScore > 7:
-        return optionalPortfoliosList[2]
+def choose_portfolio_by_risk_score(optional_portfolios_list, risk_score):
+    if 0 < risk_score <= 4:
+        return optional_portfolios_list[0]
+    elif 5 < risk_score <= 7:
+        return optional_portfolios_list[1]
+    elif risk_score > 7:
+        return optional_portfolios_list[2]
+    else:
+        raise ValueError
 
 
-def buildReturnGiniPortfoliosDic(df):
-    returnDic = {'Max Risk Porfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
+def build_return_gini_portfolios_dic(df):
+    return_dic = {'Max Risk Portfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
     min_gini = df['Gini'].min()
     max_sharpe = df['Sharpe Ratio'].max()
-    max_profolio_annual = df['Profolio_annual'].max()
+    max_portfolio_annual = df['Portfolio_annual'].max()
 
     # use the min, max values to locate and create the two special portfolios
     sharpe_portfolio = df.loc[df['Sharpe Ratio'] == max_sharpe]
     safe_portfolio = df.loc[df['Gini'] == min_gini]
-    max_portfolio = df.loc[df['Profolio_annual'] == max_profolio_annual]
+    max_portfolio = df.loc[df['Portfolio_annual'] == max_portfolio_annual]
 
-    returnDic['Max Risk Porfolio'] = max_portfolio
-    returnDic['Safest Portfolio'] = safe_portfolio
-    returnDic['Sharpe Portfolio'] = sharpe_portfolio
+    return_dic['Max Risk Portfolio'] = max_portfolio
+    return_dic['Safest Portfolio'] = safe_portfolio
+    return_dic['Sharpe Portfolio'] = sharpe_portfolio
 
-    return returnDic
+    return return_dic
 
 
-def buildReturnMarkowitzPortfoliosDic(df):
-    returnDic = {'Max Risk Porfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
-    min_Markowiz = df['Volatility'].min()
+def build_return_markowitz_portfolios_dic(df):
+    return_dic = {'Max Risk Portfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
+    min_markowitz = df['Volatility'].min()
     max_sharpe = df['Sharpe Ratio'].max()
-    max_profolio_annual = df['Returns'].max()
+    max_portfolio_annual = df['Returns'].max()
 
     # use the min, max values to locate and create the two special portfolios
     sharpe_portfolio = df.loc[df['Sharpe Ratio'] == max_sharpe]
-    safe_portfolio = df.loc[df['Volatility'] == min_Markowiz]
-    max_portfolio = df.loc[df['Returns'] == max_profolio_annual]
+    safe_portfolio = df.loc[df['Volatility'] == min_markowitz]
+    max_portfolio = df.loc[df['Returns'] == max_portfolio_annual]
 
-    returnDic['Max Risk Porfolio'] = max_portfolio
-    returnDic['Safest Portfolio'] = safe_portfolio
-    returnDic['Sharpe Portfolio'] = sharpe_portfolio
+    return_dic['Max Risk Portfolio'] = max_portfolio
+    return_dic['Safest Portfolio'] = safe_portfolio
+    return_dic['Sharpe Portfolio'] = sharpe_portfolio
 
-    return returnDic
+    return return_dic
 
 
-def getJsonData(name):
+def get_json_data(name: str):
     with codecs.open(name + ".json", "r", encoding="utf-8") as file:
         json_data = json.load(file)
     return json_data
 
 
-def getSectorsDataFromFile():
-    sectorsData = getJsonData("backend_api/api/resources/sectors")
-    return sectorsData['sectorsList']['result']
+def get_sectors_data_from_file():
+    sectors_data = get_json_data("backend_api/api/resources/sectors")
+    return sectors_data['sectorsList']['result']
 
 
-def setSectors(stocksSymbols) -> list:
-    sectorsData = getSectorsDataFromFile()
-    sectorsList = []
+def set_sectors(stocks_symbols) -> list:
+    sectors_data = get_sectors_data_from_file()
+    sectors: list = []
 
-    if (len(sectorsData)) > 0:
-        for i in range(len(sectorsData)):
-            sector = Sector.Sector(sectorsData[i]['sectorName'])
-            for j in range(len(stocksSymbols)):
-                if stocksSymbols[j] in sectorsData[i]['stocks']:
-                    sector.addStock(stocksSymbols[j])
-            if len(sector.getStocks()) > 0:
-                sectorsList.append(sector)
+    if (len(sectors_data)) > 0:
+        for i in range(len(sectors_data)):
+            curr_sector = sector.Sector(sectors_data[i]['sectorName'])
+            for j in range(len(stocks_symbols)):
+                if stocks_symbols[j] in sectors_data[i]['stocks']:
+                    curr_sector.add_stock(stocks_symbols[j])
+            if len(curr_sector.get_stocks()) > 0:
+                sectors.append(curr_sector)
 
-    return sectorsList
+    return sectors
 
 
-def setStockSectors(stocksSymbols, sectorList) -> list:
+def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     stock_sectors = []  # TODO - FIX ORDER
-    for symbol in stocksSymbols:
+    for symbol in stocks_symbols:
         found_sector = False
-        for sector in sectorList:
-            if symbol in sector.getStocks():
-                stock_sectors.append(sector.getName())
+        for curr_sector in sectors:
+            if symbol in curr_sector.get_stocks():
+                stock_sectors.append(curr_sector.get_name())
                 found_sector = True
                 break
         if not found_sector:
@@ -137,63 +136,64 @@ def setStockSectors(stocksSymbols, sectorList) -> list:
     return stock_sectors
 
 
-def returnSectorsWeightsAccordingToStocksWeights(sectorsList, stockSymbols, stocksWeights) -> list:
-    sectorsWeights = [0.0] * len(sectorsList)
-    for i in range(len(sectorsList)):
-        sectorsWeights[i] = 0
-        #get from stocksWeights the each symbol name without weight
+def return_sectors_weights_according_to_stocks_weights(sectors: list, stock_symbols, stocks_weights) -> list:
+    sectors_weights = [0.0] * len(sectors)
+    for i in range(len(sectors)):
+        sectors_weights[i] = 0
+        # get from stocks_weights each symbol name without weight
 
-        for j in range(len(stocksWeights.index)):
+        for j in range(len(stocks_weights.index)):
 
-            first_component = stocksWeights.index[j].split()[0]
+            first_component = stocks_weights.index[j].split()[0]
 
             # Check if the first component can be converted to an integer
             try:
                 first_component_int = int(first_component)
                 # The first component is a valid integer, use it for integer comparison
-                if first_component_int in sectorsList[i].getStocks():
-                    sectorsWeights[i] += stocksWeights[j]
+                if first_component_int in sectors[i].get_stocks():
+                    sectors_weights[i] += stocks_weights[j]
             except ValueError:
                 # The first component is not a valid integer, use it for string comparison
-                if first_component in sectorsList[i].getStocks():
-                    sectorsWeights[i] += stocksWeights[j]
+                if first_component in sectors[i].get_stocks():
+                    sectors_weights[i] += stocks_weights[j]
 
-    return sectorsWeights
+    return sectors_weights
 
 
-def dropStocksFromUsCommoditySector(stocksSymbols, stock_sectors):
-    new_stocksSymbols = []
+def drop_stocks_from_us_commodity_sector(stocks_symbols, stock_sectors):
+    new_stocks_symbols = []
     for i in range(len(stock_sectors)):
         if stock_sectors[i] != "US commodity":
-            new_stocksSymbols.append(stocksSymbols[i])
+            new_stocks_symbols.append(stocks_symbols[i])
 
-    return new_stocksSymbols
-
-def getThreeBestSectorsWeights(sectorsList, stocksSymbols, threeBestStocksWeights) -> list:
-    sectorsWeightsList = []
-    for i in range(len(threeBestStocksWeights)):
-        sectorsWeightsList.append(returnSectorsWeightsAccordingToStocksWeights(sectorsList, stocksSymbols,
-                                                                               threeBestStocksWeights[i]))
-
-    return sectorsWeightsList
+    return new_stocks_symbols
 
 
-def getFromAndToDates(numOfYears) -> Tuple[str, str]:
+def get_three_best_sectors_weights(sectors_list, stocks_symbols, three_best_stocks_weights) -> list:
+    sectors_weights_list = []
+    for i in range(len(three_best_stocks_weights)):
+        sectors_weights_list.append(return_sectors_weights_according_to_stocks_weights(sectors_list, stocks_symbols,
+                                                                                       three_best_stocks_weights[i]))
+
+    return sectors_weights_list
+
+
+def get_from_and_to_dates(num_of_years) -> Tuple[str, str]:
     today = datetime.datetime.now()
-    startYear = today.year - numOfYears
-    startMounth = today.month
-    startDay = today.day
-    endYear = today.year
-    endMonth = today.month
-    endDay = today.day
-    fromDate = str(startYear) + "-" + str(startMounth) + "-" + str(startDay)
-    toDate = str(endYear) + "-" + str(endMonth) + "-" + str(endDay)
-    return fromDate, toDate
+    start_year = today.year - num_of_years
+    start_month = today.month
+    start_day = today.day
+    end_year = today.year
+    end_month = today.month
+    end_day = today.day
+    from_date = str(start_year) + "-" + str(start_month) + "-" + str(start_day)
+    to_date = str(end_year) + "-" + str(end_month) + "-" + str(end_day)
+    return from_date, to_date
 
 
-def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTase):
-    if isDataFromTase == 1:
-        # Fill NaN values in 'indexOpeningPrice' with corresponding 'base indexprice'
+def price_forecast(df: pd.DataFrame, record_percentage_to_predict, is_data_from_tase: int):
+    if is_data_from_tase == 1:
+        # Fill NaN values in 'indexOpeningPrice' with corresponding 'base index price'
         df["indexOpeningPrice"].fillna(df["baseIndexPrice"], inplace=True)
         df["high"].fillna(df["closingIndexPrice"], inplace=True)
         df["low"].fillna(df["closingIndexPrice"], inplace=True)
@@ -230,9 +230,7 @@ def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTas
 
     y = np.array(df["label"])
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=record_percentage_to_predict
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=record_percentage_to_predict)
     clf = LinearRegression()
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)
@@ -248,7 +246,7 @@ def price_forecast(df: pd.DataFrame, record_percentage_to_predict, isDataFromTas
     for i in forecast_set:
         next_date = datetime.datetime.fromtimestamp(next_unix)
         next_unix += 86400
-        #df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+        # df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
         # Create a list of NaN values with the appropriate length (excluding the last column)
         nan_values = [np.nan] * (len(df.columns) - 1)
         # Append the value of i to the list of NaN values
@@ -296,17 +294,17 @@ def implement_bb_strategy(data, lower_bb, upper_bb):
     return buy_price, sell_price, bb_signal
 
 
-def makesYieldColumn(_yield, weighted_sum_column):
+def makes_yield_column(_yield, weighted_sum_column):
     _yield.iloc[0] = 1
     for i in range(1, weighted_sum_column.size):
         change = weighted_sum_column.item(i) + 1
-        lastValue = _yield.iloc[i - 1]
-        newValue = lastValue * change
-        _yield.iloc[i] = newValue
+        last_value = _yield.iloc[i - 1]
+        new_value = last_value * change
+        _yield.iloc[i] = new_value
     return _yield
 
 
-def scanGoodStocks():
+def scan_good_stocks():
     # Define the parameters for the scanner
     min_avg_volume = 1000000  # minimum average daily volume
     min_rsi = 50  # minimum RSI value
@@ -366,8 +364,9 @@ def scanGoodStocks():
     return results.head(10)
 
 
-def findBestStocks():
-    """"# Fetch the list of top 2000 stocks listed on NASDAQ
+def find_best_stocks():
+    """
+    # Fetch the list of top 2000 stocks listed on NASDAQ
     nasdaq_2000 = pd.read_csv('https://www.nasdaq.com/api/v1/screener?page=1&pageSize=2000')
 
     # Get the ticker symbols for the top 2000 stocks

@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from backend_api.util import manageData
+from backend_api.util import manage_data
 from core.forms import CapitalMarketForm
 from core.models import TeamMember, Questionnaire
 from user.models import UserPreferencesA
@@ -65,7 +65,7 @@ def capital_market_form(request):
             form.instance.answers_sum = answers_sum
             form.save()
             # Backend
-            levelOfRisk = manageData.getLevelOfRiskByScore(answers_sum)
+            level_of_risk = manageData.get_level_of_risk_by_score(answers_sum)
             # TODO: create new user instance in the database, with the following (lines 70-74) parameters
             # newUser = manageData.createsNewUser(loginName, setting.stocksSymbols,
             #                                     investmentAmount, machineLearningOpt, modelOption, levelOfRisk,
