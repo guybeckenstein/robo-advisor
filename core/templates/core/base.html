@@ -21,7 +21,7 @@
       </title>
     {% endif %}
   </head>
-  <body>
+  <body style="margin-bottom: 72px;">
     <section>
       <!-- Navigation bar -->
       <header>
@@ -61,21 +61,23 @@
         </div>
       </header>
       <!-- Alerts -->
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
+      <div style="">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
       <!-- Main content -->
       <div>
         {% block content %}
         {% endblock %}
       </div>
-      <footer>
+      <footer class="footer mt-auto py-3 fixed-bottom" style="background-color: #3dc4f0; box-shadow: 0 -1px 0 rgba(0, 0, 0, .3);">
         <p>
-          <span>Hello </span>
+          <span>Hello</span>
           {% if user.username %}
             <span class="greeting">
               {{ user.username | title }}

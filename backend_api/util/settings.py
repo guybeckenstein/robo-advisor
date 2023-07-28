@@ -26,7 +26,7 @@ STOCKS_SYMBOLS = [
     'GSG',
     'GLD',
     'OIL',
-    ]
+]
 
 # DB
 NAME_OF_BUCKET = '1'

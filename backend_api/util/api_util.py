@@ -96,18 +96,23 @@ def build_return_markowitz_portfolios_dic(df):
 
 
 def get_json_data(name: str):
+    import os
+    print(os.getcwd())
     with codecs.open(name + ".json", "r", encoding="utf-8") as file:
         json_data = json.load(file)
     return json_data
 
 
-def get_sectors_data_from_file():
-    sectors_data = get_json_data(settings.SECTORS_LOCATION)
+def get_sectors_data_from_file(mode: str):
+    if mode == 'regular':
+        sectors_data = get_json_data(settings.SECTORS_LOCATION)
+    else:
+        sectors_data = get_json_data('../../' + settings.SECTORS_LOCATION)
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols) -> list:
-    sectors_data = get_sectors_data_from_file()
+def set_sectors(stocks_symbols, mode: str) -> list:
+    sectors_data = get_sectors_data_from_file(mode)
     sectors: list = []
 
     if (len(sectors_data)) > 0:

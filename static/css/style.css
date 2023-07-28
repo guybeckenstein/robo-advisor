@@ -35,7 +35,7 @@ header .logo {
 }
 
 header .navigation a {
-	color: #000;
+	color: rgb(0, 0, 0);
 	text-decoration: none;
 	font-weight: 500;
 	letter-spacing: 1px;
@@ -50,11 +50,11 @@ header .navigation a:not(:last-child) {
 }
 
 header .navigation a:hover {
-	background: #fff;
+	background: rgb(255, 255, 255);
 }
 
 footer {
-	color: #fff;
+	color: rgb(255, 255, 255);
 	position: relative;
 	bottom: 5px;
 	width: 100%;
@@ -65,7 +65,7 @@ footer {
 }
 
 footer .greeting {
-    color: #000;
+    color: rgb(0, 0, 0);
 	font-weight: 500;
 	border-bottom: 2px solid #226A80;;
 }
@@ -91,7 +91,7 @@ svg {
 }
 
 .content .info h2 span {
-	color: #fff;
+	color: rgb(255, 255, 255);
 	font-size: 50px;
 	font-weight: 600;
 }
@@ -103,7 +103,7 @@ svg {
 }
 
 .content .info-btn button {
-	color: #fff;
+	color: rgb(255, 255, 255);
 	background: #226A80;
 	text-decoration: none;
 	text-transform: uppercase;

@@ -4,9 +4,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from backend_api.util import manage_data
+from backend_api.util import manage_data, settings
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
+from user.models import InvestorUser
 
 
 def homepage(request):
@@ -67,7 +68,7 @@ def capital_market_algorithm_preferences_form(request):
 
 
 @login_required
-def capital_market_investment_preferences_form(request):
+def capital_market_investment_preferences_form(request, **kwargs):
     try:
         user_preferences_instance = get_object_or_404(QuestionnaireA, user=request.user)
     except Http404:
@@ -83,7 +84,9 @@ def capital_market_investment_preferences_form(request):
         if questionnaire is None:  # CREATE
             context = {
                 'title': 'Fill Form',
-                'form': InvestmentPreferencesForm(form_type='create', user_preferences_instance=user_preferences_instance)
+                'form': InvestmentPreferencesForm(
+                    form_type='create', user_preferences_instance=user_preferences_instance
+                )
             }
             return render(request, 'core/capital_market_form_create.html', context=context)
         else:  # UPDATE
@@ -121,13 +124,31 @@ def capital_market_investment_preferences_form(request):
             form.instance.answers_sum = answers_sum
             form.save()
             # Backend
-            level_of_risk = manage_data.get_level_of_risk_by_score(answers_sum)
-            # TODO: create new user instance in the database, with the following (lines 70-74) parameters
-            # new_user = manage_data.create_new_user(
-            #     login_name, settings.stocks_symbols, investment_amount, machine_learning_opt, model_option,
-            #     level_of_risk, sectors_data, sectors, closing_prices_table, three_best_portfolios, pct_change_table
-            # )
-            # new_user.update_json_file("backend_api/DB/users")
+            risk_level = manage_data.get_level_of_risk_by_score(answers_sum)
+            # TODO: create new user instance in the database, Yarden should acknowledge this
+            try:
+                InvestorUser.objects.get(user=request.user)
+            except InvestorUser.DoesNotExist:
+                # Convert all values within settings.STOCKS_SYMBOLS to `str`. Some values are `int`
+                stocks_symbols_str_list = []
+                for symbol in settings.STOCKS_SYMBOLS:
+                    stocks_symbols_str_list.append(str(symbol))
+                InvestorUser.objects.create(
+                    user=request.user,
+                    risk_level=risk_level,
+                    starting_investment_amount=0,
+                    stocks_symbols=';'.join(stocks_symbols_str_list),
+                    stocks_weights='',
+                    sectors_names='',
+                    sectors_weights='',
+                    annual_returns=0.0,
+                    annual_max_loss=0.0,
+                    annual_volatility=0.0,
+                    annual_sharpe=0.0,
+                    total_change=0.0,
+                    monthly_change=0.0,
+                    daily_change=0.0,
+                )
             # Frontend
             return redirect('homepage')
         else:  # CREATE and UPDATE

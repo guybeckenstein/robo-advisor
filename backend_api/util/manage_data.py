@@ -11,9 +11,9 @@ STATIC_FILES_LOCATION = 'static/img/graphs/'
 
 ######################################################################################
 # 1
-def create_new_user(name: str, stocks_symbols: list, investment_amount: int, is_machine_learning: int,
-                    model_option: int, level_of_risk: int, sectors_data, sectors: list, closing_prices_table,
-                    three_best_portfolios, pct_change_table) -> user.User:
+def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
+                              model_option: int, level_of_risk: int, sectors_data, sectors: list, closing_prices_table,
+                              three_best_portfolios, pct_change_table) -> portfolio.Portfolio:
     final_portfolio = three_best_portfolios[level_of_risk - 1]
     if level_of_risk == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
@@ -27,9 +27,7 @@ def create_new_user(name: str, stocks_symbols: list, investment_amount: int, is_
 
     new_portfolio.update_stocks_data(closing_prices_table, pct_change_table, final_portfolio.iloc[0][3:],
                                      final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2])
-    curr_user = user.User(name, new_portfolio)
-
-    return curr_user
+    return new_portfolio
 
 
 #############################################################################################################
@@ -146,14 +144,17 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
 # UTILITY FUNCTIONS
 ############################################################################################################
 # database utility functions:
-def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, model_option: int):
+def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, model_option: int, mode: str):
     """
     Get extended data information from DB (CSV tables)
     """
-    sectors_data = api_util.get_json_data(settings.SECTORS_LOCATION)
-    sectors: list = api_util.set_sectors(stocks_symbols)
-    closing_prices_table = get_closing_prices_table(is_machine_learning=is_machine_learning)
-    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1])
+    if mode == 'regular':
+        sectors_data = get_json_data(settings.SECTORS_LOCATION)
+    else:
+        sectors_data = get_json_data('../../' + settings.SECTORS_LOCATION)
+    sectors: list = api_util.set_sectors(stocks_symbols, mode)
+    closing_prices_table = get_closing_prices_table(is_machine_learning=is_machine_learning, mode=mode)
+    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1], mode=mode)
     three_best_portfolios = api_util.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
     best_stocks_weights_column = api_util.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
                                                                   closing_prices_table.pct_change())
@@ -168,35 +169,63 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
 
 
 # Tables according to stocks symbols
-def get_closing_prices_table(is_machine_learning: int) -> pd.DataFrame:
+def get_closing_prices_table(is_machine_learning: int, mode: str) -> pd.DataFrame:
     if is_machine_learning == 1:
-        closing_prices_table = pd.read_csv(settings.MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0)
+        if mode == 'regular':
+            closing_prices_table = pd.read_csv(
+                settings.MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0
+            )
+        else:
+            closing_prices_table = pd.read_csv(
+                '../../' + settings.MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0
+            )
     else:
-        closing_prices_table = pd.read_csv(settings.NON_MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0)
+        if mode == 'regular':
+            closing_prices_table = pd.read_csv(
+                settings.NON_MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0
+            )
+        else:
+            closing_prices_table = pd.read_csv(
+                '../../' + settings.NON_MACHINE_LEARNING_LOCATION + 'closing_prices.csv', index_col=0
+            )
     closing_prices_table = closing_prices_table.iloc[1:]
     closing_prices_table = closing_prices_table.apply(pd.to_numeric, errors='coerce')
     return closing_prices_table
 
 
-def get_three_level_df_tables(is_machine_learning: int, model_name) -> list:
+def get_three_level_df_tables(is_machine_learning: int, model_name, mode: str) -> list:
     """
     Get the three level df tables according to machine learning option and model name
     """
-    low_risk_df_table = get_df_table(is_machine_learning, model_name, "low")
-    medium_risk_df_table = get_df_table(is_machine_learning, model_name, "medium")
-    high_risk_df_table = get_df_table(is_machine_learning, model_name, "high")
+    low_risk_df_table = get_df_table(is_machine_learning, model_name, "low", mode=mode)
+    medium_risk_df_table = get_df_table(is_machine_learning, model_name, "medium", mode=mode)
+    high_risk_df_table = get_df_table(is_machine_learning, model_name, "high", mode=mode)
 
     return [low_risk_df_table, medium_risk_df_table, high_risk_df_table]
 
 
-def get_df_table(is_machine_learning: int, model_name, level_of_risk: str) -> pd.DataFrame:
+def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, mode: str) -> pd.DataFrame:
     """
     get specific df table from csv file according to machine learning option, model name and level of risk
     """
     if is_machine_learning:
-        df_table = pd.read_csv(settings.MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv')
+        if mode == 'regular':
+            df_table = pd.read_csv(
+                settings.MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
+            )
+        else:
+            df_table = pd.read_csv(
+                '../../' + settings.MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
+            )
     else:
-        df_table = pd.read_csv(settings.NON_MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv')
+        if mode == 'regular':
+            df_table = pd.read_csv(
+                settings.NON_MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
+            )
+        else:
+            df_table = pd.read_csv(
+                '../../' + settings.NON_MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
+            )
     df_table = df_table.iloc[:, 1:]
     df_table = df_table.apply(pd.to_numeric, errors='coerce')
     return df_table
@@ -285,7 +314,7 @@ def update_pct_change_table(best_stocks_weights_column, pct_change_table):
 
 
 def get_data_from_form(three_best_portfolios: list, three_best_sectors_weights, sectors: list, yields: list,
-                       pct_change_table) -> int:
+                       pct_change_table, mode: str) -> int:
     count = 0
 
     # question 1
@@ -294,12 +323,12 @@ def get_data_from_form(three_best_portfolios: list, three_best_sectors_weights, 
 
     # question 2
     string_to_show = "Which distribution do you prefer?\nlow risk - 1, medium risk - 2, high risk - 3 ?\n"
-    plot_distribution_of_portfolio(yields)
+    plot_distribution_of_portfolio(yields, mode=mode)
     count += get_score_by_answer_from_user(string_to_show)
 
     # question 3
     string_to_show = "Which graph do you prefer?\nsoftest - 1, sharpest - 2, max return - 3 ?\n"
-    plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table)
+    plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode=mode)
     count += get_score_by_answer_from_user(string_to_show)
 
     return get_level_of_risk_by_score(count)
@@ -347,13 +376,16 @@ def get_from_and_to_date(num_of_years):  # TODO FIX RETURN TUPLE
 
 # plot functions
 def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_weights, sectors: list,
-                                pct_change_table) -> None:
+                                pct_change_table, mode: str) -> None:
     min_variance_port = three_best_portfolios[0]
     sharpe_portfolio = three_best_portfolios[1]
     max_returns = three_best_portfolios[2]
     plt_instance = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns,
                                                               three_best_sectors_weights, sectors, pct_change_table)
-    plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'three_portfolios.png')
+    if mode == 'regular':
+        plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'three_portfolios.png')
+    else:
+        plot_functions.save_graphs(plt_instance, '../../' + STATIC_FILES_LOCATION + 'three_portfolios.png')
 
 
 def plot_distribution_of_stocks(stock_names, pct_change_table) -> None:
@@ -361,9 +393,12 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> None:
     plot_functions.plot(plt_instance)  # TODO plot at site
 
 
-def plot_distribution_of_portfolio(distribution_graph) -> None:
+def plot_distribution_of_portfolio(distribution_graph, mode: str) -> None:
     plt_instance = plot_functions.plot_distribution_of_portfolio(distribution_graph)
-    plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'distribution_graph.png')
+    if mode == 'regular':
+        plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'distribution_graph.png')
+    else:
+        plot_functions.save_graphs(plt_instance, '../../' + STATIC_FILES_LOCATION + 'distribution_graph.png')
 
 
 def plotbb_strategy_portfolio(pct_change_table, new_portfolio) -> None:

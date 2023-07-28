@@ -4,7 +4,7 @@ import pytest
 
 from django.contrib.auth.models import User
 
-from user.models import UserPreferencesA
+from core.models import QuestionnaireA
 
 
 @pytest.fixture(scope='function')
@@ -34,8 +34,8 @@ def create_user_non_default() -> Callable[[str, str, str, User, str], User]:
 
 
 @pytest.fixture(scope='function')
-def create_user_preferences_default(user: User) -> UserPreferencesA:
-    user_preferences = UserPreferencesA.objects.create(
+def create_user_preferences_default(user: User) -> QuestionnaireA:
+    user_preferences = QuestionnaireA.objects.create(
         user=user,
         ml_answer=0,
         model_answer=0,
@@ -44,9 +44,9 @@ def create_user_preferences_default(user: User) -> UserPreferencesA:
 
 
 @pytest.fixture(scope='function')
-def create_user_preferences_non_default() -> Callable[[User, int, int], UserPreferencesA]:
-    def _user_preferences_factory(user: User, ml_answer: int, model_answer: int) -> UserPreferencesA:
-        user_preferences = UserPreferencesA.objects.create(
+def create_user_preferences_non_default() -> Callable[[User, int, int], QuestionnaireA]:
+    def _user_preferences_factory(user: User, ml_answer: int, model_answer: int) -> QuestionnaireA:
+        user_preferences = QuestionnaireA.objects.create(
             user=user,
             ml_answer=ml_answer,
             model_answer=model_answer,

@@ -17,7 +17,9 @@ if __name__ == '__main__':
             investment_amount: int = 1000  # manage_data.get_investment_amount()
 
             # Extended data from DB (CSV Tables)
-            tables = manage_data.get_extended_data_from_db(settings.STOCKS_SYMBOLS, machine_learning_opt, model_option)
+            tables = manage_data.get_extended_data_from_db(
+                settings.STOCKS_SYMBOLS, machine_learning_opt, model_option, mode='regular'
+            )
             sectors_data, sectors_list, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
                 pct_change_table, yield_list = tables
 
@@ -30,7 +32,7 @@ if __name__ == '__main__':
             string_to_show = "Which distribution do you prefer?\nlow risk - 1, medium risk - 2, high risk - 3 ?\n"
             # display distribution of portfolio graph(matplotlib)
             # TODO - find the way to display the graph (image or data frame)
-            manage_data.plot_distribution_of_portfolio(yield_list)
+            manage_data.plot_distribution_of_portfolio(yield_list, mode='regular')
             second_question_score = manage_data.get_score_by_answer_from_user(string_to_show)
 
             # question #3
@@ -38,7 +40,7 @@ if __name__ == '__main__':
             # display 3 best portfolios graph (matplotlib)
             # TODO - find the way to display the graph (image or data frame)
             manage_data.plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights, sectors_list,
-                                                    pct_change_table)
+                                                    pct_change_table, mode='regular')
             third_question_score = manage_data.get_score_by_answer_from_user(string_to_show)
 
             # calculate level of risk by sum of score
@@ -46,7 +48,7 @@ if __name__ == '__main__':
             level_of_risk = manage_data.get_level_of_risk_by_score(sum_of_score)
 
             # creates new user with portfolio details
-            new_user = manage_data.create_new_user(
+            new_user = manage_data.create_new_user_portfolio(
                 login_name, settings.STOCKS_SYMBOLS, investment_amount, machine_learning_opt, model_option,
                 level_of_risk, sectors_data, sectors_list, closing_prices_table, three_best_portfolios, pct_change_table
             )
