@@ -2,11 +2,30 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from django.db import models
 
+PREFERENCES_MIN = 0
+PREFERENCES_MAX = 1
 MIN_ANSWER = 1
 MAX_ANSWER = 3
 
 
-class Questionnaire(models.Model):
+class QuestionnaireA(models.Model):
+    id = models.BigAutoField(primary_key=True, verbose_name="ID")
+    user = models.OneToOneField(User, on_delete=models.RESTRICT)
+    ml_answer = models.IntegerField(
+        default=PREFERENCES_MIN,
+        validators=[MinValueValidator(PREFERENCES_MIN), MaxValueValidator(PREFERENCES_MAX)]
+    )
+    model_answer = models.IntegerField(
+        default=PREFERENCES_MIN,
+        validators=[MinValueValidator(PREFERENCES_MIN), MaxValueValidator(PREFERENCES_MAX)]
+    )
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'CapitalMarketAlgorithmPreferences'
+
+
+class QuestionnaireB(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
     user = models.OneToOneField(User, on_delete=models.RESTRICT)
     answer_1 = models.IntegerField(validators=[MinValueValidator(MIN_ANSWER), MaxValueValidator(MAX_ANSWER)])
@@ -16,7 +35,7 @@ class Questionnaire(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'Questionnaire'
+        db_table = 'CapitalMarketInvestmentPreferences'
 
 
 class TeamMember(models.Model):

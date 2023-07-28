@@ -5,9 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
 from backend_api.util import manage_data
-from core.forms import CapitalMarketForm
-from core.models import TeamMember, Questionnaire
-from user.models import UserPreferencesA
+from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
+from core.models import TeamMember, QuestionnaireA, QuestionnaireB
 
 
 def homepage(request):
@@ -25,29 +24,72 @@ def services(request):
 
 
 @login_required
-def capital_market_form(request):
+def capital_market_algorithm_preferences_form(request):
     try:
-        user_preferences_instance = UserPreferencesA.objects.get(user=request.user)
-    except UserPreferencesA.DoesNotExist:
+        preferences = QuestionnaireA.objects.get(user=request.user)
+    except QuestionnaireA.DoesNotExist:
+        preferences = None
+    if request.method == 'GET':
+        if preferences is None:  # CREATE
+            context = {
+                'title': 'Fill Form',
+                'form': AlgorithmPreferencesForm(form_type='create')
+            }
+            return render(request, 'core/preferences_form_create.html', context=context)
+        else:  # UPDATE
+            context = {
+                'title': 'Update Filled Form',
+                'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
+            }
+            return render(request, 'core/preferences_form_update.html', context=context)
+    elif request.method == 'POST':
+        if preferences is None:  # CREATE
+            form = AlgorithmPreferencesForm(request.POST)
+            # TODO: connect to relevant part in the logic Backend
+        else:  # UPDATE
+            form = AlgorithmPreferencesForm(request.POST, instance=preferences)
+            # TODO: connect to relevant part in the logic Backend
+
+        if form.is_valid():  # CREATE and UPDATE
+            form.instance.user = request.user
+            form.save()
+            return redirect('capital_market_investment_preferences_form')
+        else:  # CREATE and UPDATE
+            context = {
+                'form': form,
+            }
+            ctx = {}
+            ctx.update(csrf(request))
+            form_html = render_crispy_form(form=context['form'], context=ctx)
+            return HttpResponse(form_html)
+    else:
+        raise Http404
+
+
+@login_required
+def capital_market_investment_preferences_form(request):
+    try:
+        user_preferences_instance = QuestionnaireB.objects.get(user=request.user)
+    except QuestionnaireB.DoesNotExist:
         raise Http404
 
     # Each user fills this form, and it gets a rating from 3 to 9
     try:
-        questionnaire = Questionnaire.objects.get(user=request.user)
-    except Questionnaire.DoesNotExist:
+        questionnaire = QuestionnaireA.objects.get(user=request.user)
+    except QuestionnaireA.DoesNotExist:
         questionnaire = None
         # Retrieve the UserPreferencesA instance for the current user
     if request.method == 'GET':
-        if questionnaire is None:
+        if questionnaire is None:  # CREATE
             context = {
                 'title': 'Fill Form',
-                'form': CapitalMarketForm(form_type='create', user_preferences_instance=user_preferences_instance)
+                'form': InvestmentPreferencesForm(form_type='create', user_preferences_instance=user_preferences_instance)
             }
             return render(request, 'core/capital_market_form_create.html', context=context)
-        else:
+        else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
-                'form': CapitalMarketForm(
+                'form': InvestmentPreferencesForm(
                     form_type='update',
                     instance=questionnaire,
                     user_preferences_instance=user_preferences_instance
@@ -56,9 +98,9 @@ def capital_market_form(request):
             return render(request, 'core/capital_market_form_update.html', context=context)
     elif request.method == 'POST':
         if questionnaire is None:  # CREATE
-            form = CapitalMarketForm(request.POST)
+            form = InvestmentPreferencesForm(request.POST)
         else:  # UPDATE
-            form = CapitalMarketForm(request.POST, instance=questionnaire)
+            form = InvestmentPreferencesForm(request.POST, instance=questionnaire)
         if form.is_valid():  # CREATE and UPDATE
             # DEBUGGING, without this the code won't work
             print("Form errors:", form.errors)
