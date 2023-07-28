@@ -2,6 +2,7 @@ import json
 import numpy as np
 import pandas as pd
 import yfinance as yf
+from typing import Tuple
 from backend_api.api import portfolio, stats_models, user
 from backend_api.util import api_util, console_handler, plot_functions, settings
 
@@ -149,7 +150,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     """
     Get extended data information from DB (CSV tables)
     """
-    sectors_data = api_util.get_json_data("backend_api/api/resources/sectors")
+    sectors_data = api_util.get_json_data(settings.sectors_location)
     sectors: list = api_util.set_sectors(stocks_symbols)
     closing_prices_table = get_closing_prices_table(is_machine_learning=is_machine_learning)
     df = get_three_level_df_tables(is_machine_learning, settings.model_name[model_option - 1])
@@ -340,7 +341,7 @@ def get_json_data(name):
     return api_util.get_json_data(name)
 
 
-def get_from_and_to_date(num_of_years) -> tuple[str, str]:
+def get_from_and_to_date(num_of_years): #TODO FIX RETURN TUPLE
     return api_util.get_from_and_to_dates(num_of_years)
 
 

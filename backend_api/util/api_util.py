@@ -10,6 +10,7 @@ from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from backend_api.api import sector
+from backend_api.util import settings
 from typing import Tuple
 
 
@@ -101,7 +102,7 @@ def get_json_data(name: str):
 
 
 def get_sectors_data_from_file():
-    sectors_data = get_json_data("backend_api/api/resources/sectors")
+    sectors_data = get_json_data(settings.sectors_location)
     return sectors_data['sectorsList']['result']
 
 

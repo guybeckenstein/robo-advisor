@@ -30,11 +30,12 @@ stocks_symbols = [
 
 # DB
 name_of_bucket = '1'
-bucket_repository = 'backend_api/DB/Bucket' + name_of_bucket + '/'
-machine_learning_location = bucket_repository + 'includingMachineLearning/'
-non_machine_learning_location = bucket_repository + 'withoutMachineLearning/'
-
-users_json_name = "backend_api/DB/users"  # where to save the users details
+base_dir = 'backend_api/'
+bucket_repository = 'DB/Bucket' + name_of_bucket + '/'  # directory of the bucket(12 tables + 2 closing prices)
+machine_learning_location = bucket_repository + 'includingMachineLearning/'  # directory with 6 tables
+non_machine_learning_location = bucket_repository + 'withoutMachineLearning/' # directory with 6 tables
+sectors_location = 'api/resources/sectors'  # sectors json file
+users_json_name ='DB/users'  # where to save the users details
 ############################################
 # setting for api-tase connection and apps:
 token_url = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
