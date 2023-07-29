@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
 from backend_api.util import manage_data, settings
+from backend_api.util.manage_data import create_new_user_portfolio
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from user.models import InvestorUser
@@ -126,28 +127,87 @@ def capital_market_investment_preferences_form(request, **kwargs):
             # Backend
             risk_level = manage_data.get_level_of_risk_by_score(answers_sum)
             # TODO: create new user instance in the database, Yarden should acknowledge this
+            # Convert all values within settings.STOCKS_SYMBOLS to `str`. Some values are `int`
+            stocks_symbols_str_list = []
+            for symbol in settings.STOCKS_SYMBOLS:
+                stocks_symbols_str_list.append(str(symbol))
+            tables = manage_data.get_extended_data_from_db(
+                settings.STOCKS_SYMBOLS,
+                user_preferences_instance.ml_answer,
+                user_preferences_instance.model_answer,
+                mode='regular'
+            )
+            sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
+                pct_change_table, yield_list = tables
+            user_portfolio = create_new_user_portfolio(
+                stocks_symbols=settings.STOCKS_SYMBOLS,
+                investment_amount=0,
+                is_machine_learning=user_preferences_instance.ml_answer,
+                model_option=user_preferences_instance.model_answer,
+                level_of_risk=risk_level,
+                sectors_data=sectors_data,
+                sectors=sectors,
+                closing_prices_table=closing_prices_table,
+                three_best_portfolios=three_best_portfolios,
+                pct_change_table=three_best_sectors_weights,
+            )
+
+            _, _, _, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
+                annual_volatility, annual_sharpe, total_change, monthly_change, daily_change, selected_model, \
+                machine_learning_opt = user_portfolio.get_portfolio_data()
+            # DEBUG - check if `create_new_user_portfolio` is necessary
+            # if annual_returns is None:
+            #     print('annual_returns')
+            #     annual_returns = 0.0
+            # if annual_max_loss is None:
+            #     print('annual_max_loss')
+            #     annual_max_loss = 0.0
+            # if annual_volatility is None:
+            #     print('annual_volatility')
+            #     annual_volatility = 0.0
+            # if annual_sharpe is None:
+            #     print('annual_sharpe')
+            #     annual_sharpe = 0.0
+            # if total_change is None:
+            #     print('total_change')
+            #     total_change = 0.0
+            # if monthly_change is None:
+            #     print('monthly_change')
+            #     monthly_change = 0.0
+            # if daily_change is None:
+            #     print('daily_change')
+            #     daily_change = 0.0
             try:
-                InvestorUser.objects.get(user=request.user)
+                investor_user = InvestorUser.objects.get(user=request.user)
+                # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
+                investor_user.risk_level = risk_level
+                investor_user.stocks_weights = stocks_weights
+                investor_user.sectors_names = sectors_names
+                investor_user.sectors_weights = sectors_weights
+                investor_user.annual_returns = annual_returns
+                investor_user.annual_max_loss = annual_max_loss
+                investor_user.annual_volatility = annual_volatility
+                investor_user.annual_sharpe = annual_sharpe
+                investor_user.total_change = total_change
+                investor_user.monthly_change = monthly_change
+                investor_user.daily_change = daily_change
             except InvestorUser.DoesNotExist:
-                # Convert all values within settings.STOCKS_SYMBOLS to `str`. Some values are `int`
-                stocks_symbols_str_list = []
-                for symbol in settings.STOCKS_SYMBOLS:
-                    stocks_symbols_str_list.append(str(symbol))
+                # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
                 InvestorUser.objects.create(
                     user=request.user,
                     risk_level=risk_level,
                     starting_investment_amount=0,
                     stocks_symbols=';'.join(stocks_symbols_str_list),
-                    stocks_weights='',
-                    sectors_names='',
-                    sectors_weights='',
-                    annual_returns=0.0,
-                    annual_max_loss=0.0,
-                    annual_volatility=0.0,
-                    annual_sharpe=0.0,
-                    total_change=0.0,
-                    monthly_change=0.0,
-                    daily_change=0.0,
+                    stocks_weights=';'.join(stocks_weights),
+                    sectors_names=';'.join(sectors_names),
+                    sectors_weights=';'.join(sectors_weights),
+                    annual_returns=annual_returns,
+                    annual_max_loss=annual_max_loss,
+                    annual_volatility=annual_volatility,
+                    annual_sharpe=annual_sharpe,
+                    total_change=total_change,
+                    monthly_change=monthly_change,
+                    daily_change=daily_change,
                 )
             # Frontend
             return redirect('homepage')
