@@ -42,4 +42,7 @@ def logout(request):
 
 @login_required
 def profile(request):
-    return ""
+    context = {
+        'user': request.user
+    }
+    return render(request, 'user/profile.html', context=context)
