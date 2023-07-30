@@ -20,7 +20,8 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     'id',
-                    models.BigAutoField(primary_key=True, serialize=False, verbose_name='ID')
+                    models.BigAutoField(primary_key=True, serialize=False,
+                                        verbose_name='ID')
                 ),
                 (
                     'date',
@@ -28,11 +29,13 @@ class Migration(migrations.Migration):
                 ),
                 (
                     'investment',
-                    models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, to='investment.investment')
+                    models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT,
+                                         to='investment.investment')
                 ),
                 (
                     'user',
-                    models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, to=settings.AUTH_USER_MODEL)
+                    models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT,
+                                         to=settings.AUTH_USER_MODEL)
                 ),
             ],
             options={
