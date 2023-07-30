@@ -41,8 +41,40 @@ def logout(request):
 
 
 @login_required
-def profile(request):
+def profile_main(request):
     context = {
         'user': request.user
     }
-    return render(request, 'user/profile.html', context=context)
+    return render(request, 'user/profile_main.html', context=context)
+
+
+@login_required
+def profile_user(request):
+    context = {
+        'user': request.user
+    }
+    return render(request, 'user/profile_user.html', context=context)
+
+
+@login_required
+def profile_user(request):
+    context = {
+        'user': request.user
+    }
+    return render(request, 'user/profile_user.html', context=context)
+
+
+@login_required
+def profile_investor(request):
+    context = {
+        'user': request.user
+    }
+    return render(request, 'user/profile_investor.html', context=context)
+
+
+@login_required
+def profile_portfolio(request):
+    context = {
+        'user': request.user
+    }
+    return render(request, 'user/profile_portfolio.html', context=context)
