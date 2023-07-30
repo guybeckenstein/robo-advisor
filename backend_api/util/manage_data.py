@@ -3,6 +3,9 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from typing import Tuple
+
+from pandas._typing import NDFrameT
+
 from backend_api.api import portfolio, stats_models, user
 from backend_api.util import api_util, console_handler, plot_functions, settings
 
@@ -13,7 +16,7 @@ STATIC_FILES_LOCATION = 'static/img/graphs/'
 # 1
 def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
                               model_option: int, level_of_risk: int, sectors_data, sectors: list, closing_prices_table,
-                              three_best_portfolios, pct_change_table) -> portfolio.Portfolio:
+                              three_best_portfolios, pct_change_table: pd.DataFrame) -> portfolio.Portfolio:
     final_portfolio = three_best_portfolios[level_of_risk - 1]
     if level_of_risk == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
@@ -21,8 +24,7 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
             stocks_symbols, api_util.set_stock_sectors(stocks_symbols, sectors)
         )
 
-    new_portfolio = portfolio.Portfolio(level_of_risk, investment_amount, stocks_symbols,
-                                        sectors_data, model_option,
+    new_portfolio = portfolio.Portfolio(level_of_risk, investment_amount, stocks_symbols, sectors_data, model_option,
                                         is_machine_learning)
 
     new_portfolio.update_stocks_data(closing_prices_table, pct_change_table, final_portfolio.iloc[0][3:],
@@ -108,7 +110,7 @@ def scan_good_stocks() -> None:
 def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_option: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
 
-    closing_prices_table = get_closing_prices_table(is_machine_learning)
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(is_machine_learning, mode='regular')
 
     if model_option == "Markowitz":
         curr_stats_models = stats_models.StatsModels(stocks_symbols, sectors, closing_prices_table,
@@ -153,7 +155,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     else:
         sectors_data = get_json_data('../../' + settings.SECTORS_LOCATION)
     sectors: list = api_util.set_sectors(stocks_symbols, mode)
-    closing_prices_table = get_closing_prices_table(is_machine_learning=is_machine_learning, mode=mode)
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(is_machine_learning=is_machine_learning, mode=mode)
     df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1], mode=mode)
     three_best_portfolios = api_util.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
     best_stocks_weights_column = api_util.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
@@ -161,11 +163,11 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors, settings.STOCKS_SYMBOLS,
                                                                          three_best_stocks_weights)
-    pct_change_table = closing_prices_table.pct_change()
+    pct_change_table: NDFrameT = closing_prices_table.pct_change()
     yields: list = update_pct_change_table(best_stocks_weights_column, pct_change_table)
 
-    return (sectors_data, sectors, closing_prices_table, three_best_portfolios,
-            three_best_sectors_weights, pct_change_table, yields)
+    return sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
+        pct_change_table, yields
 
 
 # Tables according to stocks symbols
@@ -265,10 +267,10 @@ def get_user_from_db(user_name: str):
     annual_sharpe = user_data['annualSharpe']
     sectors_data = get_json_data("backend_api/api/resources/sectors")  # universal from file
 
-    closing_prices_table = get_closing_prices_table(int(is_machine_learning))
-    user_portfolio = portfolio.Portfolio(level_of_risk, starting_investment_amount, stocks_symbols, sectors_data,
-                                         selected_model, is_machine_learning)
-    pct_change_table = closing_prices_table.pct_change()
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(int(is_machine_learning), mode='regular')
+    user_portfolio: portfolio.Portfolio = portfolio.Portfolio(level_of_risk, starting_investment_amount, stocks_symbols,
+                                                              sectors_data, selected_model, is_machine_learning)
+    pct_change_table: NDFrameT = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(level_of_risk)] = weighted_sum

@@ -12,9 +12,9 @@ class InvestorUser(models.Model):
     risk_level = models.IntegerField(validators=[MinValueValidator(RISK_MIN), MaxValueValidator(RISK_MAX)])
     starting_investment_amount = models.IntegerField()
     stocks_symbols = models.CharField(max_length=500)  # Symbols are divided by `;`
-    stocks_weights = models.CharField(max_length=500)  # Symbols are divided by `;`
+    stocks_weights = models.CharField(max_length=1000)  # Symbols are divided by `;`
     sectors_names = models.CharField(max_length=500)  # Symbols are divided by `;`
-    sectors_weights = models.CharField(max_length=500)  # Symbols are divided by `;`
+    sectors_weights = models.CharField(max_length=1000)  # Symbols are divided by `;`
     annual_returns = models.FloatField()
     annual_max_loss = models.FloatField()
     annual_volatility = models.FloatField()

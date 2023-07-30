@@ -195,14 +195,13 @@ class Portfolio:
         return self.__pct_change_table.resample('Y').apply(lambda x: (x[-1] / x[0] - 1) * 100)
 
     # SETTERS and UPDATERS
-    def update_stocks_data(self, closing_prices_table, pct_change_table, stock_weights, annual_returns,
+    def update_stocks_data(self, closing_prices_table, pct_change_table: pd.DataFrame, stock_weights, annual_returns,
                            annual_volatility, annual_sharpe):
         self.set_tables(closing_prices_table, pct_change_table)
         self.set_stocks_weights(stock_weights)
         self.__annual_returns = annual_returns
         self.__annual_volatility = annual_volatility
         self.__annual_sharpe = annual_sharpe
-
         pct_change_table["weighted_sum_selected"] = pct_change_table["weighted_sum_" + str(self.__level_of_risk)]
         pct_change_table["yield_selected"] = pct_change_table["yield_" + str(self.__level_of_risk)]
 

@@ -127,10 +127,8 @@ def capital_market_investment_preferences_form(request, **kwargs):
             # Backend
             risk_level = manage_data.get_level_of_risk_by_score(answers_sum)
             # TODO: create new user instance in the database, Yarden should acknowledge this
-            # Convert all values within settings.STOCKS_SYMBOLS to `str`. Some values are `int`
-            stocks_symbols_str_list = []
-            for symbol in settings.STOCKS_SYMBOLS:
-                stocks_symbols_str_list.append(str(symbol))
+            stocks_symbols_str_list = convert_type_list_to_str_list(settings.STOCKS_SYMBOLS)
+            # TODO maybe get tables by parameter input
             tables = manage_data.get_extended_data_from_db(
                 settings.STOCKS_SYMBOLS,
                 user_preferences_instance.ml_answer,
@@ -149,10 +147,10 @@ def capital_market_investment_preferences_form(request, **kwargs):
                 sectors=sectors,
                 closing_prices_table=closing_prices_table,
                 three_best_portfolios=three_best_portfolios,
-                pct_change_table=three_best_sectors_weights,
+                pct_change_table=pct_change_table,
             )
 
-            _, _, _, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
+            _, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
                 annual_volatility, annual_sharpe, total_change, monthly_change, daily_change, selected_model, \
                 machine_learning_opt = user_portfolio.get_portfolio_data()
             # DEBUG - check if `create_new_user_portfolio` is necessary
@@ -181,9 +179,10 @@ def capital_market_investment_preferences_form(request, **kwargs):
                 investor_user = InvestorUser.objects.get(user=request.user)
                 # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
                 investor_user.risk_level = risk_level
-                investor_user.stocks_weights = stocks_weights
-                investor_user.sectors_names = sectors_names
-                investor_user.sectors_weights = sectors_weights
+                investor_user.stocks_symbols = ';'.join(convert_type_list_to_str_list(stocks_symbols))
+                investor_user.stocks_weights = ';'.join(convert_type_list_to_str_list(stocks_weights))
+                investor_user.sectors_names = ';'.join(sectors_names)
+                investor_user.sectors_weights = ';'.join(convert_type_list_to_str_list(sectors_weights))
                 investor_user.annual_returns = annual_returns
                 investor_user.annual_max_loss = annual_max_loss
                 investor_user.annual_volatility = annual_volatility
@@ -198,9 +197,9 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     risk_level=risk_level,
                     starting_investment_amount=0,
                     stocks_symbols=';'.join(stocks_symbols_str_list),
-                    stocks_weights=';'.join(stocks_weights),
+                    stocks_weights=';'.join(convert_type_list_to_str_list(stocks_weights)),
                     sectors_names=';'.join(sectors_names),
-                    sectors_weights=';'.join(sectors_weights),
+                    sectors_weights=';'.join(convert_type_list_to_str_list(sectors_weights)),
                     annual_returns=annual_returns,
                     annual_max_loss=annual_max_loss,
                     annual_volatility=annual_volatility,
@@ -221,3 +220,11 @@ def capital_market_investment_preferences_form(request, **kwargs):
             return HttpResponse(form_html)
     else:
         raise Http404
+
+
+def convert_type_list_to_str_list(input_list: list):
+    # Convert all values within settings.STOCKS_SYMBOLS to `str`. Some values are `int`
+    str_list = []
+    for value in input_list:
+        str_list.append(str(value))
+    return str_list
