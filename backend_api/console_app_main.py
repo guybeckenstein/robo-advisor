@@ -55,15 +55,11 @@ if __name__ == '__main__':
                 is_machine_learning=machine_learning_opt,
                 model_option=model_option,
                 level_of_risk=level_of_risk,
-                sectors_data=sectors_data,
-                sectors=sectors,
-                closing_prices_table=closing_prices_table,
-                three_best_portfolios=three_best_portfolios,
-                pct_change_table=pct_change_table
+                extendedDataFromDB=tables,
             )
 
             # add user to DB(json file)
-            # new_user.update_json_file("backend_api/DB/users")
+            #new_portfolio.update_json_file("backend_api/DB/users")
             # TODO use sqlite instead of json file or makes conversion from json to sqlite
 
         elif selection == 2:

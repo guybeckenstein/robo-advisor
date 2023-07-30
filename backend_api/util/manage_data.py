@@ -4,7 +4,7 @@ import pandas as pd
 import yfinance as yf
 from typing import Tuple
 
-from pandas._typing import NDFrameT
+#from pandas._typing import NDFrameT
 
 from backend_api.api import portfolio, stats_models, user
 from backend_api.util import api_util, console_handler, plot_functions, settings
@@ -15,8 +15,10 @@ STATIC_FILES_LOCATION = 'static/img/graphs/'
 ######################################################################################
 # 1
 def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
-                              model_option: int, level_of_risk: int, sectors_data, sectors: list, closing_prices_table,
-                              three_best_portfolios, pct_change_table: pd.DataFrame) -> portfolio.Portfolio:
+                              model_option: int, level_of_risk: int, extendedDataFromDB:Tuple) -> portfolio.Portfolio:
+    sectors_data, sectors, closing_prices_table, three_best_portfolios, _, \
+        pct_change_table, _ = extendedDataFromDB
+
     final_portfolio = three_best_portfolios[level_of_risk - 1]
     if level_of_risk == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
@@ -163,7 +165,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors, settings.STOCKS_SYMBOLS,
                                                                          three_best_stocks_weights)
-    pct_change_table: NDFrameT = closing_prices_table.pct_change()
+    pct_change_table: pd = closing_prices_table.pct_change()
     yields: list = update_pct_change_table(best_stocks_weights_column, pct_change_table)
 
     return sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
@@ -270,7 +272,7 @@ def get_user_from_db(user_name: str):
     closing_prices_table: pd.DataFrame = get_closing_prices_table(int(is_machine_learning), mode='regular')
     user_portfolio: portfolio.Portfolio = portfolio.Portfolio(level_of_risk, starting_investment_amount, stocks_symbols,
                                                               sectors_data, selected_model, is_machine_learning)
-    pct_change_table: NDFrameT = closing_prices_table.pct_change()
+    pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(level_of_risk)] = weighted_sum

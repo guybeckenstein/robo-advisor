@@ -22,6 +22,7 @@ class InvestorUser(models.Model):
     total_change = models.FloatField()
     monthly_change = models.FloatField()
     daily_change = models.FloatField()
+    # TODO- maybe adding more fields later
 
     class Meta:
         db_table = 'InvestorUser'
