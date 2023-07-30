@@ -188,7 +188,7 @@ class StatsModels:
                 single_portfolio += 1
 
             # a dictionary for Returns and Risk values of each portfolio
-            portfolio = {'Profolio_annual': port_portfolio_annual,
+            portfolio = {'Portfolio_annual': port_portfolio_annual,
                          'Gini': port_gini_annual,
                          'Sharpe Ratio': sharpe_ratio}
 
@@ -200,7 +200,7 @@ class StatsModels:
             df = pd.DataFrame(portfolio)
 
             # get better labels for desired arrangement of columns
-            column_order = ['Profolio_annual', 'Gini', 'Sharpe Ratio'] + [stock + ' Weight' for stock in stocks_names]
+            column_order = ['Portfolio_annual', 'Gini', 'Sharpe Ratio'] + [stock + ' Weight' for stock in stocks_names]
 
             # reorder dataframe columns
             self._df = df[column_order]

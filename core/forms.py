@@ -4,7 +4,7 @@ from crispy_forms.layout import Submit, Layout, Div, HTML
 from django import forms
 from django.utils.html import format_html
 
-from backend_api.util import manage_data, settings
+from backend_api.util import manage_data, settings as backend_settings
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 
@@ -32,8 +32,12 @@ class AlgorithmPreferencesForm(forms.ModelForm):
             'hx-swap': 'outerHTML'
         }
         # TODO: make dynamic code that updates CSV files from `/backend_api/DB/...`
-        self.fields['ml_answer'].label = format_html('<span class="capital-market-form-label">Question #1: Would you like to use machine learning algorithms for stock market investments?</span>')
-        self.fields['model_answer'].label = format_html('<span class="capital-market-form-label">Question #2: Which statistic model would you like to use for stock market investments?')
+        self.fields['ml_answer'].label = format_html('<span class="capital-market-form-label">'
+                                                     'Question #1: Would you like to use machine learning algorithms for stock market investments?'
+                                                     '</span>')
+        self.fields['model_answer'].label = format_html('<span class="capital-market-form-label">'
+                                                        'Question #2: Which statistic model would you like to use for stock market investments?'
+                                                        '</span>')
 
         if form_type == 'create':
             self.helper.layout = Layout(
@@ -74,7 +78,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user_preferences_instance = kwargs.pop('user_preferences_instance', None)
-        # self.get_questionnaire_graphs(kwargs)
+        self.get_questionnaire_graphs(user_preferences_instance, mode=kwargs.get('mode', 'regular'))
 
         # Form
         form_type = kwargs.pop('form_type', 'create')
@@ -126,17 +130,19 @@ class InvestmentPreferencesForm(forms.ModelForm):
             self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     @staticmethod
-    def get_questionnaire_graphs(user_preferences_instance, kwargs):
+    def get_questionnaire_graphs(user_preferences_instance, mode: str):
         # User preferences
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        db_tuple = manage_data.get_extended_data_from_db(settings.stocks_symbols, ml_answer, model_answer)
+        db_tuple = manage_data.get_extended_data_from_db(
+            backend_settings.STOCKS_SYMBOLS, ml_answer, model_answer, mode=mode
+        )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yield_list = db_tuple
         # Saves two graphs
-        manage_data.plot_distribution_of_portfolio(yield_list)
+        manage_data.plot_distribution_of_portfolio(yield_list, mode=mode)
         manage_data.plot_three_portfolios_graph(
-            three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table
+            three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode=mode
         )
 
     class Meta:
