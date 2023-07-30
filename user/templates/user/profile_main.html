@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <div class="content-section">
+    <!-- User profile navigation bar -->
+    <nav class="d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary" style="width: 350px; margin-left: 80px;">
+      <a href="{% url 'profile_main' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+        <span class="fs-4">{{ user.first_name }}'s Dashboard</span>
+      </a>
+      <hr>
+      {% block profile_navbar %}
+        <ul class="nav nav-pills flex-column mb-auto">
+          <li class="nav-item">
+            <a href="{% url 'profile_user' %}" class="nav-link link-body-emphasis">
+              User
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'profile_investor' %}" class="nav-link link-body-emphasis">
+              Investor
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'profile_portfolio' %}" class="nav-link link-body-emphasis">
+              Portfolio
+            </a>
+          </li>
+        </ul>
+      {% endblock %}
+    </nav>
+    <!-- Main content -->
+    {% block profile_content %}
+      <!-- TODO: add general form that shows email address, first name, last name, join date -->
+    {% endblock %}
+  </div>
+{% endblock %}
