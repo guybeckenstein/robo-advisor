@@ -4,17 +4,16 @@
 
 {% block content %}
   <div class="content-section">
-    <form method="POST">
+    <form method="POST" style="width: 800px;">
       {% csrf_token %}
       <fieldset class="form-group">
         <legend class="border-bottom mb-4">
           Log In
         </legend>
         {% crispy form %}
-        <!--crispy forms doesn't work-->
       </fieldset>
       <div class="form-group">
-        <button class="btn btn-outline-info" type="submit">
+        <button class="btn btn-primary" type="submit">
           Login
         </button>
         <small class="text-muted ml-2">

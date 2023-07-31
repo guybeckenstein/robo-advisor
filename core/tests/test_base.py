@@ -14,7 +14,7 @@ class TestBase:
         assert 'Home' in response.content.decode()
         assert 'About' in response.content.decode()
         assert 'Profile' in response.content.decode()
-        assert 'Services' in response.content.decode()
+        assert 'Investments' in response.content.decode()
         assert 'Capital Market Form' in response.content.decode()
         assert 'Logout' in response.content.decode()
         # Hello message

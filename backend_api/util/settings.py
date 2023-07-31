@@ -1,4 +1,6 @@
 ############################################
+STATIC_GRAPH_FILES_LOCATION = 'static/img/graphs/'
+STATIC_USER_FILES_LOCATION = 'static/img/user/'
 # setting for stats Models
 NUM_POR_SIMULATION = 2000
 MIN_NUM_POR_SIMULATION = 30

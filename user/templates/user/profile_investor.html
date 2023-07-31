@@ -3,26 +3,18 @@
 {% load crispy_forms_tags %}
 
 <!-- User profile navigation bar -->
-{% block profile_navbar %}
-  <ul class="nav nav-pills flex-column mb-auto">
-    <li class="nav-item">
-      <a href="{% url 'profile_user' %}" class="nav-link link-body-emphasis">
-        User
-      </a>
-    </li>
-    <li>
-      <a href="{% url 'profile_investor' %}" class="nav-link active">
-        Investor
-      </a>
-    </li>
-    <li>
-      <a href="{% url 'profile_portfolio' %}" class="nav-link link-body-emphasis">
-        Portfolio
-      </a>
-    </li>
-  </ul>
+{% block profile_investor %}
+  <a href="{% url 'profile_investor' %}" class="nav-link active">
+    Investor
+  </a>
 {% endblock %}
 <!-- Main content -->
 {% block profile_content %}
-
+  <div class="card px-5 py-2">
+    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+      Update Account Investments Details
+    </h1>
+    <hr>
+    {% crispy form %}
+  </div>
 {% endblock %}

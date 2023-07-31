@@ -13,26 +13,40 @@
       {% block profile_navbar %}
         <ul class="nav nav-pills flex-column mb-auto">
           <li class="nav-item">
-            <a href="{% url 'profile_user' %}" class="nav-link link-body-emphasis">
-              User
-            </a>
+            {% block profile_account %}
+              <a href="{% url 'profile_account' %}" class="nav-link link-body-emphasis">
+                Account
+              </a>
+            {% endblock %}
           </li>
           <li>
-            <a href="{% url 'profile_investor' %}" class="nav-link link-body-emphasis">
-              Investor
-            </a>
+            {% block profile_investor %}
+              <a href="{% url 'profile_investor' %}" class="nav-link link-body-emphasis">
+                Investor
+              </a>
+            {% endblock %}
           </li>
           <li>
-            <a href="{% url 'profile_portfolio' %}" class="nav-link link-body-emphasis">
-              Portfolio
-            </a>
+            {% block profile_portfolio %}
+              <a href="{% url 'profile_portfolio' %}" class="nav-link link-body-emphasis">
+                Portfolio
+              </a>
+            {% endblock %}
           </li>
         </ul>
       {% endblock %}
     </nav>
     <!-- Main content -->
-    {% block profile_content %}
-      <!-- TODO: add general form that shows email address, first name, last name, join date -->
-    {% endblock %}
+    <div style="position: absolute; right: 100px; top: 250px; width: 1196px;">
+      {% block profile_content %}
+        <div class="card px-5 py-2">
+          <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+            Account Details
+          </h1>
+          <hr>
+          {% crispy form %}
+        </div>
+      {% endblock %}
+    </div>
   </div>
 {% endblock %}

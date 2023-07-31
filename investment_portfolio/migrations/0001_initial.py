@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                     ], max_length=20)
                 ),
                 (
-                    'user', models.OneToOneField(
+                    'user', models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
                         to=settings.AUTH_USER_MODEL
                     )

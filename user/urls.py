@@ -20,8 +20,13 @@ urlpatterns = [
          name='password_reset_complete'),
     # Other user functionality
     path('register/', views.register, name='register'),
-    path('profile/', views.profile_main, name='profile_main'),                      # TODO
-    path('profile/user/', views.profile_user, name='profile_user'),                 # TODO
+    path('profile/', views.profile_main, name='profile_main'),
+    path('profile/account/', views.profile_account, name='profile_account'),
+    path('profile/account/name/', views.profile_account_details, name='profile_account_name'),
+    path('profile/account/password/', views.MyPasswordChangeForm.as_view(
+        extra_context={
+            'title': "Update password"
+        },
+    ), name='profile_account_password'),
     path('profile/investor/', views.profile_investor, name='profile_investor'),     # TODO
-    path('profile/portfolio/', views.profile_portfolio, name='profile_portfolio'),  # TODO
 ]

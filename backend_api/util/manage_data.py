@@ -1,22 +1,23 @@
 import json
+import os
+
 import numpy as np
 import pandas as pd
 import yfinance as yf
 from typing import Tuple
 
-from pandas._typing import NDFrameT
-
 from backend_api.api import portfolio, stats_models, user
 from backend_api.util import api_util, console_handler, plot_functions, settings
-
-STATIC_FILES_LOCATION = 'static/img/graphs/'
+from backend_api.util.settings import STATIC_GRAPH_FILES_LOCATION, STATIC_USER_FILES_LOCATION
 
 
 ######################################################################################
 # 1
 def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
-                              model_option: int, level_of_risk: int, sectors_data, sectors: list, closing_prices_table,
-                              three_best_portfolios, pct_change_table: pd.DataFrame) -> portfolio.Portfolio:
+                              model_option: int, level_of_risk: int, extendedDataFromDB:Tuple) -> portfolio.Portfolio:
+    sectors_data, sectors, closing_prices_table, three_best_portfolios, _, \
+        pct_change_table, _ = extendedDataFromDB
+
     final_portfolio = three_best_portfolios[level_of_risk - 1]
     if level_of_risk == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
@@ -36,14 +37,24 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
 # 3 - plot user portfolio -# TODO plot at site
 
 def plot_user_portfolio(curr_user: user.User) -> None:
+    try:
+        os.mkdir(STATIC_USER_FILES_LOCATION + curr_user.get_name())
+    except FileExistsError:
+        pass
     # pie chart of sectors weights
-    plt_instance = curr_user.plot_portfolio_component()
-    plot_functions.plot(plt_instance)  # TODO plot at site
+    sectors_component_plt = curr_user.plot_sectors_component()
+    sectors_component_plt.savefig(
+        STATIC_USER_FILES_LOCATION + curr_user.get_name() + '/sectors_component.png', format='png'
+    )
     # chart of stocks weights
-    plt_instance = curr_user.plot_portfolio_component_stocks()
-    plot_functions.plot(plt_instance)  # TODO plot at site
-    plt_instance = curr_user.plot_investment_portfolio_yield()
-    plot_functions.plot(plt_instance)  # TODO plot at site
+    stocks_component_plt = curr_user.plot_stocks_component()
+    stocks_component_plt.savefig(
+        STATIC_USER_FILES_LOCATION + curr_user.get_name() + '/stocks_component.png', format='png'
+    )
+    yield_graph_plt = curr_user.plot_yield_component()
+    yield_graph_plt.savefig(
+        STATIC_USER_FILES_LOCATION + curr_user.get_name() + '/yield_graph.png', format='png'
+    )
 
 
 #############################################################################################################
@@ -163,7 +174,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors, settings.STOCKS_SYMBOLS,
                                                                          three_best_stocks_weights)
-    pct_change_table: NDFrameT = closing_prices_table.pct_change()
+    pct_change_table: pd = closing_prices_table.pct_change()
     yields: list = update_pct_change_table(best_stocks_weights_column, pct_change_table)
 
     return sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
@@ -270,7 +281,7 @@ def get_user_from_db(user_name: str):
     closing_prices_table: pd.DataFrame = get_closing_prices_table(int(is_machine_learning), mode='regular')
     user_portfolio: portfolio.Portfolio = portfolio.Portfolio(level_of_risk, starting_investment_amount, stocks_symbols,
                                                               sectors_data, selected_model, is_machine_learning)
-    pct_change_table: NDFrameT = closing_prices_table.pct_change()
+    pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(level_of_risk)] = weighted_sum
@@ -385,9 +396,9 @@ def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_
     plt_instance = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns,
                                                               three_best_sectors_weights, sectors, pct_change_table)
     if mode == 'regular':
-        plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'three_portfolios.png')
+        plot_functions.save_graphs(plt_instance, STATIC_GRAPH_FILES_LOCATION + 'three_portfolios.png')
     else:
-        plot_functions.save_graphs(plt_instance, '../../' + STATIC_FILES_LOCATION + 'three_portfolios.png')
+        plot_functions.save_graphs(plt_instance, '../../' + STATIC_GRAPH_FILES_LOCATION + 'three_portfolios.png')
 
 
 def plot_distribution_of_stocks(stock_names, pct_change_table) -> None:
@@ -398,9 +409,9 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> None:
 def plot_distribution_of_portfolio(distribution_graph, mode: str) -> None:
     plt_instance = plot_functions.plot_distribution_of_portfolio(distribution_graph)
     if mode == 'regular':
-        plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'distribution_graph.png')
+        plot_functions.save_graphs(plt_instance, STATIC_GRAPH_FILES_LOCATION + 'distribution_graph.png')
     else:
-        plot_functions.save_graphs(plt_instance, '../../' + STATIC_FILES_LOCATION + 'distribution_graph.png')
+        plot_functions.save_graphs(plt_instance, '../../' + STATIC_GRAPH_FILES_LOCATION + 'distribution_graph.png')
 
 
 def plotbb_strategy_portfolio(pct_change_table, new_portfolio) -> None:

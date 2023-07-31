@@ -32,12 +32,16 @@ class AlgorithmPreferencesForm(forms.ModelForm):
             'hx-swap': 'outerHTML'
         }
         # TODO: make dynamic code that updates CSV files from `/backend_api/DB/...`
-        self.fields['ml_answer'].label = format_html('<span class="capital-market-form-label">'
-                                                     'Question #1: Would you like to use machine learning algorithms for stock market investments?'
-                                                     '</span>')
-        self.fields['model_answer'].label = format_html('<span class="capital-market-form-label">'
-                                                        'Question #2: Which statistic model would you like to use for stock market investments?'
-                                                        '</span>')
+        self.fields['ml_answer'].label = format_html(
+            '<span class="capital-market-form-label">'
+            'Question #1: Would you like to use machine learning algorithms for stock market investments?'
+            '</span>'
+        )
+        self.fields['model_answer'].label = format_html(
+            '<span class="capital-market-form-label">'
+            'Question #2: Which statistic model would you like to use for stock market investments?'
+            '</span>'
+        )
 
         if form_type == 'create':
             self.helper.layout = Layout(

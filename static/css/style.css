@@ -7,6 +7,11 @@
 	font-family: "Poppins", sans-serif;
 }
 
+body {
+	background-color: rgb(42, 210, 252);
+}
+
+
 section {
 	position: relative;
 	width: 100%;
@@ -18,6 +23,7 @@ section {
     background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
+	background-attachment: fixed;
 }
 
 header {
@@ -185,7 +191,7 @@ svg {
 }
 
 .asteriskField {
-    color: red;
+    display: none;
 }
 
 #capital-market-form {
