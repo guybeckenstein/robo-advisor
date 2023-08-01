@@ -33,9 +33,9 @@ STOCKS_SYMBOLS = [
 # DB
 NAME_OF_BUCKET = '1'
 BASE_DIR = 'backend_api/'
-BUCKET_REPOSITORY = BASE_DIR + 'DB/Bucket' + NAME_OF_BUCKET + '/'  # directory of the bucket (12 tables + 2 closing prices)
-MACHINE_LEARNING_LOCATION = BUCKET_REPOSITORY + 'includingMachineLearning/'  # directory with 6 tables
-NON_MACHINE_LEARNING_LOCATION = BUCKET_REPOSITORY + 'withoutMachineLearning/' # directory with 6 tables
+BUCKET_REPOSITORY = BASE_DIR + 'DB/Bucket' + NAME_OF_BUCKET + '/'
+MACHINE_LEARNING_LOCATION = BUCKET_REPOSITORY + 'includingMachineLearning/'     # directory with 6 tables
+NON_MACHINE_LEARNING_LOCATION = BUCKET_REPOSITORY + 'withoutMachineLearning/'   # directory with 6 tables
 SECTORS_LOCATION = BASE_DIR + 'api/resources/sectors'  # sectors json file
 USERS_JSON_NAME = BASE_DIR + 'DB/users'  # where to save the users details
 ############################################

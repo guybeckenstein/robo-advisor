@@ -1,7 +1,6 @@
 from util import manage_data, settings
-from typing  import Tuple
 
-if _name_ == '__main__':
+if __name__ == '__main__':
     manage_data.main_menu()
     selection = manage_data.selected_menu_option()  # TODO get selection from page in site
     exit_loop_operation = 8
@@ -59,7 +58,7 @@ if _name_ == '__main__':
             )
 
             # add user to DB(json file)
-            #new_portfolio.update_json_file("backend_api/DB/users")
+            # new_portfolio.update_json_file("backend_api/DB/users")
             # TODO use sqlite instead of json file or makes conversion from json to sqlite
 
         elif selection == 2:

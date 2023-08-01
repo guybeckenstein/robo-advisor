@@ -4,7 +4,6 @@ import os
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from typing import Tuple
 
 from backend_api.api import portfolio, stats_models, user
 from backend_api.util import api_util, console_handler, plot_functions, settings
@@ -14,7 +13,7 @@ from backend_api.util.settings import STATIC_GRAPH_FILES_LOCATION, STATIC_USER_F
 ######################################################################################
 # 1
 def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
-                              model_option: int, level_of_risk: int, extendedDataFromDB:Tuple) -> portfolio.Portfolio:
+                              model_option: int, level_of_risk: int, extendedDataFromDB: tuple) -> portfolio.Portfolio:
     sectors_data, sectors, closing_prices_table, three_best_portfolios, _, \
         pct_change_table, _ = extendedDataFromDB
 

@@ -41,7 +41,7 @@ class StatsModels:
 
         stocks_names: list = []
         for symbol in stocks_symbols:
-            if type(symbol) == int:
+            if symbol is int:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
@@ -122,7 +122,7 @@ class StatsModels:
                                       max_percent_commodity, max_percent_stocks):
         stocks_names: list = []
         for symbol in stocks_symbols:
-            if type(symbol) == int:
+            if symbol is int:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
