@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator
-from django.contrib.auth.models import User
 from django.db import models
+
+from accounts.models import CustomUser
 
 
 class InvestmentPortfolio(models.Model):
@@ -11,7 +12,7 @@ class InvestmentPortfolio(models.Model):
         STRATEGY3 = ('STRATEGY3', 'STRATEGY3')
 
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    user = models.ForeignKey(User, on_delete=models.RESTRICT)
+    user = models.ForeignKey(CustomUser, on_delete=models.RESTRICT)
     name = models.CharField(max_length=30)
     total_investment_amount = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     current_value = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])

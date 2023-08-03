@@ -27,7 +27,7 @@ class TestBase:
         # Navigation Bar
         assert 'Home' in response.content.decode()
         assert 'About' in response.content.decode()
-        assert 'Register' in response.content.decode()
+        assert 'Sign Up' in response.content.decode()
         assert 'Login' in response.content.decode()
         # Hello message
         assert 'guest' in response.content.decode()

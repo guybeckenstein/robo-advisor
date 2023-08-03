@@ -232,7 +232,7 @@ class Portfolio:
         self.__starting_investment_amount = investment_amount
 
     def set_stocks_weights(self, stocks_weights) -> None:
-        if stocks_weights is list:
+        if type(stocks_weights) is list:
             self.__stocks_weights = stocks_weights
         else:
             nd_array = stocks_weights.values

@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 
-from user.models import InvestorUser
+from accounts.models import InvestorUser
 
 
 @login_required

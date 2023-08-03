@@ -25,8 +25,10 @@ SECRET_KEY = 'django-insecure-7a2qi##$sth7^53imychx^@6!k6stk054zo!3@-fr)h^d-!*$1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# Debug = False
 
 ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,15 +42,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Created apps
+    'accounts.apps.AccountsConfig',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     'analytics.apps.AnalyticsConfig',
     'core.apps.CoreConfig',
     'investment.apps.InvestmentConfig',
     'investment_portfolio.apps.InvestmentPortfolioConfig',
-    'user.apps.UserConfig',
     'watchlist.apps.WatchlistConfig',
     # Third party apps
     "crispy_bootstrap5",
     "crispy_forms",
+    "django_htmx",
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
@@ -59,7 +66,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
 ]
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+PHONENUMBER_DEFAULT_REGION = "IL"
 
 ROOT_URLCONF = 'robo_advisor_project.urls'
 
@@ -89,6 +100,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': os.environ['POSTGRESQL_DATABASE'],
+        # 'USER': os.environ['POSTGRESQL_USER'],
+        # 'PASSWORD': os.environ['POSTGRESQL_PASSWORD'],
+        # 'HOST': 'dbserver',
+        # 'PORT': '5432',
     }
 }
 
@@ -146,11 +163,16 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 LOGIN_REDIRECT_URL = 'homepage'
-LOGIN_URL = 'login'
+LOGIN_URL = 'account_login'
+LOGOUT_REDIRECT_URL = 'account_logout'
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
-# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASS')
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'noreply.robo.advisor@gmail.com'
+EMAIL_HOST_PASSWORD = 'Gq&^0!DaZ75&F6twkZo0'
+# sendgrid integration needed here

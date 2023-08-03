@@ -1,4 +1,4 @@
-{% extends "user/profile_main.html" %}
+{% extends "account/profile_main.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
 
@@ -15,6 +15,13 @@
       Update Account Investments Details
     </h1>
     <hr>
-    {% crispy form %}
+    {% if is_form_filled %}
+      {% crispy form %}
+    {% else %}
+      <a href="{% url 'capital_market_algorithm_preferences_form' %}" class="link-primary text-decoration-none">
+        Please fill the form for more information
+      </a>
+      <br>
+    {% endif %}
   </div>
 {% endblock %}

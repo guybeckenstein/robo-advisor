@@ -2,51 +2,56 @@ from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, HTML
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.core.exceptions import ValidationError
+from django.urls import reverse_lazy
 
-from user.models import InvestorUser
+from .models import InvestorUser, CustomUser
 
 
-# TODO: make a User model that its unique field is `email` and not `username`; i.e. we don't need username at all
+def ac_il_email_validator(value):
+    if not value.endswith('.ac.il'):
+        raise ValidationError('Enter a valid email address with the domain ending ".ac.il".')
 
 
 class UserRegisterForm(UserCreationForm):
-    """
-    User fields are:
-    1) Email
-    2) Phone number
-    3) First name
-    4) Last name
-    5) Password
-    Once a user is created, it cannot change its email (academic email is immutable)
-    """
-    # TODO: Email must include `@ac` - thus be academic email!
-    email = forms.EmailField(label="Email address")
-    # TODO: add phone number field with validation
-    # phone = PhoneNumberField()
     first_name = forms.CharField(label="First name", max_length=20)
     last_name = forms.CharField(label="Last name", max_length=20)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+
+        self.helper.form_id = 'signup-form'
+        self.helper.add_input(Submit('submit', 'Submit'))
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        try:
+            ac_il_email_validator(email)
+        except ValidationError as e:
+            raise forms.ValidationError(str(e))
+        return email
+
     class Meta:
-        model = User
-        # TODO: add phone number field with validation
-        # fields = ['email', 'phone', 'first_name', 'last_name', 'password']
-        fields = ['email', 'first_name', 'last_name']
+        model = CustomUser
+        fields = ('email', 'first_name', 'last_name', 'phone_number',)
 
+        widgets = {
+            'password': forms.PasswordInput(),
 
-class UserUpdateForm(forms.ModelForm):
-    first_name = forms.CharField(label="First name", max_length=20)
-    last_name = forms.CharField(label="Last name", max_length=20)
-    # TODO: add phone number field with validation
-    # phone = PhoneNumberField()
-
-    class Meta:
-        model = User
-        # TODO: make password update possible to user (it is not currently), including validation
-        # TODO: add phone number field with validation
-        # fields = ['phone', 'first_name', 'last_name']
-        fields = ['first_name', 'last_name']
+            'email': forms.TextInput(attrs={
+                'hx-post': reverse_lazy('check_email'),
+                'hx-target': '#div_id_email',
+                'hx-trigger': 'keyup changed delay:1s'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'hx-post': reverse_lazy('check_phone_number'),
+                'hx-target': '#div_id_phone_number',
+                'hx-trigger': 'keyup changed delay:1s'
+            })
+        }
+# Enter a valid phone number (e.g. 02-123-4567) or a number with an international call prefix.
 
 
 class AccountMetadataForm(forms.ModelForm):
@@ -55,29 +60,31 @@ class AccountMetadataForm(forms.ModelForm):
         self.fields['email'].disabled = disabled_project
         self.fields['first_name'].disabled = disabled_project
         self.fields['last_name'].disabled = disabled_project
+        self.fields['phone_number'].disabled = disabled_project
         self.fields['date_joined'].disabled = disabled_project
 
     class Meta:
-        model = User
-        fields = ('email', 'first_name', 'last_name', 'date_joined')
+        model = CustomUser
+        fields = ('email', 'first_name', 'last_name', 'phone_number', 'date_joined')
 
 
-class UpdateUserNameForm(forms.ModelForm):
+class UpdateUserNameAndPhoneNumberForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(UpdateUserNameForm, self).__init__(*args, **kwargs)
+        super(UpdateUserNameAndPhoneNumberForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             Layout(
                 'first_name',
                 'last_name',
+                'phone_number',
             ),
             HTML('<hr>'),
             FormActions(Submit('submit', 'Save', css_class='btn-dark')),
         )
 
     class Meta:
-        model = User
-        fields = ('first_name', 'last_name',)
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'phone_number',)
 
     @property
     def clean_fields(self):
@@ -123,7 +130,7 @@ class PasswordChangingForm(PasswordChangeForm):
     new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'type': 'password'}))
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('old_password', 'new_password1', 'new_password2',)
 
 
@@ -132,30 +139,7 @@ class UpdateInvestorUserForm(forms.ModelForm):
         super(UpdateInvestorUserForm, self).__init__(*args, **kwargs)
         self.fields['starting_investment_amount'].disabled = disabled_project
         self.fields['stocks_symbols'].disabled = disabled_project
-        self.fields['stocks_weights'].disabled = disabled_project
-        self.fields['sectors_names'].disabled = disabled_project
-        self.fields['stocks_weights'].disabled = disabled_project
-        self.fields['sectors_weights'].disabled = disabled_project
-        self.fields['annual_returns'].disabled = disabled_project
-        self.fields['annual_max_loss'].disabled = disabled_project
-        self.fields['annual_volatility'].disabled = disabled_project
-        self.fields['annual_sharpe'].disabled = disabled_project
-        self.fields['total_change'].disabled = disabled_project
-        self.fields['monthly_change'].disabled = disabled_project
 
     class Meta:
         model = InvestorUser
-        fields = (
-            'starting_investment_amount',
-            'stocks_symbols',
-            'stocks_weights',
-            'sectors_names',
-            'sectors_weights',
-            'annual_returns',
-            'annual_max_loss',
-            'annual_volatility',
-            'annual_sharpe',
-            'total_change',
-            'monthly_change',
-            'stocks_weights',
-        )
+        fields = ('starting_investment_amount','stocks_symbols',)

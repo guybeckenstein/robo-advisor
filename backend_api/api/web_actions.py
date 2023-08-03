@@ -7,7 +7,7 @@ from backend_api.util import manage_data
 from backend_api.util.api_util import get_json_data, makes_yield_column
 from backend_api.util.manage_data import get_closing_prices_table
 from core.models import QuestionnaireA
-from user.models import InvestorUser
+from accounts.models import InvestorUser
 
 
 def save_three_user_graphs_as_png(request) -> None:

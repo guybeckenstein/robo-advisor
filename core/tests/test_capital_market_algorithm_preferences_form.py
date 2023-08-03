@@ -12,8 +12,8 @@ from core.models import QuestionnaireA, QuestionnaireB
 @pytest.mark.django_db
 class TestCapitalMarketForm:
     # TODO: fix tests
-    def test_template_success(self, client, create_user_default: User, create_user_preferences_non_default: Callable):
-        self.sign_in(client, create_user_default, create_user_preferences_non_default)
+    def test_template_success(self, client, create_user_default: User, questionnaire_a_factory: Callable):
+        self.sign_in(client, create_user_default, questionnaire_a_factory)
         response = client.get(reverse('capital_market_investment_preferences_form'))
         assert response.status_code == 200
         assert b'/static/img/graphs/distribution_graph.png' in response.content
@@ -23,20 +23,20 @@ class TestCapitalMarketForm:
     def test_template_guest_failure(self, client):
         response = client.get(reverse('capital_market_investment_preferences_form'))
         assert response.status_code == 302
-        assert response.url == f"{reverse('login')}?next={reverse('capital_market_investment_preferences_form')}"
+        assert response.url == f"{reverse('account_login')}?next={reverse('capital_market_investment_preferences_form')}"
         assert len(response.templates) == 0
 
-    def test_template_user_failure(self, client, create_user_default: User, create_user_preferences_non_default: Callable):
-        self.sign_in(client, create_user_default, create_user_preferences_non_default)
+    def test_template_user_failure(self, client, create_user_default: User, questionnaire_a_factory: Callable):
+        self.sign_in(client, create_user_default, questionnaire_a_factory)
         extra_kwargs = {
             'mode': 'test'
         }
         response = client.get(reverse('capital_market_investment_preferences_form'), mode="test")
         assert response.status_code == 404
 
-    def test_form_post_success(self, client, create_user_default: User, create_user_preferences_non_default: Callable):
+    def test_form_post_success(self, client, create_user_default: User, questionnaire_a_factory: Callable):
         user = create_user_default
-        self.sign_in(client, user, create_user_preferences_non_default)
+        self.sign_in(client, user, questionnaire_a_factory)
         # Testing the user form is not within the DB
         with pytest.raises(ObjectDoesNotExist):
             QuestionnaireB.objects.get(user=user)
@@ -50,9 +50,9 @@ class TestCapitalMarketForm:
         assert response.status_code == 302
         assert QuestionnaireB.objects.get(user=user) is not None
 
-    def test_form_post_fail(self, client, create_user_default: User, create_user_preferences_non_default: Callable):
+    def test_form_post_fail(self, client, create_user_default: User, questionnaire_a_factory: Callable):
         user = create_user_default
-        self.sign_in(client, user, create_user_preferences_non_default)
+        self.sign_in(client, user, questionnaire_a_factory)
         # Testing the user form is not within the DB
         with pytest.raises(ObjectDoesNotExist):
             QuestionnaireB.objects.get(user=user)
@@ -68,7 +68,7 @@ class TestCapitalMarketForm:
             assert f'div_id_answer_{i}' in rendered_template
 
     @staticmethod
-    def sign_in(client, create_user_default: User, create_user_preferences_non_default: Callable) -> None:
+    def sign_in(client, create_user_default: User, questionnaire_a_factory: Callable) -> None:
         user: User = create_user_default
         client.force_login(user)
-        user_preferences: QuestionnaireA = create_user_preferences_non_default(user, 0, 0)
+        user_preferences: QuestionnaireA = questionnaire_a_factory(user, 0, 0)

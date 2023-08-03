@@ -47,14 +47,14 @@
             <a href="{% url 'capital_market_algorithm_preferences_form' %}">
               Capital Market Form
             </a>
-            <a href="{% url 'logout' %}">
+            <a href="{% url 'account_logout' %}">
               Logout
             </a>
           {% else %}
-            <a href="{% url 'register' %}">
-              Register
+            <a href="{% url 'signup' %}">
+              Sign Up
             </a>
-            <a href="{% url 'login' %}">
+            <a href="{% url 'account_login' %}">
               Login
             </a>
           {% endif %}

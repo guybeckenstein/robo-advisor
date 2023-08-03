@@ -9,7 +9,7 @@ from backend_api.util import manage_data, settings
 from backend_api.util.manage_data import create_new_user_portfolio
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
-from user.models import InvestorUser
+from accounts.models import InvestorUser
 
 
 def homepage(request):
@@ -159,7 +159,6 @@ def capital_market_investment_preferences_form(request, **kwargs):
                 investor_user.monthly_change = monthly_change
                 investor_user.daily_change = daily_change
                 # TODO - maybe add more fields later
-
             except InvestorUser.DoesNotExist:
                 # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
                 InvestorUser.objects.create(

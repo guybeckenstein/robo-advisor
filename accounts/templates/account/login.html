@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <form id="login-form" action="{% url 'account_login' %}" method="post">
+          {% csrf_token %}
+          <h2 class="mb-4 text-center">Login</h2>
+          {{ form | crispy }}
+
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary" hx-disable="true">
+              Login
+            </button>
+          </div>
+
+          <div class="text-center mt-3">
+            <a class="btn btn-link" href="{% url 'account_reset_password' %}">
+              Forgot Password?
+            </a>
+          </div>
+
+          <div class="text-center mt-2">
+            <p>
+              Don't have an account?
+              <a href="{% url 'signup' %}">
+                Sign up here
+              </a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="login-wrapper">
+      <div id="login-response" class="text-red-500 mt-2"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('htmx:responseError', function(event) {
+      var loginResponse = document.getElementById('login-response');
+      loginResponse.innerHTML = event.detail.xhr.responseText;
+    });
+
+    document.getElementById('login-form').addEventListener('htmx:afterRequest', function() {
+      var loginForm = document.getElementById('login-form');
+      var loginWrapper = document.getElementById('login-wrapper');
+      loginForm.style.display = 'none';
+      loginWrapper.style.display = 'block';
+    });
+  </script>
+{% endblock %}

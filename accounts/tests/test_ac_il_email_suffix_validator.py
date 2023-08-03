@@ -1,0 +1,33 @@
+import pytest
+from django.core.exceptions import ValidationError
+
+from accounts.forms import ac_il_email_validator
+
+
+class TestAcIlEmailSuffixValidator:
+    def test_valid(self):
+        # Valid email addresses
+        valid_emails = [
+            'john.doe@university.ac.il',
+            'jane.smith@college.ac.il',
+            'foo.bar@school.ac.il',
+        ]
+
+        for email in valid_emails:
+            # The validator should not raise any exception for valid emails
+            ac_il_email_validator(email)
+
+
+    def test_invalid(self):
+        # Invalid email addresses
+        invalid_emails = [
+            'invalid.email@example.com',
+            'user@domain.com',
+            'user@acil',
+            'user@university.ac.com',
+        ]
+
+        for email in invalid_emails:
+            # The validator should raise a ValidationError for invalid emails. Each mail should raise this error
+            with pytest.raises(ValidationError):
+                ac_il_email_validator(email)

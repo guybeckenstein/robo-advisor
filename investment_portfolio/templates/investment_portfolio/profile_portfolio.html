@@ -1,13 +1,13 @@
-{% extends "user/profile_main.html" %}
+{% extends "account/profile_main.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
 
+<!-- User profile navigation bar -->
 {% block profile_portfolio %}
   <a href="{% url 'profile_portfolio' %}" class="nav-link active">
     Portfolio
   </a>
 {% endblock %}
-
 <!-- Main content -->
 {% block profile_content %}
   <div class="card px-5 py-2" style="background-color: rgb(255, 255, 255);">
@@ -15,8 +15,8 @@
       Portfolio
     </h1>
     <hr>
-    <table class="table">
-      {% if is_form_filled %}
+    {% if is_form_filled %}
+      <table class="table">
         <thead>
           <tr>
             <th scope="col">Graph</th>
@@ -27,7 +27,7 @@
           <tr>
             <th scope="row">Sectors Component</th>
             <td>
-              <img src="{% static 'img/user/' %}{{ user.id }}/sectors_component.png" alt="Sectors Component"">
+              <img src="{% static 'img/user/' %}{{ user.id }}/sectors_component.png" alt="Sectors Component">
             </td>
           </tr>
           <tr>
@@ -43,11 +43,12 @@
             </td>
           </tr>
         </tbody>
-      {% else %}
-        <a href="{% url 'capital_market_algorithm_preferences_form' %}" class="link-primary text-decoration-none">
-          Please fill the form for more information
-        </a>
-      {% endif %}
-    </table>
+      </table>
+    {% else %}
+      <a href="{% url 'capital_market_algorithm_preferences_form' %}" class="link-primary text-decoration-none">
+        Please fill the form for more information
+      </a>
+      <br>
+    {% endif %}
   </div>
 {% endblock %}
