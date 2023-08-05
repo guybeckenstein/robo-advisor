@@ -12,7 +12,7 @@ body {
 }
 
 
-section {
+header {
 	position: relative;
 	width: 100%;
 	min-height: 100vh;
@@ -26,7 +26,7 @@ section {
 	background-attachment: fixed;
 }
 
-header {
+nav {
 	position: relative;
 	top: 0;
 	width: 100%;
@@ -36,11 +36,7 @@ header {
 	align-items: center;
 }
 
-header .logo {
-	position: relative;
-}
-
-header .navigation a {
+nav .navigation a {
 	color: rgb(0, 0, 0);
 	text-decoration: none;
 	font-weight: 500;
@@ -51,11 +47,11 @@ header .navigation a {
 	transition-property: background;
 }
 
-header .navigation a:not(:last-child) {
+nav .navigation a:not(:last-child) {
 	margin-right: 30px;
 }
 
-header .navigation a:hover {
+nav .navigation a:hover {
 	background: rgb(255, 255, 255);
 }
 
@@ -83,49 +79,12 @@ svg {
 }
 
 .content {
-	max-width: 800px;
-	margin: 60px 100px;
+	max-width: 800px; margin: 60px 100px;
 }
 
-.content .info h2 {
-	color: #226A80;
-	font-size: 55px;
-	font-weight: 800;
-	letter-spacing: 2px;
-	line-height: 60px;
-	margin-bottom: 30px;
-}
-
-.content .info h2 span {
-	color: rgb(255, 255, 255);
-	font-size: 50px;
-	font-weight: 600;
-}
-
-.content .info p {
-	font-size: 16px;
-	font-weight: 500;
-	margin-bottom: 40px;
-}
-
-.content .info-btn button {
-	color: rgb(255, 255, 255);
-	background: #226A80;
-	text-decoration: none;
-	text-transform: uppercase;
-	font-weight: 600;
-	letter-spacing: 2px;
-	padding: 10px 20px;
-	margin-bottom: 20px;
-	border-radius: 5px;
-	border: 5px solid transparent;
-	transition: 0.3s;
-	transition-property: background;
-	margin-top:10px;
-}
-
-.content .info-btn button:hover {
-	background: #0C4F60;
+.content-sidebar {
+    width: 400px;
+    margin: 60px 0px 0px 100px;
 }
 
 .team-members {
@@ -195,14 +154,19 @@ svg {
 }
 
 #capital-market-form {
-    margin-top: 5px;
-    margin-left: 20px;
+    margin: 5px 20px;
 }
 
-.capital-market-form-label, .asteriskField {
+.capital-market-form-label {
     font-weight: 800;
     font-size: 20px;
-    background-color: rgb(245, 245, 245);
+    background-color: rgb(230, 230, 230);
+}
+
+.capital-market-form-img {
+    margin-top: 10px;
+    border: none;
+    padding: 0;
 }
 
 .capital-market-form-radio {

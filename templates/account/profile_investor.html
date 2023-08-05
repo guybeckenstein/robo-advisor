@@ -1,0 +1,27 @@
+{% extends "account/profile_main.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+<!-- User profile navigation bar -->
+{% block profile_investor %}
+  <a href="{% url 'profile_investor' %}" class="nav-link active">
+    Investor
+  </a>
+{% endblock %}
+<!-- Main Content -->
+{% block profile_content %}
+  <div class="card px-5 py-2">
+    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+      Update Account Investments Details
+    </h1>
+    <hr>
+    {% if is_form_filled %}
+      {% crispy form %}
+    {% else %}
+      <a href="{% url 'capital_market_algorithm_preferences_form' %}" class="link-primary text-decoration-none">
+        Please fill the form for more information
+      </a>
+      <br>
+    {% endif %}
+  </div>
+{% endblock %}

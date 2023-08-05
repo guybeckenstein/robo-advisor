@@ -12,3 +12,5 @@ class Watchlist(models.Model):
 
     class Meta:
         db_table = 'Watchlist'
+        verbose_name = 'Watchlist'
+        verbose_name_plural = 'Watchlist'

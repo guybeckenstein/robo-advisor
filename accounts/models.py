@@ -14,23 +14,22 @@ class UserManager(BaseUserManager):
     custom model accounts manager
     """
 
-    def create_user(self, email, username, password=None):
+    def create_user(self, email, password=None):
         if not email:
             raise ValueError("email is required")
         email = self.normalize_email(email)
         user = self.model(
             email=self.normalize_email(email),
-            username=username,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, username, password):
+    def create_superuser(self, email, password):
         """creates new superuser with details """
 
-        user = self.create_user(email, username, password)
+        user = self.create_user(email, password)
         user.is_superuser = True
         user.is_staff = True
         user.save(using=self._db)
@@ -41,7 +40,6 @@ class CustomUser(AbstractUser):
     """
     custom accounts model
     """
-    username = models.CharField(max_length=50, db_index=True, blank=True, null=True)
     email = models.EmailField(unique=True)
 
     first_name = models.CharField(max_length=255)
@@ -49,12 +47,17 @@ class CustomUser(AbstractUser):
     phone_number = PhoneNumberField()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = []
 
     objects = UserManager()
 
     def __str__(self):
         return self.email
+
+    class Meta:
+        db_table = 'CustomUser'
+        verbose_name = 'Custom User'
+        verbose_name_plural = 'Custom User'
 
 
 class InvestorUser(models.Model):
@@ -76,3 +79,5 @@ class InvestorUser(models.Model):
 
     class Meta:
         db_table = 'InvestorUser'
+        verbose_name = 'Investor User'
+        verbose_name_plural = 'Investor User'

@@ -17,7 +17,7 @@ class TestCapitalMarketForm:
         assert response.status_code == 200
         assert b'/static/img/graphs/distribution_graph.png' in response.content
         assert b'/static/img/graphs/three_portfolios.png' in response.content
-        assert 'core/capital_market_form_create.html' in response.templates[0].name
+        assert 'core/capital_market_preferences_form.html' in response.templates[0].name
 
     def test_template_guest_failure(self, client):
         response = client.get(reverse('capital_market_investment_preferences_form'))

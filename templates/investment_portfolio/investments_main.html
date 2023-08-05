@@ -1,0 +1,45 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <!-- User profile sidebar -->
+  <aside class="d-flex flex-column flex-shrink-0 p-3 bg-white border content-sidebar">
+    <a href="{% url 'investments_main' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+      <span class="fs-4">{{ user.first_name }}'s Investments Page</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+      <!-- Metadata about investments, possibility to add more money or deposit money -->
+      <li class="nav-item">
+        {% block investments_history_link %}
+          <a href="{% url 'my_investments_history' %}" class="nav-link link-body-emphasis">
+            Investments History
+          </a>
+        {% endblock %}
+      </li>
+      <!-- Search stocks -->
+      <li>
+        {% block discover_stocks_link %}
+          <a href="{% url 'discover_stocks' %}" class="nav-link link-body-emphasis">
+            Discover Stocks
+          </a>
+        {% endblock %}
+      </li>
+      <!-- Sell stocks -->
+      <li>
+        {% block sell_stocks_link %}
+          <a href="{% url 'sell_stocks' %}" class="nav-link link-body-emphasis">
+            Sell Stocks
+          </a>
+        {% endblock %}
+      </li>
+    </ul>
+  </aside>
+  <!-- Main Content -->
+  <div style="position: absolute; right: 100px; top: 250px; width: 1196px;">
+    {% block investments_content %}
+      <!-- TODO: add data -->
+    {% endblock %}
+  </div>
+{% endblock %}

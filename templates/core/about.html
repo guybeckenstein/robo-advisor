@@ -1,0 +1,59 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+  <div class="content">
+    <div class="accordion accordion-flush border" id="accordionAboutUs">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+            Our Idea?
+          </button>
+        </h2>
+        <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionAboutUs">
+          <div class="accordion-body">
+            A unique model for building an investment portfolio using smart algorithms that perform financial,
+            statistical and behavioral analyses.
+            <br>
+            The client has many options, from adjusting a "ready-made" investment portfolio
+            according to his needs to an in-depth analysis for specific stocks that are relevant to him.
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+            Who Are We?
+          </button>
+        </h2>
+        <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionAboutUs">
+          <div class="accordion-body">
+            Third year computer science (Bsc) students, from MTA.
+            <br>
+            <strong>Our GitHubs and contribution to this project:</strong>
+            <br>
+            <a href="https://github.com/guybeckenstein" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+              Guy Beckenstein
+            </a>
+            - Frontend, Views, Controllers, AWS, Selenium
+            <br>
+            <a href="https://github.com/yardet" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+              Yarden Agami
+            </a>
+            - Machine Learning, Backend Service, AWS, Selenium
+            <br>
+            <a href="https://github.com/hagailevy" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+              Hagai Levy
+            </a>
+            - Views, Controllers
+            <br>
+            <a href="https://github.com/Yardengz" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+              Yarden Gazit
+            </a>
+            - Views, Controllers
+            <br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

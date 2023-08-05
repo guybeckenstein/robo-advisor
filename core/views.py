@@ -4,9 +4,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from backend_api.api.web_actions import save_three_user_graphs_as_png
-from backend_api.util import manage_data, settings
-from backend_api.util.manage_data import create_new_user_portfolio
+from service.api.web_actions import save_three_user_graphs_as_png
+from service.util import manage_data, settings
+from service.util.manage_data import create_new_user_portfolio
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from accounts.models import InvestorUser
@@ -33,13 +33,13 @@ def capital_market_algorithm_preferences_form(request):
                 'title': 'Fill Form',
                 'form': AlgorithmPreferencesForm(form_type='create')
             }
-            return render(request, 'core/preferences_form_create.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
                 'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
             }
-            return render(request, 'core/preferences_form_update.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
     elif request.method == 'POST':
         if preferences is None:  # CREATE
             form = AlgorithmPreferencesForm(request.POST)
@@ -85,7 +85,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     form_type='create', user_preferences_instance=user_preferences_instance
                 )
             }
-            return render(request, 'core/capital_market_form_create.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
@@ -95,7 +95,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     user_preferences_instance=user_preferences_instance
                 )
             }
-            return render(request, 'core/capital_market_form_update.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
 
     elif request.method == 'POST':
         if questionnaire is None:  # CREATE

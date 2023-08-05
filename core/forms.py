@@ -4,7 +4,7 @@ from crispy_forms.layout import Submit, Layout, Div, HTML
 from django import forms
 from django.utils.html import format_html
 
-from backend_api.util import manage_data, settings as backend_settings
+from service.util import manage_data, settings as backend_settings
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 
@@ -31,7 +31,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
             'hx-target': '#preferences-form',
             'hx-swap': 'outerHTML'
         }
-        # TODO: make dynamic code that updates CSV files from `/backend_api/DB/...`
+        # TODO: make dynamic code that updates CSV files from `/service/DB/...`
         self.fields['ml_answer'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #1: Would you like to use machine learning algorithms for stock market investments?'
@@ -43,19 +43,23 @@ class AlgorithmPreferencesForm(forms.ModelForm):
             '</span>'
         )
 
+        main_header = '<h1 style="font-weight: 900;">Capital Market Preferences Form - Algorithms</h1>'
         if form_type == 'create':
             self.helper.layout = Layout(
-                HTML('<h1 style="font-weight: 900;">Preferences Form</h1>'),
-                HTML('<h5 style="color: rgb(150, 150, 150);">Completing the survey is <u>essential</u>'
-                     ' for using our website and AI algorithm</h5>'),
+                HTML(main_header),
+                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                     'Completing the survey is <u>essential</u> for using our website and AI algorithm'
+                     '</h5>'),
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
                 Div(InlineRadios('model_answer', css_class='capital-market-form-radio')),
             )
             self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
         elif form_type == 'update':
             self.helper.layout = Layout(
-                HTML('<h1 style="font-weight: 900;">Preferences Form</h1>'),
-                HTML('<h5 style="color: rgb(150, 150, 150);">Update your capital market investments preferences form</h5>'),
+                HTML(main_header),
+                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                     'Update your capital market algorithm preferences form'
+                     '</h5>'),
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
                 Div(InlineRadios('model_answer', css_class='capital-market-form-radio')),
             )
@@ -94,7 +98,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
             'hx-target': '#capital-market-form',
             'hx-swap': 'outerHTML'
         }
-        # TODO: make dynamic code that updates CSV files from `/backend_api/DB/...`
+        # TODO: make dynamic code that updates CSV files from `/service/DB/...`
         self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #1: For how many years do you want to invest?'
                                                     '</span>')
@@ -110,14 +114,16 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     'Question #3: What is your preferable graph?'
                                                     '</span>'
                                                     f'<div class="capital-market-form-label capital-market-form-img">'
-                                                    f'<img src="{second_graph}">'
+                                                    f'<img class="capital-market-form-img" src="{second_graph}">'
                                                     f'</div>')
 
+        main_header = '<h1 style="font-weight: 900;">Capital Market Preferences Form - Investments</h1>'
         if form_type == 'create':
             self.helper.layout = Layout(
-                HTML('<h1 style="font-weight: 900;">Capital Market Form</h1>'),
-                HTML('<h5 style="color: rgb(150, 150, 150);">Completing the survey is <u>essential</u>'
-                     ' for using our website and AI algorithm</h5>'),
+                HTML(main_header),
+                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                     'Completing the survey is <u>essential</u> for using our website and AI algorithm'
+                     '</h5>'),
                 Div(InlineRadios('answer_1', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),
@@ -125,8 +131,10 @@ class InvestmentPreferencesForm(forms.ModelForm):
             self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
         elif form_type == 'update':
             self.helper.layout = Layout(
-                HTML('<h1 style="font-weight: 900;">Capital Market Form</h1>'),
-                HTML('<h5 style="color: rgb(150, 150, 150);">Update the previous survey you completed</h5>'),
+                HTML(main_header),
+                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                     'Update your capital market investment preferences form'
+                     '</h5>'),
                 Div(InlineRadios('answer_1', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),

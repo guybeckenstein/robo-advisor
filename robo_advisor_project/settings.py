@@ -77,7 +77,7 @@ ROOT_URLCONF = 'robo_advisor_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -169,10 +169,10 @@ LOGOUT_REDIRECT_URL = 'account_logout'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'noreply.robo.advisor@gmail.com'
+EMAIL_HOST_PASSWORD = 'mwepxsnhsvkpkzzo'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'noreply.robo.advisor@gmail.com'
-EMAIL_HOST_PASSWORD = 'Gq&^0!DaZ75&F6twkZo0'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # sendgrid integration needed here

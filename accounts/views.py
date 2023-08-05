@@ -8,7 +8,7 @@ from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 
 from .forms import UserRegisterForm, AccountMetadataForm, UpdateUserNameAndPhoneNumberForm, UpdateInvestorUserForm, \
     PasswordChangingForm
@@ -26,7 +26,7 @@ class SignUpView(SignupView):
         # Use RequestContext instead of render_to_response from 3.0
         context = {
             'form': self.form_class,
-            'title': "Sign up"
+            'title': "Sign Up"
         }
         return render(request, self.template_name, context=context)
 
@@ -41,7 +41,7 @@ class SignUpView(SignupView):
 
         context = {
             'form': form,
-            'title': "Sign up"
+            'title': "Sign Up"
         }
         return render(request, self.template_name, context=context)
 
@@ -49,6 +49,11 @@ class SignUpView(SignupView):
 class HtmxLoginView(LoginView):
     template_name = 'account/login.html'
     htmx = True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Login'
+        return context
 
 
 def logout_view(request):
@@ -107,6 +112,11 @@ class MyPasswordChangeForm(PasswordChangeView):
     form_class = PasswordChangingForm
     template_name = 'account/profile_account_password.html'
     success_url = reverse_lazy('profile_account')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Forgot Password'  # Add your desired value for the 'title' key here
+        return context
 
 
 @login_required

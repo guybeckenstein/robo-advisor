@@ -22,6 +22,8 @@ class QuestionnaireA(models.Model):
 
     class Meta:
         db_table = 'CapitalMarketAlgorithmPreferences'
+        verbose_name = 'Capital Market - Algorithm Preferences'
+        verbose_name_plural = 'Capital Market - Algorithm Preferences'
 
 
 class QuestionnaireB(models.Model):
@@ -35,13 +37,18 @@ class QuestionnaireB(models.Model):
 
     class Meta:
         db_table = 'CapitalMarketInvestmentPreferences'
+        verbose_name = 'Capital Market - Investment Preferences'
+        verbose_name_plural = 'Capital Market - Investment Preferences'
 
 
 class TeamMember(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
     alt = models.CharField(max_length=20, unique=True)
     full_name = models.CharField(max_length=20, unique=True)
+    github_username = models.CharField(max_length=30, unique=True)
     img = models.CharField(max_length=30, unique=True)
 
     class Meta:
         db_table = 'TeamMember'
+        verbose_name = 'Team Member'
+        verbose_name_plural = 'Team Member'

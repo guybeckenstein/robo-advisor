@@ -22,3 +22,5 @@ class Investment(models.Model):
 
     class Meta:
         db_table = 'Investment'
+        verbose_name = 'Investment'
+        verbose_name_plural = 'Investment'

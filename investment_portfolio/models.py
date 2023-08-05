@@ -21,4 +21,6 @@ class InvestmentPortfolio(models.Model):
 
     class Meta:
         db_table = 'InvestmentPortfolio'
+        verbose_name = 'Investment Portfolio'
+        verbose_name_plural = 'Investment Portfolio'
         unique_together = ['user', 'name']

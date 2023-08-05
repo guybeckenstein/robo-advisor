@@ -20,3 +20,5 @@ class Analytics(models.Model):
 
     class Meta:
         db_table = 'Analytics'
+        verbose_name = 'Analytics'
+        verbose_name_plural = 'Analytics'

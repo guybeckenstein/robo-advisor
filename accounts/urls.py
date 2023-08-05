@@ -12,9 +12,9 @@ urlpatterns = [
     path('profile/', views.profile_main, name='profile_main'),
     path('profile/accounts/', views.profile_account, name='profile_account'),
     path('profile/accounts/details/', views.profile_account_details, name='profile_account_name'),
-    path('profile/accounts/password/', views.MyPasswordChangeForm.as_view(
+    path('profile/accounts/password/reset/', views.MyPasswordChangeForm.as_view(
         extra_context={
-            'title': "Update password"
+            'title': "Forgot password"
         },
     ), name='profile_account_password'),
     path('profile/investor/', views.profile_investor, name='profile_investor'),     # TODO
