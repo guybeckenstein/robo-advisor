@@ -1,12 +1,16 @@
+from typing import Callable
+
 import pytest
-from django.contrib.auth.models import User
 from django.urls import reverse
+
+from accounts.models import CustomUser
 
 
 @pytest.mark.django_db
 class TestBase:
-    def test_base_logged_user(self, create_user_default: User, client):
-        client.force_login(create_user_default)
+    def test_base_logged_user(self, client, user_factory: Callable):
+        user: CustomUser = user_factory()
+        client.force_login(user)
         response = client.get(reverse('homepage'))
         assert response.status_code == 200
         assert 'core/homepage.html' in response.templates[0].name
@@ -18,7 +22,7 @@ class TestBase:
         assert 'Capital Market Form' in response.content.decode()
         assert 'Logout' in response.content.decode()
         # Hello message
-        assert 'Testuser' in response.content.decode()
+        assert 'Test User' in response.content.decode()
 
     def test_base_guest(self, client):
         response = client.get(reverse('homepage'))

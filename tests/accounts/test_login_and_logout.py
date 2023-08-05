@@ -34,7 +34,7 @@ class TestLoginAndLogout:
         # Test user logout
         response = client.post(reverse('account_logout'))
 
-        assert response.status_code == 302
+        assert response.status_code == 200
 
     def test_login_invalid_credentials(self, client, user_factory: Callable):
         user = user_factory()
