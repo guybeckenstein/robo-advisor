@@ -25,6 +25,17 @@ def get_machine_learning_option() -> int:
     return is_machine_learning
 
 
+def get_machine_learning_mdoel()->int:
+    print("choose machine learning model:\n 1 - LinearRegression\n"
+          " 2 - ARIMA\n 3 - GradientBoostingRegressor\n 4- Prophet\n")
+    model_option = int(input())
+    while model_option <= 0 or  model_option >= 5:
+        print("Please enter option between 1 to 4")
+        model_option = int(input())
+
+    return model_option
+
+
 def get_num_of_years_history() -> int:
     print("enter number of years for history")
     num_of_years = int(input())
@@ -40,6 +51,18 @@ def get_model_option() -> int:
     model_option = int(input())
     while model_option != 1 and model_option != 2:
         print("Please enter 1 or 2")
+        model_option = int(input())
+
+    return model_option
+
+def get_group_of_stocks_option() -> int:
+    print("choose group of stocks for research:\n 1 - usa stocks\n"
+          " 2 - usa bonds\n 3 - israel indexes\n 4- nasdaq stocks\n"
+          " 5 - s&p500 stocks\n 6 - dowjones stocks\n 7- tel aviv 35 stocks\n"
+        " 8 - tel aviv 90 stocks\n 9 - tel aviv 125 stocks\n 10- all stocks\n")
+    model_option = int(input())
+    while model_option <= 0 or model_option >= 11:
+        print("Please enter option between 1 to 10")
         model_option = int(input())
 
     return model_option

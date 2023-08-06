@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-from service.util import api_util
+from ..util import api_util
 
 
-class StatsModels:
+class statsModels:
 
     _df = None
     _three_best_portfolios = None
@@ -13,40 +13,37 @@ class StatsModels:
     _best_stocks_weights_column = None
     _stock_sectors = None
     _sectors_list = None
-    _limit_percen_low_risk_commodity = None
-    _limit_percent_medium_risk_commodity = None
-    _limit_percen_low_risk_stocks = None
-    _limit_percent_medium_risk_stocks = None
     _model_name = None
 
-    def __init__(self, stocks_symbols, sectors_list, closing_prices_table, num_por_simulation, min_num_por_simulation,
-                 max_percent_commodity, max_percent_stocks, model_name):
+    def __init__(self, stocks_symbols, sectors_list, closing_prices_table, pct_change_table, num_por_simulation, min_num_por_simulation,
+                 max_percent_commodity, max_percent_stocks, model_name, machine_learning_opt):
         self._stock_sectors = api_util.set_stock_sectors(stocks_symbols, sectors_list)
         self._sectors_list = sectors_list
         self._model_name = model_name
         self._closing_prices_table = closing_prices_table
         if model_name == "Markowitz":
             self.get_optimal_portfolio_by_markowitz(
-                num_por_simulation, min_num_por_simulation, self._closing_prices_table, stocks_symbols,
-                max_percent_commodity, max_percent_stocks
+                num_por_simulation, min_num_por_simulation, closing_prices_table, pct_change_table,  stocks_symbols,
+                max_percent_commodity, max_percent_stocks, machine_learning_opt
             )
         else:
             self.get_optimal_portfolio_by_gini(
-                num_por_simulation, min_num_por_simulation, self._closing_prices_table, stocks_symbols,
-                max_percent_commodity, max_percent_stocks
+                num_por_simulation, min_num_por_simulation, pct_change_table,  stocks_symbols,
+                max_percent_commodity, max_percent_stocks, machine_learning_opt
             )
 
     def get_optimal_portfolio_by_markowitz(self, num_por_simulation, min_num_por_simulation, closing_prices_table,
-                                           stocks_symbols, max_percent_commodity, max_percent_stocks):
+                                           pct_change_table, stocks_symbols, max_percent_commodity, max_percent_stocks, machine_learning_opt):
 
         stocks_names: list = []
         for symbol in stocks_symbols:
-            if type(symbol) is int:
+            if type(symbol) == int:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
 
-        returns_daily = closing_prices_table.pct_change()
+
+        returns_daily = pct_change_table
         returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
         cov_daily = returns_daily.cov()
         cov_annual = cov_daily * 254
@@ -118,16 +115,16 @@ class StatsModels:
         # reorder dataframe columns
         self._df = df[column_order]
 
-    def get_optimal_portfolio_by_gini(self, num_por_simulation, min_num_por_simulation, table, stocks_symbols,
-                                      max_percent_commodity, max_percent_stocks):
+    def get_optimal_portfolio_by_gini(self, num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
+                                      max_percent_commodity, max_percent_stocks, machine_learning_opt):
         stocks_names: list = []
         for symbol in stocks_symbols:
-            if type(symbol) is int:
+            if type(symbol) == int:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
-        v_value = 4
-        returns_daily = table.pct_change()
+        v_value = api_util.settings.gini_v_value  # TODO: not recognizing method
+        returns_daily = pct_change_table
         port_portfolio_annual = []
         port_gini_annual = []
         sharpe_ratio = []
@@ -179,6 +176,9 @@ class StatsModels:
                 gini_daily = summary * (-v_value)
                 gini_annual = gini_daily * (254 ** 0.5)
                 portfolio_annual = ((1 + mue) ** 254) - 1
+                """if machine_learning_opt:
+                    portfolio_annual, __ = api_util.analyze_with_machine_learning_linear_regression(portfolio_return, table.index)
+                    portfolio_annual = portfolio_annual / 100"""
                 sharpe = portfolio_annual / gini_annual
                 sharpe_ratio.append(sharpe)
                 port_portfolio_annual.append(portfolio_annual * 100)
@@ -204,6 +204,8 @@ class StatsModels:
 
             # reorder dataframe columns
             self._df = df[column_order]
+
+
 
     def get_df(self):
         return self._df

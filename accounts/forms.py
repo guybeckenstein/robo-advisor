@@ -51,7 +51,6 @@ class UserRegisterForm(UserCreationForm):
                 'hx-trigger': 'keyup changed delay:1s'
             })
         }
-# Enter a valid phone number (e.g. 02-123-4567) or a number with an international call prefix.
 
 
 class AccountMetadataForm(forms.ModelForm):
@@ -142,4 +141,4 @@ class UpdateInvestorUserForm(forms.ModelForm):
 
     class Meta:
         model = InvestorUser
-        fields = ('starting_investment_amount','stocks_symbols',)
+        fields = ('starting_investment_amount', 'stocks_symbols',)

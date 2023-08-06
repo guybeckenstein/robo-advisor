@@ -29,7 +29,7 @@ def save_three_user_graphs_as_png(request) -> None:
     annual_volatility = investor_user.annual_volatility
     annual_sharpe = investor_user.annual_sharpe
     sectors_data = get_json_data("service/api/resources/sectors")  # universal from file
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(int(is_machine_learning), mode='regular')
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
     user_portfolio: portfolio.Portfolio = portfolio.Portfolio(
         risk_level, starting_investment_amount, stocks_symbols, sectors_data, selected_model, is_machine_learning
     )
@@ -43,6 +43,4 @@ def save_three_user_graphs_as_png(request) -> None:
     user_portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
                                       annual_volatility, annual_sharpe)
     # Save plots
-    manage_data.plot_user_portfolio(
-        user.User(str(investor_user.user.id), user_portfolio)
-    )
+    manage_data.save_user_portfolio(user.User(str(investor_user.user.id), user_portfolio))

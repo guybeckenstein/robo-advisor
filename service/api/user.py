@@ -2,35 +2,33 @@ import codecs
 import json
 import pandas as pd
 from matplotlib import pyplot as plt
-from service.api import portfolio
+from .portfolio import Portfolio
 
 
 class User:
 
-    __name = ""
-    __my_portfolio = portfolio.Portfolio(1, 0, [], [], 1, 0)
-
-    def __init__(self, name: str, curr_portfolio: portfolio.Portfolio):
-        self.__name: str = name
-        self.__my_portfolio: portfolio.Portfolio = curr_portfolio
-        self.__fig_size: tuple[int, int] = (10, 8)
+    def __init__(
+            self,
+            name: str = "",
+            curr_portfolio: Portfolio = Portfolio(1, 0, [], [], 1, 0)
+    ):
+        self.__name = name
+        self.__myPortfolio = curr_portfolio
 
     def get_name(self) -> str:
         return self.__name
 
-    def get_portfolio(self) -> portfolio.Portfolio:
-        return self.__my_portfolio
+    def get_portfolio(self) -> Portfolio:
+        return self.__myPortfolio
 
-    def get_fig_size(self) -> tuple[int, int]:
-        return self.__fig_size
-
-    def update_portfolio(self, curr_portfolio: portfolio.Portfolio) -> None:
-        self.__my_portfolio.setPortfolio(
+    def update_portfolio(self, curr_portfolio: Portfolio) -> None:
+        self.__myPortfolio.setPortfolio(
             curr_portfolio.get_level_of_risk(), curr_portfolio.get_investment_amount(),
             curr_portfolio.get_israeli_stocks_indexes(), curr_portfolio.get_usa_stocks_indexes()
         )
 
-    def plot_yield_component(self):
+    def plot_investment_portfolio_yield(self):
+        from ..util import api_util
 
         curr_portfolio = self.get_portfolio()
         table = curr_portfolio.get_pct_change_table()
@@ -38,11 +36,13 @@ class User:
         total_change = curr_portfolio.get_total_change()
         sectors = curr_portfolio.get_sectors()
 
+        fig_size_x = 10
+        fig_size_y = 8
+        fig_size = (fig_size_x, fig_size_y)
         plt.style.use("seaborn-dark")
 
         plt.title("Hello, " + self.get_name() + "! This is your yield portfolio")
         plt.ylabel("Returns %")
-        plt.subplots(figsize=self.get_fig_size())
 
         stocks_str = ""
         for i in range(len(sectors)):
@@ -70,20 +70,22 @@ class User:
                 wrap=True,
             )
         table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
-        table['yield__selected_percent'].plot(
-            figsize=self.get_fig_size(), grid=True, color="green", linewidth=2, label="yield", legend=True,
-            linestyle="dashed"
-        )
+
+        table['yield__selected_percent'].plot(figsize=fig_size, grid=True, color="green", linewidth=2, label="yield",
+                                              legend=True, linestyle="dashed")
+        """__, forecast_returns, __ = api_util.analyze_with_machine_learning_arima(table['yield__selected_percent'],
+                                                                                table.index, closing_prices_mode=False)
+        forecast_returns.plot(figsize=fig_size, grid=True, color="red", linewidth=2,
+                                                         label="forecast", legend=True, linestyle="dashed")"""
 
         plt.subplots_adjust(bottom=0.4)
 
         return plt
 
-    def plot_sectors_component(self):
+    def plot_portfolio_component(self):
         curr_portfolio = self.get_portfolio()
         sectors_weights = curr_portfolio.get_sectors_weights()
         labels = curr_portfolio.get_sectors_names()
-        plt.subplots(figsize=self.get_fig_size())
         plt.title("Hello, " + self.get_name() + "! This is your portfolio")
         plt.pie(
             sectors_weights,
@@ -95,11 +97,10 @@ class User:
         plt.axis("equal")
         return plt
 
-    def plot_stocks_component(self):
+    def plot_portfolio_component_stocks(self):
         curr_portfolio = self.get_portfolio()
         stocks_weights = curr_portfolio.get_stocks_weights()
         labels = curr_portfolio.get_stocks_symbols()
-        plt.subplots(figsize=self.get_fig_size())
         plt.title("Hello, " + self.get_name() + "! This is your portfolio")
         plt.pie(
             stocks_weights,
@@ -122,7 +123,7 @@ class User:
 
         (level_of_risk, starting_investment_amount, stocks_symbols, sectors_names, sectors_weights, stocks_weights,
          annual_returns, annual_max_loss, annual_volatility, annual_sharpe, total_change, monthly_change,
-         daily_change, selected_model, machine_learning_opt) = self.__my_portfolio.get_portfolio_data()
+         daily_change, selected_model, machine_learning_opt) = self.__myPortfolio.get_portfolio_data()
 
         # Create a new dictionary
         # TODO - change starting_investment_amount with something better (yarden)

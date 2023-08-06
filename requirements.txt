@@ -1,6 +1,7 @@
 appdirs==1.4.4
 asgiref==3.7.2
 beautifulsoup4==4.12.2
+boto3==1.28.20
 certifi==2023.7.22
 cffi==1.15.1
 charset-normalizer==3.2.0
@@ -32,6 +33,8 @@ pandas==2.0.3
 phonenumberslite==8.13.17
 Pillow==10.0.0
 pluggy==1.2.0
+pmdarima=2.0.3
+prophet=1.1.4
 psycopg2-binary
 pycparser==2.21
 PyJWT==2.8.0
@@ -51,6 +54,7 @@ six==1.16.0
 sklearn==0.0.post7
 soupsieve==2.4.1
 sqlparse==0.4.4
+statsmodels==0.14.0
 ta==0.10.2
 threadpoolctl==3.2.0
 tzdata==2023.3

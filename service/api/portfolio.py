@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from service.api import sector
+from . import sector
 import datetime
 
 
@@ -145,31 +145,25 @@ class Portfolio:
         return names
 
     def get_portfolio_data(self):
-        return (
-            self.__level_of_risk, self.__starting_investment_amount, self.__stocks_symbols, self.get_sectors_names(),
-            self.get_sectors_weights(), self.__stocks_weights, self.__annual_returns, self.get_max_loss(),
-            self.__annual_volatility, self.__annual_sharpe, self.get_total_change(), self.get_monthly_change(),
-            self.get_daily_change(), self.get_selected_model(), self.get_machine_learning_opt()
-        )
+        return self.__level_of_risk, self.__starting_investment_amount, self.__stocks_symbols, self.get_sectors_names(),\
+               self.get_sectors_weights(), self.__stocks_weights, self.__annual_returns, self.get_max_loss(),\
+               self.__annual_volatility, self.__annual_sharpe, self.get_total_change(), self.get_monthly_change(),\
+               self.get_daily_change(), self.get_selected_model(), self.get_machine_learning_opt()
 
     # get changes
     def get_total_change(self):
-        total_change = self.get_total_value_change()
+        total_change = self.get_total_value_change()  # +self.__startingInvestmentAmount)/self.__startingInvestmentAmount
         total_change = total_change * 100 - 100
         return total_change
 
     def get_yearly_change(self):  # TODO FIX
-        self.__pct_change_table['yield_selected'].index = pd.to_datetime(
-            self.__pct_change_table['yield_selected'].index
-        )
+        self.__pct_change_table['yield_selected'].index = pd.to_datetime(self.__pct_change_table['yield_selected'].index)
         yearly_yields = self.__pct_change_table['yield_selected'].resample('Y').first()
         yearly_changes = yearly_yields.pct_change().dropna() * 100
         return yearly_changes[-1]
 
     def get_monthly_change(self):  # TODO FIX
-        self.__pct_change_table['yield_selected'].index = pd.to_datetime(
-            self.__pct_change_table['yield_selected'].index
-        )
+        self.__pct_change_table['yield_selected'].index = pd.to_datetime(self.__pct_change_table['yield_selected'].index)
         monthly_yields = self.__pct_change_table['yield_selected'].resample('M').first()
         monthly_changes = monthly_yields.pct_change().dropna() * 100
         return monthly_changes[-1]
@@ -232,7 +226,7 @@ class Portfolio:
         self.__starting_investment_amount = investment_amount
 
     def set_stocks_weights(self, stocks_weights) -> None:
-        if type(stocks_weights) is list:
+        if type(stocks_weights) == list:
             self.__stocks_weights = stocks_weights
         else:
             nd_array = stocks_weights.values

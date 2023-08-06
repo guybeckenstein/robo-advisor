@@ -26,12 +26,12 @@ class SignUpView(SignupView):
         # Use RequestContext instead of render_to_response from 3.0
         context = {
             'form': self.form_class,
-            'title': "Sign Up"
+            'title': "Sign Up",
         }
         return render(request, self.template_name, context=context)
 
     def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
+        form: forms.ModelForm = self.form_class(request.POST)
         if form.is_valid():
             user = form.save()
             # complete_signup(request, user, app_settings.EMAIL_VERIFICATION, "/")
@@ -57,10 +57,9 @@ class HtmxLoginView(LoginView):
 
 
 def logout_view(request):
-    # TODO: try inheriting `LogoutView` class
     logout(request)
     context = {
-        'title': "You have been logged out"
+        'title': "You Have Been Logged Out"
     }
     return render(request, 'account/logout.html', context=context)
 
@@ -73,8 +72,7 @@ def profile_main(request):
         raise BadRequest
     context = {
         'form': form,
-        'user': request.user,
-        'title': f"{request.user.first_name}'s profile"
+        'title': f"{request.user.first_name}'s Profile"
     }
     return render(request, 'account/profile_main.html', context=context)
 
@@ -82,8 +80,7 @@ def profile_main(request):
 @login_required
 def profile_account(request):
     context = {
-        'user': request.user,
-        'title': "Account page"
+        'title': "Account Page"
     }
     return render(request, 'account/profile_account.html', context=context)
 
@@ -93,7 +90,7 @@ def profile_account_details(request):
     if request.method == 'GET':
         form: forms.ModelForm = UpdateUserNameAndPhoneNumberForm(instance=request.user)
     elif request.method == 'POST':
-        form = UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
+        form: forms.ModelForm = UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             # messages.success(request, 'Your account details have been updated successfully.')
@@ -102,8 +99,7 @@ def profile_account_details(request):
         raise BadRequest
     context = {
         'form': form,
-        'user': request.user,
-        'title': "Update details"
+        'title': "Update Details",
     }
     return render(request, 'account/profile_account_name.html', context=context)
 
@@ -129,14 +125,17 @@ def profile_investor(request):
     if request.method == 'GET':
         form: forms.ModelForm = UpdateInvestorUserForm(instance=request.user, disabled_project=True)
     elif request.method == 'POST':
-        pass
+        form: forms.ModelForm = UpdateInvestorUserForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            # messages.success(request, 'Your account details have been updated successfully.')
+            return redirect('profile_main')
     else:
         raise BadRequest
     context = {
         'form': form,
-        'user': request.user,
-        'title': "Update investments details",
         'is_form_filled': is_form_filled,
+        'title': "Update Investments Details",
     }
     return render(request, 'account/profile_investor.html', context=context)
 
@@ -144,7 +143,7 @@ def profile_investor(request):
 # Checks
 def check_email(request):
     if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
+        form: forms.ModelForm = UserRegisterForm(request.POST)
         print(form)
         context = {
             'field': as_crispy_field(form['email']),
@@ -153,7 +152,7 @@ def check_email(request):
         return render(request, 'partials/field.html', context)
     else:
         # If it's a GET request, return an empty form
-        form = UserRegisterForm()
+        form: forms.ModelForm = UserRegisterForm()
         context = {
             'field': as_crispy_field(form['email']),
             'valid': True
@@ -163,7 +162,7 @@ def check_email(request):
 
 def check_phone_number(request):
     if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
+        form: forms.ModelForm = UserRegisterForm(request.POST)
         context = {
             'field': as_crispy_field(form['phone_number']),
             'valid': not form['phone_number'].errors
@@ -171,7 +170,7 @@ def check_phone_number(request):
         return render(request, 'partials/field.html', context)
     else:
 
-        form = UserRegisterForm()
+        form: forms.ModelForm = UserRegisterForm()
         context = {
             'field': as_crispy_field(form['phone_number']),
             'valid': True

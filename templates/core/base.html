@@ -21,59 +21,64 @@
       </title>
     {% endif %}
   </head>
-  <body style="margin-bottom: 72px;">
-    <header>
-      <!-- Navigation bar -->
-      <nav>
-        <h2>
-          <a href="{% url 'homepage' %}" style="position: relative;">
-            <img src="{% static 'img/Logo.png' %}" alt="RoboAdvisorLogo" height="256" width="205">
-          </a>
-        </h2>
-        <div class="navigation">
-          <a href="{% url 'homepage' %}">
-            Home
-          </a>
-          <a href="{% url 'about' %}">
-            About
-          </a>
-          {% if user.is_authenticated %}
-            <a href="{% url 'profile_main' %}">
-              Profile
+  <body>
+    <div class="elements-container">
+      <header>
+        <!-- Navigation bar -->
+        <nav>
+          <h2>
+            <a href="{% url 'homepage' %}" style="position: relative;">
+              <img src="{% static 'img/Logo.png' %}" alt="RoboAdvisorLogo" height="256" width="205">
             </a>
-            <a href="{% url 'investments_main' %}">
-              Investments
+          </h2>
+          <div class="navigation">
+            <a href="{% url 'homepage' %}">
+              Home
             </a>
-            <a href="{% url 'capital_market_algorithm_preferences_form' %}">
-              Capital Market Form
+            <a href="{% url 'about' %}">
+              About
             </a>
-            <a href="{% url 'account_logout' %}">
-              Logout
-            </a>
-          {% else %}
-            <a href="{% url 'signup' %}">
-              Sign Up
-            </a>
-            <a href="{% url 'account_login' %}">
-              Login
-            </a>
+            {% if user.is_authenticated %}
+              <a href="{% url 'profile_main' %}">
+                Profile
+              </a>
+              <a href="{% url 'investments_main' %}">
+                Investments
+              </a>
+              <a href="{% url 'capital_market_algorithm_preferences_form' %}">
+                Capital Market Form
+              </a>
+              <a href="{% url 'account_logout' %}">
+                Logout
+              </a>
+            {% else %}
+              <a href="{% url 'signup' %}">
+                Sign Up
+              </a>
+              <a href="{% url 'account_login' %}">
+                Login
+              </a>
+            {% endif %}
+          </div>
+        </nav>
+        <!-- Alerts -->
+        <div style="">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+              </div>
+            {% endfor %}
           {% endif %}
         </div>
-      </nav>
-      <!-- Alerts -->
-      <div style="">
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
-      </div>
+      </header>
       <!-- Main Content -->
-      {% block content %}
-      {% endblock %}
-      <footer class="footer mt-auto py-3 fixed-bottom" style="background-color: #3dc4f0; box-shadow: 0 -1px 0 rgba(0, 0, 0, .3);">
+      <div class="content-generic">
+        {% block content %}
+        {% endblock %}
+      </div>
+      <!-- Footer -->
+      <footer class="py-3">
         <p>
           <span>Hello</span>
           {% if user.is_authenticated %}
@@ -86,6 +91,6 @@
           </span>
         </p>
       </footer>
-    </header>
+    </div>
   </body>
 </html>

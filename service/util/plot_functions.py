@@ -356,13 +356,19 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
     return plt
 
 
-def plot_price_forecast(stock_symbol, df, is_data_got_from_tase) -> plt:
-    if is_data_got_from_tase:
-        df['closingIndexPrice'].plot()
-    else:
-        df['Adj Close'].plot()
+def plot_price_forecast(stock_symbol, df, annual_returns, plt_instance=None) -> plt: # TODO
+    if plt_instance is not None:
+        return plt_instance
+    df[df.columns[0]].plot()
     df['Forecast'].plot()
     plt.title(stock_symbol + " Stock Price Forecast")
+    # add text box with annual returns value
+    plt.figtext(
+        0.2,
+        0.8,
+        "Annual return with prediction: " + str(round(annual_returns, 2)) + " %" + "\n"
+    )
+
     plt.legend(loc=4)
     plt.xlabel('Date')
     plt.ylabel('Price')
@@ -430,4 +436,5 @@ def plot(plt_instance) -> None:
 
 
 def save_graphs(plt_instance, file_name) -> None:
-    plt_instance.savefig(file_name, format='png')
+    plt_instance.savefig(f'{file_name}.png', format='png')
+
