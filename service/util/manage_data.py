@@ -159,7 +159,7 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
             stocks_symbols, api_util.set_stock_sectors(stocks_symbols, sectors)
         )
 
-    new_portfolio = Portfolio(
+    portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
         sectors=sectors,
         risk_level=risk_level,
@@ -168,9 +168,11 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
         is_machine_learning=is_machine_learning
     )
 
-    new_portfolio.update_stocks_data(closing_prices_table, pct_change_table, final_portfolio.iloc[0][3:],
-                                     final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2])
-    return new_portfolio
+    portfolio.update_stocks_data(
+        closing_prices_table, pct_change_table, final_portfolio.iloc[0][3:],
+        final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2]
+    )
+    return portfolio
 
 
 #############################################################################################################
@@ -179,8 +181,8 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
 def plot_user_portfolio(curr_user: User) -> None:
     # pie chart of sectors & stocks weights
     plt_sectors_component = curr_user.plot_portfolio_component()
-    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO, show as tables
-    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO, add forecast yield
+    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO: show as tables
+    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO: add forecast yield
     # Plotting files
     plot_functions.plot(plt_sectors_component)
     plot_functions.plot(plt_stocks_component)
@@ -190,12 +192,15 @@ def plot_user_portfolio(curr_user: User) -> None:
 def save_user_portfolio(curr_user: User) -> None:
     # pie chart of sectors & stocks weights
     plt_sectors_component = curr_user.plot_portfolio_component()
-    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO, show as tables
-    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO, add forecast yield
+    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO: show as tables
+    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO: add forecast yield
     # Creating directories
-    curr_user_directory = settings.USER_IMAGES + curr_user.name()
+    curr_user_directory = settings.USER_IMAGES + curr_user.name
     try:
         os.mkdir(os.getcwd() + settings.USER_IMAGES)  # Creates 'static/img/user' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+    try:
         os.mkdir(os.getcwd() + curr_user_directory)   # Creates 'static/img/user/<USER_ID>' folder
     except FileExistsError:  # Ignore the exception
         pass
@@ -260,7 +265,7 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
 
 
 def download_data_for_research(num_of_years_history: int) -> None:
-    stock_symbols = []
+    stocks_symbols = []
 
     usa_stocks_list = read_csv_file(settings.RESEARCH_LOCATION + 'stocks_list.csv')  # usa stocks list
     usa_bonds_list = read_csv_file(settings.RESEARCH_LOCATION + 'bonds_list.csv')  # usa bonds list
@@ -280,11 +285,11 @@ def download_data_for_research(num_of_years_history: int) -> None:
                                     'israel_indexes_closing_prices', israel_indexes_list, num_of_years_history,
                                     saveToCsv=True)
 
-    stock_symbols.extend(usa_stocks_list)
-    stock_symbols.extend(usa_bonds_list)
-    stock_symbols.extend(israel_indexes_list)
+    stocks_symbols.extend(usa_stocks_list)
+    stocks_symbols.extend(usa_bonds_list)
+    stocks_symbols.extend(israel_indexes_list)
     api_util.convert_data_to_tables(settings.RESEARCH_LOCATION,
-                                    'all_closing_prices', stock_symbols, num_of_years_history, saveToCsv=True)
+                                    'all_closing_prices', stocks_symbols, num_of_years_history, saveToCsv=True)
 
 def get_stocks_data_for_research_by_group(group_of_stocks:str):
     
@@ -620,7 +625,7 @@ def get_user_from_db(user_name: str):
     sectors = get_json_data(settings.SECTORS_JSON_NAME)  # universal from file
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
-    user_portfolio: Portfolio = Portfolio(
+    portfolio: Portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
         sectors=sectors,
         risk_level=risk_level,
@@ -635,9 +640,9 @@ def get_user_from_db(user_name: str):
     yield_column: str = "yield_" + str(risk_level)
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
-    user_portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
+    portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
                                       annual_volatility, annual_sharpe)
-    curr_user = User(user_name, user_portfolio)
+    curr_user = User(user_name, portfolio)
 
     return curr_user
 

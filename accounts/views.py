@@ -12,7 +12,7 @@ from django.urls import reverse_lazy
 
 from .forms import UserRegisterForm, AccountMetadataForm, UpdateUserNameAndPhoneNumberForm, UpdateInvestorUserForm, \
     PasswordChangingForm
-from .models import InvestorUser
+from .models import InvestorUser, CustomUser
 
 
 class SignUpView(SignupView):

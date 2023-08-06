@@ -1,7 +1,7 @@
 class Sector:
-    def __init__(self, name: str = ""):
+    def __init__(self, name: str = "", weight: float = 0.0):
         self._name: str = name
-        self._weight: float = 0.0
+        self._weight: float = weight
         self._stocks: list = []
 
     @property

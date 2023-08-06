@@ -46,19 +46,20 @@ if __name__ == '__main__':
             sum_of_score = first_question_score + second_question_score + third_question_score
             level_of_risk = manage_data.get_level_of_risk_by_score(sum_of_score)
 
-            # creates new user with portfolio details
-            new_portfolio = manage_data.create_new_user_portfolio(
-                stocks_symbols=settings.STOCKS_SYMBOLS,
-                investment_amount=investment_amount,
-                is_machine_learning=machine_learning_opt,
-                model_option=model_option,
-                risk_level=level_of_risk,
-                extendedDataFromDB=tables,
+            # Creates a new user with portfolio details
+            portfolio = User(
+                name=login_name,
+                portfolio=manage_data.create_new_user_portfolio(
+                    stocks_symbols=settings.STOCKS_SYMBOLS,
+                    investment_amount=investment_amount,
+                    is_machine_learning=machine_learning_opt,
+                    model_option=model_option,
+                    risk_level=level_of_risk,
+                    extendedDataFromDB=tables,
+                )
             )
-
-            user_portfolio = User(login_name, new_portfolio)
-            # add user to DB(json file)
-            user_portfolio.update_json_file(settings.USERS_JSON_NAME)
+            # add user to DB
+            portfolio.update_json_file(settings.USERS_JSON_NAME)
 
         elif selection == 2:
             pass

@@ -102,6 +102,7 @@ def build_return_markowitz_portfolios_dic(df: pd.DataFrame):
 
     return return_dic
 
+
 def return_sectors_weights_according_to_stocks_weights(sectors: list, stocks_weights) -> list:
     sectors_weights = [0.0] * len(sectors)
     for i in range(len(sectors)):
@@ -116,16 +117,17 @@ def return_sectors_weights_according_to_stocks_weights(sectors: list, stocks_wei
             try:
                 first_component_int = int(first_component)
                 # The first component is a valid integer, use it for integer comparison
-                if first_component_int in sectors[i].get_stocks():
+                if first_component_int in sectors[i].stocks:
                     sectors_weights[i] += stocks_weights[j]
             except ValueError:
                 # The first component is not a valid integer, use it for string comparison
-                if first_component in sectors[i].get_stocks():
+                if first_component in sectors[i].stocks:
                     sectors_weights[i] += stocks_weights[j]
 
     return sectors_weights
 
-def analyze_with_machine_learning_linear_regression(returns_stock, table_index, closing_prices_mode = False):
+
+def analyze_with_machine_learning_linear_regression(returns_stock, table_index, closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
@@ -137,7 +139,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     df = df_final
     df['Date'] = table_index
     # print(df)
-    X = np.array(df.drop(labels = ['label', 'Date'], axis=1))
+    X = np.array(df.drop(labels=['label', 'Date'], axis=1))
     X = preprocessing.scale(X)
     X_lately = X[-forecast_out:]
     X = X[:-forecast_out]
@@ -153,7 +155,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     df['Forecast'] = np.nan
 
     last_date = df.iloc[-1]['Date']
-    last_date_datetime  = pd.to_datetime(last_date)
+    last_date_datetime = pd.to_datetime(last_date)
     last_unix = last_date_datetime.timestamp()
     one_day = 86400
     next_unix = last_unix + one_day
@@ -197,7 +199,7 @@ def analyze_with_machine_learning_arima(returns_stock, table_index, closing_pric
     df_final['Forecast'] = np.nan
     df_final.loc[df_final.index[-forecast_out]:, 'Forecast'] = forecast
 
-    #forecast_returns_annual = (forecast.iloc[-1] / df_final[forecast_col].iloc[-forecast_out - 1]) ** 254 - 1
+    # forecast_returns_annual = (forecast.iloc[-1] / df_final[forecast_col].iloc[-forecast_out - 1]) ** 254 - 1
 
     # add dates
     last_date = df_final.iloc[-1].name
@@ -223,7 +225,8 @@ def analyze_with_machine_learning_arima(returns_stock, table_index, closing_pric
     # Calculate annual return based on the forecast
     return df_final, forecast_returns_annual, excepted_returns
 
-def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices_mode = False):
+
+def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
@@ -261,7 +264,7 @@ def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices
     df_final["label"] = df_final["col"]
     df_final["label"].fillna(df_final["Forecast"], inplace=True)
 
-    #forecast_returns_annual = (forecast[-1] / df_final[forecast_col].iloc[-forecast_out - 1]) ** 254 - 1
+    # forecast_returns_annual = (forecast[-1] / df_final[forecast_col].iloc[-forecast_out - 1]) ** 254 - 1
     forecast_returns_annual = (((1 + df_final['label'].mean()) ** 254) - 1) * 100
     excepted_returns = (((1 + df_final['Forecast'].mean()) ** 254) - 1) * 100
     if closing_prices_mode:
@@ -274,7 +277,7 @@ def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices
 
 
 
-def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_prices_mode = False):
+def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
@@ -306,7 +309,7 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_pr
     last_date = df_final.iloc[-1].name
     try:
         last_unix = last_date.timestamp()
-    except:
+    except Exception:  # TODO: write relevant and specific Exception here
         # convert str to datetime
         last_date = datetime.datetime.strptime(last_date, '%Y-%m-%d')
         last_unix = last_date.timestamp()
@@ -323,7 +326,7 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_pr
     # df_final["label"].fillna(df_final["Forecast"], inplace=True)
 
     forecast_returns_annual = (((1 + forecast['yhat'].mean()) ** 254) - 1) * 100
-    excepted_returns = (((1 +  forecast_for_future.mean()) ** 254) - 1) * 100
+    excepted_returns = (((1 + forecast_for_future.mean()) ** 254) - 1) * 100
     if closing_prices_mode:
         # Plot the forecast
         model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
@@ -334,40 +337,44 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_pr
 
     return df_final, forecast_returns_annual, excepted_returns, plt
 
-def update_daily_change_with_machine_learning(returns_stock, table_index, closing_prices_mode = False):
+
+def update_daily_change_with_machine_learning(returns_stock, table_index, closing_prices_mode=False):
     num_of_rows = len(table_index)
     prefix_row = int(math.ceil(settings.RECORD_PERCENT_TO_PREDICT * num_of_rows))
     for i, stock in enumerate(returns_stock.columns):
+        df = None
         stock_name = str(stock)
         if settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[0]:
-            df, annual_return, excepted_returns =\
-                analyze_with_machine_learning_linear_regression(returns_stock[stock_name], table_index, closing_prices_mode)
-            returns_stock[stock_name] = df['label'][:num_of_rows].values
-
+            df, annual_return, excepted_returns = analyze_with_machine_learning_linear_regression(
+                returns_stock[stock_name], table_index, closing_prices_mode
+            )
         elif settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[1]:
-            df, annual_return, excepted_returns = \
-                analyze_with_machine_learning_arima(returns_stock[stock_name], table_index, closing_prices_mode)
-            returns_stock[stock_name] = df['label'][prefix_row:].values
+            df, annual_return, excepted_returns = analyze_with_machine_learning_arima(
+                returns_stock[stock_name], table_index, closing_prices_mode
+            )
 
         elif settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[2]:
-            df, annual_return, excepted_returns = \
-                analyze_with_machine_learning_gbm(returns_stock[stock_name], table_index, closing_prices_mode)
-            returns_stock[stock_name] = df['label'][prefix_row:].values
+            df, annual_return, excepted_returns = analyze_with_machine_learning_gbm(
+                returns_stock[stock_name], table_index, closing_prices_mode
+            )
 
 
         elif settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[3]:
-            df, annual_return, excepted_returns, plt = \
-                analyze_with_machine_learning_prophet(returns_stock[stock_name], table_index, closing_prices_mode)
-            returns_stock[stock_name] = df['label'][prefix_row:].values
-
-
-
+            df, annual_return, excepted_returns, plt = analyze_with_machine_learning_prophet(
+                returns_stock[stock_name], table_index, closing_prices_mode
+            )
+        else:
+            raise ValueError('Invalid machine model')
+        returns_stock[stock_name] = df['label'][prefix_row:].values
+    # TODO: (annual_return, excepted_returns) not initialized
     return returns_stock, annual_return, excepted_returns
+
+
 def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHistory, saveToCsv):
     frame = {}
     yf.pdr_override()
     start_date, end_date = get_from_and_to_dates(numOfYearsHistory)
-    file_url = location_saving + file_name +".csv"
+    file_url = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocksNames):
 
@@ -403,6 +410,7 @@ def choose_portfolio_by_risk_score(optional_portfolios_list, risk_score):
     else:
         raise ValueError
 
+
 def get_json_data(name: str):
     import os
     print(os.getcwd())
@@ -419,7 +427,11 @@ def get_sectors_data_from_file(mode: str):
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols, mode: str) -> list:
+def set_sectors(stocks_symbols: list, mode: str) -> list:
+    """
+    For each stock symbol, it checks for which sector does it belong.
+    :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol
+    """
     sectors_data = get_sectors_data_from_file(mode)
     sectors: list = []
 
@@ -429,7 +441,7 @@ def set_sectors(stocks_symbols, mode: str) -> list:
             for j in range(len(stocks_symbols)):
                 if stocks_symbols[j] in sectors_data[i]['stocks']:
                     curr_sector.add_stock(stocks_symbols[j])
-            if len(curr_sector.get_stocks()) > 0:
+            if len(curr_sector.stocks) > 0:
                 sectors.append(curr_sector)
 
     return sectors
@@ -440,8 +452,8 @@ def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     for symbol in stocks_symbols:
         found_sector = False
         for curr_sector in sectors:
-            if symbol in curr_sector.get_stocks():
-                stock_sectors.append(curr_sector.name())
+            if symbol in curr_sector.stocks:
+                stock_sectors.append(curr_sector.name)
                 found_sector = True
                 break
         if not found_sector:
@@ -450,13 +462,14 @@ def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     return stock_sectors
 
 
-def drop_stocks_from_us_commodity_sector(stocks_symbols, stock_sectors): # TODO -MAEKS DYNAMIC
+def drop_stocks_from_us_commodity_sector(stocks_symbols, stock_sectors):  # TODO - MAKE DYNAMIC
     new_stocks_symbols = []
     for i in range(len(stock_sectors)):
         if stock_sectors[i] != "US commodity":
             new_stocks_symbols.append(stocks_symbols[i])
 
     return new_stocks_symbols
+
 
 def get_from_and_to_dates(num_of_years) -> Tuple[str, str]:
     today = datetime.datetime.now()
@@ -470,12 +483,13 @@ def get_from_and_to_dates(num_of_years) -> Tuple[str, str]:
     to_date = str(end_year) + "-" + str(end_month) + "-" + str(end_day)
     return from_date, to_date
 
+
 def setStockSectors(stocksSymbols, sectorList) -> list:
     stock_sectors = []  # TODO - FIX ORDER
     for symbol in stocksSymbols:
         found_sector = False
         for sector in sectorList:
-            if symbol in sector.get_stocks():
+            if symbol in sector.stocks:
                 stock_sectors.append(sector.name())
                 found_sector = True
                 break
@@ -483,6 +497,7 @@ def setStockSectors(stocksSymbols, sectorList) -> list:
             stock_sectors.append(None)
 
     return stock_sectors
+
 
 def makes_yield_column(_yield, weighted_sum_column):
     _yield.iloc[0] = 1
@@ -532,7 +547,7 @@ def implement_bb_strategy(data, lower_bb, upper_bb):
     return buy_price, sell_price, bb_signal
 
 
-def scan_good_stocks_with_filters(): # todo - make it work
+def scan_good_stocks_with_filters():  # todo - make it work
     # Define the parameters for the scanner
     min_avg_volume = 1000000  # minimum average daily volume
     min_rsi = 50  # minimum RSI value
@@ -609,9 +624,11 @@ def find_best_stocks(stocks_data):
 
     return top_5_stocks"""
 
+
 # yfinance and israel tase api:
 def get_israeli_indexes_data(command, start_date, end_date, israeliIndexes):  # get israeli indexes data from tase
     return tase_util.get_israeli_indexes_data(command, start_date, end_date, israeliIndexes)
+
 
 def convert_usa_Index_to_full_name(UsaIndexes):
     UsaIndexesNames = {}
@@ -620,6 +637,7 @@ def convert_usa_Index_to_full_name(UsaIndexes):
         UsaIndexesNames[i] = ticker.info["longName"]
 
     return UsaIndexesNames.values()
+
 
 def convertIsraeliIndexToName(IsraliIndexes):
     hebrew_pattern = r"[\u0590-\u05FF\s]+"
@@ -635,6 +653,7 @@ def convertIsraeliIndexToName(IsraliIndexes):
         stocksNames[i] = text
     return stocksNames.values()
 
+
 def getNameByIndexNumber(indexNumber):
 
     # Load the JSON data from the file
@@ -646,4 +665,3 @@ def getNameByIndexNumber(indexNumber):
 
     name = result[0]
     return name
-

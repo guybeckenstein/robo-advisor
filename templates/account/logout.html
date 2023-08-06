@@ -2,14 +2,22 @@
 {% load static %}
 
 {% block content %}
-  <h2>
-    You have been logged out
-  </h2>
-  <div class="pt-3">
-    <small class="text-muted">
-      <a href="{% url 'account_login' %}">
-        Log In Again
+  <div class="content">
+    <!-- Header -->
+    <h1 class="fw-bold text-light-emphasis">
+      Logout
+    </h1>
+    <!-- Authentication -->
+    {% if user.is_authenticated %}
+      {% include "account/snippets/already_logged_in.html" %}
+    {% endif %}
+    <!-- Main Content -->
+    <p class="text-light">
+      You have been logged out.
+      <br>
+      <a href="{% url 'account_login' %}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+        Login again
       </a>
-    </small>
+    </p>
   </div>
 {% endblock %}

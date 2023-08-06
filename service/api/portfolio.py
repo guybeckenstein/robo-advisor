@@ -9,14 +9,14 @@ class Portfolio:
     def __init__(
             self,
             stocks_symbols: list,
-            sectors: list,
+            sectors: list[Sector],
             risk_level: int = 1,
             starting_investment_amount: int = 0,
             selected_model=None,
             is_machine_learning=None
     ):
 
-        self._sectors: list = sectors
+        self._sectors: list[Sector] = sectors
         self._risk_level: int = risk_level
         self._starting_investment_amount: int = starting_investment_amount
         self._last_date_of_investment: datetime.date = datetime.datetime.now().date()
@@ -96,7 +96,7 @@ class Portfolio:
         israeli_stocks_indexes = []
 
         for i in range(3):
-            israeli_stocks_indexes.extend(self._sectors[i].get_stocks())
+            israeli_stocks_indexes.extend(self._sectors[i].stocks)
 
         return israeli_stocks_indexes
 
@@ -104,7 +104,7 @@ class Portfolio:
         israeli_bonds_stocks_indexes = []
 
         for i in range(1, 2):
-            israeli_bonds_stocks_indexes.extend(self._sectors[i].get_stocks())
+            israeli_bonds_stocks_indexes.extend(self._sectors[i].stocks)
 
         return israeli_bonds_stocks_indexes
 
@@ -112,7 +112,7 @@ class Portfolio:
         usa_stocks_indexes = []
 
         for i in range(3, 6):
-            usa_stocks_indexes.extend(self._sectors[i].get_stocks())
+            usa_stocks_indexes.extend(self._sectors[i].stocks)
 
         return usa_stocks_indexes
 
@@ -121,7 +121,7 @@ class Portfolio:
 
     def get_sector(self, sector_name: str):
         for curr_sector in self._sectors:
-            if curr_sector.name() == sector_name:
+            if curr_sector.name == sector_name:
                 return curr_sector
         return None
 
@@ -130,35 +130,35 @@ class Portfolio:
 
     def get_sector_stocks(self, sector_name: str):
         for curr_sector in self._sectors:
-            if curr_sector.name() == sector_name:
-                return curr_sector.get_stocks()
+            if curr_sector.name == sector_name:
+                return curr_sector.stocks
         return None
 
     def get_sector_stocks_by_index(self, index: int):
-        return self._sectors[index].get_stocks()
+        return self._sectors[index].stocks
 
     def get_sector_weight(self, sector_name: str):
         for curr_sector in self._sectors:
-            if curr_sector.name() == sector_name:
-                return curr_sector.get_weight()
+            if curr_sector.name == sector_name:
+                return curr_sector.weight
         return None
 
     def get_sector_weight_by_index(self, index: int):
-        return self._sectors[index].get_weight()
+        return self._sectors[index].weight
 
-    def get_sectors_weights(self):
+    def get_sectors_weights(self) -> list[float]:
         weights = []
 
         for curr_sector in self._sectors:
-            weights.append(curr_sector.get_weight())
+            weights.append(curr_sector.weight)
 
         return weights
 
     def get_sectors_names(self):
         names = []
 
-        for curr_sector in self._sectors:
-            names.append(curr_sector.name())
+        for sector in self._sectors:
+            names.append(sector.name)
 
         return names
 
@@ -166,7 +166,7 @@ class Portfolio:
         return self._risk_level, self._starting_investment_amount, self._stocks_symbols, self.get_sectors_names(),\
                self.get_sectors_weights(), self._stocks_weights, self._annual_returns, self.get_max_loss(),\
                self._annual_volatility, self._annual_sharpe, self.get_total_change(), self.get_monthly_change(),\
-               self.get_daily_change(), self.selected_model(), self.machine_learning_opt()
+               self.get_daily_change(), self.selected_model, self.machine_learning_opt
 
     # get changes
     def get_total_change(self):
@@ -213,10 +213,10 @@ class Portfolio:
         return self._pct_change_table.resample('Y').apply(lambda x: (x[-1] / x[0] - 1) * 100)
 
     # Setters and updaters
-    def update_stocks_data(self, closing_prices_table, pct_change_table: pd.DataFrame, stock_weights, annual_returns,
+    def update_stocks_data(self, closing_prices_table, pct_change_table: pd.DataFrame, stocks_weights, annual_returns,
                            annual_volatility, annual_sharpe):
         self.set_tables(closing_prices_table, pct_change_table)
-        self.set_stocks_weights(stock_weights)
+        self.set_stocks_weights(stocks_weights)
         self._annual_returns = annual_returns
         self._annual_volatility = annual_volatility
         self._annual_sharpe = annual_sharpe
@@ -225,7 +225,7 @@ class Portfolio:
 
         for i in range(len(self._stocks_symbols)):
             for j in range(len(self._sectors)):
-                if self._stocks_symbols[i] in self._sectors[j].get_stocks():
+                if self._stocks_symbols[i] in self._sectors[j].stocks:
                     self._sectors[j].add_weight(self._stocks_weights[i])
 
     def set_sectors(self, sectors_data) -> None:
@@ -253,11 +253,11 @@ class Portfolio:
 
     def set_sector_weight(self, name: str, weight) -> None:
         for i in range(len(self._sectors)):
-            if self._sectors[i].name() == name:
-                self._sectors[i].set_weight(weight)
+            if self._sectors[i].name == name:
+                self._sectors[i].weight = weight
 
     def set_sector_weight_by_index(self, index: int, weight) -> None:
-        self._sectors[index].set_weight(weight)
+        self._sectors[index].weight = weight
 
     def set_sectors_weights(self, sectors_weights) -> None:
         for i in range(len(sectors_weights)):
@@ -265,8 +265,8 @@ class Portfolio:
 
     def set_sector_stocks(self, name: str, stocks) -> None:
         for i in range(len(self._sectors)):
-            if self._sectors[i].name() == name:
-                self._sectors[i].set_stocks(stocks)
+            if self._sectors[i].name == name:
+                self._sectors[i].stocks = stocks
 
     def set_sector_stock_by_index(self, index: int, stock) -> None:
         self._sectors[index].add_stock(stock)
@@ -275,23 +275,23 @@ class Portfolio:
         self._closing_prices_table = closing_prices_table
         self._pct_change_table = pct_change_table
 
-    def add_stock_symbol(self, stock_symbol) -> None:
+    def add_stock_symbol(self, stocks_symbols) -> None:
         for i in range(len(self._sectors)):
-            if stock_symbol in self._sectors[i].get_stocks():
-                self._sectors[i].get_stocks().append(stock_symbol)
-        self._stocks_symbols.append(stock_symbol)
+            if stocks_symbols in self._sectors[i].stocks:
+                self._sectors[i].stocks.append(stocks_symbols)
+        self._stocks_symbols.append(stocks_symbols)
 
-    def remove_stock_symbol(self, stock_symbol) -> None:
+    def remove_stock_symbol(self, stocks_symbols) -> None:
         for i in range(len(self._sectors)):
-            if stock_symbol in self._sectors[i].get_stocks():
-                self._sectors[i].get_stocks().remove(stock_symbol)
-        self._stocks_symbols.remove(stock_symbol)
+            if stocks_symbols in self._sectors[i].stocks:
+                self._sectors[i].stocks.remove(stocks_symbols)
+        self._stocks_symbols.remove(stocks_symbols)
 
     def return_sectors_weights_according_to_stocks_weights(self, stocks_weights):
         sectors_weights = [0.0] * len(self._sectors)
         for i in range(len(self._sectors)):
             sectors_weights[i] = 0
             for j in range(len(self._stocks_symbols)):
-                if self._stocks_symbols[j] in self._sectors[i].get_stocks():
+                if self._stocks_symbols[j] in self._sectors[i].stocks:
                     sectors_weights[i] += stocks_weights[j]
         return sectors_weights

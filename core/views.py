@@ -125,13 +125,13 @@ def capital_market_investment_preferences_form(request, **kwargs):
             # Backend
             risk_level = manage_data.get_level_of_risk_by_score(answers_sum)
             tables = manage_data.get_extended_data_from_db(
-                settings.STOCKS_SYMBOLS,
-                user_preferences_instance.ml_answer,
-                user_preferences_instance.model_answer,
+                stocks_symbols=settings.STOCKS_SYMBOLS,
+                is_machine_learning=user_preferences_instance.ml_answer,
+                model_option=user_preferences_instance.model_answer,
                 mode='regular'
             )
             investment_amount = 0  # TODO: THINK ABOUT THIS (YARDEN AND GUY)
-            user_portfolio = create_new_user_portfolio(
+            portfolio = create_new_user_portfolio(
                 stocks_symbols=settings.STOCKS_SYMBOLS,
                 investment_amount=investment_amount,
                 is_machine_learning=user_preferences_instance.ml_answer,
@@ -142,7 +142,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
 
             _, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
                 annual_volatility, annual_sharpe, total_change, monthly_change, daily_change, selected_model, \
-                machine_learning_opt = user_portfolio.get_portfolio_data()
+                machine_learning_opt = portfolio.get_portfolio_data()
             try:
                 investor_user = InvestorUser.objects.get(user=request.user)
                 # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)

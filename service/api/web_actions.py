@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from service.api.user import User
 from service.api.portfolio import Portfolio
 from service.util import manage_data
-from service.util.api_util import get_json_data, makes_yield_column
+from service.util import api_util
 from service.util.manage_data import get_closing_prices_table
 from core.models import QuestionnaireA
 from accounts.models import InvestorUser
@@ -20,20 +20,20 @@ def save_three_user_graphs_as_png(request) -> None:
     selected_model: int = questionnaire_a.model_answer
     starting_investment_amount: int = investor_user.starting_investment_amount
     risk_level: int = investor_user.risk_level
-    stocks_symbols: list = investor_user.stocks_symbols.split(';')
+    stocks_symbols: list[str] = investor_user.stocks_symbols.split(';')
     for idx, symbol in enumerate(stocks_symbols):
         if symbol.isnumeric():
             stocks_symbols[idx] = int(stocks_symbols[idx])
-    stocks_weights: list = investor_user.stocks_weights.split(';')
-    stocks_weights = [float(weight) for weight in stocks_weights]
+    stocks_weights: list[str] = investor_user.stocks_weights.split(';')
+    stocks_weights: list[float] = [float(weight) for weight in stocks_weights]
     annual_returns = investor_user.annual_returns
     annual_volatility = investor_user.annual_volatility
     annual_sharpe = investor_user.annual_sharpe
-    sectors = get_json_data("service/api/resources/sectors")  # universal from file
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
-    user_portfolio: Portfolio = Portfolio(
-        stocks_symbols=[],
-        sectors=[],
+    sectors = api_util.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
+    portfolio: Portfolio = Portfolio(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
         risk_level=risk_level,
         starting_investment_amount=starting_investment_amount,
         selected_model=selected_model,
@@ -41,12 +41,18 @@ def save_three_user_graphs_as_png(request) -> None:
     )
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
-    weighted_sum = np.dot(stocks_weights, pct_change_table.T)
+    weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
     yield_column: str = "yield_" + str(risk_level)
     pct_change_table[yield_column] = weighted_sum
-    pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
-    user_portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
-                                      annual_volatility, annual_sharpe)
+    pct_change_table[yield_column] = api_util.makes_yield_column(pct_change_table[yield_column], weighted_sum)
+    portfolio.update_stocks_data(
+        closing_prices_table=closing_prices_table,
+        pct_change_table=pct_change_table,
+        stocks_weights=stocks_weights,
+        annual_returns=annual_returns,
+        annual_volatility=annual_volatility,
+        annual_sharpe=annual_sharpe,
+    )
     # Save plots
-    manage_data.save_user_portfolio(User(str(investor_user.user.id), user_portfolio))
+    manage_data.save_user_portfolio(User(str(investor_user.user.id), portfolio))

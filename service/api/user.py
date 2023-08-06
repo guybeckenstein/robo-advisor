@@ -11,7 +11,7 @@ class User:
     def __init__(
             self,
             name: str = "",
-            curr_portfolio: Portfolio = Portfolio(
+            portfolio: Portfolio = Portfolio(
                 stocks_symbols=[],
                 sectors=[],
                 risk_level=1,
@@ -21,7 +21,7 @@ class User:
             )
     ):
         self._name: str = name
-        self._myPortfolio: Portfolio = curr_portfolio
+        self._myPortfolio: Portfolio = portfolio
 
     @property
     def name(self) -> str:
@@ -31,27 +31,28 @@ class User:
     def portfolio(self) -> Portfolio:
         return self._myPortfolio
 
-    def update_portfolio(self, curr_portfolio: Portfolio) -> None:
+    def update_portfolio(self, portfolio: Portfolio) -> None:
         # TODO: decide what to do with this method
         self._myPortfolio.set_portfolio(
-            curr_portfolio.risk_level(), curr_portfolio.investment_amount(),
-            curr_portfolio.get_israeli_stocks_indexes(), curr_portfolio.get_usa_stocks_indexes()
+            portfolio.risk_level, portfolio.investment_amount,
+            portfolio.get_israeli_stocks_indexes(), portfolio.get_usa_stocks_indexes()
         )
 
     def plot_investment_portfolio_yield(self):
         from ..util import api_util
 
-        curr_portfolio = self.portfolio
-        table = curr_portfolio.pct_change_table()
-        annual_returns, volatility, sharpe, max_loss = curr_portfolio.get_portfolio_stats()
-        total_change = curr_portfolio.get_total_change()
-        sectors: list[Sector] = curr_portfolio.sectors()
+        portfolio = self.portfolio
+        table = portfolio.pct_change_table
+        annual_returns, volatility, sharpe, max_loss = portfolio.get_portfolio_stats()
+        total_change = portfolio.get_total_change()
+        sectors: list[Sector] = portfolio.sectors
 
         fig_size_x = 10
         fig_size_y = 8
         fig_size = (fig_size_x, fig_size_y)
         plt.style.use("seaborn-dark")
 
+        plt.figure()
         plt.title("Hello, " + self.name + "! This is your yield portfolio")
         plt.ylabel("Returns %")
 
@@ -90,17 +91,20 @@ class User:
                                                          label="forecast", legend=True, linestyle="dashed")"""
 
         plt.subplots_adjust(bottom=0.4)
+        fig1, ax1 = plt.subplots()
+
 
         return plt
 
     def plot_portfolio_component(self):
-        curr_portfolio = self.portfolio
-        sectors_weights = curr_portfolio.get_sectors_weights()
-        labels = curr_portfolio.get_sectors_names()
-        plt.title("Hello, " + self.name + "! This is your portfolio")
+        portfolio = self.portfolio
+        sectors_weights: list[float] = portfolio.get_sectors_weights()
+        sectors_names: list[str] = portfolio.get_sectors_names()
+        plt.figure()
+        plt.title(f"{self.name}'s portfolio")
         plt.pie(
-            sectors_weights,
-            labels=labels,
+            x=sectors_weights,
+            labels=sectors_names,
             autopct="%1.1f%%",
             shadow=True,
             startangle=140,
@@ -109,13 +113,16 @@ class User:
         return plt
 
     def plot_portfolio_component_stocks(self):
-        curr_portfolio = self.portfolio
-        stocks_weights = curr_portfolio.stocks_weights()
-        labels = curr_portfolio.stocks_symbols()
-        plt.title("Hello, " + self.name + "! This is your portfolio")
+        portfolio: Portfolio = self.portfolio
+        stocks_weights: list[float] = portfolio.stocks_weights
+        stocks_symbols: list[str] = portfolio.stocks_symbols
+        if len(stocks_weights) != len(stocks_symbols):
+            raise ValueError(portfolio.stocks_symbols)
+        plt.figure()
+        plt.title(f"{self.name}'s portfolio")
         plt.pie(
-            stocks_weights,
-            labels=labels,
+            x=stocks_weights,
+            labels=stocks_symbols,
             autopct="%1.1f%%",
             shadow=True,
             startangle=140,
