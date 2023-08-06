@@ -39,15 +39,15 @@ def plot_markowitz_graph(sectors: list, three_best_sectors_weights, min_variance
     # stocks_str_high
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[2][i] * 100
-        stocks_str_high += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_high += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocks_str_medium
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[1][i] * 100
-        stocks_str_medium += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_medium += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocks_str_low
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[0][i] * 100
-        stocks_str_low += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_low += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
 
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         plt.figtext(
@@ -132,15 +132,15 @@ def plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port, shar
     # stocks_str_high
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[2][i] * 100
-        stocks_str_high += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_high += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocks_str_medium
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[1][i] * 100
-        stocks_str_medium += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_medium += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocks_str_low
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[0][i] * 100
-        stocks_str_low += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_low += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
 
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         plt.figtext(
@@ -219,11 +219,11 @@ def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)
 
-    sectors = new_portfolio.get_sectors()
+    sectors = new_portfolio.sectors()
 
     stocks_str = ""
     for i in range(len(sectors)):
-        name = sectors[i].get_name()
+        name = sectors[i].name()
         weight = sectors[i].get_weight() * 100
         stocks_str += name + "(" + str("{:.2f}".format(weight)) + "%),\n "
 
@@ -232,10 +232,10 @@ def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio
             0.45,
             0.15,
             "your Portfolio: \n"
-            + "Returns: " + str(round(new_portfolio.get_annual_returns(), 2)) + "%\n"
-            + "Volatility: " + str(round(new_portfolio.get_volatility(), 2)) + "%\n"
+            + "Returns: " + str(round(new_portfolio.annual_returns(), 2)) + "%\n"
+            + "Volatility: " + str(round(new_portfolio.annual_volatility(), 2)) + "%\n"
             + "max loss: " + str(round(new_portfolio.get_max_loss(), 2)) + "%\n"
-            + "Sharpe Ratio: " + str(round(new_portfolio.get_sharpe(), 2)) + "\n"
+            + "Sharpe Ratio: " + str(round(new_portfolio.annual_sharpe(), 2)) + "\n"
             + stocks_str,
             bbox=dict(facecolor="green", alpha=0.5),
             fontsize=11,
@@ -289,15 +289,15 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
     # stocks_str_high
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[2][i] * 100
-        stocks_str_high += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_high += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocks_str_medium
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[1][i] * 100
-        stocks_str_medium += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_medium += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
     # stocks_str_low
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[0][i] * 100
-        stocks_str_low += sectors[i].get_name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
+        stocks_str_low += sectors[i].name() + "(" + str("{:.2f}".format(weight)) + "%),\n "
 
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         plt.figtext(

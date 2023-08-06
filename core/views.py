@@ -136,7 +136,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                 investment_amount=investment_amount,
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
-                level_of_risk=risk_level,
+                risk_level=risk_level,
                 extendedDataFromDB=tables,
             )
 

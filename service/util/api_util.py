@@ -441,7 +441,7 @@ def set_stock_sectors(stocks_symbols, sectors: list) -> list:
         found_sector = False
         for curr_sector in sectors:
             if symbol in curr_sector.get_stocks():
-                stock_sectors.append(curr_sector.get_name())
+                stock_sectors.append(curr_sector.name())
                 found_sector = True
                 break
         if not found_sector:
@@ -476,7 +476,7 @@ def setStockSectors(stocksSymbols, sectorList) -> list:
         found_sector = False
         for sector in sectorList:
             if symbol in sector.get_stocks():
-                stock_sectors.append(sector.get_name())
+                stock_sectors.append(sector.name())
                 found_sector = True
                 break
         if not found_sector:

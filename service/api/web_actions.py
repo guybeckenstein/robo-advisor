@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from django.shortcuts import get_object_or_404
 
-from service.api import portfolio, user
+from service.api.user import User
+from service.api.portfolio import Portfolio
 from service.util import manage_data
 from service.util.api_util import get_json_data, makes_yield_column
 from service.util.manage_data import get_closing_prices_table
@@ -28,10 +29,15 @@ def save_three_user_graphs_as_png(request) -> None:
     annual_returns = investor_user.annual_returns
     annual_volatility = investor_user.annual_volatility
     annual_sharpe = investor_user.annual_sharpe
-    sectors_data = get_json_data("service/api/resources/sectors")  # universal from file
+    sectors = get_json_data("service/api/resources/sectors")  # universal from file
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
-    user_portfolio: portfolio.Portfolio = portfolio.Portfolio(
-        risk_level, starting_investment_amount, stocks_symbols, sectors_data, selected_model, is_machine_learning
+    user_portfolio: Portfolio = Portfolio(
+        stocks_symbols=[],
+        sectors=[],
+        risk_level=risk_level,
+        starting_investment_amount=starting_investment_amount,
+        selected_model=selected_model,
+        is_machine_learning=is_machine_learning
     )
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
@@ -43,4 +49,4 @@ def save_three_user_graphs_as_png(request) -> None:
     user_portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
                                       annual_volatility, annual_sharpe)
     # Save plots
-    manage_data.save_user_portfolio(user.User(str(investor_user.user.id), user_portfolio))
+    manage_data.save_user_portfolio(User(str(investor_user.user.id), user_portfolio))

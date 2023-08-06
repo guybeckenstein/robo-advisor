@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from matplotlib import pyplot as plt
 from .portfolio import Portfolio
+from .sector import Sector
 
 
 class User:
@@ -10,44 +11,54 @@ class User:
     def __init__(
             self,
             name: str = "",
-            curr_portfolio: Portfolio = Portfolio(1, 0, [], [], 1, 0)
+            curr_portfolio: Portfolio = Portfolio(
+                stocks_symbols=[],
+                sectors=[],
+                risk_level=1,
+                starting_investment_amount=0,
+                selected_model=1,
+                is_machine_learning=0
+            )
     ):
-        self.__name = name
-        self.__myPortfolio = curr_portfolio
+        self._name: str = name
+        self._myPortfolio: Portfolio = curr_portfolio
 
-    def get_name(self) -> str:
-        return self.__name
+    @property
+    def name(self) -> str:
+        return self._name
 
-    def get_portfolio(self) -> Portfolio:
-        return self.__myPortfolio
+    @property
+    def portfolio(self) -> Portfolio:
+        return self._myPortfolio
 
     def update_portfolio(self, curr_portfolio: Portfolio) -> None:
-        self.__myPortfolio.setPortfolio(
-            curr_portfolio.get_level_of_risk(), curr_portfolio.get_investment_amount(),
+        # TODO: decide what to do with this method
+        self._myPortfolio.set_portfolio(
+            curr_portfolio.risk_level(), curr_portfolio.investment_amount(),
             curr_portfolio.get_israeli_stocks_indexes(), curr_portfolio.get_usa_stocks_indexes()
         )
 
     def plot_investment_portfolio_yield(self):
         from ..util import api_util
 
-        curr_portfolio = self.get_portfolio()
-        table = curr_portfolio.get_pct_change_table()
+        curr_portfolio = self.portfolio
+        table = curr_portfolio.pct_change_table()
         annual_returns, volatility, sharpe, max_loss = curr_portfolio.get_portfolio_stats()
         total_change = curr_portfolio.get_total_change()
-        sectors = curr_portfolio.get_sectors()
+        sectors: list[Sector] = curr_portfolio.sectors()
 
         fig_size_x = 10
         fig_size_y = 8
         fig_size = (fig_size_x, fig_size_y)
         plt.style.use("seaborn-dark")
 
-        plt.title("Hello, " + self.get_name() + "! This is your yield portfolio")
+        plt.title("Hello, " + self.name + "! This is your yield portfolio")
         plt.ylabel("Returns %")
 
         stocks_str = ""
         for i in range(len(sectors)):
-            name = sectors[i].get_name()
-            weight = sectors[i].get_weight() * 100
+            name = sectors[i].name
+            weight = sectors[i].weight * 100
             stocks_str += name + "(" + str("{:.2f}".format(weight)) + "%),\n "
 
         with pd.option_context("display.float_format", "%{:,.2f}".format):
@@ -83,10 +94,10 @@ class User:
         return plt
 
     def plot_portfolio_component(self):
-        curr_portfolio = self.get_portfolio()
+        curr_portfolio = self.portfolio
         sectors_weights = curr_portfolio.get_sectors_weights()
         labels = curr_portfolio.get_sectors_names()
-        plt.title("Hello, " + self.get_name() + "! This is your portfolio")
+        plt.title("Hello, " + self.name + "! This is your portfolio")
         plt.pie(
             sectors_weights,
             labels=labels,
@@ -98,10 +109,10 @@ class User:
         return plt
 
     def plot_portfolio_component_stocks(self):
-        curr_portfolio = self.get_portfolio()
-        stocks_weights = curr_portfolio.get_stocks_weights()
-        labels = curr_portfolio.get_stocks_symbols()
-        plt.title("Hello, " + self.get_name() + "! This is your portfolio")
+        curr_portfolio = self.portfolio
+        stocks_weights = curr_portfolio.stocks_weights()
+        labels = curr_portfolio.stocks_symbols()
+        plt.title("Hello, " + self.name + "! This is your portfolio")
         plt.pie(
             stocks_weights,
             labels=labels,
@@ -123,7 +134,7 @@ class User:
 
         (level_of_risk, starting_investment_amount, stocks_symbols, sectors_names, sectors_weights, stocks_weights,
          annual_returns, annual_max_loss, annual_volatility, annual_sharpe, total_change, monthly_change,
-         daily_change, selected_model, machine_learning_opt) = self.__myPortfolio.get_portfolio_data()
+         daily_change, selected_model, machine_learning_opt) = self._myPortfolio.get_portfolio_data()
 
         # Create a new dictionary
         # TODO - change starting_investment_amount with something better (yarden)
@@ -144,7 +155,7 @@ class User:
             "selectedModel": selected_model,
             "machineLearningOpt": machine_learning_opt
         }
-        json_data['usersList'][self.__name] = [new_user_data]
+        json_data['usersList'][self._name] = [new_user_data]
 
         with open(json_name + ".json", 'w') as f:
             json.dump(json_data, f, indent=4)

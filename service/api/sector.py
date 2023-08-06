@@ -1,30 +1,31 @@
 class Sector:
-    __name: str = ""
-    __weight: float = 0.0
-    __stocks: list = []
+    def __init__(self, name: str = ""):
+        self._name: str = name
+        self._weight: float = 0.0
+        self._stocks: list = []
 
-    def __init__(self, name: str):
-        self.__name = name
-        self.__weight: float = 0.0
-        self.__stocks: list = []
+    @property
+    def name(self) -> str:
+        return self._name
 
-    def get_name(self) -> str:
-        return self.__name
+    @property
+    def weight(self) -> float:
+        return self._weight
 
-    def get_weight(self) -> float:
-        return self.__weight
+    @weight.setter
+    def weight(self, value: float) -> None:
+        self._weight = value
 
-    def get_stocks(self) -> list:
-        return self.__stocks
+    @property
+    def stocks(self) -> list:
+        return self._stocks
 
-    def set_weight(self, weight: float) -> None:
-        self.__weight = weight
+    @stocks.setter
+    def stocks(self, value: list) -> None:
+        self._stocks = value
 
-    def add_weight(self, weight: float) -> None:
-        self.__weight = self.__weight + weight
+    def add_weight(self, value: float) -> None:
+        self._weight = self.weight + value
 
-    def set_stocks(self, stocks: list) -> None:
-        self.__stocks = stocks
-
-    def add_stock(self, stock) -> None:
-        self.__stocks.append(stock)
+    def add_stock(self, value) -> None:
+        self._stocks.append(value)

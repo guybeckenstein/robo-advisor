@@ -52,7 +52,7 @@ if __name__ == '__main__':
                 investment_amount=investment_amount,
                 is_machine_learning=machine_learning_opt,
                 model_option=model_option,
-                level_of_risk=level_of_risk,
+                risk_level=level_of_risk,
                 extendedDataFromDB=tables,
             )
 

@@ -24,7 +24,7 @@ def update_all_tables(stocksSymbols, numOfYearsHistory):  # build DB for withdra
     formatted_date = today.strftime("%Y-%m-%d")
     update_closing_prices_tables(formatted_date, stocksSymbols, numOfYearsHistory)
     update_data_frame_tables(formatted_date, stocksSymbols)
-    # TODO : updloade to external DB
+    # TODO : upload to external DB
 
 
 def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYearsHistory):
@@ -117,7 +117,8 @@ def update_specific_data_frame_table(machingLearningOpt, modelName, stocksSymbol
            ', model name:' + modelName +
            ', level of risk:' + str(levelOfRisk))
 
-def connect_to_s3()-> boto3.client:
+
+def connect_to_s3() -> boto3.client:
 
     s3 = boto3.resource(service_name='s3',
                         region_name=aws_settings.region_name,
@@ -128,6 +129,7 @@ def connect_to_s3()-> boto3.client:
                              aws_secret_access_key=aws_settings.aws_secret_access_key,
                              region_name=aws_settings.region_name)
     return s3_client
+
 
 def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
     # Local folder path to upload
@@ -146,19 +148,25 @@ def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
 # manual commands
 ## 1
 def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
-                              model_option: int, level_of_risk: int, extendedDataFromDB:Tuple) -> Portfolio:
-    sectors_data, sectors, closing_prices_table, three_best_portfolios, _, \
+                              model_option: int, risk_level: int, extendedDataFromDB:Tuple) -> Portfolio:
+    sectors, sectors, closing_prices_table, three_best_portfolios, _, \
         pct_change_table, _ = extendedDataFromDB
 
-    final_portfolio = three_best_portfolios[level_of_risk - 1]
-    if level_of_risk == 1:
+    final_portfolio = three_best_portfolios[risk_level - 1]
+    if risk_level == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
         stocks_symbols = api_util.drop_stocks_from_us_commodity_sector(
             stocks_symbols, api_util.set_stock_sectors(stocks_symbols, sectors)
         )
 
-    new_portfolio = Portfolio(level_of_risk, investment_amount, stocks_symbols, sectors_data, model_option,
-                                        is_machine_learning)
+    new_portfolio = Portfolio(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        risk_level=risk_level,
+        starting_investment_amount=investment_amount,
+        selected_model=model_option,
+        is_machine_learning=is_machine_learning
+    )
 
     new_portfolio.update_stocks_data(closing_prices_table, pct_change_table, final_portfolio.iloc[0][3:],
                                      final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2])
@@ -184,13 +192,15 @@ def save_user_portfolio(curr_user: User) -> None:
     plt_sectors_component = curr_user.plot_portfolio_component()
     plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO, show as tables
     plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO, add forecast yield
-    # Saving files
-    curr_user_directory = settings.USER_IMAGES + curr_user.get_name()
+    # Creating directories
+    curr_user_directory = settings.USER_IMAGES + curr_user.name()
     try:
         os.mkdir(os.getcwd() + settings.USER_IMAGES)  # Creates 'static/img/user' folder
         os.mkdir(os.getcwd() + curr_user_directory)   # Creates 'static/img/user/<USER_ID>' folder
     except FileExistsError:  # Ignore the exception
         pass
+    # Saving files
+    curr_user_directory = os.getcwd() + curr_user_directory
     plot_functions.save_graphs(plt_sectors_component, file_name=curr_user_directory + '/sectors_component')
     plot_functions.save_graphs(plt_stocks_component, file_name=curr_user_directory + '/stocks_component')
     plot_functions.save_graphs(plt_yield_graph, file_name=curr_user_directory + '/yield_graph')
@@ -601,22 +611,28 @@ def get_user_from_db(user_name: str):
     starting_investment_amount = user_data['startingInvestmentAmount']
     is_machine_learning = user_data['machineLearningOpt']
     selected_model = user_data['selectedModel']
-    level_of_risk = user_data['levelOfRisk']
+    risk_level = user_data['levelOfRisk']
     stocks_symbols = user_data['stocksSymbols']
     stocks_weights = user_data['stocksWeights']
     annual_returns = user_data['annualReturns']
     annual_volatility = user_data['annualVolatility']
     annual_sharpe = user_data['annualSharpe']
-    sectors_data = get_json_data(settings.SECTORS_JSON_NAME)  # universal from file
+    sectors = get_json_data(settings.SECTORS_JSON_NAME)  # universal from file
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
-    user_portfolio: Portfolio = Portfolio(level_of_risk, starting_investment_amount, stocks_symbols,
-                                                              sectors_data, selected_model, is_machine_learning)
+    user_portfolio: Portfolio = Portfolio(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        risk_level=risk_level,
+        starting_investment_amount=starting_investment_amount,
+        selected_model=selected_model,
+        is_machine_learning=is_machine_learning,
+    )
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
-    pct_change_table["weighted_sum_" + str(level_of_risk)] = weighted_sum
-    yield_column: str = "yield_" + str(level_of_risk)
+    pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
+    yield_column: str = "yield_" + str(risk_level)
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
     user_portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,

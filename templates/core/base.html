@@ -62,15 +62,15 @@
           </div>
         </nav>
         <!-- Alerts -->
-        <div style="">
-          {% if messages %}
+        {% if messages %}
+          <div class="position-absolute d-flex justify-content-center w-100 js-messages-element" style="margin-top: -100px;">
             {% for message in messages %}
-              <div class="alert alert-{{ message.tags }}">
+              <div id="alert" class="alert alert-{{ message.tags }}">
                 {{ message }}
               </div>
             {% endfor %}
-          {% endif %}
-        </div>
+          </div>
+        {% endif %}
       </header>
       <!-- Main Content -->
       <div class="content-generic">
@@ -94,3 +94,10 @@
     </div>
   </body>
 </html>
+<script type="text/javascript">
+  setTimeout(function () {
+
+    // Closing the alert
+    $('#alert').alert('close');
+  }, 5000);
+</script>

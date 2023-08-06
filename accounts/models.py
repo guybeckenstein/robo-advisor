@@ -8,12 +8,7 @@ RISK_MIN = 1
 RISK_MAX = 3
 
 
-# Custom User
 class UserManager(BaseUserManager):
-    """
-    custom model accounts manager
-    """
-
     def create_user(self, email, password=None):
         if not email:
             raise ValueError("email is required")
@@ -27,8 +22,6 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password):
-        """creates new superuser with details """
-
         user = self.create_user(email, password)
         user.is_superuser = True
         user.is_staff = True
@@ -37,11 +30,9 @@ class UserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    """
-    custom accounts model
-    """
+    id = models.BigAutoField(primary_key=True, verbose_name="ID")
+    username = models.CharField(max_length=150, unique=True, blank=True)
     email = models.EmailField(unique=True)
-
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     phone_number = PhoneNumberField()
@@ -50,6 +41,10 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+    def save(self, *args, **kwargs):
+        self.username = self.email
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email
