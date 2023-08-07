@@ -34,12 +34,13 @@ STOCKS_SYMBOLS = [
     'GLD',
     'OIL',
 ]
-BASE_DIR = os.getcwd() + "/"  # TODO - remove this line when moves to other project
-RESOURCE_LOCATION = BASE_DIR + 'api/resources/'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
+PACKAGE_DIR = BASE_DIR# + 'service/'
+RESOURCE_LOCATION = PACKAGE_DIR + 'api/resources/'
 SECTORS_JSON_NAME = RESOURCE_LOCATION + 'sectors'  # sectors json file
 INDICES_LIST_JSON_NAME = RESOURCE_LOCATION + 'indicesList'  # indices list json file
 # DB
-DB_LOCATION = BASE_DIR + 'DB/'
+DB_LOCATION = PACKAGE_DIR + 'DB/'
 NAME_OF_BUCKET = '1'
 BUCKET_REPOSITORY = DB_LOCATION + 'Bucket' + NAME_OF_BUCKET + '/'  # directory of the bucket (12 tables + 2 closing prices)
 MACHINE_LEARNING_LOCATION = BUCKET_REPOSITORY + 'includingMachineLearning/'  # directory with 6 tables
@@ -53,7 +54,7 @@ USER_IMAGES = STATIC_IMAGES + '../user/'
 
 
 # RESEARCH
-RESEARCH_LOCATION = BASE_DIR + 'research/'
+RESEARCH_LOCATION = PACKAGE_DIR + 'research/'
 GROUP_OF_STOCKS = [
     "usa_stocks", "usa_bonds", "israel_indexes", "nasdaq", "sp500", "dowjones", "TA35", "TA90", "TA125", "TA125", "all"
 ]

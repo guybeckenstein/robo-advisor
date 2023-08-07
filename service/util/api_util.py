@@ -412,8 +412,6 @@ def choose_portfolio_by_risk_score(optional_portfolios_list, risk_score):
 
 
 def get_json_data(name: str):
-    import os
-    print(os.getcwd())
     with codecs.open(name + ".json", "r", encoding="utf-8") as file:
         json_data = json.load(file)
     return json_data

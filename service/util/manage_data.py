@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from datetime import date
-from typing import Tuple
+from typing import Tuple, List
 from ..api.portfolio import Portfolio
 from ..api import stats_models
 from ..api.user import User
@@ -139,19 +139,19 @@ def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
     # Local folder path to upload
     local_folder_path = 'path/to/your/local/folder'
 
-    for root, dirs, files in os.walk(local_folder_path):
+    """for root, dirs, files in os.walk(local_folder_path):
         for file in files:
             local_file_path = os.path.join(root, file)
             s3_object_key = os.path.relpath(local_file_path, local_folder_path)
             upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
 
-    s3_client.upload_file(file_path, bucket_name, s3_object_key)
+    s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
 
 
 ######################################################################
 # manual commands
-## 1
-def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
+# 1
+def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_machine_learning: int,
                               model_option: int, risk_level: int, extendedDataFromDB: Tuple) -> Portfolio:
     sectors, sectors, closing_prices_table, three_best_portfolios, _, \
         pct_change_table, _ = extendedDataFromDB
@@ -188,9 +188,9 @@ def plot_user_portfolio(curr_user: User) -> None:
     plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO: show as tables
     plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO: add forecast yield
     # Plotting files
-    plot_functions.plot(plt_sectors_component)
+    """plot_functions.plot(plt_sectors_component)
     plot_functions.plot(plt_stocks_component)
-    plot_functions.plot(plt_yield_graph)
+    plot_functions.plot(plt_yield_graph)"""
 
 
 def save_user_portfolio(curr_user: User) -> None:
@@ -221,7 +221,7 @@ def save_user_portfolio(curr_user: User) -> None:
 # EXPERT - 1
 
 # TODO - FIX
-def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int) -> None:  # TODO
+def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int):
     plt = None
     file_name = settings.CLOSING_PRICES_FILE_NAME
     table = api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
@@ -242,13 +242,13 @@ def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_his
                                                                                                   closing_prices_mode=True)
 
     plt_instance = plot_functions.plot_price_forecast(stock, df, annual_return, plt)
-    plot_functions.plot(plt_instance)  # TODO plot at site
+    return plt_instance
 
 
 #############################################################################################################
 # EXPERT -2
 
-def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01") -> None:
+def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"):
     stock_prices = yf.download(stock_name, start, end)
     stock_prices['MA50'] = stock_prices['Adj Close'].rolling(window=50).mean()
     stock_prices['50dSTD'] = stock_prices['Adj Close'].rolling(window=50).std()
@@ -261,7 +261,7 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
     buy_price, sell_price, bb_signal = api_util.implement_bb_strategy(stock_prices['Adj Close'],
                                                                       stock_prices['Lower'], stock_prices['Upper'])
     plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
-    plot_functions.plot(plt_instance)  # TODO plot at site
+    return plt_instance
 
 
 #############################################################################################################
@@ -589,14 +589,14 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, mode:
     return df_table
 
 
-def get_all_users() -> list:
+def get_all_users() -> List:
     """
     Get all users with their portfolios details from json file
     """
     json_data = get_json_data(settings.USERS_JSON_NAME)
     num_of_user = len(json_data['usersList'])
     users_data = json_data['usersList']
-    users: list = [] * num_of_user
+    users: List = [] * num_of_user
     for name in users_data.items():
         users.append(get_user_from_db(name))
 
