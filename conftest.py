@@ -2,55 +2,34 @@ from typing import Callable
 
 import pytest
 
-from django.contrib.auth.models import User
-
+from accounts.models import CustomUser
 from core.models import QuestionnaireA
 
 
 @pytest.fixture(scope='function')
-def create_user_default():
-    return User.objects.create_user(
-        username='testuser',
-        email='test@email.com',
-        password='testPassword123!',
-        first_name='Test',
-        last_name='User',
-    )
-
-
-@pytest.fixture(scope='function')
-def create_user_non_default() -> Callable[[str, str, str, User, str], User]:
-    def _user_factory(username: str, email: str, password: str, user: User, last_name: str) -> User:
-        user = User.objects.create(
-            username=username,
-            email=email,
-            password=password,
-            first_name=user,
-            last_name=last_name,
+def user_factory() -> Callable[[str, str, str, str, str], CustomUser]:
+    def _create_user(**kwargs):
+        user = CustomUser.objects.create(
+            first_name=kwargs.get('first_name', 'test'),
+            last_name=kwargs.get('last_name', 'user'),
+            phone_number=kwargs.get('phone_number', '+97221234567'),
+            email=kwargs.get('email', 'test@example.ac.il'),
+            password=kwargs.get('password', 'django1234')
         )
+
         return user
 
-    return _user_factory
+    return _create_user
 
 
 @pytest.fixture(scope='function')
-def create_user_preferences_default(user: User) -> QuestionnaireA:
-    user_preferences = QuestionnaireA.objects.create(
-        user=user,
-        ml_answer=0,
-        model_answer=0,
-    )
-    return user_preferences
-
-
-@pytest.fixture(scope='function')
-def create_user_preferences_non_default() -> Callable[[User, int, int], QuestionnaireA]:
-    def _user_preferences_factory(user: User, ml_answer: int, model_answer: int) -> QuestionnaireA:
+def questionnaire_a_factory() -> Callable[[CustomUser, int, int], QuestionnaireA]:
+    def _create_questionnaire_a(**kwargs) -> QuestionnaireA:
         user_preferences = QuestionnaireA.objects.create(
-            user=user,
-            ml_answer=ml_answer,
-            model_answer=model_answer,
+            user=kwargs.get('user', AttributeError),
+            ml_answer=kwargs.get('ml_answer', 0),
+            model_answer=kwargs.get('model_answer', 0),
         )
         return user_preferences
 
-    return _user_preferences_factory
+    return _create_questionnaire_a

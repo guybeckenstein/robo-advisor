@@ -1,26 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 * {
-	margin: 0;
-	padding: 0;
 	box-sizing: border-box;
 	font-family: "Poppins", sans-serif;
 }
 
-section {
-	position: relative;
-	width: 100%;
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
+body {
 	background: url("../img/Background.png");
     background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
+	background-attachment: fixed;
+	min-height: 100vh;
+	height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
 }
 
-header {
+.elements-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+nav {
 	position: relative;
 	top: 0;
 	width: 100%;
@@ -30,11 +34,7 @@ header {
 	align-items: center;
 }
 
-header .logo {
-	position: relative;
-}
-
-header .navigation a {
+nav .navigation a {
 	color: rgb(0, 0, 0);
 	text-decoration: none;
 	font-weight: 500;
@@ -45,29 +45,30 @@ header .navigation a {
 	transition-property: background;
 }
 
-header .navigation a:not(:last-child) {
+nav .navigation a:not(:last-child) {
 	margin-right: 30px;
 }
 
-header .navigation a:hover {
+nav .navigation a:hover {
 	background: rgb(255, 255, 255);
 }
 
 footer {
+    background-color: #3dc4f0;
+    box-shadow: 0 -1px 0 rgba(0, 0, 0, .3);
 	color: rgb(255, 255, 255);
-	position: relative;
-	bottom: 5px;
-	width: 100%;
-	padding: 30px 100px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	padding-left: 100px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+	height: auto;
+    margin-top: auto;
 }
 
 footer .greeting {
     color: rgb(0, 0, 0);
 	font-weight: 500;
-	border-bottom: 2px solid #226A80;;
+	border-bottom: 2px solid #226A80;
 }
 
 svg {
@@ -76,50 +77,19 @@ svg {
     background-color: yellow;
 }
 
+.content-generic {
+    flex: 1;
+}
+
 .content {
+    flex: 1;
 	max-width: 800px;
 	margin: 60px 100px;
 }
 
-.content .info h2 {
-	color: #226A80;
-	font-size: 55px;
-	font-weight: 800;
-	letter-spacing: 2px;
-	line-height: 60px;
-	margin-bottom: 30px;
-}
-
-.content .info h2 span {
-	color: rgb(255, 255, 255);
-	font-size: 50px;
-	font-weight: 600;
-}
-
-.content .info p {
-	font-size: 16px;
-	font-weight: 500;
-	margin-bottom: 40px;
-}
-
-.content .info-btn button {
-	color: rgb(255, 255, 255);
-	background: #226A80;
-	text-decoration: none;
-	text-transform: uppercase;
-	font-weight: 600;
-	letter-spacing: 2px;
-	padding: 10px 20px;
-	margin-bottom: 20px;
-	border-radius: 5px;
-	border: 5px solid transparent;
-	transition: 0.3s;
-	transition-property: background;
-	margin-top:10px;
-}
-
-.content .info-btn button:hover {
-	background: #0C4F60;
+.content-sidebar {
+    width: 400px;
+    margin: 60px 0px 0px 100px;
 }
 
 .team-members {
@@ -161,42 +131,24 @@ svg {
     width: 142px;
 }
 
-.media-icons {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin-top: 30px;
-}
-
-
-.media-icons a {
-	position: relative;
-	color: #111;
-	transition: 0.3s;
-	transition-property: transform;
-}
-
-.media-icons a:not(:last-child) {
-	margin-right: 60px;
-}
-
-.media-icons a:hover {
-	transform: scale(1.5);
-}
-
 .asteriskField {
-    color: red;
+    display: none;
 }
 
 #capital-market-form {
-    margin-top: 5px;
-    margin-left: 20px;
+    margin: 5px 20px;
 }
 
-.capital-market-form-label, .asteriskField {
+.capital-market-form-label {
     font-weight: 800;
     font-size: 20px;
-    background-color: rgb(245, 245, 245);
+    background-color: rgb(230, 230, 230);
+}
+
+.capital-market-form-img {
+    margin-top: 10px;
+    border: none;
+    padding: 0;
 }
 
 .capital-market-form-radio {

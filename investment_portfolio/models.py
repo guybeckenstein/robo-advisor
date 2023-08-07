@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator
-from django.contrib.auth.models import User
 from django.db import models
+
+from accounts.models import CustomUser
 
 
 class InvestmentPortfolio(models.Model):
@@ -11,13 +12,15 @@ class InvestmentPortfolio(models.Model):
         STRATEGY3 = ('STRATEGY3', 'STRATEGY3')
 
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    user = models.OneToOneField(User, on_delete=models.RESTRICT)
+    user = models.ForeignKey(CustomUser, on_delete=models.RESTRICT)
     name = models.CharField(max_length=30)
     total_investment_amount = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     current_value = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     return_on_investment = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     investment_strategy = models.CharField(max_length=20, choices=Strategy.choices)
-    # security_question_answer = models.CharField(max_length=30)
 
     class Meta:
         db_table = 'InvestmentPortfolio'
+        verbose_name = 'Investment Portfolio'
+        verbose_name_plural = 'Investment Portfolio'
+        unique_together = ['user', 'name']

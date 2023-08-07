@@ -9,12 +9,18 @@ class Migration(migrations.Migration):
     ]
 
     def generate_team_members_data(apps, schema_editor):
-        test_data = ['Guy Beckenstein', 'Yarden Agami', 'Yarden Gazit', 'Hagai Levy']
+        test_data = [
+            ('Guy Beckenstein', 'guybeckenstein',),
+            ('Yarden Agami', 'yardet',),
+            ('Hagai Levy', 'hagailevy',),
+            ('Yarden Gazit', 'Yardengz',),
+        ]
         with transaction.atomic():
-            for team_member_full_name in test_data:
+            for team_member_full_name, github_username in test_data:
                 team_member = TeamMember(
                     alt="".join(team_member_full_name.split()),
                     full_name=team_member_full_name,
+                    github_username=github_username,
                     img=f'img/{"".join(team_member_full_name.split())}.jpg',
                 )
                 team_member.save()

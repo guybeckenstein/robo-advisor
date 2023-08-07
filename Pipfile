@@ -9,6 +9,7 @@ pillow = "*"
 crispy-bootstrap5 = "*"
 pytest-lazy-fixture = "*"
 pytest-django = "*"
+flake8 = "*"
 
 [dev-packages]
 flake8 = "*"

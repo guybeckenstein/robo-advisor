@@ -4,11 +4,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from backend_api.util import manage_data, settings
-from backend_api.util.manage_data import create_new_user_portfolio
+from service.api.web_actions import save_three_user_graphs_as_png
+from service.util import manage_data, settings
+from service.util.manage_data import create_new_user_portfolio
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
-from user.models import InvestorUser
+from accounts.models import InvestorUser
 
 
 def homepage(request):
@@ -18,11 +19,6 @@ def homepage(request):
 
 def about(request):
     return render(request, 'core/about.html', context={'title': 'About Us'})
-
-
-@login_required
-def services(request):
-    return render(request, 'core/services.html', context={'title': 'Services'})
 
 
 @login_required
@@ -37,13 +33,13 @@ def capital_market_algorithm_preferences_form(request):
                 'title': 'Fill Form',
                 'form': AlgorithmPreferencesForm(form_type='create')
             }
-            return render(request, 'core/preferences_form_create.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
                 'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
             }
-            return render(request, 'core/preferences_form_update.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
     elif request.method == 'POST':
         if preferences is None:  # CREATE
             form = AlgorithmPreferencesForm(request.POST)
@@ -89,7 +85,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     form_type='create', user_preferences_instance=user_preferences_instance
                 )
             }
-            return render(request, 'core/capital_market_form_create.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
@@ -99,7 +95,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     user_preferences_instance=user_preferences_instance
                 )
             }
-            return render(request, 'core/capital_market_form_update.html', context=context)
+            return render(request, 'core/capital_market_preferences_form.html', context=context)
 
     elif request.method == 'POST':
         if questionnaire is None:  # CREATE
@@ -129,32 +125,32 @@ def capital_market_investment_preferences_form(request, **kwargs):
             # Backend
             risk_level = manage_data.get_level_of_risk_by_score(answers_sum)
             tables = manage_data.get_extended_data_from_db(
-                settings.STOCKS_SYMBOLS,
-                user_preferences_instance.ml_answer,
-                user_preferences_instance.model_answer,
+                stocks_symbols=settings.STOCKS_SYMBOLS,
+                is_machine_learning=user_preferences_instance.ml_answer,
+                model_option=user_preferences_instance.model_answer,
                 mode='regular'
             )
-            investment_amount = 0 # TODO: THINK ABOUT THIS(YARDEN AND GUY)
-            user_portfolio = create_new_user_portfolio(
+            investment_amount = 0  # TODO: THINK ABOUT THIS (YARDEN AND GUY)
+            portfolio = create_new_user_portfolio(
                 stocks_symbols=settings.STOCKS_SYMBOLS,
                 investment_amount=investment_amount,
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
-                level_of_risk=risk_level,
-               extendedDataFromDB=tables,
+                risk_level=risk_level,
+                extendedDataFromDB=tables,
             )
 
             _, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
                 annual_volatility, annual_sharpe, total_change, monthly_change, daily_change, selected_model, \
-                machine_learning_opt = user_portfolio.get_portfolio_data()
+                machine_learning_opt = portfolio.get_portfolio_data()
             try:
                 investor_user = InvestorUser.objects.get(user=request.user)
                 # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
                 investor_user.risk_level = risk_level
-                investor_user.stocks_symbols = ';'.join(convert_type_list_to_str_list(stocks_symbols))
-                investor_user.stocks_weights = ';'.join(convert_type_list_to_str_list(stocks_weights))
-                investor_user.sectors_names = ';'.join(sectors_names)
-                investor_user.sectors_weights = ';'.join(convert_type_list_to_str_list(sectors_weights))
+                investor_user.stocks_symbols = stocks_symbols
+                investor_user.stocks_weights = stocks_weights
+                investor_user.sectors_names = sectors_names
+                investor_user.sectors_weights = sectors_weights
                 investor_user.annual_returns = annual_returns
                 investor_user.annual_max_loss = annual_max_loss
                 investor_user.annual_volatility = annual_volatility
@@ -163,17 +159,16 @@ def capital_market_investment_preferences_form(request, **kwargs):
                 investor_user.monthly_change = monthly_change
                 investor_user.daily_change = daily_change
                 # TODO - maybe add more fields later
-
             except InvestorUser.DoesNotExist:
                 # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
                 InvestorUser.objects.create(
                     user=request.user,
                     risk_level=risk_level,
                     starting_investment_amount=0,
-                    stocks_symbols=';'.join(convert_type_list_to_str_list(stocks_symbols)),
-                    stocks_weights=';'.join(convert_type_list_to_str_list(stocks_weights)),
-                    sectors_names=';'.join(sectors_names),
-                    sectors_weights=';'.join(convert_type_list_to_str_list(sectors_weights)),
+                    stocks_symbols=stocks_symbols,
+                    stocks_weights=stocks_weights,
+                    sectors_names=sectors_names,
+                    sectors_weights=sectors_weights,
                     annual_returns=annual_returns,
                     annual_max_loss=annual_max_loss,
                     annual_volatility=annual_volatility,
@@ -184,6 +179,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     # TODO - maybe add more fields later
                 )
             # Frontend
+            save_three_user_graphs_as_png(request)
             return redirect('homepage')
 
         else:  # CREATE and UPDATE

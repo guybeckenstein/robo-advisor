@@ -23,11 +23,12 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     # More URLs modules
+    path('account/', include('accounts.urls')),
+    path('account/', include('allauth.urls')),
     path('', include('analytics.urls')),
+    path('', include('core.urls')),
     path('', include('investment.urls')),
     path('', include('investment_portfolio.urls')),
-    path('', include('core.urls')),
-    path('', include('user.urls')),
     path('', include('watchlist.urls')),
 ]
 
