@@ -20,11 +20,11 @@ def save_three_user_graphs_as_png(request) -> None:
     selected_model: int = questionnaire_a.model_answer
     starting_investment_amount: int = investor_user.starting_investment_amount
     risk_level: int = investor_user.risk_level
-    stocks_symbols: list[str] = investor_user.stocks_symbols.split(';')
+    stocks_symbols: list[str] = investor_user.stocks_symbols[1:-1].split(',')
     for idx, symbol in enumerate(stocks_symbols):
         if symbol.isnumeric():
             stocks_symbols[idx] = int(stocks_symbols[idx])
-    stocks_weights: list[str] = investor_user.stocks_weights.split(';')
+    stocks_weights: list[str] = investor_user.stocks_weights[1:-1].split(',')
     stocks_weights: list[float] = [float(weight) for weight in stocks_weights]
     annual_returns = investor_user.annual_returns
     annual_volatility = investor_user.annual_volatility

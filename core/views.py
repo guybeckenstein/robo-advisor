@@ -147,10 +147,10 @@ def capital_market_investment_preferences_form(request, **kwargs):
                 investor_user = InvestorUser.objects.get(user=request.user)
                 # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
                 investor_user.risk_level = risk_level
-                investor_user.stocks_symbols = ';'.join(convert_type_list_to_str_list(stocks_symbols))
-                investor_user.stocks_weights = ';'.join(convert_type_list_to_str_list(stocks_weights))
-                investor_user.sectors_names = ';'.join(sectors_names)
-                investor_user.sectors_weights = ';'.join(convert_type_list_to_str_list(sectors_weights))
+                investor_user.stocks_symbols = stocks_symbols
+                investor_user.stocks_weights = stocks_weights
+                investor_user.sectors_names = sectors_names
+                investor_user.sectors_weights = sectors_weights
                 investor_user.annual_returns = annual_returns
                 investor_user.annual_max_loss = annual_max_loss
                 investor_user.annual_volatility = annual_volatility
@@ -165,10 +165,10 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     user=request.user,
                     risk_level=risk_level,
                     starting_investment_amount=0,
-                    stocks_symbols=';'.join(convert_type_list_to_str_list(stocks_symbols)),
-                    stocks_weights=';'.join(convert_type_list_to_str_list(stocks_weights)),
-                    sectors_names=';'.join(sectors_names),
-                    sectors_weights=';'.join(convert_type_list_to_str_list(sectors_weights)),
+                    stocks_symbols=stocks_symbols,
+                    stocks_weights=stocks_weights,
+                    sectors_names=sectors_names,
+                    sectors_weights=sectors_weights,
                     annual_returns=annual_returns,
                     annual_max_loss=annual_max_loss,
                     annual_volatility=annual_volatility,

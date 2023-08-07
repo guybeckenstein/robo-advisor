@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -60,10 +61,10 @@ class InvestorUser(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.RESTRICT)
     risk_level = models.IntegerField(validators=[MinValueValidator(RISK_MIN), MaxValueValidator(RISK_MAX)])
     starting_investment_amount = models.IntegerField()
-    stocks_symbols = models.CharField(max_length=500)  # Symbols are divided by `;`
-    stocks_weights = models.CharField(max_length=1000)  # Symbols are divided by `;`
-    sectors_names = models.CharField(max_length=500)  # Symbols are divided by `;`
-    sectors_weights = models.CharField(max_length=1000)  # Symbols are divided by `;`
+    stocks_symbols = ArrayField(models.CharField(max_length=50))
+    stocks_weights = ArrayField(models.FloatField())
+    sectors_names = ArrayField(models.CharField(max_length=50))
+    sectors_weights = ArrayField(models.FloatField())
     annual_returns = models.FloatField()
     annual_max_loss = models.FloatField()
     annual_volatility = models.FloatField()

@@ -123,7 +123,8 @@ def profile_investor(request):
     except Http404:
         is_form_filled = False
     if request.method == 'GET':
-        form: forms.ModelForm = UpdateInvestorUserForm(instance=request.user, disabled_project=True)
+        investor_user = InvestorUser.objects.get(user=request.user)
+        form: forms.ModelForm = UpdateInvestorUserForm(instance=investor_user, disabled_project=True)
     elif request.method == 'POST':
         form: forms.ModelForm = UpdateInvestorUserForm(request.POST, instance=request.user)
         if form.is_valid():

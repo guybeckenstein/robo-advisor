@@ -134,10 +134,18 @@ class PasswordChangingForm(PasswordChangeForm):
 
 
 class UpdateInvestorUserForm(forms.ModelForm):
+    starting_investment_amount = forms.CharField()
+    stocks_symbols = forms.MultipleChoiceField(widget=forms.SelectMultiple)
+
     def __init__(self, *args, disabled_project=True, **kwargs):
         super(UpdateInvestorUserForm, self).__init__(*args, **kwargs)
         self.fields['starting_investment_amount'].disabled = disabled_project
         self.fields['stocks_symbols'].disabled = disabled_project
+        if self.instance.stocks_symbols:
+            symbols_list = self.instance.stocks_symbols[1:-1].split(',')
+            self.fields['stocks_symbols'].choices = [(symbol.strip(), symbol.strip()) for symbol in symbols_list]
+        else:
+            self.fields['stocks_symbols'].choices = []  # or provide default choices if needed
 
     class Meta:
         model = InvestorUser
