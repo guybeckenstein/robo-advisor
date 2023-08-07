@@ -1,5 +1,5 @@
 from api.user import User
-from util import manage_data, settings
+from service.util import manage_data, settings
 
 if __name__ == '__main__':
     manage_data.main_menu()
@@ -8,9 +8,10 @@ if __name__ == '__main__':
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
-            login_name: str = manage_data.get_name()
-            machine_learning_opt: int = manage_data.get_machine_learning_option()
-            model_option: int = manage_data.get_model_option()
+            #login_name: str = manage_data.get_name()
+            login_name: str = 'yarden'
+            machine_learning_opt: int = 0#manage_data.get_machine_learning_option()
+            model_option: int = 0#manage_data.get_model_option()
             investment_amount: int = 1000  # manage_data.get_investment_amount()
 
             # Extended data from DB (CSV Tables)
@@ -30,7 +31,8 @@ if __name__ == '__main__':
             string_to_show = "Which distribution do you prefer?\nlow risk - 1, medium risk - 2, high risk - 3 ?\n"
             # display distribution of portfolio graph(matplotlib)
             plt_instance = manage_data.plot_distribution_of_portfolio(yield_list, mode='regular')
-            manage_data.plot_functions.plot(plt_instance)  # TODO - remove this line after moves to the other project
+            # manage_data.plot_functions.plot(plt_instance)
+            manage_data.plot_image(settings.STATIC_IMAGES + 'distribution_graph.png')
 
             second_question_score = manage_data.get_score_by_answer_from_user(string_to_show)
 
@@ -39,27 +41,27 @@ if __name__ == '__main__':
             # display 3 best portfolios graph (matplotlib)
             plt_instance = manage_data.plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights, sectors,
                                                     pct_change_table, mode='regular')
-            # manage_data.plot_functions.plot(plt_instance)  # TODO - remove this line after moves to the other project
+            # manage_data.plot_functions.plot(plt_instance)
+            manage_data.plot_image(settings.STATIC_IMAGES + 'distribution_graph.png')
             third_question_score = manage_data.get_score_by_answer_from_user(string_to_show)
 
             # calculate level of risk by sum of score
             sum_of_score = first_question_score + second_question_score + third_question_score
             level_of_risk = manage_data.get_level_of_risk_by_score(sum_of_score)
 
-            # Creates a new user with portfolio details
-            portfolio = User(
-                name=login_name,
-                portfolio=manage_data.create_new_user_portfolio(
-                    stocks_symbols=settings.STOCKS_SYMBOLS,
-                    investment_amount=investment_amount,
-                    is_machine_learning=machine_learning_opt,
-                    model_option=model_option,
-                    risk_level=level_of_risk,
-                    extendedDataFromDB=tables,
-                )
+            # creates new user with portfolio details
+            new_portfolio = manage_data.create_new_user_portfolio(
+                stocks_symbols=settings.STOCKS_SYMBOLS,
+                investment_amount=investment_amount,
+                is_machine_learning=machine_learning_opt,
+                model_option=model_option,
+                level_of_risk=level_of_risk,
+                extendedDataFromDB=tables,
             )
-            # add user to DB
-            portfolio.update_json_file(settings.USERS_JSON_NAME)
+
+            user_portfolio = User(login_name, new_portfolio)
+            # add user to DB(json file)
+            user_portfolio.update_json_file(settings.USERS_JSON_NAME)
 
         elif selection == 2:
             pass
@@ -69,7 +71,9 @@ if __name__ == '__main__':
             name = manage_data.get_name()
             selected_user = manage_data.get_user_from_db(name)
             if selected_user is not None:
-                manage_data.plot_user_portfolio(selected_user)
+                manage_data.save_user_portfolio(selected_user)
+                manage_data.plot_image(settings.USER_IMAGES + 'distribution_graph.png')
+
 
         elif selection == 4:
 

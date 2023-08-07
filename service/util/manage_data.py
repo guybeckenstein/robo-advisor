@@ -14,8 +14,6 @@ from ..api.resources import aws_settings
 from . import api_util, console_handler, plot_functions, settings
 import boto3
 
-STATIC_FILES_LOCATION = 'static/img/graphs/'
-
 
 ######################################################################################
 # update all tables
@@ -33,7 +31,7 @@ def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYears
     if lastUpdatedDateClosingPrices != formatted_date_today:
         api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, settings.CLOSING_PRICES_FILE_NAME,
                                         stocksSymbols,
-                                    numOfYearsHistory, saveToCsv=True)
+                                        numOfYearsHistory, saveToCsv=True)
 
         with open(settings.BUCKET_REPOSITORY + "lastUpdatedClosingPrice.txt", "w") as file:
             file.write(formatted_date_today)
@@ -49,48 +47,55 @@ def update_data_frame_tables(formatted_date_today, stocksSymbols):
         # without maching learning
         # Markowitz
         update_three_level_data_frame_tables(machingLearningOpt=0, modelName="Markowitz",
-                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                 closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
         # Gini
         update_three_level_data_frame_tables(machingLearningOpt=0, modelName="Gini",
-                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                 closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
 
         # Including maching learning
-        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(pct_change_table, closingPricesTable.index)
+        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(
+            pct_change_table, closingPricesTable.index)
         # Markowitz
         update_three_level_data_frame_tables(machingLearningOpt=1, modelName="Markowitz",
-                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                 closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
         # Gini
         update_three_level_data_frame_tables(machingLearningOpt=1, modelName="Gini",
-                                 stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                 closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
+                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
 
         with open(settings.BUCKET_REPOSITORY + "lastUpdatedDftables.txt", "w") as file:
             file.write(formatted_date_today)
 
 
 def update_three_level_data_frame_tables(machingLearningOpt, modelName, stocksSymbols, sectorsList,
-                             closingPricesTable, pct_change_table):
+                                         closingPricesTable, pct_change_table):
     # high risk
-    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName, stocksSymbols=stocksSymbols,
-                          sectorsList=sectorsList, levelOfRisk="high", maxPercentCommodity=1,
-                          maxPercentStocks=1, closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName,
+                                     stocksSymbols=stocksSymbols,
+                                     sectorsList=sectorsList, levelOfRisk="high", maxPercentCommodity=1,
+                                     maxPercentStocks=1, closingPricesTable=closingPricesTable,
+                                     pct_change_table=pct_change_table)
     # medium risk
-    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName, stocksSymbols=stocksSymbols,
-                          sectorsList=sectorsList, levelOfRisk="medium",
-                          maxPercentCommodity=settings.LIMIT_PERCENT_MEDIUM_RISK_COMMODITY,
-                          maxPercentStocks=settings.LIMIT_PERCENT_MEDIUM_RISK_STOCKS, closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName,
+                                     stocksSymbols=stocksSymbols,
+                                     sectorsList=sectorsList, levelOfRisk="medium",
+                                     maxPercentCommodity=settings.LIMIT_PERCENT_MEDIUM_RISK_COMMODITY,
+                                     maxPercentStocks=settings.LIMIT_PERCENT_MEDIUM_RISK_STOCKS,
+                                     closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
     # low risk
-    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName, stocksSymbols=stocksSymbols,
-                          sectorsList=sectorsList, levelOfRisk="low",
-                          maxPercentCommodity=settings.LIMIT_PERCENT_LOW_RISK_COMMODITY,
-                          maxPercentStocks=settings.LIMIT_PERCENT_LOW_RISK_STOCKS, closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName,
+                                     stocksSymbols=stocksSymbols,
+                                     sectorsList=sectorsList, levelOfRisk="low",
+                                     maxPercentCommodity=settings.LIMIT_PERCENT_LOW_RISK_COMMODITY,
+                                     maxPercentStocks=settings.LIMIT_PERCENT_LOW_RISK_STOCKS,
+                                     closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
 
 
 def update_specific_data_frame_table(machingLearningOpt, modelName, stocksSymbols, sectorsList, levelOfRisk,
-                          maxPercentCommodity, maxPercentStocks, closingPricesTable, pct_change_table):
+                                     maxPercentCommodity, maxPercentStocks, closingPricesTable, pct_change_table):
     if machingLearningOpt:
         locationForSaving = settings.MACHINE_LEARNING_LOCATION
     else:
@@ -107,25 +112,24 @@ def update_specific_data_frame_table(machingLearningOpt, modelName, stocksSymbol
                 pct_change_table = pct_change_table.drop(stocksSymbols[i], axis=1)
         stocksSymbols = filtered_stocks
 
-    Stats_models = stats_models.statsModels(stocksSymbols, sectorsList, closingPricesTable,pct_change_table,
-                                          settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
-                                          maxPercentCommodity,
-                                          maxPercentStocks, modelName, machingLearningOpt)
+    Stats_models = stats_models.statsModels(stocksSymbols, sectorsList, closingPricesTable, pct_change_table,
+                                            settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
+                                            maxPercentCommodity,
+                                            maxPercentStocks, modelName, machingLearningOpt)
     df = Stats_models.get_df()
     df.to_csv(locationForSaving + modelName + '_df_' + levelOfRisk + '.csv')
-    print('updated data frame Table(machine learning:'+ str(machingLearningOpt) +
-           ', model name:' + modelName +
-           ', level of risk:' + str(levelOfRisk))
+    print('updated data frame Table(machine learning:' + str(machingLearningOpt) +
+          ', model name:' + modelName +
+          ', level of risk:' + str(levelOfRisk))
 
 
 def connect_to_s3() -> boto3.client:
-
     s3 = boto3.resource(service_name='s3',
                         region_name=aws_settings.region_name,
                         aws_secret_access_key=aws_settings.aws_secret_access_key,
                         aws_access_key_id=aws_settings.aws_access_key_id)
 
-    s3_client = boto3.client('s3', aws_access_key_id= aws_settings.aws_access_key_id,
+    s3_client = boto3.client('s3', aws_access_key_id=aws_settings.aws_access_key_id,
                              aws_secret_access_key=aws_settings.aws_secret_access_key,
                              region_name=aws_settings.region_name)
     return s3_client
@@ -148,7 +152,7 @@ def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
 # manual commands
 ## 1
 def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
-                              model_option: int, risk_level: int, extendedDataFromDB:Tuple) -> Portfolio:
+                              model_option: int, risk_level: int, extendedDataFromDB: Tuple) -> Portfolio:
     sectors, sectors, closing_prices_table, three_best_portfolios, _, \
         pct_change_table, _ = extendedDataFromDB
 
@@ -201,7 +205,7 @@ def save_user_portfolio(curr_user: User) -> None:
     except FileExistsError:  # Ignore the exception
         pass
     try:
-        os.mkdir(os.getcwd() + curr_user_directory)   # Creates 'static/img/user/<USER_ID>' folder
+        os.mkdir(os.getcwd() + curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
     except FileExistsError:  # Ignore the exception
         pass
     # Saving files
@@ -217,27 +221,28 @@ def save_user_portfolio(curr_user: User) -> None:
 # EXPERT - 1
 
 # TODO - FIX
-def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int) -> None: # TODO
+def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int) -> None:  # TODO
     plt = None
     file_name = settings.CLOSING_PRICES_FILE_NAME
-    table = api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY,file_name,
+    table = api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
                                             [stock], num_of_years_history, saveToCsv=False)
     table = table.pct_change()
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
-        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_linear_regression(table, table.index, closing_prices_mode = True)
+        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_linear_regression(table,
+                                                                                                       table.index,
+                                                                                                       closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:
         df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_arima(table, table.index,
-                                                                            closing_prices_mode = True)
+                                                                                           closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:
         df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_gbm(table, table.index,
-                                                                          closing_prices_mode = True)
+                                                                                         closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:
         df, annual_return, excepted_returns, plt = api_util.analyze_with_machine_learning_prophet(table, table.index,
-                                                                                   closing_prices_mode = True)
+                                                                                                  closing_prices_mode=True)
 
     plt_instance = plot_functions.plot_price_forecast(stock, df, annual_return, plt)
     plot_functions.plot(plt_instance)  # TODO plot at site
-
 
 
 #############################################################################################################
@@ -261,7 +266,6 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
 
 #############################################################################################################
 # EXPERT -4
-
 
 
 def download_data_for_research(num_of_years_history: int) -> None:
@@ -291,40 +295,40 @@ def download_data_for_research(num_of_years_history: int) -> None:
     api_util.convert_data_to_tables(settings.RESEARCH_LOCATION,
                                     'all_closing_prices', stocks_symbols, num_of_years_history, saveToCsv=True)
 
-def get_stocks_data_for_research_by_group(group_of_stocks:str):
-    
-    if group_of_stocks == "nasdaq": # TODO -fix
+
+def get_stocks_data_for_research_by_group(group_of_stocks: str):
+    if group_of_stocks == "nasdaq":  # TODO -fix
         nasdaq_tickers = yf.Tickers('^IXIC').tickers
         # Convert the dictionary of Ticker objects to a list of Ticker objects
         ticker_list = list(nasdaq_tickers.values())
         tickers = [ticker.ticker for ticker in ticker_list]
         filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9) # &  # Stocks with a market capitalization of at least $1 billion
-            #(tickers['ipoyear'] <= 2020)  # Stocks that went public before or in 2020
-            ]
+            (tickers['marketCap'] >= 1e9)  # &  # Stocks with a market capitalization of at least $1 billion
+            # (tickers['ipoyear'] <= 2020)  # Stocks that went public before or in 2020
+        ]
         # Get the ticker symbols for the filtered stocks
         tickers = filtered_stocks['symbol'].to_list()
-    elif group_of_stocks == "sp500": # TODO -fix
+    elif group_of_stocks == "sp500":  # TODO -fix
         sp500_tickers = yf.Tickers('^GSPC').tickers
         # Convert the dictionary of Ticker objects to a list of Ticker objects
         ticker_list = list(sp500_tickers.values())
         tickers = [ticker.ticker for ticker in ticker_list]
         filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9) # &  # Stocks with a market capitalization of at least $1 billion
+            (tickers['marketCap'] >= 1e9)  # &  # Stocks with a market capitalization of at least $1 billion
         ]
         # Get the ticker symbols for the filtered stocks
         tickers = filtered_stocks['symbol'].to_list()
-    elif group_of_stocks == "dowjones": # TODO -fix
+    elif group_of_stocks == "dowjones":  # TODO -fix
         dowjones_tickers = yf.Tickers('^DJI').tickers
         # Convert the dictionary of Ticker objects to a list of Ticker objects
         ticker_list = list(dowjones_tickers.values())
         tickers = [ticker.ticker for ticker in ticker_list]
         filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9) # &  # Stocks with a market capitalization of at least $1 billion
+            (tickers['marketCap'] >= 1e9)  # &  # Stocks with a market capitalization of at least $1 billion
         ]
         # Get the ticker symbols for the filtered stocks
         tickers = filtered_stocks['symbol'].to_list()
-    elif group_of_stocks == "TA35": # TODO -fix
+    elif group_of_stocks == "TA35":  # TODO -fix
         TA35_tickers = yf.Tickers('^TA35.TA').tickers
         # Convert the dictionary of Ticker objects to a list of Ticker objects
         ticker_list = list(TA35_tickers.values())
@@ -334,7 +338,7 @@ def get_stocks_data_for_research_by_group(group_of_stocks:str):
         ]"""
         # Get the ticker symbols for the filtered stocks
         tickers = tickers['symbol'].to_list()
-    elif group_of_stocks == "TA90": # TODO -fix
+    elif group_of_stocks == "TA90":  # TODO -fix
         TA90_tickers = yf.Tickers('^TA90.TA').tickers
         # Convert the dictionary of Ticker objects to a list of Ticker objects
         ticker_list = list(TA90_tickers.values())
@@ -344,7 +348,7 @@ def get_stocks_data_for_research_by_group(group_of_stocks:str):
         ]"""
         # Get the ticker symbols for the filtered stocks
         tickers = tickers['symbol'].to_list()
-    elif group_of_stocks == "TA125": # TODO -fix
+    elif group_of_stocks == "TA125":  # TODO -fix
         TA125_tickers = yf.Tickers('^TA125.TA').tickers
         # Convert the dictionary of Ticker objects to a list of Ticker objects
         ticker_list = list(TA125_tickers.values())
@@ -354,33 +358,31 @@ def get_stocks_data_for_research_by_group(group_of_stocks:str):
         ]"""
         # Get the ticker symbols for the filtered stocks
         tickers = tickers['symbol'].to_list()
-    
+
     elif group_of_stocks == "usa_bonds":
         tickers = read_csv_file(settings.RESEARCH_LOCATION + 'usa_stocks_closing_prices.csv')
-        
+
     elif group_of_stocks == "usa_stocks":
         tickers = read_csv_file(settings.RESEARCH_LOCATION + 'usa_stocks_closing_prices.csv')
 
     elif group_of_stocks == "israel_indexes":
         tickers = read_csv_file(settings.RESEARCH_LOCATION + 'israel_indexes_closing_prices.csv')
-        
+
     elif group_of_stocks == "all":
         tickers = read_csv_file(settings.RESEARCH_LOCATION + 'all_closing_prices.csv')
 
-    
+
     else:
         tickers = settings.STOCKS_SYMBOLS
         start, end = api_util.get_from_and_to_dates(10)
-        data = yf.download(tickers, start, end= end)
+        data = yf.download(tickers, start, end=end)
         data = data.set_index(pd.to_datetime(data.index))
-        #TODO
+        # TODO
 
-        
     return tickers
-           
-        
 
-def find_good_stocks(group_of_stocks = "usa_stocks", filter_option=False): # TODO - fix
+
+def find_good_stocks(group_of_stocks="usa_stocks", filter_option=False):  # TODO - fix
     max_returns_stocks_list = None
     min_volatility_stocks_list = None
     max_sharpest_stocks_list = None
@@ -402,21 +404,20 @@ def find_good_stocks(group_of_stocks = "usa_stocks", filter_option=False): # TOD
 
     # Convert the index to datetime
     data_pct_change.index = pd.to_datetime(data_pct_change.index)
-    annual_returns = ((data_pct_change + 1).resample('Y').prod() - 1)*100
-    total_profit_return = ((data_pct_change + 1).prod() - 1)*100
+    annual_returns = ((data_pct_change + 1).resample('Y').prod() - 1) * 100
+    total_profit_return = ((data_pct_change + 1).prod() - 1) * 100
     total_volatility = data_pct_change.std() * np.sqrt(254)
     annual_volatility = data_pct_change.groupby(pd.Grouper(freq='Y')).std()
     sharpe = annual_returns / annual_volatility
 
-    #forcast from total:
-    returns_annual_forcecast = (((1 + data_pct_change.mean()) ** 254) - 1)*100
+    # forcast from total:
+    returns_annual_forcecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
     cov_daily = data_pct_change.cov()
     cov_annual = cov_daily * 254
-    volatility_forecast = (data_pct_change.std() * np.sqrt(254))*100
+    volatility_forecast = (data_pct_change.std() * np.sqrt(254)) * 100
     sharpe_forecast = returns_annual_forcecast / volatility_forecast
 
     total_sharpe = total_profit_return / total_volatility
-
 
     # sort total
     total_profit_return_sorted = total_profit_return.sort_values(ascending=False).head(10)
@@ -430,7 +431,6 @@ def find_good_stocks(group_of_stocks = "usa_stocks", filter_option=False): # TOD
     print("total_sharpe_sorted")
     print(total_sharpe_sorted)
 
-
     # sort last year
     annual_sharpe_sorted = sharpe[-1].sort_values().head(10)
     annual_returns_sorted = annual_returns[-1].sort_values().head(10)
@@ -443,8 +443,7 @@ def find_good_stocks(group_of_stocks = "usa_stocks", filter_option=False): # TOD
     print("annual_sharpe_sorted")
     print(annual_sharpe_sorted)
 
-
-    #sort forecast
+    # sort forecast
     returns_annual_forcecast_sorted = returns_annual_forcecast.sort_values().head(10)
     volatility_forecast_sorted = volatility_forecast.sort_values().head(10)
     sharpe_forecast_sorted = sharpe_forecast.sort_values().head(10)
@@ -453,20 +452,19 @@ def find_good_stocks(group_of_stocks = "usa_stocks", filter_option=False): # TOD
     max_returns_stocks_list = returns_sorted.head(10)
     min_volatility_stocks_list = min_volatility_sorted.tail(10)"""
 
-
-    #plot_functions.plot_top_stocks(api_util.scan_good_stocks())
+    # plot_functions.plot_top_stocks(api_util.scan_good_stocks())
     # plot_functions.plot(plt_instance)  # TODO plot at site
-    #plot_functions.plot(plt_instance)  # TODO plot at site
+    # plot_functions.plot(plt_instance)  # TODO plot at site
 
     return max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list
-
 
 
 ############################################################################################################
 # EXPERT- 5&6
 
 
-def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_option: int, num_of_years_history=settings.NUM_OF_YEARS_HISTORY) -> None:
+def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_option: int,
+                          num_of_years_history=settings.NUM_OF_YEARS_HISTORY) -> None:
     sectors: list = set_sectors(stocks_symbols)
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
@@ -474,7 +472,8 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
     # TODO - get part of closing_prices_table according to num_of_years_history
 
     if is_machine_learning == 1:
-        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(pct_change_table,closing_prices_table.index)
+        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(
+            pct_change_table, closing_prices_table.index)
 
     if model_option == "Markowitz":
         curr_stats_models = stats_models.statsModels(stocks_symbols, sectors, closing_prices_table, pct_change_table,
@@ -487,7 +486,7 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
                                                      1, 1, "Gini",
                                                      is_machine_learning)
     df = curr_stats_models.get_df()
-    three_best_portfolios = api_util.get_best_portfolios([df,df,df], model_name=model_option)
+    three_best_portfolios = api_util.get_best_portfolios([df, df, df], model_name=model_option)
     three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors,
                                                                          three_best_stocks_weights)
@@ -641,7 +640,7 @@ def get_user_from_db(user_name: str):
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
     portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
-                                      annual_volatility, annual_sharpe)
+                                 annual_volatility, annual_sharpe)
     curr_user = User(user_name, portfolio)
 
     return curr_user
@@ -760,11 +759,12 @@ def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_
     plt_instance = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns,
                                                               three_best_sectors_weights, sectors, pct_change_table)
     if mode == 'regular':
-        plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'three_portfolios')
+        plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + 'three_portfolios')
     else:
-        plot_functions.save_graphs(plt_instance, '../../' + STATIC_FILES_LOCATION + 'three_portfolios')
+        plot_functions.save_graphs(plt_instance, '../../' + settings.STATIC_IMAGES + 'three_portfolios')
 
     return plt_instance
+
 
 def plot_distribution_of_stocks(stock_names, pct_change_table):
     plt_instance = plot_functions.plot_distribution_of_stocks(stock_names, pct_change_table)
@@ -775,13 +775,14 @@ def plot_distribution_of_stocks(stock_names, pct_change_table):
 def plot_distribution_of_portfolio(distribution_graph, mode: str):
     plt_instance = plot_functions.plot_distribution_of_portfolio(distribution_graph)
     if mode == 'regular':
-        plot_functions.save_graphs(plt_instance, STATIC_FILES_LOCATION + 'distribution_graph')
+        plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + 'distribution_graph')
     else:
-        plot_functions.save_graphs(plt_instance, '../../' + STATIC_FILES_LOCATION + 'distribution_graph')
+        plot_functions.save_graphs(plt_instance, '../../' + settings.STATIC_IMAGES + 'distribution_graph')
 
     return plt_instance
 
-def plotbb_strategy_portfolio(pct_change_table, new_portfolio): # TODO
+
+def plotbb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO
     plt_instance = plot_functions.plotbb_strategy_portfolio(pct_change_table, new_portfolio)
 
     return plt_instance
@@ -790,7 +791,9 @@ def plotbb_strategy_portfolio(pct_change_table, new_portfolio): # TODO
 def get_score_by_answer_from_user(string_to_show: str) -> int:
     return console_handler.get_score_by_answer_from_user(string_to_show)
 
+
 # console functions
+
 
 def main_menu() -> None:
     console_handler.main_menu()
@@ -820,12 +823,18 @@ def get_model_option() -> int:
     return console_handler.get_model_option()
 
 
-def get_machine_learning_model()-> str:
-    option:int = console_handler.get_machine_learning_mdoel()
-    return settings.MACHINE_LEARNING_MODEL[option-1]
+def get_machine_learning_model() -> str:
+    option: int = console_handler.get_machine_learning_mdoel()
+    return settings.MACHINE_LEARNING_MODEL[option - 1]
+
 
 def get_group_of_stocks_option() -> int:
     return console_handler.get_group_of_stocks_option()
 
+
 def get_investment_amount():
     return console_handler.get_investment_amount()
+
+
+def plot_image(file_name) -> None:
+    plot_functions.plot_image(file_name)

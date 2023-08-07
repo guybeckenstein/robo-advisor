@@ -43,10 +43,8 @@ def capital_market_algorithm_preferences_form(request):
     elif request.method == 'POST':
         if preferences is None:  # CREATE
             form = AlgorithmPreferencesForm(request.POST)
-            # TODO: connect to relevant part in the logic Backend
         else:  # UPDATE
             form = AlgorithmPreferencesForm(request.POST, instance=preferences)
-            # TODO: connect to relevant part in the logic Backend
 
         if form.is_valid():  # CREATE and UPDATE
             form.instance.user = request.user

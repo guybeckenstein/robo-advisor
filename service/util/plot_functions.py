@@ -1,10 +1,14 @@
+from typing import List
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from PIL import Image
+from matplotlib import image as mpimg
 
 
-def plot_markowitz_graph(sectors: list, three_best_sectors_weights, min_variance_port, sharpe_portfolio,
+def plot_markowitz_graph(sectors: List, three_best_sectors_weights, min_variance_port, sharpe_portfolio,
                          max_returns, max_vols, df) -> plt:
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     fig_size_X = 10
@@ -318,7 +322,7 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
             wrap=True,
         )
         plt.figtext(
-            0.7,
+            0.8,
             0.15,
             "Sharpe  Portfolio: \n"
             + "Annual returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
@@ -336,7 +340,7 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
             wrap=True,
         )
         plt.figtext(
-            0.45,
+            0.5,
             0.15,
             "Safest Portfolio: \n"
             + "Annual returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
@@ -353,6 +357,46 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
             fontname="Arial",
             wrap=True,
         )
+    return plt
+
+
+def plot_distribution_of_portfolio(yields: List[pd.core.series.Series]) -> plt:
+    labels = ['low risk', 'medium risk', 'high risk']
+    plt.subplots(figsize=(8, 8))
+    plt.subplots_adjust(bottom=0.4)
+
+    monthly_changes = [None] * len(yields)  # yield changes
+    monthly_yields = [None] * len(yields)  # monthly yield change
+    df_describes = [None] * len(yields)  # describe of yield changes
+    # monthlyCompoundedReturns = [None] * len(yields) # total change in percent from beginning
+    # monthlyCompoundedReturns[i] = (1 + monthly_changes[i]).cumprod() - 1
+
+    for i in range(len(yields)):
+        # Convert the index to datetime if it's not already in the datetime format
+        curr_yield = yields[i]
+        if not pd.api.types.is_datetime64_any_dtype(curr_yield.index):
+            yields[i].index = pd.to_datetime(curr_yield.index)
+
+        monthly_yields[i]: List[np.ndarray] = curr_yield.resample('M').first()
+        monthly_changes[i]: pd.DataFrame = monthly_yields[i].pct_change().dropna() * 100
+        df_describes[i]: pd.DataFrame = monthly_changes[i].describe().drop(["count"], axis=0)
+        sns.distplot(pd.Series(monthly_changes[i]), kde=True, hist_kws={'alpha': 0.2}, norm_hist=False,
+                     rug=False, label=labels[i])
+
+    plt.xlabel('Monthly Return %', fontsize=12)
+    plt.ylabel('Distribution', fontsize=12)
+    plt.grid(True)
+    plt.legend()
+    plt.title("Distribution of Portfolios - by monthly returns")
+
+    with pd.option_context("display.float_format", "%{:,.2f}".format):
+        plt.figtext(0.2, 0.15, "low risk\n" + str(df_describes[0]), bbox=dict(facecolor="blue", alpha=0.5),
+                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
+        plt.figtext(0.5, 0.15, "medium risk\n" + str(df_describes[1]), bbox=dict(facecolor="pink", alpha=0.5),
+                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
+        plt.figtext(0.8, 0.15, "high risk\n" + str(df_describes[2]), bbox=dict(facecolor="green", alpha=0.5),
+                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
+
     return plt
 
 
@@ -387,56 +431,22 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
     plt.legend()
     return plt
 
-
-def plot_distribution_of_portfolio(yields: list[pd.core.series.Series]) -> plt:
-    labels = ['low risk', 'medium risk', 'high risk']
-    plt.subplots(figsize=(8, 8))
-    plt.subplots_adjust(bottom=0.4)
-
-    monthly_changes = [None] * len(yields)  # yield changes
-    monthly_yields = [None] * len(yields)  # monthly yield change
-    df_describes = [None] * len(yields)  # describe of yield changes
-    # monthlyCompoundedReturns = [None] * len(yields) # total change in percent from beginning
-    # monthlyCompoundedReturns[i] = (1 + monthly_changes[i]).cumprod() - 1
-
-    for i in range(len(yields)):
-        # Convert the index to datetime if it's not already in the datetime format
-        curr_yield: pd.core.series.Series = yields[i]
-        if not pd.api.types.is_datetime64_any_dtype(curr_yield.index):
-            yields[i].index = pd.to_datetime(curr_yield.index)
-
-        monthly_yields[i]: list[np.ndarray] = curr_yield.resample('M').first()
-        monthly_changes[i]: pd.DataFrame = monthly_yields[i].pct_change().dropna() * 100
-        df_describes[i]: pd.DataFrame = monthly_changes[i].describe().drop(["count"], axis=0)
-        sns.distplot(pd.Series(monthly_changes[i]), kde=True, hist_kws={'alpha': 0.2}, norm_hist=False,
-                     rug=False, label=labels[i])
-
-    plt.figure()
-    plt.xlabel('Monthly Return %', fontsize=12)
-    plt.ylabel('Distribution', fontsize=12)
-    plt.grid(True)
-    plt.legend()
-    plt.title("Distribution of Portfolios - by monthly returns")
-
-    with pd.option_context("display.float_format", "%{:,.2f}".format):
-        plt.figtext(0.2, 0.15, "low risk\n" + str(df_describes[0]), bbox=dict(facecolor="blue", alpha=0.5),
-                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
-        plt.figtext(0.45, 0.15, "medium risk\n" + str(df_describes[1]), bbox=dict(facecolor="pink", alpha=0.5),
-                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
-        plt.figtext(0.7, 0.15, "high risk\n" + str(df_describes[2]), bbox=dict(facecolor="green", alpha=0.5),
-                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
-
-    return plt
-
-
 def plot_top_stocks(top_stocks) -> None:
     print(top_stocks)
 
 
-def plot(plt_instance) -> None:
-    plt_instance.show()
+"""def plot(plt_instance) -> None:
+    plt_instance.show()"""
 
 
 def save_graphs(plt_instance, file_name) -> None:
-    plt_instance.savefig(f'{file_name}.png', format='png')
+    plt_instance.savefig(f'{file_name}.png', format='png', dpi=300)
 
+
+def plot_image(file_name):
+    image = Image.open(file_name)
+    image.show()
+    """img = mpimg.imread(file_name)  # Load the image
+    plt.imshow(img)  # Display the image
+    plt.axis('off')  # Turn off axis labels and ticks
+    plt.show()  # Show the plot"""

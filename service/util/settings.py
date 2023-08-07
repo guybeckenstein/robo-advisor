@@ -1,6 +1,8 @@
 ############################################
 # TODO - order this file and makes multiple settings - class
 # setting for stats Models
+import os
+
 NUM_POR_SIMULATION = 2000 # number of portfolios to simulate, the more, the better
 MIN_NUM_POR_SIMULATION = 30 # min number of final portfolios result
 RECORD_PERCENT_TO_PREDICT = 0.05 # the part of years to predict of the total years
@@ -32,10 +34,8 @@ STOCKS_SYMBOLS = [
     'GLD',
     'OIL',
 ]
-BASE_DIR = 'service/'
-# BASE_DIR = '' # TODO - remove this line when moves to other project
+BASE_DIR = os.getcwd() + "/"  # TODO - remove this line when moves to other project
 RESOURCE_LOCATION = BASE_DIR + 'api/resources/'
-
 SECTORS_JSON_NAME = RESOURCE_LOCATION + 'sectors'  # sectors json file
 INDICES_LIST_JSON_NAME = RESOURCE_LOCATION + 'indicesList'  # indices list json file
 # DB
@@ -48,8 +48,8 @@ USERS_JSON_NAME = DB_LOCATION + 'users'  # where to save the users details
 CLOSING_PRICES_FILE_NAME = "closing_prices"
 
 # STATIC FILES
-STATIC_IMAGES = '/static/img/'
-USER_IMAGES = STATIC_IMAGES + 'user/'
+STATIC_IMAGES = BASE_DIR + '../static/img/graphs/'
+USER_IMAGES = STATIC_IMAGES + '../user/'
 
 
 # RESEARCH
