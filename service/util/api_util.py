@@ -425,7 +425,7 @@ def get_sectors_data_from_file(mode: str):
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols: list, mode: str) -> list:
+def set_sectors(stocks_symbols: list, mode: str = 'regular') -> list:
     """
     For each stock symbol, it checks for which sector does it belong.
     :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol

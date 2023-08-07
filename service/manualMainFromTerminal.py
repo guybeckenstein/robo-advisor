@@ -5,11 +5,11 @@ if __name__ == '__main__':
     manage_data.main_menu()
     selection = manage_data.selected_menu_option()  # TODO get selection from page in site
     exit_loop_operation = 8
+    # login_name: str = manage_data.get_name()
+    login_name: str = 'yarden'
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
-            # login_name: str = manage_data.get_name()
-            login_name: str = 'yarden'
             machine_learning_opt: int = 0  # manage_data.get_machine_learning_option()
             model_option: int = 0  # manage_data.get_model_option()
             investment_amount: int = 1000  # manage_data.get_investment_amount()
@@ -23,6 +23,7 @@ if __name__ == '__main__':
                 pct_change_table, yield_list = tables
 
             # get data from risk questionnaire form
+
             # question #1
             string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
             first_question_score = manage_data.get_score_by_answer_from_user(string_to_show)
@@ -66,11 +67,12 @@ if __name__ == '__main__':
 
         elif selection == 3:
             # plot user portfolio's data
-            name = manage_data.get_name()
-            selected_user = manage_data.get_user_from_db(name)
+            selected_user = manage_data.get_user_from_db(login_name)
             if selected_user is not None:
                 manage_data.save_user_portfolio(selected_user)
-                manage_data.plot_image(settings.USER_IMAGES + 'distribution_graph.png')
+                manage_data.plot_image(settings.USER_IMAGES + login_name + '/sectors_component.png')
+                manage_data.plot_image(settings.USER_IMAGES + login_name + '/stocks_component.png')
+                manage_data.plot_image(settings.USER_IMAGES + login_name + '/yield_graph.png')
 
         elif selection == 4:
 
@@ -84,18 +86,22 @@ if __name__ == '__main__':
                     machine_learning_model = manage_data.get_machine_learning_model()
                     plt_instance = manage_data.forecast_specific_stock(str(stock_name), machine_learning_model,
                                                                        num_of_years_history)
-                    plt_instance.show()
-                    # TODO SAVE AT RESEARCH FOLDER PER USER
-                    # manage_data.plot_image(settings.USER_IMAGES + 'distribution_graph.png')
+                    operation = '_forecast'
+                    manage_data.save_user_specific_stock(login_name, stock_name, operation, plt_instance)
+                    manage_data.plot_image(settings.USER_IMAGES + login_name + '/research/'
+                                           + stock_name + operation + '.png')
                 elif selection == 2:
                     # plotbb_strategy_stock for specific stock
                     stock_name = manage_data.get_name()
                     num_of_years_history = manage_data.get_num_of_years_history()
                     staring_date, today_date = manage_data.get_from_and_to_date(num_of_years_history)
                     plt_instance = manage_data.plotbb_strategy_stock(str(stock_name), staring_date, today_date)
-                    plt_instance.show()
-                    # TODO SAVE AT RESEARCH FOLDER PER USER
-                    # manage_data.plot_image(settings.USER_IMAGES + 'distribution_graph.png')
+                    # plt_instance.show()
+                    operation = '_bb_strategy'
+                    manage_data.save_user_specific_stock(login_name, stock_name, operation, plt_instance)
+                    manage_data.plot_image(
+                        settings.USER_IMAGES + login_name + '/research/' +
+                        stock_name + operation + '.png')
                 elif selection == 3:
                     pass
 
@@ -106,22 +112,26 @@ if __name__ == '__main__':
                      min_volatility_stocks_list,
                      max_sharpest_stocks_list) = manage_data.find_good_stocks(
                         settings.GROUP_OF_STOCKS[selected_option - 1])
+                    # TODO - SHOW IMAGES
 
-                    # plot 3 best portfolios graph
-
+                # plot 3 best portfolios graph
                 elif selection == 5:
                     # plot Markowitz graph
                     num_of_years_history = manage_data.get_num_of_years_history()
                     machine_learning_opt = manage_data.get_machine_learning_option()
                     manage_data.plot_stat_model_graph(settings.STOCKS_SYMBOLS, machine_learning_opt,
                                                       settings.MODEL_NAME[0], num_of_years_history)
+                    manage_data.plot_image(
+                        settings.STATIC_IMAGES + settings.MODEL_NAME[0] + '_all_option' + '.png')
 
                 elif selection == 6:
                     # plot Gini graph
                     num_of_years_history = manage_data.get_num_of_years_history()
                     machine_learning_opt = manage_data.get_machine_learning_option()
                     manage_data.plot_stat_model_graph(settings.STOCKS_SYMBOLS, machine_learning_opt,
-                                                      settings.MODEL_NAME[0], num_of_years_history)
+                                                      settings.MODEL_NAME[1], num_of_years_history)
+                    manage_data.plot_image(
+                        settings.STATIC_IMAGES + settings.MODEL_NAME[1] +'_all_option' + '.png')
 
                 else:
                     break

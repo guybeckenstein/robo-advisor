@@ -219,6 +219,7 @@ def plotbb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
 
 
 def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio) -> plt:
+    plt.figure()  # Create a new plot instance
     stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=(10, 4))
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)
@@ -261,7 +262,8 @@ def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio
 
 
 def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns, three_best_sectors_weights, sectors,
-                                pct_change_table) -> plt:
+                                pct_change_table):
+    plt.figure()  # Create a new plot instance
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     fig_size_X = 10
     fig_size_Y = 8
@@ -361,6 +363,7 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
 
 
 def plot_distribution_of_portfolio(yields: List[pd.core.series.Series]) -> plt:
+    plt.figure()  # Create a new plot instance
     labels = ['low risk', 'medium risk', 'high risk']
     plt.subplots(figsize=(8, 8))
     plt.subplots_adjust(bottom=0.4)
@@ -420,6 +423,7 @@ def plot_price_forecast(stocks_symbols, df, annual_returns, plt_instance=None) -
 
 
 def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
+    plt.figure()  # Create a new plot instance
     plt.subplots(figsize=(8, 8))
     plt.legend()
     plt.xlabel('Return', fontsize=12)

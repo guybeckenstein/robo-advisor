@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     # Third party apps
     "crispy_bootstrap5",
     "crispy_forms",
-    "django_htmx",
     "phonenumber_field",
 ]
 
@@ -66,7 +65,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'

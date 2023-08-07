@@ -194,26 +194,31 @@ def plot_user_portfolio(curr_user: User) -> None:
 
 
 def save_user_portfolio(curr_user: User) -> None:
-    # pie chart of sectors & stocks weights
-    plt_sectors_component = curr_user.plot_portfolio_component()
-    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO: show as tables
-    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO: add forecast yield
     # Creating directories
     curr_user_directory = settings.USER_IMAGES + curr_user.name
     try:
-        os.mkdir(os.getcwd() + settings.USER_IMAGES)  # Creates 'static/img/user' folder
+        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
     except FileExistsError:  # Ignore the exception
         pass
+
+    # pie chart of sectors & stocks weights
+    plt_sectors_component = curr_user.plot_portfolio_component()
+    plot_functions.save_graphs(plt_sectors_component, file_name=curr_user_directory + '/sectors_component')
+    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO: show as tables
+    plot_functions.save_graphs(plt_stocks_component, file_name=curr_user_directory + '/stocks_component')
+    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO: add forecast yield
+    plot_functions.save_graphs(plt_yield_graph, file_name=curr_user_directory + '/yield_graph')
+
+
+def save_user_specific_stock(user_name: str, stock: str, operation: str, plt_instance) -> None:
+    # Creating directories
+    curr_user_directory = settings.USER_IMAGES + user_name + '/research'
     try:
-        os.mkdir(os.getcwd() + curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
+        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
     except FileExistsError:  # Ignore the exception
         pass
     # Saving files
-    curr_user_directory = os.getcwd() + curr_user_directory
-    plot_functions.save_graphs(plt_sectors_component, file_name=curr_user_directory + '/sectors_component')
-    plot_functions.save_graphs(plt_stocks_component, file_name=curr_user_directory + '/stocks_component')
-    plot_functions.save_graphs(plt_yield_graph, file_name=curr_user_directory + '/yield_graph')
-
+    plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + '/' + stock + '_' + operation)
 
 #############################################################################################################
 # 4- EXPERT OPTIONS:
@@ -226,7 +231,6 @@ def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_his
     file_name = settings.CLOSING_PRICES_FILE_NAME
     table = api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
                                             [stock], num_of_years_history, saveToCsv=False)
-    table = table.pct_change()
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
         df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_linear_regression(table,
                                                                                                        table.index,
@@ -503,7 +507,7 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
         plt_instance = plot_functions.plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port,
                                                       sharpe_portfolio, max_returns, max_vols, df)
 
-    plot_functions.plot(plt_instance)  # TODO plot at site
+    plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + model_option +'_all_option')  # TODO plot at site
 
 
 ############################################################################################################
@@ -621,7 +625,7 @@ def get_user_from_db(user_name: str):
     annual_returns = user_data['annualReturns']
     annual_volatility = user_data['annualVolatility']
     annual_sharpe = user_data['annualSharpe']
-    sectors = get_json_data(settings.SECTORS_JSON_NAME)  # universal from file
+    sectors = api_util.set_sectors(stocks_symbols)
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
     portfolio: Portfolio = Portfolio(
@@ -756,14 +760,14 @@ def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_
     min_variance_port = three_best_portfolios[0]
     sharpe_portfolio = three_best_portfolios[1]
     max_returns = three_best_portfolios[2]
-    plt_instance = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns,
+    plt_instance_three_graph = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns,
                                                               three_best_sectors_weights, sectors, pct_change_table)
     if mode == 'regular':
-        plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + 'three_portfolios')
+        plot_functions.save_graphs(plt_instance_three_graph, settings.STATIC_IMAGES + 'three_portfolios')
     else:
-        plot_functions.save_graphs(plt_instance, '../../' + settings.STATIC_IMAGES + 'three_portfolios')
+        plot_functions.save_graphs(plt_instance_three_graph, '../../' + settings.STATIC_IMAGES + 'three_portfolios')
 
-    return plt_instance
+    return plt_instance_three_graph
 
 
 def plot_distribution_of_stocks(stock_names, pct_change_table):

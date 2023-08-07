@@ -22,12 +22,24 @@ def save_three_user_graphs_as_png(request) -> None:
     selected_model: int = questionnaire_a.model_answer
     starting_investment_amount: int = investor_user.starting_investment_amount
     risk_level: int = investor_user.risk_level
-    stocks_symbols: List[str] = investor_user.stocks_symbols[1:-1].split(',')
-    for idx, symbol in enumerate(stocks_symbols):
-        if symbol.isnumeric():
-            stocks_symbols[idx] = int(stocks_symbols[idx])
-    stocks_weights: List[str] = investor_user.stocks_weights[1:-1].split(',')
-    stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
+    if type(investor_user.stocks_symbols) is list:
+        stocks_symbols: List[str] = investor_user.stocks_symbols
+        for idx, symbol in enumerate(stocks_symbols):
+            if symbol.isnumeric():
+                if type(idx) is not int:
+                    raise ValueError("Invalid type for idx")
+                stocks_symbols[idx] = int(stocks_symbols[idx])
+        stocks_weights: List[str] = investor_user.stocks_weights
+        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
+    elif type(investor_user.stocks_symbols) is str:
+        stocks_symbols: List[str] = investor_user.stocks_symbols[1:-1].split(',')
+        for idx, symbol in enumerate(stocks_symbols):
+            if symbol.isnumeric():
+                stocks_symbols[idx] = int(stocks_symbols[idx])
+        stocks_weights: List[str] = investor_user.stocks_weights[1:-1].split(',')
+        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
+    else:
+        ValueError("Invalid type for stocks_symbols of investor_user")
     annual_returns = investor_user.annual_returns
     annual_volatility = investor_user.annual_volatility
     annual_sharpe = investor_user.annual_sharpe

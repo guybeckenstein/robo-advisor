@@ -225,6 +225,7 @@ class Portfolio:
         pct_change_table["weighted_sum_selected"] = pct_change_table["weighted_sum_" + str(self._risk_level)]
         pct_change_table["yield_selected"] = pct_change_table["yield_" + str(self._risk_level)]
 
+        # self.set_sectors(self._sectors)
         for i in range(len(self._stocks_symbols)):
             for j in range(len(self._sectors)):
                 if self._stocks_symbols[i] in self._sectors[j].stocks:
@@ -240,7 +241,7 @@ class Portfolio:
                         self.set_sector_stock_by_index(i, self._stocks_symbols[j])
 
     def set_stocks_weights(self, stocks_weights) -> None:
-        if type(stocks_weights) == List:
+        if type(stocks_weights) == list:
             self._stocks_weights = stocks_weights
         else:
             nd_array = stocks_weights.values

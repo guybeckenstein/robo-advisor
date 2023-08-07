@@ -50,7 +50,7 @@ CLOSING_PRICES_FILE_NAME = "closing_prices"
 
 # STATIC FILES
 STATIC_IMAGES = BASE_DIR + '../static/img/graphs/'
-USER_IMAGES = STATIC_IMAGES + '../user/'
+USER_IMAGES = BASE_DIR + '../static/img/user/'
 
 
 # RESEARCH

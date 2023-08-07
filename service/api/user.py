@@ -5,8 +5,10 @@ from matplotlib import pyplot as plt
 
 from service.api.portfolio import Portfolio
 from service.api.sector import Sector
-#from .portfolio import Portfolio
-#from .sector import Sector
+
+
+# from .portfolio import Portfolio
+# from .sector import Sector
 
 
 class User:
@@ -42,21 +44,18 @@ class User:
         )
 
     def plot_investment_portfolio_yield(self):
-        from ..util import api_util
 
         portfolio = self.portfolio
         table = portfolio.pct_change_table
         annual_returns, volatility, sharpe, max_loss = portfolio.get_portfolio_stats()
         total_change = portfolio.get_total_change()
         sectors: list[Sector] = portfolio.sectors
-
         fig_size_x = 10
         fig_size_y = 8
         fig_size = (fig_size_x, fig_size_y)
-        plt.style.use("seaborn-dark")
-
-        plt.figure()
+        plt.figure(figsize=(fig_size_x, fig_size_y))  # Create the main figure
         plt.title("Hello, " + self.name + "! This is your yield portfolio")
+        plt.style.use("seaborn-dark")
         plt.ylabel("Returns %")
 
         stocks_str = ""
@@ -86,16 +85,19 @@ class User:
             )
         table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
 
-        table['yield__selected_percent'].plot(figsize=fig_size, grid=True, color="green", linewidth=2, label="yield",
-                                              legend=True, linestyle="dashed")
+        table['yield__selected_percent'].plot(ax=plt.gca(), color="green", linewidth=2, label="yield",
+                                              linestyle="dashed")  # Use plt.gca() to get the current axes
         """__, forecast_returns, __ = api_util.analyze_with_machine_learning_arima(table['yield__selected_percent'],
                                                                                 table.index, closing_prices_mode=False)
         forecast_returns.plot(figsize=fig_size, grid=True, color="red", linewidth=2,
-                                                         label="forecast", legend=True, linestyle="dashed")"""
+                                                     label="forecast", legend=True, linestyle="dashed")"""
 
+        # Create a separate figure for additional content
+        fig1, ax1 = plt.subplots(figsize=fig_size)
+        # ... add more plots and content to fig1 and ax1 ...
+
+        # Adjust layout if needed
         plt.subplots_adjust(bottom=0.4)
-        fig1, ax1 = plt.subplots()
-
 
         return plt
 
