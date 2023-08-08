@@ -7,8 +7,12 @@ import pandas as pd
 import yfinance as yf
 from datetime import date
 from typing import Tuple, List
+
+from PIL import Image
+
 from ..api.portfolio import Portfolio
 from ..api import stats_models
+from ..api.sector import Sector
 from ..api.user import User
 from ..api.resources import aws_settings
 from . import api_util, console_handler, plot_functions, settings
@@ -148,9 +152,7 @@ def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
     s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
 
 
-######################################################################
-# manual commands
-# 1
+##################################################################
 def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_machine_learning: int,
                               model_option: int, risk_level: int, extendedDataFromDB: Tuple) -> Portfolio:
     sectors, sectors, closing_prices_table, three_best_portfolios, _, \
@@ -177,99 +179,6 @@ def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_m
         final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2]
     )
     return portfolio
-
-
-#############################################################################################################
-# 3 - plot user portfolio -
-
-def plot_user_portfolio(curr_user: User) -> None:
-    # pie chart of sectors & stocks weights
-    plt_sectors_component = curr_user.plot_portfolio_component()
-    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO: show as tables
-    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO: add forecast yield
-    # Plotting files
-    """plot_functions.plot(plt_sectors_component)
-    plot_functions.plot(plt_stocks_component)
-    plot_functions.plot(plt_yield_graph)"""
-
-
-def save_user_portfolio(curr_user: User) -> None:
-    # Creating directories
-    curr_user_directory = settings.USER_IMAGES + curr_user.name
-    try:
-        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
-    except FileExistsError:  # Ignore the exception
-        pass
-
-    # pie chart of sectors & stocks weights
-    plt_sectors_component = curr_user.plot_portfolio_component()
-    plot_functions.save_graphs(plt_sectors_component, file_name=curr_user_directory + '/sectors_component')
-    plt_stocks_component = curr_user.plot_portfolio_component_stocks()  # TODO: show as tables
-    plot_functions.save_graphs(plt_stocks_component, file_name=curr_user_directory + '/stocks_component')
-    plt_yield_graph = curr_user.plot_investment_portfolio_yield()  # TODO: add forecast yield
-    plot_functions.save_graphs(plt_yield_graph, file_name=curr_user_directory + '/yield_graph')
-
-
-def save_user_specific_stock(user_name: str, stock: str, operation: str, plt_instance) -> None:
-    # Creating directories
-    curr_user_directory = settings.USER_IMAGES + user_name + '/research'
-    try:
-        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
-    except FileExistsError:  # Ignore the exception
-        pass
-    # Saving files
-    plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + '/' + stock + '_' + operation)
-
-#############################################################################################################
-# 4- EXPERT OPTIONS:
-#############################################################################################################
-# EXPERT - 1
-
-# TODO - FIX
-def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int):
-    plt = None
-    file_name = settings.CLOSING_PRICES_FILE_NAME
-    table = api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
-                                            [stock], num_of_years_history, saveToCsv=False)
-    if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
-        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_linear_regression(table,
-                                                                                                       table.index,
-                                                                                                       closing_prices_mode=True)
-    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:
-        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_arima(table, table.index,
-                                                                                           closing_prices_mode=True)
-    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:
-        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_gbm(table, table.index,
-                                                                                         closing_prices_mode=True)
-    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:
-        df, annual_return, excepted_returns, plt = api_util.analyze_with_machine_learning_prophet(table, table.index,
-                                                                                                  closing_prices_mode=True)
-
-    plt_instance = plot_functions.plot_price_forecast(stock, df, annual_return, plt)
-    return plt_instance
-
-
-#############################################################################################################
-# EXPERT -2
-
-def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"):
-    stock_prices = yf.download(stock_name, start, end)
-    stock_prices['MA50'] = stock_prices['Adj Close'].rolling(window=50).mean()
-    stock_prices['50dSTD'] = stock_prices['Adj Close'].rolling(window=50).std()
-    stock_prices['Upper'] = stock_prices['MA50'] + (stock_prices['50dSTD'] * 2)
-    stock_prices['Lower'] = stock_prices['MA50'] - (stock_prices['50dSTD'] * 2)
-
-    stock_prices = stock_prices.dropna()
-    stock_prices = stock_prices.iloc[51:]
-
-    buy_price, sell_price, bb_signal = api_util.implement_bb_strategy(stock_prices['Adj Close'],
-                                                                      stock_prices['Lower'], stock_prices['Upper'])
-    plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
-    return plt_instance
-
-
-#############################################################################################################
-# EXPERT -4
 
 
 def download_data_for_research(num_of_years_history: int) -> None:
@@ -384,130 +293,6 @@ def get_stocks_data_for_research_by_group(group_of_stocks: str):
         # TODO
 
     return tickers
-
-
-def find_good_stocks(group_of_stocks="usa_stocks", filter_option=False):  # TODO - fix
-    max_returns_stocks_list = None
-    min_volatility_stocks_list = None
-    max_sharpest_stocks_list = None
-
-    tickers_table = get_stocks_data_for_research_by_group(group_of_stocks)
-    tickers_df = pd.DataFrame(tickers_table)
-    tickers_df.iloc[2:3] = np.nan
-    tickers_df.dropna(inplace=True)
-    tickers_df.index.name = "Date"
-    data = tickers_df.set_index(0)
-    data.columns = data.iloc[0]
-    data = data.iloc[1:]
-    data = pd.DataFrame(data, columns=data.columns)
-    data = data.rename_axis('Date')
-    data = data.apply(pd.to_numeric, errors='coerce')
-
-    data_pct_change = data.pct_change()
-    data_pct_change.fillna(value=-0.0, inplace=True)
-
-    # Convert the index to datetime
-    data_pct_change.index = pd.to_datetime(data_pct_change.index)
-    annual_returns = ((data_pct_change + 1).resample('Y').prod() - 1) * 100
-    total_profit_return = ((data_pct_change + 1).prod() - 1) * 100
-    total_volatility = data_pct_change.std() * np.sqrt(254)
-    annual_volatility = data_pct_change.groupby(pd.Grouper(freq='Y')).std()
-    sharpe = annual_returns / annual_volatility
-
-    # forcast from total:
-    returns_annual_forcecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
-    cov_daily = data_pct_change.cov()
-    cov_annual = cov_daily * 254
-    volatility_forecast = (data_pct_change.std() * np.sqrt(254)) * 100
-    sharpe_forecast = returns_annual_forcecast / volatility_forecast
-
-    total_sharpe = total_profit_return / total_volatility
-
-    # sort total
-    total_profit_return_sorted = total_profit_return.sort_values(ascending=False).head(10)
-    total_volatility_sorted = total_volatility.sort_values(ascending=True).head(10)
-    total_sharpe_sorted = total_sharpe.sort_values(ascending=False).head(10)
-
-    print("total_profit_return_sorted")
-    print(total_profit_return_sorted)
-    print("total_volatility_sorted")
-    print(total_volatility_sorted)
-    print("total_sharpe_sorted")
-    print(total_sharpe_sorted)
-
-    # sort last year
-    annual_sharpe_sorted = sharpe[-1].sort_values().head(10)
-    annual_returns_sorted = annual_returns[-1].sort_values().head(10)
-    annual_volatility_sorted = annual_volatility[-1].sort_values().head(10)
-    annual_sharpe_sorted = annual_sharpe_sorted[-1].sort_values().head(10)
-    print("annual_returns_sorted")
-    print(annual_returns_sorted)
-    print("annual_volatility_sorted")
-    print(annual_volatility_sorted)
-    print("annual_sharpe_sorted")
-    print(annual_sharpe_sorted)
-
-    # sort forecast
-    returns_annual_forcecast_sorted = returns_annual_forcecast.sort_values().head(10)
-    volatility_forecast_sorted = volatility_forecast.sort_values().head(10)
-    sharpe_forecast_sorted = sharpe_forecast.sort_values().head(10)
-
-    """max_sharpest_stocks_list = sharpe_sorted.head(10)
-    max_returns_stocks_list = returns_sorted.head(10)
-    min_volatility_stocks_list = min_volatility_sorted.tail(10)"""
-
-    # plot_functions.plot_top_stocks(api_util.scan_good_stocks())
-    # plot_functions.plot(plt_instance)  # TODO plot at site
-    # plot_functions.plot(plt_instance)  # TODO plot at site
-
-    return max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list
-
-
-############################################################################################################
-# EXPERT- 5&6
-
-
-def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_option: int,
-                          num_of_years_history=settings.NUM_OF_YEARS_HISTORY) -> None:
-    sectors: list = set_sectors(stocks_symbols)
-
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
-    pct_change_table = closing_prices_table.pct_change()
-    # TODO - get part of closing_prices_table according to num_of_years_history
-
-    if is_machine_learning == 1:
-        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(
-            pct_change_table, closing_prices_table.index)
-
-    if model_option == "Markowitz":
-        curr_stats_models = stats_models.statsModels(stocks_symbols, sectors, closing_prices_table, pct_change_table,
-                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
-                                                     1, 1, "Markowitz",
-                                                     is_machine_learning)
-    else:
-        curr_stats_models = stats_models.statsModels(stocks_symbols, sectors, closing_prices_table, pct_change_table,
-                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
-                                                     1, 1, "Gini",
-                                                     is_machine_learning)
-    df = curr_stats_models.get_df()
-    three_best_portfolios = api_util.get_best_portfolios([df, df, df], model_name=model_option)
-    three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
-    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors,
-                                                                         three_best_stocks_weights)
-    min_variance_port = three_best_portfolios[0]
-    sharpe_portfolio = three_best_portfolios[1]
-    max_returns = three_best_portfolios[2]
-    max_vols = curr_stats_models.get_max_vols()
-    df = curr_stats_models.get_df()
-
-    if model_option == "Markowitz":
-        plt_instance = plot_functions.plot_markowitz_graph(sectors, three_best_sectors_weights, min_variance_port,
-                                                           sharpe_portfolio, max_returns, max_vols, df)
-    else:
-        plt_instance = plot_functions.plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port,
-                                                      sharpe_portfolio, max_returns, max_vols, df)
-
-    plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + model_option +'_all_option')  # TODO plot at site
 
 
 ############################################################################################################
@@ -697,27 +482,6 @@ def read_csv_file(file_path):
     return rows_list
 
 
-def get_data_from_form(three_best_portfolios: list, three_best_sectors_weights, sectors: list, yields: list,
-                       pct_change_table, mode: str) -> int:
-    count = 0
-
-    # question 1
-    string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
-    count += get_score_by_answer_from_user(string_to_show)
-
-    # question 2
-    string_to_show = "Which distribution do you prefer?\nlow risk - 1, medium risk - 2, high risk - 3 ?\n"
-    plot_distribution_of_portfolio(yields, mode=mode)
-    count += get_score_by_answer_from_user(string_to_show)
-
-    # question 3
-    string_to_show = "Which graph do you prefer?\nsoftest - 1, sharpest - 2, max return - 3 ?\n"
-    plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode=mode)
-    count += get_score_by_answer_from_user(string_to_show)
-
-    return get_level_of_risk_by_score(count)
-
-
 def get_level_of_risk_by_score(count: int) -> int:
     if count <= 4:
         return 1
@@ -754,14 +518,20 @@ def get_from_and_to_date(num_of_years):  # TODO FIX RETURN TUPLE
     return api_util.get_from_and_to_dates(num_of_years)
 
 
+def get_score_by_answer_from_user(string_to_show: str) -> int:
+    return console_handler.get_score_by_answer_from_user(string_to_show)
+
+
 # plot functions
 def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_weights, sectors: list,
                                 pct_change_table, mode: str):
     min_variance_port = three_best_portfolios[0]
     sharpe_portfolio = three_best_portfolios[1]
     max_returns = three_best_portfolios[2]
-    plt_instance_three_graph = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns,
-                                                              three_best_sectors_weights, sectors, pct_change_table)
+    plt_instance_three_graph = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio,
+                                                                          max_returns,
+                                                                          three_best_sectors_weights, sectors,
+                                                                          pct_change_table)
     if mode == 'regular':
         plot_functions.save_graphs(plt_instance_three_graph, settings.STATIC_IMAGES + 'three_portfolios')
     else:
@@ -786,19 +556,236 @@ def plot_distribution_of_portfolio(distribution_graph, mode: str):
     return plt_instance
 
 
+def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_option: int,
+                          num_of_years_history=settings.NUM_OF_YEARS_HISTORY) -> None:
+    sectors: list = set_sectors(stocks_symbols)
+
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
+    pct_change_table = closing_prices_table.pct_change()
+    # TODO - get part of closing_prices_table according to num_of_years_history
+
+    if is_machine_learning == 1:
+        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(
+            pct_change_table, closing_prices_table.index)
+
+    if model_option == "Markowitz":
+        curr_stats_models = stats_models.statsModels(stocks_symbols, sectors, closing_prices_table, pct_change_table,
+                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
+                                                     1, 1, "Markowitz",
+                                                     is_machine_learning)
+    else:
+        curr_stats_models = stats_models.statsModels(stocks_symbols, sectors, closing_prices_table, pct_change_table,
+                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
+                                                     1, 1, "Gini",
+                                                     is_machine_learning)
+    df = curr_stats_models.get_df()
+    three_best_portfolios = api_util.get_best_portfolios([df, df, df], model_name=model_option)
+    three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
+    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors,
+                                                                         three_best_stocks_weights)
+    min_variance_port = three_best_portfolios[0]
+    sharpe_portfolio = three_best_portfolios[1]
+    max_returns = three_best_portfolios[2]
+    max_vols = curr_stats_models.get_max_vols()
+    df = curr_stats_models.get_df()
+
+    if model_option == "Markowitz":
+        plt_instance = plot_functions.plot_markowitz_graph(sectors, three_best_sectors_weights, min_variance_port,
+                                                           sharpe_portfolio, max_returns, max_vols, df)
+    else:
+        plt_instance = plot_functions.plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port,
+                                                      sharpe_portfolio, max_returns, max_vols, df)
+
+    plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + model_option + '_all_option')  # TODO plot at site
+
+
+def save_user_portfolio(curr_user: User) -> None:
+    # Creating directories
+    curr_user_directory = settings.USER_IMAGES + curr_user.name
+    try:
+        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+
+    # get data from user
+    portfolio: Portfolio = curr_user.portfolio
+    stocks_weights: List[float] = portfolio.stocks_weights
+    stocks_symbols: List[str] = portfolio.stocks_symbols
+    sectors_weights: list[float] = portfolio.get_sectors_weights()
+    sectors_names: list[str] = portfolio.get_sectors_names()
+    table = portfolio.pct_change_table
+    stats_details_tuple = portfolio.get_portfolio_stats()
+    sectors: List[Sector] = portfolio.sectors
+    description: List[str] = api_util.get_stocks_descriptions(stocks_symbols)
+
+    # pie chart of sectors & sectors weights
+    plt_sectors_component = plot_functions.plot_portfolio_component(curr_user.name,
+                                                                    sectors_weights,
+                                                                    sectors_names)
+    plot_functions.save_graphs(plt_sectors_component, file_name=curr_user_directory + '/sectors_component')
+
+    # pie chart of stocks & stocks weights , TODO: show as tables instead of pie chart
+    plt_stocks_component = plot_functions.plot_portfolio_component_stocks(curr_user.name,
+                                                                          stocks_weights,
+                                                                          stocks_symbols,
+                                                                          description[1:]
+                                                                          )
+    plot_functions.save_graphs(plt_stocks_component, file_name=curr_user_directory + '/stocks_component')
+
+    # total yield graph with sectors weights
+    table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
+    df, returns_forecast, returns_annual = api_util.analyze_with_machine_learning_linear_regression(
+        table['yield__selected_percent'],
+        table.index, closing_prices_mode=True)
+    df['yield__selected_percent'] = df['col']
+    df['yield__selected_percent_forecast'] = df["Forecast"]
+
+    plt_yield_graph = plot_functions.plot_investment_portfolio_yield(curr_user.name,
+                                                                     df,
+                                                                     stats_details_tuple,
+                                                                     sectors)
+    plot_functions.save_graphs(plt_yield_graph, file_name=curr_user_directory + '/yield_graph')
+
+
+# research functions plot
+def save_user_specific_stock(user_name: str, stock: str, operation: str, plt_instance) -> None:
+    # Creating directories
+    curr_user_directory = settings.USER_IMAGES + user_name + '/research'
+    try:
+        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+    # Saving files
+    plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + '/' + stock + '_' + operation)
+
+
+def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int):
+    plt = None
+    file_name = settings.CLOSING_PRICES_FILE_NAME
+    table = api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
+                                            [stock], num_of_years_history, saveToCsv=False)
+    if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
+        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_linear_regression(table,
+                                                                                                       table.index,
+                                                                                                       closing_prices_mode=True)
+    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:
+        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_arima(table, table.index,
+                                                                                           closing_prices_mode=True)
+    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:
+        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_gbm(table, table.index,
+                                                                                         closing_prices_mode=True)
+    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:
+        df, annual_return, excepted_returns, plt = api_util.analyze_with_machine_learning_prophet(table, table.index,
+                                                                                                  closing_prices_mode=True)
+
+    plt_instance = plot_functions.plot_price_forecast(stock, df, annual_return, plt)
+    return plt_instance
+
+
+def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"):
+    stock_prices = yf.download(stock_name, start, end)
+    stock_prices['MA50'] = stock_prices['Adj Close'].rolling(window=50).mean()
+    stock_prices['50dSTD'] = stock_prices['Adj Close'].rolling(window=50).std()
+    stock_prices['Upper'] = stock_prices['MA50'] + (stock_prices['50dSTD'] * 2)
+    stock_prices['Lower'] = stock_prices['MA50'] - (stock_prices['50dSTD'] * 2)
+
+    stock_prices = stock_prices.dropna()
+    stock_prices = stock_prices.iloc[51:]
+
+    buy_price, sell_price, bb_signal = api_util.implement_bb_strategy(stock_prices['Adj Close'],
+                                                                      stock_prices['Lower'], stock_prices['Upper'])
+    plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
+    return plt_instance
+
+
 def plotbb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO
     plt_instance = plot_functions.plotbb_strategy_portfolio(pct_change_table, new_portfolio)
 
     return plt_instance
 
 
-def get_score_by_answer_from_user(string_to_show: str) -> int:
-    return console_handler.get_score_by_answer_from_user(string_to_show)
+def find_good_stocks(group_of_stocks="usa_stocks", filter_option=False):  # TODO - fix
+    max_returns_stocks_list = None
+    min_volatility_stocks_list = None
+    max_sharpest_stocks_list = None
+
+    tickers_table = get_stocks_data_for_research_by_group(group_of_stocks)
+    tickers_df = pd.DataFrame(tickers_table)
+    tickers_df.iloc[2:3] = np.nan
+    tickers_df.dropna(inplace=True)
+    tickers_df.index.name = "Date"
+    data = tickers_df.set_index(0)
+    data.columns = data.iloc[0]
+    data = data.iloc[1:]
+    data = pd.DataFrame(data, columns=data.columns)
+    data = data.rename_axis('Date')
+    data = data.apply(pd.to_numeric, errors='coerce')
+
+    data_pct_change = data.pct_change()
+    data_pct_change.fillna(value=-0.0, inplace=True)
+
+    # Convert the index to datetime
+    data_pct_change.index = pd.to_datetime(data_pct_change.index)
+    annual_returns = ((data_pct_change + 1).resample('Y').prod() - 1) * 100
+    total_profit_return = ((data_pct_change + 1).prod() - 1) * 100
+    total_volatility = data_pct_change.std() * np.sqrt(254)
+    annual_volatility = data_pct_change.groupby(pd.Grouper(freq='Y')).std()
+    sharpe = annual_returns / annual_volatility
+
+    # forcast from total:
+    returns_annual_forcecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
+    cov_daily = data_pct_change.cov()
+    cov_annual = cov_daily * 254
+    volatility_forecast = (data_pct_change.std() * np.sqrt(254)) * 100
+    sharpe_forecast = returns_annual_forcecast / volatility_forecast
+
+    total_sharpe = total_profit_return / total_volatility
+
+    # sort total
+    total_profit_return_sorted = total_profit_return.sort_values(ascending=False).head(10)
+    total_volatility_sorted = total_volatility.sort_values(ascending=True).head(10)
+    total_sharpe_sorted = total_sharpe.sort_values(ascending=False).head(10)
+
+    print("total_profit_return_sorted")
+    print(total_profit_return_sorted)
+    print("total_volatility_sorted")
+    print(total_volatility_sorted)
+    print("total_sharpe_sorted")
+    print(total_sharpe_sorted)
+
+    # sort last year
+    annual_sharpe_sorted = sharpe[-1].sort_values().head(10)
+    annual_returns_sorted = annual_returns[-1].sort_values().head(10)
+    annual_volatility_sorted = annual_volatility[-1].sort_values().head(10)
+    annual_sharpe_sorted = annual_sharpe_sorted[-1].sort_values().head(10)
+    print("annual_returns_sorted")
+    print(annual_returns_sorted)
+    print("annual_volatility_sorted")
+    print(annual_volatility_sorted)
+    print("annual_sharpe_sorted")
+    print(annual_sharpe_sorted)
+
+    # sort forecast
+    returns_annual_forcecast_sorted = returns_annual_forcecast.sort_values().head(10)
+    volatility_forecast_sorted = volatility_forecast.sort_values().head(10)
+    sharpe_forecast_sorted = sharpe_forecast.sort_values().head(10)
+
+    """max_sharpest_stocks_list = sharpe_sorted.head(10)
+    max_returns_stocks_list = returns_sorted.head(10)
+    min_volatility_stocks_list = min_volatility_sorted.tail(10)"""
+
+    # plot_functions.plot_top_stocks(api_util.scan_good_stocks())
+    # plot_functions.plot(plt_instance)  # TODO plot at site
+    # plot_functions.plot(plt_instance)  # TODO plot at site
+
+    return max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list
+
+
+def plot_image(file_name) -> None:
+    plot_functions.plot_image(file_name)
 
 
 # console functions
-
-
 def main_menu() -> None:
     console_handler.main_menu()
 
@@ -838,7 +825,3 @@ def get_group_of_stocks_option() -> int:
 
 def get_investment_amount():
     return console_handler.get_investment_amount()
-
-
-def plot_image(file_name) -> None:
-    plot_functions.plot_image(file_name)

@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from PIL import Image
-from matplotlib import image as mpimg
 
 
 def plot_markowitz_graph(sectors: List, three_best_sectors_weights, min_variance_port, sharpe_portfolio,
@@ -362,7 +361,7 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
     return plt
 
 
-def plot_distribution_of_portfolio(yields: List[pd.core.series.Series]) -> plt:
+def plot_distribution_of_portfolio(yields) -> plt:
     plt.figure()  # Create a new plot instance
     labels = ['low risk', 'medium risk', 'high risk']
     plt.subplots(figsize=(8, 8))
@@ -403,7 +402,89 @@ def plot_distribution_of_portfolio(yields: List[pd.core.series.Series]) -> plt:
     return plt
 
 
-def plot_price_forecast(stocks_symbols, df, annual_returns, plt_instance=None) -> plt: # TODO
+def plot_investment_portfolio_yield(user_name, table, stats_details_tuple, sectors):
+    plt.figure()
+    annual_returns, volatility, sharpe, max_loss, total_change = stats_details_tuple
+    fig_size_x = 10
+    fig_size_y = 8
+    fig_size = (fig_size_x, fig_size_y)  # Create the main figure
+    plt.style.use("seaborn-dark")
+    plt.xlabel("Date")
+    plt.ylabel("Returns %")
+    plt.title("Hello, " + user_name + "! This is your yield portfolio")
+
+    table['yield__selected_percent'].plot(figsize=fig_size, grid=True, color="green", linewidth=2, label="returns",
+                                          legend=True, linestyle="dashed")
+    table['yield__selected_percent_forecast'].plot(figsize=fig_size, grid=True, color="blue", linewidth=2,
+                                                   label="forecast", legend=True, linestyle="dashed")
+
+    plt.subplots_adjust(bottom=0.4)
+
+    stocks_str = ""
+    for i in range(len(sectors)):
+        name = sectors[i].name
+        weight = sectors[i].weight * 100
+        stocks_str += name + "(" + str("{:.2f}".format(weight)) + "%),\n "
+
+    with pd.option_context("display.float_format", "%{:,.2f}".format):
+        plt.figtext(
+            0.45,
+            0.15,
+            "your Portfolio: \n"
+            + "Total change: " + str(round(total_change, 2)) + "%\n"
+            + "Annual returns: " + str(round(annual_returns, 2)) + "%\n"
+            + "Annual volatility: " + str(round(volatility, 2)) + "%\n"
+            + "max loss: " + str(round(max_loss, 2)) + "%\n"
+            + "Annual sharpe Ratio: " + str(round(sharpe, 2)) + "\n"
+            + stocks_str,
+            bbox=dict(facecolor="green", alpha=0.5),
+            fontsize=11,
+            style="oblique",
+            ha="center",
+            va="center",
+            fontname="Arial",
+            wrap=True,
+        )
+    return plt
+
+
+def plot_portfolio_component(user_name: str, sectors_weights: List[float], sectors_names: List[str]):
+    plt.figure(1)
+    plt.title(f"{user_name}'s portfolio\n")
+    plt.pie(
+        x=sectors_weights,
+        labels=sectors_names,
+        autopct="%1.1f%%",
+        shadow=True,
+        startangle=140,
+    )
+    plt.axis("equal")
+    return plt
+
+
+def plot_portfolio_component_stocks(user_name: str, stocks_weights: List[float], stocks_symbols,
+                                    descriptions):
+    if len(stocks_weights) != len(stocks_symbols) or len(stocks_weights) != len(descriptions):
+        raise ValueError("Input lists must have the same length.")
+    plt.figure(figsize=(8, 4))
+    plt.title(f"{user_name}'s Portfolio", fontsize=16, pad=20)
+
+    data = [["Stock", "Weight", "Description"]]
+    for symbol, weight, description in zip(stocks_symbols, stocks_weights, descriptions):
+        data.append([symbol, f"{weight:.1%}", description])
+
+    table = plt.table(cellText=data, colLabels=None, cellLoc='center', loc='center',
+                      cellColours=[['#D5DBDB', '#D5DBDB', '#D5DBDB']] * len(data))
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1.2, 1.2)  # Adjust scaling to fit the plot better
+
+    plt.axis('off')  # Turn off the axis
+
+    return plt
+
+
+def plot_price_forecast(stocks_symbols, df, annual_returns, plt_instance=None) -> plt:  # TODO
     if plt_instance is not None:
         return plt_instance
     df[df.columns[0]].plot()
@@ -434,6 +515,7 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
     plt.grid(True)
     plt.legend()
     return plt
+
 
 def plot_top_stocks(top_stocks) -> None:
     print(top_stocks)

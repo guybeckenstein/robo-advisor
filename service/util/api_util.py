@@ -50,7 +50,6 @@ def get_best_weights_column(stocks_symbols, sectors_list, optional_portfolios, p
 
 
 def get_three_best_weights(optional_portfolios) -> list:
-
     weighted_low = optional_portfolios[0].iloc[0][3:]
     weighted_medium = optional_portfolios[1].iloc[0][3:]
     weighted_high = optional_portfolios[2].iloc[0][3:]
@@ -170,7 +169,6 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     df["label"] = df['col']
     df["label"].fillna(df["Forecast"], inplace=True)
 
-
     forecast_returns_annual = (((1 + df['label'].mean()) ** 254) - 1) * 100
     excepted_returns = (((1 + df['Forecast'].mean()) ** 254) - 1) * 100
     if closing_prices_mode:
@@ -179,14 +177,14 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     return df, forecast_returns_annual, excepted_returns
 
 
-
-def analyze_with_machine_learning_arima(returns_stock, table_index, closing_prices_mode=False):
+def analyze_with_machine_learning_arima(returns_stock, table_index, closing_prices_mode=False,
+                                        RECORD_PERCENT_TO_PREDICT=settings.RECORD_PERCENT_TO_PREDICT):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
-    forecast_out = int(math.ceil(settings.RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # ARIMA requires datetime index for time series data
@@ -246,8 +244,6 @@ def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices
     df_final['Forecast'] = np.nan
     df_final.loc[df_final.index[-forecast_out]:, 'Forecast'] = forecast
 
-
-
     # add dates
     last_date = df_final.iloc[-1].name
     last_unix = last_date.timestamp()
@@ -271,19 +267,18 @@ def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices
         forecast_returns_annual = (((1 + df_final['label'].pct_change().mean()) ** 254) - 1) * 100
         excepted_returns = (((1 + df_final['Forecast'].pct_change().mean()) ** 254) - 1) * 100
 
-
     # Calculate annual return based on the forecast
     return df_final, forecast_returns_annual, excepted_returns
 
 
-
-def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_prices_mode=False):
+def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_prices_mode=False,
+                                          RECORD_PERCENT_TO_PREDICT=settings.RECORD_PERCENT_TO_PREDICT):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
-    forecast_out = int(math.ceil(settings.RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # Prepare the data for Prophet
@@ -322,18 +317,19 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_pr
         next_unix += 86400
         df_final.loc[next_date] = [np.nan for _ in range(len(df_final.columns) - 1)] + [i]
     df_final["label"] = forecast['yhat'].values
-    df_final["label"][len(df_final)-forecast_out:] = forecast_for_future.values
+    df_final["Forecast"][len(df_final) - forecast_out:] = forecast['yhat'][len(df_final) - forecast_out:].values
     # df_final["label"].fillna(df_final["Forecast"], inplace=True)
 
-    forecast_returns_annual = (((1 + forecast['yhat'].mean()) ** 254) - 1) * 100
-    excepted_returns = (((1 + forecast_for_future.mean()) ** 254) - 1) * 100
+    forecast_returns_annual = (((1 + forecast['yhat'][len(df_final) - forecast_out:].mean()) ** 254) - 1) * 100
+    excepted_returns = (((1 + forecast['yhat'].mean()) ** 254) - 1) * 100
     if closing_prices_mode:
         # Plot the forecast
         model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
         plt.title('Stock Price Forecast using Prophet')
         # plt.show()
-        forecast_returns_annual = (((1 + forecast['yhat'].pct_change().mean()) ** 254) - 1) * 100
-        excepted_returns = (((1 + forecast_for_future.pct_change().mean()) ** 254) - 1) * 100
+        forecast_returns_annual = (((1 + forecast['yhat'][
+                                         len(df_final) - forecast_out:].pct_change().mean()) ** 254) - 1) * 100
+        excepted_returns = (((1 + forecast['yhat'].pct_change().mean()) ** 254) - 1) * 100
 
     return df_final, forecast_returns_annual, excepted_returns, plt
 
@@ -637,23 +633,18 @@ def convert_usa_Index_to_full_name(UsaIndexes):
     return UsaIndexesNames.values()
 
 
-def convertIsraeliIndexToName(IsraliIndexes):
+def convertIsraeliIndexToName(IsraliIndex):
     hebrew_pattern = r"[\u0590-\u05FF\s]+"
-    stocksNames = {}
-    for (i, index) in enumerate(IsraliIndexes):
-        text = getNameByIndexNumber(index)
-        hebrew_parts = re.findall(hebrew_pattern, text)
+    text = getNameByIndexNumber(IsraliIndex)
+    hebrew_parts = re.findall(hebrew_pattern, text)
 
-        for hebrew_part in hebrew_parts:  # find all the Hebrew parts in the text
-            hebrew_part_reversed = ''.join(reversed(hebrew_part))
-            text = text.replace(hebrew_part, hebrew_part_reversed)
-
-        stocksNames[i] = text
-    return stocksNames.values()
+    for hebrew_part in hebrew_parts:  # find all the Hebrew parts in the text
+        hebrew_part_reversed = ''.join(reversed(hebrew_part))
+        text = text.replace(hebrew_part, hebrew_part_reversed)
+    return text
 
 
 def getNameByIndexNumber(indexNumber):
-
     # Load the JSON data from the file
 
     jsonData = get_json_data(settings.INDICES_LIST_JSON_NAME)
@@ -663,3 +654,15 @@ def getNameByIndexNumber(indexNumber):
 
     name = result[0]
     return name
+
+
+def get_stocks_descriptions(stocks_symbols):
+    stocks_descriptions = [len(stocks_symbols)]
+    for i, stock in enumerate(stocks_symbols):
+        if type(stock) == int:
+            stocks_descriptions.append(convertIsraeliIndexToName(stock))
+        else:
+            ticker = yf.Ticker(stock)
+            stocks_descriptions.append(ticker.info["shortName"])
+
+    return stocks_descriptions

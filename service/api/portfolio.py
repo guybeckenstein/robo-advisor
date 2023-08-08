@@ -118,8 +118,9 @@ class Portfolio:
 
         return usa_stocks_indexes
 
-    def get_portfolio_stats(self) -> Tuple[float, float, float, float]:
-        return self._annual_returns, self._annual_volatility, self._annual_sharpe, self.get_max_loss()
+    def get_portfolio_stats(self) -> Tuple[float, float, float, float, float]:
+        return (self._annual_returns, self._annual_volatility, self._annual_sharpe, self.get_max_loss(),
+                self.get_total_change())
 
     def get_sector(self, sector_name: str):
         for curr_sector in self._sectors:

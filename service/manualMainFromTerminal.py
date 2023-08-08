@@ -23,7 +23,6 @@ if __name__ == '__main__':
                 pct_change_table, yield_list = tables
 
             # get data from risk questionnaire form
-
             # question #1
             string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
             first_question_score = manage_data.get_score_by_answer_from_user(string_to_show)
