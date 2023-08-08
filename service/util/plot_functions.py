@@ -526,6 +526,7 @@ def plot_top_stocks(top_stocks) -> None:
 
 
 def save_graphs(plt_instance, file_name) -> None:
+    print(file_name)
     plt_instance.savefig(f'{file_name}.png', format='png', dpi=300)
 
 

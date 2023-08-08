@@ -55,6 +55,7 @@ USER_IMAGES = BASE_DIR + '../static/img/user/'
 
 # RESEARCH
 RESEARCH_LOCATION = PACKAGE_DIR + 'research/'
+RESEARCH_RESULTS_LOCATION = BASE_DIR + '../static/img/research/'
 GROUP_OF_STOCKS = [
     "usa_stocks", "usa_bonds", "israel_indexes", "nasdaq", "sp500", "dowjones", "TA35", "TA90", "TA125", "TA125", "all"
 ]

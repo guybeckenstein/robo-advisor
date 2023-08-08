@@ -1,5 +1,5 @@
-from api.user import User
-from service.util import data_management, settings
+from impl.user import User
+from service.util import data_management, settings, research
 
 if __name__ == '__main__':
     data_management.main_menu()
@@ -84,23 +84,22 @@ if __name__ == '__main__':
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     machine_learning_model = data_management.get_machine_learning_model()
-                    plt_instance = data_management.forecast_specific_stock(str(stock_name), machine_learning_model,
+                    plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
                                                                        num_of_years_history)
                     operation = '_forecast'
-                    data_management.save_user_specific_stock(login_name, stock_name, operation, plt_instance)
-                    data_management.plot_image(settings.USER_IMAGES + login_name + '/research/'
+                    research.save_user_specific_stock(stock_name, operation, plt_instance)
+                    data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
                                            + stock_name + operation + '.png')
                 elif selection == 2:
                     # plotbb_strategy_stock for specific stock
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     staring_date, today_date = data_management.get_from_and_to_date(num_of_years_history)
-                    plt_instance = data_management.plotbb_strategy_stock(str(stock_name), staring_date, today_date)
-                    # plt_instance.show()
+                    plt_instance = research.plotbb_strategy_stock(str(stock_name), staring_date, today_date)
                     operation = '_bb_strategy'
-                    data_management.save_user_specific_stock(login_name, stock_name, operation, plt_instance)
+                    research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
-                        settings.USER_IMAGES + login_name + '/research/' +
+                        settings.RESEARCH_RESULTS_LOCATION +
                         stock_name + operation + '.png')
                 elif selection == 3:
                     pass
@@ -110,7 +109,7 @@ if __name__ == '__main__':
                     selected_option = data_management.get_group_of_stocks_option()
                     (max_returns_stocks_list,
                      min_volatility_stocks_list,
-                     max_sharpest_stocks_list) = data_management.find_good_stocks(
+                     max_sharpest_stocks_list) = research.find_good_stocks(
                         settings.GROUP_OF_STOCKS[selected_option - 1])
                     # TODO - SHOW IMAGES
 
