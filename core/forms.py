@@ -4,7 +4,7 @@ from crispy_forms.layout import Submit, Layout, Div, HTML
 from django import forms
 from django.utils.html import format_html
 
-from service.util import manage_data, settings as backend_settings
+from service.util import data_management, settings as backend_settings
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 
@@ -85,7 +85,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
-        user_preferences_instance = kwargs.pop('user_preferences_instance', None)
+        user_preferences_instance: QuestionnaireA = kwargs.pop('user_preferences_instance', None)
         self.get_questionnaire_graphs(user_preferences_instance, mode=kwargs.get('mode', 'regular'))
 
         # Form
@@ -102,14 +102,17 @@ class InvestmentPreferencesForm(forms.ModelForm):
         self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #1: For how many years do you want to invest?'
                                                     '</span>')
-        first_graph = f"{settings.STATIC_URL}img/graphs/distribution_graph.png"
+        ml_answer = user_preferences_instance.ml_answer
+        model_answer = user_preferences_instance.model_answer
+        sub_folder = str(ml_answer) + str(model_answer)  # Sub folder for current user to fetch its relevant graphs
+        first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #2: Which distribution do you prefer?'
                                                     '</span>'
                                                     f'<div class="capital-market-form-label capital-market-form-img">'
                                                     f'<img src="{first_graph}">'
                                                     f'</div>')
-        second_graph = f"{settings.STATIC_URL}img/graphs/three_portfolios.png"
+        second_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/three_portfolios.png"
         self.fields['answer_3'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #3: What is your preferable graph?'
                                                     '</span>'
@@ -146,15 +149,16 @@ class InvestmentPreferencesForm(forms.ModelForm):
         # User preferences
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        db_tuple = manage_data.get_extended_data_from_db(
+        db_tuple = data_management.get_extended_data_from_db(
             backend_settings.STOCKS_SYMBOLS, ml_answer, model_answer, mode=mode
         )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yield_list = db_tuple
         # Saves two graphs
-        manage_data.plot_distribution_of_portfolio(yield_list, mode=mode)
-        manage_data.plot_three_portfolios_graph(
-            three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode=mode
+        sub_folder = str(ml_answer) + str(model_answer) + "/"
+        data_management.plot_distribution_of_portfolio(yield_list, mode=mode, sub_folder=sub_folder)
+        data_management.plot_three_portfolios_graph(
+            three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode, sub_folder=sub_folder
         )
 
     class Meta:

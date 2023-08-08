@@ -13,7 +13,7 @@ secret = '038af8b13e67a0fd0cbdbb1cdcb973c6'
 # secret = "e8d0264a8472c411443a6dfbcdf0992f"
 
 baseUrl = "https://openapigw.tase.co.il/tase/prod/api/v1"
-prefixUrl = "/tase/prod/api/v1"
+prefixUrl = "/tase/prod/impl/v1"
 payload = "grant_type=client_credentials&scope=tase"
 language = "he-IL"
 
@@ -26,7 +26,7 @@ INDEX_EOD_HISTORY_TEN_YEARS = "indices/eod/history/ten-years/by-index?indexId="
 # past 5 years
 indexEndOfDayHistoryFiveYearsUpToday = "indices/eod/history/five-years/by-index?indexId="
 
-# other api-tase url's apps:
+# other impl-tase url's apps:
 OTC_transaction_name = "transactions/otc-transactions"
 endOfDayTransactionName = "transactions/transactions-end-of-day"
 mayaNoticeByDay = "maya-reports-online/tase-messages-by-date"

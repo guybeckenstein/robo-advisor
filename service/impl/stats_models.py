@@ -1,39 +1,46 @@
 import numpy as np
 import pandas as pd
-from ..util import api_util
+from ..util import helpers
 
 
-class statsModels:
+class StatsModels:
 
-    _df = None
-    _three_best_portfolios = None
-    _three_best_stocks_weights = None
-    _three_best_sectors_weights = None
-    _closing_prices_table = None
-    _best_stocks_weights_column = None
-    _stock_sectors = None
-    _sectors_list = None
-    _model_name = None
-
-    def __init__(self, stocks_symbols, sectors_list, closing_prices_table, pct_change_table, num_por_simulation, min_num_por_simulation,
-                 max_percent_commodity, max_percent_stocks, model_name, machine_learning_opt):
-        self._stock_sectors = api_util.set_stock_sectors(stocks_symbols, sectors_list)
-        self._sectors_list = sectors_list
+    def __init__(
+            self,
+            stocks_symbols,
+            pct_change_table,
+            num_por_simulation,
+            min_num_por_simulation,
+            max_percent_commodity,
+            max_percent_stocks,
+            closing_prices_table = None,
+            sectors = None,
+            model_name = None,
+            is_machine_learning: int = 0
+    ):
+        self._df = None
+        self._three_best_portfolios = None
+        self._three_best_stocks_weights = None
+        self._three_best_sectors_weights = None
+        self._best_stocks_weights_column = None
+        self._stock_sectors = helpers.set_stock_sectors(stocks_symbols, sectors)
+        self._sectors_list = sectors
         self._model_name = model_name
         self._closing_prices_table = closing_prices_table
         if model_name == "Markowitz":
             self.get_optimal_portfolio_by_markowitz(
                 num_por_simulation, min_num_por_simulation, closing_prices_table, pct_change_table,  stocks_symbols,
-                max_percent_commodity, max_percent_stocks, machine_learning_opt
+                max_percent_commodity, max_percent_stocks, is_machine_learning
             )
         else:
             self.get_optimal_portfolio_by_gini(
                 num_por_simulation, min_num_por_simulation, pct_change_table,  stocks_symbols,
-                max_percent_commodity, max_percent_stocks, machine_learning_opt
+                max_percent_commodity, max_percent_stocks, is_machine_learning
             )
 
     def get_optimal_portfolio_by_markowitz(self, num_por_simulation, min_num_por_simulation, closing_prices_table,
-                                           pct_change_table, stocks_symbols, max_percent_commodity, max_percent_stocks, machine_learning_opt):
+                                           pct_change_table, stocks_symbols, max_percent_commodity, max_percent_stocks,
+                                           is_machine_learning: int):
 
         stocks_names: list = []
         for symbol in stocks_symbols:
@@ -103,7 +110,7 @@ class statsModels:
             "Sharpe Ratio": sharpe_ratio,
         }
 
-        # extend original dictionary to accomodate each ticker and weight in the portfolio
+        # extend original dictionary to accommodate each ticker and weight in the portfolio
         for counter, symbol in enumerate(stocks_names):
             portfolio[symbol + " Weight"] = [Weight[counter] for Weight in stock_weights]
 
@@ -116,14 +123,14 @@ class statsModels:
         self._df = df[column_order]
 
     def get_optimal_portfolio_by_gini(self, num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
-                                      max_percent_commodity, max_percent_stocks, machine_learning_opt):
+                                      max_percent_commodity, max_percent_stocks, is_machine_learning: int):
         stocks_names: list = []
         for symbol in stocks_symbols:
             if type(symbol) == int:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
-        v_value = api_util.settings.gini_v_value  # TODO: not recognizing method
+        v_value = helpers.settings.GINI_V_VALUE  # TODO: not recognizing method
         returns_daily = pct_change_table
         port_portfolio_annual = []
         port_gini_annual = []
@@ -138,7 +145,7 @@ class statsModels:
         np.random.seed(101)
 
         # Mathematical calculations, creation of 5000 portfolios,
-        for stock in returns_daily.keys():
+        for _ in returns_daily.keys():
             # populate the empty lists with each portfolios returns,risk and weights
             single_portfolio = 0
             while single_portfolio < num_portfolios:
@@ -176,9 +183,6 @@ class statsModels:
                 gini_daily = summary * (-v_value)
                 gini_annual = gini_daily * (254 ** 0.5)
                 portfolio_annual = ((1 + mue) ** 254) - 1
-                """if machine_learning_opt:
-                    portfolio_annual, __ = api_util.analyze_with_machine_learning_linear_regression(portfolio_return, table.index)
-                    portfolio_annual = portfolio_annual / 100"""
                 sharpe = portfolio_annual / gini_annual
                 sharpe_ratio.append(sharpe)
                 port_portfolio_annual.append(portfolio_annual * 100)
@@ -223,7 +227,7 @@ class statsModels:
         return self._best_stocks_weights_column
 
     def get_final_portfolio(self, risk_score):
-        return api_util.choose_portfolio_by_risk_score(self._three_best_portfolios, risk_score)
+        return helpers.choose_portfolio_by_risk_score(self._three_best_portfolios, risk_score)
 
     def get_closing_prices_table(self):
         return self._closing_prices_table

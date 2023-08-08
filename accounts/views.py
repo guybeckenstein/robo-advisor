@@ -120,19 +120,20 @@ def profile_investor(request):
     is_form_filled = True
     try:
         get_object_or_404(InvestorUser, user=request.user)
+        if request.method == 'GET':
+            investor_user = InvestorUser.objects.get(user=request.user)
+            form: forms.ModelForm = UpdateInvestorUserForm(instance=investor_user, disabled_project=True)
+        elif request.method == 'POST':
+            form: forms.ModelForm = UpdateInvestorUserForm(request.POST, instance=request.user)
+            if form.is_valid():
+                form.save()
+                # messages.success(request, 'Your account details have been updated successfully.')
+                return redirect('profile_main')
+        else:
+            raise BadRequest
     except Http404:
         is_form_filled = False
-    if request.method == 'GET':
-        investor_user = InvestorUser.objects.get(user=request.user)
-        form: forms.ModelForm = UpdateInvestorUserForm(instance=investor_user, disabled_project=True)
-    elif request.method == 'POST':
-        form: forms.ModelForm = UpdateInvestorUserForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            # messages.success(request, 'Your account details have been updated successfully.')
-            return redirect('profile_main')
-    else:
-        raise BadRequest
+        form = None
     context = {
         'form': form,
         'is_form_filled': is_form_filled,

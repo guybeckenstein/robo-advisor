@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 from django.shortcuts import get_object_or_404
 
-from service.api.user import User
-from service.api.portfolio import Portfolio
-from service.util import manage_data
-from service.util import api_util
-from service.util.manage_data import get_closing_prices_table
+from service.impl.user import User
+from service.impl.portfolio import Portfolio
+from service.util import data_management
+from service.util import helpers
+from service.util.data_management import get_closing_prices_table
 from core.models import QuestionnaireA
 from accounts.models import InvestorUser
 
@@ -44,7 +44,7 @@ def save_three_user_graphs_as_png(request) -> None:
     annual_volatility = investor_user.annual_volatility
     annual_sharpe = investor_user.annual_sharpe
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
-    sectors = api_util.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
+    sectors = helpers.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
     portfolio: Portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
         sectors=sectors,
@@ -59,7 +59,7 @@ def save_three_user_graphs_as_png(request) -> None:
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
     yield_column: str = "yield_" + str(risk_level)
     pct_change_table[yield_column] = weighted_sum
-    pct_change_table[yield_column] = api_util.makes_yield_column(pct_change_table[yield_column], weighted_sum)
+    pct_change_table[yield_column] = helpers.makes_yield_column(pct_change_table[yield_column], weighted_sum)
     portfolio.update_stocks_data(
         closing_prices_table=closing_prices_table,
         pct_change_table=pct_change_table,
@@ -69,4 +69,4 @@ def save_three_user_graphs_as_png(request) -> None:
         annual_sharpe=annual_sharpe,
     )
     # Save plots
-    manage_data.save_user_portfolio(User(str(investor_user.user.id), portfolio))
+    data_management.save_user_portfolio(User(str(investor_user.user.id), portfolio))

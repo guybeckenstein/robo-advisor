@@ -8,14 +8,12 @@ import yfinance as yf
 from datetime import date
 from typing import Tuple, List
 
-from PIL import Image
-
-from ..api.portfolio import Portfolio
-from ..api import stats_models
-from ..api.sector import Sector
-from ..api.user import User
-from ..api.resources import aws_settings
-from . import api_util, console_handler, plot_functions, settings
+from ..impl.portfolio import Portfolio
+from ..impl.stats_models import StatsModels
+from ..impl.sector import Sector
+from ..impl.user import User
+from ..impl.config import aws_settings
+from . import helpers, console_handler, plot_functions, settings
 import boto3
 
 
@@ -33,7 +31,7 @@ def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYears
     with open(settings.BUCKET_REPOSITORY + "lastUpdatedClosingPrice.txt", "r") as file:
         lastUpdatedDateClosingPrices = file.read().strip()
     if lastUpdatedDateClosingPrices != formatted_date_today:
-        api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, settings.CLOSING_PRICES_FILE_NAME,
+        helpers.convert_data_to_tables(settings.BUCKET_REPOSITORY, settings.CLOSING_PRICES_FILE_NAME,
                                         stocksSymbols,
                                         numOfYearsHistory, saveToCsv=True)
 
@@ -45,7 +43,7 @@ def update_data_frame_tables(formatted_date_today, stocksSymbols):
     with open(settings.BUCKET_REPOSITORY + "lastUpdatedDftables.txt", "r") as file:
         lastUpdatedDftables = file.read().strip()
     if lastUpdatedDftables != formatted_date_today:
-        sectorsList = api_util.set_sectors(stocksSymbols, mode='regular')
+        sectorsList = helpers.set_sectors(stocksSymbols, mode='regular')
         closingPricesTable = get_closing_prices_table(mode='regular')
         pct_change_table = closingPricesTable.pct_change()
         # without maching learning
@@ -59,7 +57,7 @@ def update_data_frame_tables(formatted_date_today, stocksSymbols):
                                              closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
 
         # Including maching learning
-        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(
+        pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
             pct_change_table, closingPricesTable.index)
         # Markowitz
         update_three_level_data_frame_tables(machingLearningOpt=1, modelName="Markowitz",
@@ -77,53 +75,61 @@ def update_data_frame_tables(formatted_date_today, stocksSymbols):
 def update_three_level_data_frame_tables(machingLearningOpt, modelName, stocksSymbols, sectorsList,
                                          closingPricesTable, pct_change_table):
     # high risk
-    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName,
-                                     stocksSymbols=stocksSymbols,
-                                     sectorsList=sectorsList, levelOfRisk="high", maxPercentCommodity=1,
-                                     maxPercentStocks=1, closingPricesTable=closingPricesTable,
+    update_specific_data_frame_table(is_machine_learning=machingLearningOpt, model_name=modelName,
+                                     stocks_symbols=stocksSymbols,
+                                     sectors=sectorsList, levelOfRisk="high", max_percent_commodity=1,
+                                     max_percent_stocks=1, closing_prices_table=closingPricesTable,
                                      pct_change_table=pct_change_table)
     # medium risk
-    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName,
-                                     stocksSymbols=stocksSymbols,
-                                     sectorsList=sectorsList, levelOfRisk="medium",
-                                     maxPercentCommodity=settings.LIMIT_PERCENT_MEDIUM_RISK_COMMODITY,
-                                     maxPercentStocks=settings.LIMIT_PERCENT_MEDIUM_RISK_STOCKS,
-                                     closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+    update_specific_data_frame_table(is_machine_learning=machingLearningOpt, model_name=modelName,
+                                     stocks_symbols=stocksSymbols,
+                                     sectors=sectorsList, levelOfRisk="medium",
+                                     max_percent_commodity=settings.LIMIT_PERCENT_MEDIUM_RISK_COMMODITY,
+                                     max_percent_stocks=settings.LIMIT_PERCENT_MEDIUM_RISK_STOCKS,
+                                     closing_prices_table=closingPricesTable, pct_change_table=pct_change_table)
     # low risk
-    update_specific_data_frame_table(machingLearningOpt=machingLearningOpt, modelName=modelName,
-                                     stocksSymbols=stocksSymbols,
-                                     sectorsList=sectorsList, levelOfRisk="low",
-                                     maxPercentCommodity=settings.LIMIT_PERCENT_LOW_RISK_COMMODITY,
-                                     maxPercentStocks=settings.LIMIT_PERCENT_LOW_RISK_STOCKS,
-                                     closingPricesTable=closingPricesTable, pct_change_table=pct_change_table)
+    update_specific_data_frame_table(is_machine_learning=machingLearningOpt, model_name=modelName,
+                                     stocks_symbols=stocksSymbols,
+                                     sectors=sectorsList, levelOfRisk="low",
+                                     max_percent_commodity=settings.LIMIT_PERCENT_LOW_RISK_COMMODITY,
+                                     max_percent_stocks=settings.LIMIT_PERCENT_LOW_RISK_STOCKS,
+                                     closing_prices_table=closingPricesTable, pct_change_table=pct_change_table)
 
 
-def update_specific_data_frame_table(machingLearningOpt, modelName, stocksSymbols, sectorsList, levelOfRisk,
-                                     maxPercentCommodity, maxPercentStocks, closingPricesTable, pct_change_table):
-    if machingLearningOpt:
+def update_specific_data_frame_table(is_machine_learning, model_name, stocks_symbols, sectors, levelOfRisk,
+                                     max_percent_commodity, max_percent_stocks, closing_prices_table, pct_change_table):
+    if is_machine_learning:
         locationForSaving = settings.MACHINE_LEARNING_LOCATION
     else:
         locationForSaving = settings.NON_MACHINE_LEARNING_LOCATION
 
-    if maxPercentCommodity <= 0:
-        stock_sectors = api_util.setStockSectors(stocksSymbols, sectorsList)
+    if max_percent_commodity <= 0:
+        stock_sectors = helpers.setStockSectors(stocks_symbols, sectors)
         filtered_stocks = []
         for i in range(len(stock_sectors)):
             if stock_sectors[i] != "US commodity":
-                filtered_stocks.append(stocksSymbols[i])
+                filtered_stocks.append(stocks_symbols[i])
             else:
-                closingPricesTable = closingPricesTable.drop(stocksSymbols[i], axis=1)
-                pct_change_table = pct_change_table.drop(stocksSymbols[i], axis=1)
-        stocksSymbols = filtered_stocks
+                closing_prices_table = closing_prices_table.drop(stocks_symbols[i], axis=1)
+                pct_change_table = pct_change_table.drop(stocks_symbols[i], axis=1)
+        stocks_symbols = filtered_stocks
 
-    Stats_models = stats_models.statsModels(stocksSymbols, sectorsList, closingPricesTable, pct_change_table,
-                                            settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
-                                            maxPercentCommodity,
-                                            maxPercentStocks, modelName, machingLearningOpt)
-    df = Stats_models.get_df()
-    df.to_csv(locationForSaving + modelName + '_df_' + levelOfRisk + '.csv')
-    print('updated data frame Table(machine learning:' + str(machingLearningOpt) +
-          ', model name:' + modelName +
+    stats_models = StatsModels(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        closing_prices_table=closing_prices_table,
+        pct_change_table=pct_change_table,
+        num_por_simulation=settings.NUM_POR_SIMULATION,
+        min_num_por_simulation=settings.MIN_NUM_POR_SIMULATION,
+        max_percent_commodity=max_percent_commodity,
+        max_percent_stocks=max_percent_stocks,
+        model_name=model_name,
+        is_machine_learning=is_machine_learning,
+    )
+    df = stats_models.get_df()
+    df.to_csv(locationForSaving + model_name + '_df_' + levelOfRisk + '.csv')
+    print('updated data frame Table(machine learning:' + str(is_machine_learning) +
+          ', model name:' + model_name +
           ', level of risk:' + str(levelOfRisk))
 
 
@@ -154,15 +160,15 @@ def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
 
 ##################################################################
 def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_machine_learning: int,
-                              model_option: int, risk_level: int, extendedDataFromDB: Tuple) -> Portfolio:
+                              model_option: int, risk_level: int, extended_data_from_db: Tuple) -> Portfolio:
     sectors, sectors, closing_prices_table, three_best_portfolios, _, \
-        pct_change_table, _ = extendedDataFromDB
+        pct_change_table, _ = extended_data_from_db
 
     final_portfolio = three_best_portfolios[risk_level - 1]
     if risk_level == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
-        stocks_symbols = api_util.drop_stocks_from_us_commodity_sector(
-            stocks_symbols, api_util.set_stock_sectors(stocks_symbols, sectors)
+        stocks_symbols = helpers.drop_stocks_from_us_commodity_sector(
+            stocks_symbols, helpers.set_stock_sectors(stocks_symbols, sectors)
         )
 
     portfolio = Portfolio(
@@ -192,20 +198,20 @@ def download_data_for_research(num_of_years_history: int) -> None:
     # TODO - israel stocks list
     # TODO - US commodity list
 
-    api_util.convert_data_to_tables(settings.RESEARCH_LOCATION,
+    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
                                     'usa_stocks_closing_prices', usa_stocks_list, num_of_years_history, saveToCsv=True)
 
-    api_util.convert_data_to_tables(settings.RESEARCH_LOCATION,
+    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
                                     'usa_bonds_closing_prices', usa_bonds_list, num_of_years_history, saveToCsv=True)
 
-    api_util.convert_data_to_tables(settings.RESEARCH_LOCATION,
+    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
                                     'israel_indexes_closing_prices', israel_indexes_list, num_of_years_history,
                                     saveToCsv=True)
 
     stocks_symbols.extend(usa_stocks_list)
     stocks_symbols.extend(usa_bonds_list)
     stocks_symbols.extend(israel_indexes_list)
-    api_util.convert_data_to_tables(settings.RESEARCH_LOCATION,
+    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
                                     'all_closing_prices', stocks_symbols, num_of_years_history, saveToCsv=True)
 
 
@@ -287,7 +293,7 @@ def get_stocks_data_for_research_by_group(group_of_stocks: str):
 
     else:
         tickers = settings.STOCKS_SYMBOLS
-        start, end = api_util.get_from_and_to_dates(10)
+        start, end = helpers.get_from_and_to_dates(10)
         data = yf.download(tickers, start, end=end)
         data = data.set_index(pd.to_datetime(data.index))
         # TODO
@@ -307,15 +313,15 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
         sectors_data = get_json_data(settings.SECTORS_JSON_NAME)
     else:
         sectors_data = get_json_data('../../' + settings.SECTORS_JSON_NAME)
-    sectors: list = api_util.set_sectors(stocks_symbols, mode)
+    sectors: list = helpers.set_sectors(stocks_symbols, mode)
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode=mode)
     # TODO : GET STOCKS SYMBOLS FROM TABLES INDEXES
     df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1], mode=mode)
-    three_best_portfolios = api_util.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
-    best_stocks_weights_column = api_util.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
+    three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
+    best_stocks_weights_column = helpers.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
                                                                   closing_prices_table.pct_change())
-    three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
-    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors,
+    three_best_stocks_weights = helpers.get_three_best_weights(three_best_portfolios)
+    three_best_sectors_weights = helpers.get_three_best_sectors_weights(sectors,
                                                                          three_best_stocks_weights)
     pct_change_table: pd = closing_prices_table.pct_change()
     yields: list = update_pct_change_table(best_stocks_weights_column, pct_change_table)
@@ -410,7 +416,7 @@ def get_user_from_db(user_name: str):
     annual_returns = user_data['annualReturns']
     annual_volatility = user_data['annualVolatility']
     annual_sharpe = user_data['annualSharpe']
-    sectors = api_util.set_sectors(stocks_symbols)
+    sectors = helpers.set_sectors(stocks_symbols)
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
     portfolio: Portfolio = Portfolio(
@@ -497,25 +503,25 @@ def creates_json_file(json_obj, name_product: str) -> None:
     # Open a file in write mode
     parts: list = name_product.split("/")
     last_element: str = parts[-1]
-    with open("api/resources/" + last_element + ".json", "w") as f:
+    with open("impl/config/" + last_element + ".json", "w") as f:
         json.dump(json_obj, f)  # Use the `dump()` function to write the JSON data to the file
 
 
-# api utility functions
+# impl utility functions
 def set_sectors(stocks_symbols):
-    return api_util.set_sectors(stocks_symbols, mode='regular')
+    return helpers.set_sectors(stocks_symbols, mode='regular')
 
 
 def makes_yield_column(_yield, weighted_sum_column):
-    return api_util.makes_yield_column(_yield, weighted_sum_column)
+    return helpers.makes_yield_column(_yield, weighted_sum_column)
 
 
 def get_json_data(name):
-    return api_util.get_json_data(name)
+    return helpers.get_json_data(name)
 
 
 def get_from_and_to_date(num_of_years):  # TODO FIX RETURN TUPLE
-    return api_util.get_from_and_to_dates(num_of_years)
+    return helpers.get_from_and_to_dates(num_of_years)
 
 
 def get_score_by_answer_from_user(string_to_show: str) -> int:
@@ -524,7 +530,7 @@ def get_score_by_answer_from_user(string_to_show: str) -> int:
 
 # plot functions
 def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_weights, sectors: list,
-                                pct_change_table, mode: str):
+                                pct_change_table, mode: str, sub_folder: str = '00/'):
     min_variance_port = three_best_portfolios[0]
     sharpe_portfolio = three_best_portfolios[1]
     max_returns = three_best_portfolios[2]
@@ -533,9 +539,10 @@ def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_
                                                                           three_best_sectors_weights, sectors,
                                                                           pct_change_table)
     if mode == 'regular':
-        plot_functions.save_graphs(plt_instance_three_graph, settings.STATIC_IMAGES + 'three_portfolios')
+        fully_qualified_name = settings.GRAPH_IMAGES + sub_folder + 'three_portfolios'
     else:
-        plot_functions.save_graphs(plt_instance_three_graph, '../../' + settings.STATIC_IMAGES + 'three_portfolios')
+        fully_qualified_name = '../../' + settings.GRAPH_IMAGES + sub_folder + 'three_portfolios'
+    plot_functions.save_graphs(plt_instance_three_graph, fully_qualified_name)
 
     return plt_instance_three_graph
 
@@ -546,12 +553,13 @@ def plot_distribution_of_stocks(stock_names, pct_change_table):
     return plt_instance
 
 
-def plot_distribution_of_portfolio(distribution_graph, mode: str):
+def plot_distribution_of_portfolio(distribution_graph, mode: str, sub_folder: str = '00/'):
     plt_instance = plot_functions.plot_distribution_of_portfolio(distribution_graph)
     if mode == 'regular':
-        plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + 'distribution_graph')
+        fully_qualified_name = settings.GRAPH_IMAGES + sub_folder + 'distribution_graph'
     else:
-        plot_functions.save_graphs(plt_instance, '../../' + settings.STATIC_IMAGES + 'distribution_graph')
+        fully_qualified_name = '../../' + settings.GRAPH_IMAGES + sub_folder + 'distribution_graph'
+    plot_functions.save_graphs(plt_instance, fully_qualified_name)
 
     return plt_instance
 
@@ -565,29 +573,35 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
     # TODO - get part of closing_prices_table according to num_of_years_history
 
     if is_machine_learning == 1:
-        pct_change_table, annual_return, excepted_returns = api_util.update_daily_change_with_machine_learning(
+        pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
             pct_change_table, closing_prices_table.index)
 
     if model_option == "Markowitz":
-        curr_stats_models = stats_models.statsModels(stocks_symbols, sectors, closing_prices_table, pct_change_table,
-                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
-                                                     1, 1, "Markowitz",
-                                                     is_machine_learning)
+        model_name = "Markowitz"
     else:
-        curr_stats_models = stats_models.statsModels(stocks_symbols, sectors, closing_prices_table, pct_change_table,
-                                                     settings.NUM_POR_SIMULATION, settings.MIN_NUM_POR_SIMULATION,
-                                                     1, 1, "Gini",
-                                                     is_machine_learning)
-    df = curr_stats_models.get_df()
-    three_best_portfolios = api_util.get_best_portfolios([df, df, df], model_name=model_option)
-    three_best_stocks_weights = api_util.get_three_best_weights(three_best_portfolios)
-    three_best_sectors_weights = api_util.get_three_best_sectors_weights(sectors,
-                                                                         three_best_stocks_weights)
+        model_name = "Gini"
+
+    stats_models = StatsModels(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        closing_prices_table=closing_prices_table,
+        pct_change_table=pct_change_table,
+        num_por_simulation=settings.NUM_POR_SIMULATION,
+        min_num_por_simulation=settings.MIN_NUM_POR_SIMULATION,
+        max_percent_commodity=1,
+        max_percent_stocks=1,
+        model_name=model_name,
+        is_machine_learning=is_machine_learning,
+    )
+    df = stats_models.get_df()
+    three_best_portfolios = helpers.get_best_portfolios(df=[df, df, df], model_name=model_option)
+    three_best_stocks_weights = helpers.get_three_best_weights(three_best_portfolios)
+    three_best_sectors_weights = helpers.get_three_best_sectors_weights(sectors, three_best_stocks_weights)
     min_variance_port = three_best_portfolios[0]
     sharpe_portfolio = three_best_portfolios[1]
     max_returns = three_best_portfolios[2]
-    max_vols = curr_stats_models.get_max_vols()
-    df = curr_stats_models.get_df()
+    max_vols = stats_models.get_max_vols()
+    df = stats_models.get_df()
 
     if model_option == "Markowitz":
         plt_instance = plot_functions.plot_markowitz_graph(sectors, three_best_sectors_weights, min_variance_port,
@@ -596,7 +610,7 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
         plt_instance = plot_functions.plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port,
                                                       sharpe_portfolio, max_returns, max_vols, df)
 
-    plot_functions.save_graphs(plt_instance, settings.STATIC_IMAGES + model_option + '_all_option')  # TODO plot at site
+    plot_functions.save_graphs(plt_instance, settings.GRAPH_IMAGES + model_option + '_all_option')  # TODO plot at site
 
 
 def save_user_portfolio(curr_user: User) -> None:
@@ -616,7 +630,7 @@ def save_user_portfolio(curr_user: User) -> None:
     table = portfolio.pct_change_table
     stats_details_tuple = portfolio.get_portfolio_stats()
     sectors: List[Sector] = portfolio.sectors
-    description: List[str] = api_util.get_stocks_descriptions(stocks_symbols)
+    description: List[str] = helpers.get_stocks_descriptions(stocks_symbols)
 
     # pie chart of sectors & sectors weights
     plt_sectors_component = plot_functions.plot_portfolio_component(curr_user.name,
@@ -634,7 +648,7 @@ def save_user_portfolio(curr_user: User) -> None:
 
     # total yield graph with sectors weights
     table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
-    df, returns_forecast, returns_annual = api_util.analyze_with_machine_learning_linear_regression(
+    df, returns_forecast, returns_annual = helpers.analyze_with_machine_learning_linear_regression(
         table['yield__selected_percent'],
         table.index, closing_prices_mode=True)
     df['yield__selected_percent'] = df['col']
@@ -662,20 +676,20 @@ def save_user_specific_stock(user_name: str, stock: str, operation: str, plt_ins
 def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int):
     plt = None
     file_name = settings.CLOSING_PRICES_FILE_NAME
-    table = api_util.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
+    table = helpers.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
                                             [stock], num_of_years_history, saveToCsv=False)
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
-        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_linear_regression(table,
+        df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_linear_regression(table,
                                                                                                        table.index,
                                                                                                        closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:
-        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_arima(table, table.index,
+        df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_arima(table, table.index,
                                                                                            closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:
-        df, annual_return, excepted_returns = api_util.analyze_with_machine_learning_gbm(table, table.index,
+        df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_gbm(table, table.index,
                                                                                          closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:
-        df, annual_return, excepted_returns, plt = api_util.analyze_with_machine_learning_prophet(table, table.index,
+        df, annual_return, excepted_returns, plt = helpers.analyze_with_machine_learning_prophet(table, table.index,
                                                                                                   closing_prices_mode=True)
 
     plt_instance = plot_functions.plot_price_forecast(stock, df, annual_return, plt)
@@ -692,7 +706,7 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
     stock_prices = stock_prices.dropna()
     stock_prices = stock_prices.iloc[51:]
 
-    buy_price, sell_price, bb_signal = api_util.implement_bb_strategy(stock_prices['Adj Close'],
+    buy_price, sell_price, bb_signal = helpers.implement_bb_strategy(stock_prices['Adj Close'],
                                                                       stock_prices['Lower'], stock_prices['Upper'])
     plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
     return plt_instance
@@ -774,7 +788,7 @@ def find_good_stocks(group_of_stocks="usa_stocks", filter_option=False):  # TODO
     max_returns_stocks_list = returns_sorted.head(10)
     min_volatility_stocks_list = min_volatility_sorted.tail(10)"""
 
-    # plot_functions.plot_top_stocks(api_util.scan_good_stocks())
+    # plot_functions.plot_top_stocks(helpers.scan_good_stocks())
     # plot_functions.plot(plt_instance)  # TODO plot at site
     # plot_functions.plot(plt_instance)  # TODO plot at site
 

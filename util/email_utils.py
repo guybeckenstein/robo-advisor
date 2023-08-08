@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 
 
 def connectedApiAndSendEmail(subject_str, content, user=User.objects.filter(username='Manager')[0]):
-    # Configure API key authorization: api-key
+    # Configure API key authorization: impl-key
     configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key['api-key'] = os.environ.get('MAIL_KEY')
+    configuration.api_key['impl-key'] = os.environ.get('MAIL_KEY')
 
     # create an instance of the API class
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))

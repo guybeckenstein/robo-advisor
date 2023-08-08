@@ -6,13 +6,13 @@ import codecs
 import requests
 import base64
 import datetime
-from ..api.resources import israeli_tase_settings as settings
+from ..impl.config import israeli_tase_settings as settings
 
 
 # UTILITY FOR TASE- tel aviv stock exchange
 
-def get_israeli_indexes_data(command, start_date, end_date, israeliIndexes):  # get israeli indexes data from tase
-    JsonDataList = [israeliIndexes]
+def get_israeli_indexes_data(command, start_date, end_date, israeli_indexes):  # get israeli indexes data from tase
+    json_data_list = [israeli_indexes]
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     start_year = start_date.year
@@ -23,32 +23,32 @@ def get_israeli_indexes_data(command, start_date, end_date, israeliIndexes):  # 
     end_day = end_date.day
 
     if command == "get_past_10_years_history":
-        for i in range(len(JsonDataList)):
+        for i in range(len(json_data_list)):
             appUrl = get_app_url_with_date_and_index(
                 settings.INDEX_EOD_HISTORY_TEN_YEARS,
-                startYear=start_year,
-                startMonth=start_month,
-                startDay=start_day,
-                endYear=end_year,
-                endMonth=end_month,
-                endDay=end_day,
-                indexName=JsonDataList[i]
+                start_year=start_year,
+                start_month=start_month,
+                start_day=start_day,
+                end_year=end_year,
+                end_month=end_month,
+                end_day=end_day,
+                index_name=json_data_list[i]
             )
-            JsonDataList[i] = get_symbol_info(appUrl)
+            json_data_list[i] = get_symbol_info(appUrl)
     # TODO: add more command later
     else:
         pass
 
 
-    return JsonDataList[0]
+    return json_data_list[0]
 
-def get_symbol_info(appUrl):
+def get_symbol_info(app_url):
     conn = http.client.HTTPSConnection('openapigw.tase.co.il')
     payload = ''
     headers = {'Authorization': 'Bearer ' + get_tase_access_token(),
                'Accept-Language': 'he-IL',
                'Content-Type': 'application/json'}
-    conn.request('GET', appUrl, payload, headers)
+    conn.request('GET', app_url, payload, headers)
     res = conn.getresponse()
     data = res.read()
 
@@ -88,9 +88,9 @@ def get_tase_access_token():
 
 # BUILD URL FOR REQUEST
 
-def get_index_history(appName, indexId, numOfYears):
+def get_index_history(app_name, index_id, num_of_years):
     today = datetime.datetime.now()
-    start_year = today.year - numOfYears
+    start_year = today.year - num_of_years
     start_month = today.month
     start_day = today.day
     end_year = today.year
@@ -98,37 +98,38 @@ def get_index_history(appName, indexId, numOfYears):
     end_day = today.day
 
     return get_app_url_with_date_and_index(
-        appName,
+        app_name,
         start_year,
         start_month,
         start_day,
         end_year,
         end_month,
         end_day,
-        indexId,
+        index_id,
         )
 
 
-def get_app_url_without_date(appName):  # /tase/prod/api/v1/short-sales/weekly-balance
-    return settings.prefixUrl + '/' + appName
+def get_app_url_without_date(app_name):  # /tase/prod/impl/v1/short-sales/weekly-balance
+    return settings.prefixUrl + '/' + app_name
 
 
-def get_app_url_with_date_and_index(appName, startYear, startMonth, startDay,
-                                    endYear, endMonth, endDay, indexName):
+def get_app_url_with_date_and_index(app_name, start_year, start_month, start_day,
+                                    end_year, end_month, end_day, index_name):
 
-    return get_app_url_without_date(appName) + str(indexName) \
-        + '&fromDate=' + str(startYear) + '-' + str(startMonth) + '-' \
-        + str(startDay) + '&toDate=' + str(endYear) + '-' \
-        + str(endMonth) + '-' + str(endDay)
+    return get_app_url_without_date(app_name) + str(index_name) \
+        + '&fromDate=' + str(start_year) + '-' + str(start_month) + '-' \
+        + str(start_day) + '&toDate=' + str(end_year) + '-' \
+        + str(end_month) + '-' + str(end_day)
 
 
-def get_indexes_data_manually_from_json(sybmolIndexs):  # FOR ISRAELI STOCKS
-    if type(sybmolIndexs) == int:
-        return get_json_data('api/resources/History' + str(sybmolIndexs))
+def get_indexes_data_manually_from_json(symbol_indexs):  # FOR ISRAELI STOCKS
+    folder_prefix = 'impl/config/History'
+    if type(symbol_indexs) == int:
+        return get_json_data(folder_prefix + str(symbol_indexs))
     else:
-        portfolio = [0] * len(sybmolIndexs)
-        for i in range(len(sybmolIndexs)):
-            portfolio[i] = get_json_data('api/resources/History' + str(sybmolIndexs[i]))
+        portfolio = [0] * len(symbol_indexs)
+        for i in range(len(symbol_indexs)):
+            portfolio[i] = get_json_data(folder_prefix + str(symbol_indexs[i]))
         return portfolio
 
 
@@ -138,9 +139,9 @@ def get_json_data(name):
     return json_data
 
 
-def get_json_data_from_tase(indexId, nameFile):
+def get_json_data_from_tase(index_id, name_file):
     appUrl = \
         get_index_history(settings.indexEndOfDayHistoryTenYearsUpToday,
-                        indexId, 10)
+                          index_id, 10)
     jsonData = get_symbol_info(appUrl)
     return jsonData

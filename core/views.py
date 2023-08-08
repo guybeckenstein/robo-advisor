@@ -4,9 +4,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from service.api.web_actions import save_three_user_graphs_as_png
-from service.util import manage_data, settings
-from service.util.manage_data import create_new_user_portfolio
+from service.util.web_actions import save_three_user_graphs_as_png
+from service.util import data_management, settings
+from service.util.data_management import create_new_user_portfolio
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from accounts.models import InvestorUser
@@ -121,8 +121,8 @@ def capital_market_investment_preferences_form(request, **kwargs):
             form.save()
 
             # Backend
-            risk_level = manage_data.get_level_of_risk_by_score(answers_sum)
-            tables = manage_data.get_extended_data_from_db(
+            risk_level = data_management.get_level_of_risk_by_score(answers_sum)
+            tables = data_management.get_extended_data_from_db(
                 stocks_symbols=settings.STOCKS_SYMBOLS,
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
@@ -135,7 +135,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
                 risk_level=risk_level,
-                extendedDataFromDB=tables,
+                extended_data_from_db=tables,
             )
 
             _, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \

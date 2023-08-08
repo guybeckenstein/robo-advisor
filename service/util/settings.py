@@ -16,7 +16,7 @@ LIMIT_PERCENT_MEDIUM_RISK_STOCKS = 0.3
 LIMIT_PERCENT_MEDIUM_RISK_COMMODITY = 0.1
 LIMIT_PERCENT_LOW_RISK_STOCKS = 0.15
 LIMIT_PERCENT_LOW_RISK_COMMODITY = 0
-gini_v_value = 4
+GINI_V_VALUE = 4
 STOCKS_SYMBOLS = [
     601,
     602,
@@ -36,7 +36,7 @@ STOCKS_SYMBOLS = [
 ]
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
 PACKAGE_DIR = BASE_DIR# + 'service/'
-RESOURCE_LOCATION = PACKAGE_DIR + 'api/resources/'
+RESOURCE_LOCATION = PACKAGE_DIR + 'impl/config/'
 SECTORS_JSON_NAME = RESOURCE_LOCATION + 'sectors'  # sectors json file
 INDICES_LIST_JSON_NAME = RESOURCE_LOCATION + 'indicesList'  # indices list json file
 # DB
@@ -49,7 +49,7 @@ USERS_JSON_NAME = DB_LOCATION + 'users'  # where to save the users details
 CLOSING_PRICES_FILE_NAME = "closing_prices"
 
 # STATIC FILES
-STATIC_IMAGES = BASE_DIR + '../static/img/graphs/'
+GRAPH_IMAGES = BASE_DIR + '../static/img/graphs/'
 USER_IMAGES = BASE_DIR + '../static/img/user/'
 
 

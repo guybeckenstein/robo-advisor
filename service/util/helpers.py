@@ -2,8 +2,8 @@ import codecs
 import datetime
 import json
 import math
-import os
 import re
+from bidi import algorithm as bidi_algorithm
 
 import numpy as np
 import pandas as pd
@@ -14,13 +14,12 @@ from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from typing import Tuple
-from statsmodels.tsa.arima.model import ARIMA
 import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
 
-from ..api.sector import Sector
-from . import settings, tase_util
+from ..impl.sector import Sector
+from . import settings, tase_interaction
 
 
 def get_best_portfolios(df, model_name: str):
@@ -375,9 +374,9 @@ def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHi
     for i, stock in enumerate(stocksNames):
 
         if type(stock) == int:
-            IsraeliStockData = get_israeli_indexes_data("get_past_10_years_history",
+            israeli_stock_data = get_israeli_indexes_data("get_past_10_years_history",
                                                         start_date, end_date, stock)
-            df = pd.DataFrame(IsraeliStockData["indexEndOfDay"]["result"])
+            df = pd.DataFrame(israeli_stock_data["indexEndOfDay"]["result"])
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
             df.set_index("tradeDate", inplace=True)
             price = df[["closingIndexPrice"]]
@@ -619,50 +618,44 @@ def find_best_stocks(stocks_data):
     return top_5_stocks"""
 
 
-# yfinance and israel tase api:
+# yfinance and israel tase impl:
 def get_israeli_indexes_data(command, start_date, end_date, israeliIndexes):  # get israeli indexes data from tase
-    return tase_util.get_israeli_indexes_data(command, start_date, end_date, israeliIndexes)
+    return tase_interaction.get_israeli_indexes_data(command, start_date, end_date, israeliIndexes)
 
 
 def convert_usa_Index_to_full_name(UsaIndexes):
-    UsaIndexesNames = {}
+    usa_indexes_names = {}
     for i, index in enumerate(UsaIndexes):
         ticker = yf.Ticker(index)
-        UsaIndexesNames[i] = ticker.info["longName"]
+        usa_indexes_names[i] = ticker.info["longName"]
 
-    return UsaIndexesNames.values()
-
-
-def convertIsraeliIndexToName(IsraliIndex):
-    hebrew_pattern = r"[\u0590-\u05FF\s]+"
-    text = getNameByIndexNumber(IsraliIndex)
-    hebrew_parts = re.findall(hebrew_pattern, text)
-
-    for hebrew_part in hebrew_parts:  # find all the Hebrew parts in the text
-        hebrew_part_reversed = ''.join(reversed(hebrew_part))
-        text = text.replace(hebrew_part, hebrew_part_reversed)
-    return text
-
-
-def getNameByIndexNumber(indexNumber):
-    # Load the JSON data from the file
-
-    jsonData = get_json_data(settings.INDICES_LIST_JSON_NAME)
-    result = [item['indexName'] for item in jsonData['indicesList']['result'] if item['indexId'] == indexNumber]
-
-    # makes it from right to left
-
-    name = result[0]
-    return name
+    return usa_indexes_names.values()
 
 
 def get_stocks_descriptions(stocks_symbols):
     stocks_descriptions = [len(stocks_symbols)]
     for i, stock in enumerate(stocks_symbols):
         if type(stock) == int:
-            stocks_descriptions.append(convertIsraeliIndexToName(stock))
+            stocks_descriptions.append(convert_israeli_index_to_name(stock))
         else:
             ticker = yf.Ticker(stock)
             stocks_descriptions.append(ticker.info["shortName"])
 
     return stocks_descriptions
+
+
+def convert_israeli_index_to_name(israeli_index):
+    hebrew_text = get_name_by_index_number(israeli_index)
+    reversed_hebrew_text = bidi_algorithm.get_display(u'' + hebrew_text)
+    return reversed_hebrew_text
+
+
+def get_name_by_index_number(indexNumber):
+    # Load the JSON data from the file
+
+    json_data = get_json_data(settings.INDICES_LIST_JSON_NAME)
+    result = [item['indexName'] for item in json_data['indicesList']['result'] if item['indexId'] == indexNumber]
+
+    # makes it from right to left
+    name = result[0]
+    return name
