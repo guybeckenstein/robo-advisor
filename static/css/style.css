@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
+:root {
+  --page-height: 0;
+}
+
+html {
+    height: 100%;
+}
+
 * {
 	box-sizing: border-box;
 	font-family: "Poppins", sans-serif;
@@ -11,11 +19,14 @@ body {
 	background-size: cover;
 	background-position: center;
 	background-attachment: fixed;
-	min-height: 100vh;
-	height: 100%;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
+	position: relative;
+	margin: 0;
+	min-height: 100%;
+	padding-bottom: 6.74rem;
+	box-sizing: inherit;
+	display: flex;
+	flex-direction: column;
+	grid: auto / 1em 1fr 1em;
 }
 
 .elements-container {
@@ -58,11 +69,10 @@ footer {
     box-shadow: 0 -1px 0 rgba(0, 0, 0, .3);
 	color: rgb(255, 255, 255);
 	padding-left: 100px;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-	height: auto;
-    margin-top: auto;
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: calc(var(--page-height));
 }
 
 footer .greeting {
