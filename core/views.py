@@ -121,11 +121,13 @@ def capital_market_investment_preferences_form(request, **kwargs):
             form.save()
 
             # Backend
+            stocks_collection_number = "1" # TODO: take from user investor profile
             risk_level = data_management.get_level_of_risk_by_score(answers_sum)
             tables = data_management.get_extended_data_from_db(
                 stocks_symbols=settings.STOCKS_SYMBOLS,
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
+                stocks_collection_number = stocks_collection_number,
                 mode='regular'
             )
             investment_amount = 0  # TODO: THINK ABOUT THIS (YARDEN AND GUY)

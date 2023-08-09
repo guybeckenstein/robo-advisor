@@ -149,8 +149,9 @@ class InvestmentPreferencesForm(forms.ModelForm):
         # User preferences
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
+        stocks_collection_number ="1" # user_preferences_instance.collection_number , TODO default = '1', get from user
         db_tuple = data_management.get_extended_data_from_db(
-            backend_settings.STOCKS_SYMBOLS, ml_answer, model_answer, mode=mode
+            backend_settings.STOCKS_SYMBOLS, ml_answer, model_answer, stocks_collection_number, mode=mode
         )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yield_list = db_tuple

@@ -1,5 +1,5 @@
 from impl.user import User
-from service.util import data_management, settings, research
+from service.util import data_management, settings, research, helpers
 
 if __name__ == '__main__':
     data_management.main_menu()
@@ -14,11 +14,13 @@ if __name__ == '__main__':
             model_option: int = 0  # data_management.get_model_option()
             sub_folder = str(is_machine_learning) + str(model_option) + "/"
             investment_amount: int = 1000  # data_management.get_investment_amount()
+            stocks_collection_number: str = "1" # 1 default, Option for the customer to choose TODO
 
             # Extended data from DB (CSV Tables)
             # TODO : option to choose the stocks
             tables = data_management.get_extended_data_from_db(
-                settings.STOCKS_SYMBOLS, is_machine_learning, model_option, mode='regular'
+                settings.STOCKS_SYMBOLS, is_machine_learning, model_option, stocks_collection_number,
+                mode='regular'
             )
             sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
                 pct_change_table, yield_list = tables
@@ -63,7 +65,8 @@ if __name__ == '__main__':
             user_portfolio.update_json_file(settings.USERS_JSON_NAME)
 
         elif selection == 2:
-            pass
+            helpers.collect_all_stocks()
+            print("yarden")
 
         elif selection == 3:
             # plot user portfolio's data
@@ -79,7 +82,7 @@ if __name__ == '__main__':
             data_management.expert_menu()
             selection = data_management.selected_menu_option()
             while selection != exit_loop_operation:
-                if selection == 1:
+                if selection == 1: # TODO : add to reasearch page
                     # forecast specific stock using machine learning
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
@@ -90,7 +93,7 @@ if __name__ == '__main__':
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
                                            + stock_name + operation + '.png')
-                elif selection == 2:
+                elif selection == 2: # TODO : add to reasearch page
                     # plotbb_strategy_stock for specific stock
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()

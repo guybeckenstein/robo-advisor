@@ -13,18 +13,21 @@ secret = '038af8b13e67a0fd0cbdbb1cdcb973c6'
 # secret = "e8d0264a8472c411443a6dfbcdf0992f"
 
 baseUrl = "https://openapigw.tase.co.il/tase/prod/api/v1"
-prefixUrl = "/tase/prod/impl/v1"
+prefixUrl = "/tase/prod/api/v1"
 payload = "grant_type=client_credentials&scope=tase"
 language = "he-IL"
 
 
-# apps names with date
-basicSecuritiesCompnayTrade = "basic-securities/trade-securities-list"  # not working
-
+# INDEXES:
 # past 10 years
 INDEX_EOD_HISTORY_TEN_YEARS = "indices/eod/history/ten-years/by-index?indexId="
 # past 5 years
 indexEndOfDayHistoryFiveYearsUpToday = "indices/eod/history/five-years/by-index?indexId="
+
+# SECURITIES:
+securityEndOfDayHistoryTenYears = "securities/trading/eod/history/ten-years/by-security?securityId="
+
+
 
 # other impl-tase url's apps:
 OTC_transaction_name = "transactions/otc-transactions"
@@ -35,7 +38,9 @@ fundHistoryDataName = "mutual-fund/history-data"
 # apps names without date
 basicIndexList = "basic-indices/indices-list"  # a list of all basic indices in tase-already have-not need to do again
 basicSecuritiesList = "basic-securities/securities-types"  # not need to do again
-basicSecuritiesCompnayList = "basic-securities/companies-list"
+basicDelistedSecuritiesList = "basic-securities/delisted-securities-list/2023/1"
+basicSecuritiesListByType = "basic-securities/trade-securities-list/2023/08/08"
+basicSecuritiesCompanyList = "basic-securities/companies-list"
 shortSalesWeeklyBalanceName = "short-sales/weekly-balance"
 shortSalesHistoricalData = "short-sales/history"
 fundListName = "fund/fund-list"

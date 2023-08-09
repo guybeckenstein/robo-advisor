@@ -1,13 +1,11 @@
-import os
-
 import numpy as np
 import pandas as pd
 import ta
 import yfinance as yf
 
 from .data_management import read_csv_file
-from ..impl.sector import Sector
-from . import settings, tase_interaction, plot_functions, helpers
+from . import settings, plot_functions, helpers
+from .helpers import get_sectors_data_from_file, get_israeli_indexes_list
 
 
 def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
@@ -95,6 +93,27 @@ def plotbb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO
     plt_instance = plot_functions.plotbb_strategy_portfolio(pct_change_table, new_portfolio)
 
     return plt_instance
+
+def download_data_for_research(num_of_years_history: int) -> None: # TODO
+    stocks_symbols = []
+
+    sectors_data = get_sectors_data_from_file()
+    israel_indexes_list = get_israeli_indexes_list()  # get from here data
+    usa_indexes_list = sectors_data[3:5]["stocks"]
+    israel_stocks_list = sectors_data[6]["stocks"]
+    usa_stocks_list = sectors_data[7]["stocks"]
+
+    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
+                                   'usa_stocks_closing_prices', usa_stocks_list, num_of_years_history, saveToCsv=True)
+
+    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
+                                   'israel_indexes_closing_prices', israel_indexes_list, num_of_years_history,
+                                   saveToCsv=True)
+
+    stocks_symbols.extend(usa_stocks_list)
+    stocks_symbols.extend(israel_indexes_list)
+    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
+                                   'all_closing_prices', stocks_symbols, num_of_years_history, saveToCsv=True)
 
 
 def find_good_stocks(group_of_stocks="usa_stocks", filter_option=False):  # TODO - fix
