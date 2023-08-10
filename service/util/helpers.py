@@ -374,7 +374,7 @@ def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHi
 
     for i, stock in enumerate(stocksNames):
 
-        if type(stock) == int:
+        if type(stock) == int or stock.isnumeric():
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
@@ -386,7 +386,10 @@ def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHi
             df = pd.DataFrame(df)
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
             df.set_index("tradeDate", inplace=True)
-            price = df[["closingIndexPrice"]]
+            if is_index_type:
+                price = df[["closingIndexPrice"]]
+            else:
+                price = df[["closingPrice"]]
             frame[stocksNames[i]] = price
         else:
             df = yf.download(stock, start=start_date, end=end_date)
@@ -427,7 +430,7 @@ def get_sectors_data_from_file(mode: str = "regular"):
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols: list, mode: str = 'regular') -> list: # TODO - make more efficient
+def set_sectors(stocks_symbols: list, mode: str = 'regular') -> list:  # TODO - make more efficient
     """
     For each stock symbol, it checks for which sector does it belong.
     :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol
@@ -511,19 +514,19 @@ def makes_yield_column(_yield, weighted_sum_column):
 # yfinance and israel tase impl:
 def get_israeli_symbol_data(command, start_date, end_date, israeli_symbol_name, is_index_type):
     if is_index_type:
-        data = tase_interaction.get_israeli_index_data(command, start_date, end_date, israeli_symbol_name)["indexEndOfDay"]["result"]
+        data = \
+        tase_interaction.get_israeli_index_data(command, start_date, end_date, israeli_symbol_name)["indexEndOfDay"][
+            "result"]
     else:
         data = tase_interaction.get_israeli_security_data(
             command, start_date, end_date, israeli_symbol_name)["securitiesEndOfDayTradingData"]["result"]
     return data
 
 
-def get_israeli_security_data(command, start_date, end_date, israeli_security_name):
-    return tase_interaction.get_israeli_security_data(command, start_date, end_date, israeli_security_name)
-
-
-def get_stocks_descriptions(stocks_symbols):  # TODO - ALSO FOR STOCKS
+def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):  # TODO - ALSO FOR STOCKS
     stocks_descriptions = [len(stocks_symbols)]
+    usa_stocks_table = get_usa_stocks_table()
+    usa_indexes_table = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
         if type(stock) == int:
             num_of_digits = len(str(stock))
@@ -531,35 +534,38 @@ def get_stocks_descriptions(stocks_symbols):  # TODO - ALSO FOR STOCKS
                 is_index_type = False
             else:
                 is_index_type = True
-            stocks_descriptions.append(convert_israeli_index_to_name(stock, is_index_type=is_index_type))
+            stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
+                                                                             is_reverse_mode=is_reverse_mode))
         else:
-            ticker = yf.Ticker(stock)
-            # TODO - maybe in usa stocks to takes the info from nasdaq table
+
             try:
-                stocks_descriptions.append(ticker.info["shortName"])
+                description = usa_indexes_table.loc[usa_indexes_table['symbol'] == stock, 'shortName'].item()
+                stocks_descriptions.append(description)
             except:
-                stocks_descriptions.append("no information")
+                try:
+                    description = usa_indexes_table.loc[usa_indexes_table['symbol'] == stock, 'name'].item()
+                    stocks_descriptions.append(description)
+                except:
+                    description = yf.Ticker(stock).info['shortName']
+                    stocks_descriptions.append(description)
 
     return stocks_descriptions
 
 
-def convert_israeli_index_to_name(symbol: int, is_index_type: bool):
-    hebrew_text = convert_israeli_symbol_number_to_name(symbol, is_index_type)
-    reversed_hebrew_text = bidi_algorithm.get_display(u'' + hebrew_text)
-    return reversed_hebrew_text
-
-
-def convert_israeli_symbol_number_to_name(indexNumber: int, is_index_type: bool) -> str:
+def convert_israeli_symbol_number_to_name(symbol_number: int, is_index_type: bool, is_reverse_mode: bool = True) -> str:
+    hebrew_text = ""
     if (is_index_type):
         json_data = get_json_data(settings.INDICES_LIST_JSON_NAME)
-        result = [item['indexName'] for item in json_data['indicesList']['result'] if item['indexId'] == indexNumber]
+        hebrew_text = \
+        [item['indexName'] for item in json_data['indicesList']['result'] if item['indexId'] == symbol_number][0]
     else:
         json_data = get_json_data(settings.SECURITIES_LIST_JSON_NAME)
-        result = [item['securityName'] for item in json_data['tradeSecuritiesList']['result'] if
-                  item['securityId'] == indexNumber]
+        hebrew_text = [item['securityName'] for item in json_data['tradeSecuritiesList']['result'] if
+                       item['securityId'] == symbol_number][0]
+    if is_reverse_mode:
+        hebrew_text = bidi_algorithm.get_display(u'' + hebrew_text)
 
-    name = result[0]
-    return name
+    return hebrew_text
 
 
 def convert_israeli_security_number_to_company_name(israeli_security_number: str) -> str:
@@ -569,12 +575,6 @@ def convert_israeli_security_number_to_company_name(israeli_security_number: str
 
     return result[0]
 
-    # alternative: get directly from tase api instead of json file config
-    """securities_list = get_israeli_companies_list()
-    for security in securities_list:
-        if security["corporateId"] == israeli_security_number:
-            return security["companyName"]"""
-
 
 def convert_company_name_to_israeli_security_number(companyName: str) -> str:
     securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
@@ -582,12 +582,6 @@ def convert_company_name_to_israeli_security_number(companyName: str) -> str:
               item['companyName'] == companyName]
 
     return result[0]
-
-    # alternative: get directly from tase api instead of json file config
-    """securities_list = get_israeli_companies_list()
-    for security in securities_list:
-        if security["companyName"] == companyName:
-            return security["corporateId"]"""
 
 
 # get directly from tase api instead of json file config
@@ -601,6 +595,16 @@ def get_israeli_indexes_list():
     json_data = tase_interaction.get_israeli_indexes_list()
     indexes_list = json_data['indicesList']['result']
     return indexes_list
+
+
+def get_usa_stocks_table():
+    return pd.read_csv(settings.RESOURCE_LOCATION + "nasdaq_all_stocks.csv")
+
+
+def get_usa_indexes_table():
+    return pd.read_csv(settings.RESOURCE_LOCATION + "usa_indexes.csv")
+
+
 
 
 def collect_all_stocks():
@@ -645,3 +649,31 @@ def collect_all_stocks():
             csv_writer.writerow(row)
 
     print("CSV file created successfully!")
+
+def save_usa_indexes_table(): # dont delete it, use for admin
+    sectors_data = get_sectors_data_from_file(mode="regular")
+    stock_data_list = []
+    # create table
+    for i in range(3,6):
+        stocks = sectors_data[i]["stocks"]
+        for j in range(len(stocks)):
+            stock_info = yf.Ticker(stocks[j]).info
+            stock_data_list.append(stock_info)
+
+    # Create a set of all keys present in the stock data dictionaries
+    all_keys = set()
+    for stock_data in stock_data_list:
+        all_keys.update(stock_data.keys())
+
+
+    # Define the CSV file path
+    csv_file_path = settings.RESOURCE_LOCATION + 'usa_indexes.csv'
+
+    # Write the data to a CSV file
+    with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=all_keys)
+
+        writer.writeheader()
+        for stock_data in stock_data_list:
+            writer.writerow(stock_data)
+

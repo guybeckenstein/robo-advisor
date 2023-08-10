@@ -5,21 +5,22 @@ if __name__ == '__main__':
     data_management.main_menu()
     selection = data_management.selected_menu_option()  # TODO get selection from page in site
     exit_loop_operation = 8
-    # login_name: str = data_management.get_name()
-    login_name: str = 'yarden'
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
+            login_name: str = 'yarden'  # data_management.get_name()
             is_machine_learning: int = 0  # data_management.get_machine_learning_option()
             model_option: int = 0  # data_management.get_model_option()
-            sub_folder = str(is_machine_learning) + str(model_option) + "/"
-            investment_amount: int = 1000  # data_management.get_investment_amount()
-            stocks_collection_number: str = "1" # 1 default, Option for the customer to choose TODO
-
+            investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
+            stocks_collection_number = 1  # default
+            # TODO in site(GUY)
+            # 1- default collection(recommended)
+            stocks_collection_number: str = data_management.get_collection_number()  # 1 default, Option for the customer to choose TODO -user investor
+            stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
+            sub_folder = str(stocks_collection_number) + '/' + str(is_machine_learning) + str(model_option) + "/"
             # Extended data from DB (CSV Tables)
-            # TODO : option to choose the stocks
             tables = data_management.get_extended_data_from_db(
-                settings.STOCKS_SYMBOLS, is_machine_learning, model_option, stocks_collection_number,
+                stocks_symbols, is_machine_learning, model_option, stocks_collection_number,
                 mode='regular'
             )
             sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
@@ -52,7 +53,7 @@ if __name__ == '__main__':
 
             # creates new user with portfolio details
             new_portfolio = data_management.create_new_user_portfolio(
-                stocks_symbols=settings.STOCKS_SYMBOLS,
+                stocks_symbols=stocks_symbols,
                 investment_amount=investment_amount,
                 is_machine_learning=is_machine_learning,
                 model_option=model_option,
@@ -60,7 +61,7 @@ if __name__ == '__main__':
                 extended_data_from_db=tables,
             )
 
-            user_portfolio = User(login_name, new_portfolio)
+            user_portfolio = User(login_name, new_portfolio, stocks_collection_number)
             # add user to DB(json file)
             user_portfolio.update_json_file(settings.USERS_JSON_NAME)
 
@@ -82,7 +83,7 @@ if __name__ == '__main__':
             data_management.expert_menu()
             selection = data_management.selected_menu_option()
             while selection != exit_loop_operation:
-                if selection == 1: # TODO : add to reasearch page
+                if selection == 1: # TODO : add to research page
                     # forecast specific stock using machine learning
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
@@ -93,7 +94,7 @@ if __name__ == '__main__':
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
                                            + stock_name + operation + '.png')
-                elif selection == 2: # TODO : add to reasearch page
+                elif selection == 2: # TODO : add to research page
                     # plotbb_strategy_stock for specific stock
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
@@ -117,20 +118,24 @@ if __name__ == '__main__':
                     # TODO - SHOW IMAGES
 
                 # plot 3 best portfolios graph
-                elif selection == 5:
+                elif selection == 5: # TODO : maybe show in the site
                     # plot Markowitz graph
                     num_of_years_history = data_management.get_num_of_years_history()
                     is_machine_learning = data_management.get_machine_learning_option()
-                    data_management.plot_stat_model_graph(settings.STOCKS_SYMBOLS, is_machine_learning,
+                    stocks_collection_number: str = data_management.get_collection_number()
+                    stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
+                    data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
                                                           settings.MODEL_NAME[0], num_of_years_history)
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[0] + '_all_option' + '.png')
 
-                elif selection == 6:
+                elif selection == 6:  # TODO : maybe show in the site
                     # plot Gini graph
                     num_of_years_history = data_management.get_num_of_years_history()
                     is_machine_learning = data_management.get_machine_learning_option()
-                    data_management.plot_stat_model_graph(settings.STOCKS_SYMBOLS, is_machine_learning,
+                    stocks_collection_number: str = data_management.get_collection_number()  # 1 default, Option for the customer to choose TODO -user investor
+                    stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
+                    data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
                                                           settings.MODEL_NAME[1], num_of_years_history)
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[1] + '_all_option' + '.png')

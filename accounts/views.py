@@ -116,7 +116,7 @@ class MyPasswordChangeForm(PasswordChangeView):
 
 
 @login_required
-def profile_investor(request):
+def profile_investor(request): # TODO (GUY)
     is_form_filled = True
     try:
         get_object_or_404(InvestorUser, user=request.user)
@@ -137,7 +137,7 @@ def profile_investor(request):
     context = {
         'form': form,
         'is_form_filled': is_form_filled,
-        'title': "Update Investments Details",
+        'title': "Update Collections of Stocks Details",
     }
     return render(request, 'account/profile_investor.html', context=context)
 

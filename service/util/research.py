@@ -17,8 +17,8 @@ def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
 
 def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int):
     plt = None
-    file_name = settings.CLOSING_PRICES_FILE_NAME
-    table = helpers.convert_data_to_tables(settings.BUCKET_REPOSITORY, file_name,
+    file_name = str(stock) + '.csv'
+    table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
                                             [stock], num_of_years_history, saveToCsv=False)
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
         df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_linear_regression(table,
@@ -74,7 +74,26 @@ def implement_bb_strategy(data, lower_bb, upper_bb):
 
 
 def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"):
-    stock_prices = yf.download(stock_name, start, end)
+    if type(stock_name) == int or stock_name.isnumeric():
+        num_of_digits = len(str(stock_name))
+        if num_of_digits > 3:
+            is_index_type = False
+        else:
+            is_index_type = True
+        stock_prices = helpers.get_israeli_symbol_data("get_past_10_years_history",
+                                     start, end, stock_name, is_index_type)
+        # list to dateframe
+        stock_prices = pd.DataFrame(stock_prices)
+        stock_prices["tradeDate"] = pd.to_datetime(stock_prices["tradeDate"])
+        stock_prices.set_index("tradeDate", inplace=True)
+        if is_index_type:
+            stock_prices['Adj Close'] = stock_prices[["closingIndexPrice"]]
+        else:
+            stock_prices['Adj Close'] = stock_prices[["closingPrice"]]
+    else:
+        stock_prices = yf.download(stock_name, start, end)
+
+
     stock_prices['MA50'] = stock_prices['Adj Close'].rolling(window=50).mean()
     stock_prices['50dSTD'] = stock_prices['Adj Close'].rolling(window=50).std()
     stock_prices['Upper'] = stock_prices['MA50'] + (stock_prices['50dSTD'] * 2)
@@ -83,7 +102,7 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
     stock_prices = stock_prices.dropna()
     stock_prices = stock_prices.iloc[51:]
 
-    buy_price, sell_price, bb_signal = helpers.implement_bb_strategy(stock_prices['Adj Close'],
+    buy_price, sell_price, bb_signal = implement_bb_strategy(stock_prices['Adj Close'],
                                                                       stock_prices['Lower'], stock_prices['Upper'])
     plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
     return plt_instance
@@ -270,11 +289,7 @@ def get_stocks_data_for_research_by_group(group_of_stocks: str):
 
 
     else:
-        tickers = settings.STOCKS_SYMBOLS
-        start, end = helpers.get_from_and_to_dates(10)
-        data = yf.download(tickers, start, end=end)
-        data = data.set_index(pd.to_datetime(data.index))
-        # TODO
+        pass
 
     return tickers
 

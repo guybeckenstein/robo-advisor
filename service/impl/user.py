@@ -16,10 +16,12 @@ class User:
                 starting_investment_amount=0,
                 selected_model=1,
                 is_machine_learning=0
-            )
+            ),
+            stocks_collection_number = "1"
     ):
         self._name: str = name
         self._myPortfolio: Portfolio = portfolio
+        self.stocks_collection_number = stocks_collection_number
 
     @property
     def name(self) -> str:
@@ -67,7 +69,8 @@ class User:
             "monthlyChange": monthly_change,
             "dailyChange": daily_change,
             "selectedModel": selected_model,
-            "machineLearningOpt": machine_learning_opt
+            "machineLearningOpt": machine_learning_opt,
+            "stocksCollectionNumber": self.stocks_collection_number
         }
         json_data['usersList'][self._name] = [new_user_data]
 

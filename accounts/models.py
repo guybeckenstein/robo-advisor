@@ -72,6 +72,8 @@ class InvestorUser(models.Model):
     total_change = models.FloatField()
     monthly_change = models.FloatField()
     daily_change = models.FloatField()
+    # stocks_collection_number = models.stringField() TODO(GUY)
+
 
     class Meta:
         db_table = 'InvestorUser'

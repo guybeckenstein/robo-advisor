@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 from datetime import date
 from typing import Tuple, List
+
+from pip._internal.utils.misc import tabulate
+
 from ..impl.portfolio import Portfolio
 from ..impl.stats_models import StatsModels
 from ..impl.sector import Sector
@@ -19,16 +22,16 @@ import boto3
 def update_all_tables(numOfYearsHistory):  # build DB for withdraw
     today = date.today()
     formatted_date = today.strftime("%Y-%m-%d")
-    collections_json_data = get_collection_json_data()['collections']
+    collections_json_data = get_collection_json_data()
     for i, collection in enumerate(collections_json_data):
-        curr_collection = collections_json_data[str(i+1)][0]
+        curr_collection = collections_json_data[str(i + 1)][0]
         stocksSymbols = curr_collection['stocksSymbols']
-        __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY + str(str(i+1)) + '/'
-        update_closing_prices_tables(formatted_date, stocksSymbols,  numOfYearsHistory, __path)
+        __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY + str(str(i + 1)) + '/'
+        update_closing_prices_tables(formatted_date, stocksSymbols, numOfYearsHistory, __path)
         update_data_frame_tables(formatted_date, curr_collection, __path)
 
 
-def update_closing_prices_tables(formatted_date_today, stocksSymbols,  numOfYearsHistory, __path):
+def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYearsHistory, __path):
     with open(__path + "lastUpdatedClosingPrice.txt", "r") as file:
         lastUpdatedDateClosingPrices = file.read().strip()
     if lastUpdatedDateClosingPrices != formatted_date_today:
@@ -45,12 +48,11 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, __path)
 
     # TODO - get models data from json file (think about it)
 
-
     with open(__path + "lastUpdatedDftables.txt", "r") as file:
         lastUpdatedDftables = file.read().strip()
     if lastUpdatedDftables != formatted_date_today:
         sectorsList = helpers.set_sectors(stocksSymbols, mode='regular')
-        closingPricesTable = get_closing_prices_table(__path ,mode='regular')
+        closingPricesTable = get_closing_prices_table(__path, mode='regular')
         pct_change_table = closingPricesTable.pct_change()
         # without maching learning
         # Markowitz
@@ -78,7 +80,7 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, __path)
                                              closingPricesTable=closingPricesTable, pct_change_table=pct_change_table,
                                              __path=__path)
 
-        with open(settings.__path + "lastUpdatedDftables.txt", "w") as file:
+        with open(__path + "lastUpdatedDftables.txt", "w") as file:
             file.write(formatted_date_today)
 
 
@@ -200,11 +202,13 @@ def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_m
     )
     return portfolio
 
+
 ############################################################################################################
 # UTILITY FUNCTIONS
 ############################################################################################################
 # database utility functions:
-def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, model_option: int,stocks_collection_number,  mode: str):
+def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, model_option: int,
+                              stocks_collection_number, mode: str):
     """
     Get extended data information from DB (CSV tables)
     """
@@ -216,8 +220,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
         sectors_data = get_json_data('../../' + settings.SECTORS_JSON_NAME)
     sectors: list = helpers.set_sectors(stocks_symbols, mode)
     closing_prices_table: pd.DataFrame = get_closing_prices_table(__path, mode=mode)
-    # TODO : GET STOCKS SYMBOLS FROM TABLES INDEXES
-    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1], mode=mode)
+    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1], __path, mode=mode)
     three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
     best_stocks_weights_column = helpers.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
                                                                  closing_prices_table.pct_change())
@@ -247,39 +250,34 @@ def get_closing_prices_table(__path, mode: str) -> pd.DataFrame:
     return closing_prices_table
 
 
-def get_three_level_df_tables(is_machine_learning: int, model_name, mode: str) -> list:
+def get_three_level_df_tables(is_machine_learning: int, model_name, collection_path: str, mode: str) -> list:
     """
     Get the three level df tables according to machine learning option and model name
     """
-    low_risk_df_table = get_df_table(is_machine_learning, model_name, "low", mode=mode)
-    medium_risk_df_table = get_df_table(is_machine_learning, model_name, "medium", mode=mode)
-    high_risk_df_table = get_df_table(is_machine_learning, model_name, "high", mode=mode)
+    low_risk_df_table = get_df_table(is_machine_learning, model_name, "low", collection_path, mode=mode)
+    medium_risk_df_table = get_df_table(is_machine_learning, model_name, "medium", collection_path, mode=mode)
+    high_risk_df_table = get_df_table(is_machine_learning, model_name, "high", collection_path, mode=mode)
 
     return [low_risk_df_table, medium_risk_df_table, high_risk_df_table]
 
 
-def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, mode: str) -> pd.DataFrame:
+def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, collection_path: str,
+                 mode: str) -> pd.DataFrame:
     """
     get specific df table from csv file according to machine learning option, model name and level of risk
     """
+    basic_path = collection_path
     if is_machine_learning:
-        if mode == 'regular':
-            df_table = pd.read_csv(
-                settings.MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
-            )
-        else:
-            df_table = pd.read_csv(
-                '../../' + settings.BUSKET_REPOSITORY + settings.curr_busket_name + '/' + settings.MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
-            )
+        basic_path += settings.MACHINE_LEARNING_LOCATION
     else:
-        if mode == 'regular':
-            df_table = pd.read_csv(
-                settings.NON_MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
-            )
-        else:
-            df_table = pd.read_csv(
-                '../../' + settings.NON_MACHINE_LEARNING_LOCATION + model_name + '_df_' + level_of_risk + '.csv'
-            )
+        basic_path += settings.NON_MACHINE_LEARNING_LOCATION
+    if mode == 'regular':
+        df_table = pd.read_csv(basic_path + model_name + '_df_' + level_of_risk + '.csv'
+                               )
+    else:
+        df_table = pd.read_csv(
+            '../../' + basic_path + model_name + '_df_' + level_of_risk + '.csv'
+        )
     df_table = df_table.iloc[:, 1:]
     df_table = df_table.apply(pd.to_numeric, errors='coerce')
     return df_table
@@ -317,9 +315,15 @@ def get_user_from_db(user_name: str):
     annual_returns = user_data['annualReturns']
     annual_volatility = user_data['annualVolatility']
     annual_sharpe = user_data['annualSharpe']
+    try:
+        stocks_collection_number = user_data['stocksCollectionNumber']
+    except:
+        stocks_collection_number = "1"  # default
     sectors = helpers.set_sectors(stocks_symbols)
 
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
+    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY + stocks_collection_number + '/'
+
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(__path=__path, mode='regular')
     portfolio: Portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
         sectors=sectors,
@@ -343,7 +347,21 @@ def get_user_from_db(user_name: str):
 
 
 def get_collection_json_data():
-    return get_json_data(settings.COLLECTION_JSON_NAME)
+    return get_json_data(settings.COLLECTION_JSON_NAME)['collections']
+
+
+def get_stocks_symbols_from_collection(stocks_collection_number) -> List:
+    """
+    Get all stocks symbols from json file
+    """
+    json_data = get_collection_json_data()
+    stocks_symbols = json_data[str(stocks_collection_number)][0]['stocksSymbols']
+    return stocks_symbols
+
+
+def get_models_data_from_collections_file():  # TODO - maybe use from admin
+    json_data = get_collection_json_data()
+    return json_data["models_data"]
 
 
 def find_user_in_list(user_name: str, users: list):
@@ -472,7 +490,7 @@ def plot_distribution_of_portfolio(distribution_graph, mode: str, sub_folder: st
 def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_option: int,
                           num_of_years_history=settings.NUM_OF_YEARS_HISTORY) -> None:
     sectors: list = set_sectors(stocks_symbols)
-
+    # TODO- MANAGE CLOSING PRICE TALBE
     closing_prices_table: pd.DataFrame = get_closing_prices_table(mode='regular')
     pct_change_table = closing_prices_table.pct_change()
     # TODO - get part of closing_prices_table according to num_of_years_history
@@ -608,5 +626,20 @@ def get_group_of_stocks_option() -> int:
     return console_handler.get_group_of_stocks_option()
 
 
-def get_investment_amount():
+def get_investment_amount() -> int:
     return console_handler.get_investment_amount()
+
+
+def get_stocks_collections_from_json_file():
+    collections_data = get_collection_json_data()
+    stocks_collections = {}
+    for i in range(1, len(collections_data)):
+        stocks_symbols_list = collections_data[str(i)][0]['stocksSymbols']
+        stocks_description_list = helpers.get_stocks_descriptions(stocks_symbols_list, is_reverse_mode=False)
+        stocks_collections[str(i)] = [stocks_symbols_list, stocks_description_list]
+    return stocks_collections
+
+
+def get_collection_number() -> str:
+    stocks_collections = get_stocks_collections_from_json_file()
+    return console_handler.get_collection_number(stocks_collections)

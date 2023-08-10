@@ -206,15 +206,17 @@ def plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port, shar
 
 
 def plotbb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
+
     stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=(10, 4))
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)
-    plt.show()
 
     print("number of green :")
     print(np.count_nonzero(~np.isnan(buy_price)))
     print("number of red :")
     print(np.count_nonzero(~np.isnan(sell_price)))
+
+    return plt
 
 
 def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio) -> plt:
@@ -521,19 +523,12 @@ def plot_top_stocks(top_stocks) -> None:
     print(top_stocks)
 
 
-"""def plot(plt_instance) -> None:
-    plt_instance.show()"""
-
-
 def save_graphs(plt_instance, file_name) -> None:
-    print(file_name)
+    # Adjust font size of the table cells
     plt_instance.savefig(f'{file_name}.png', format='png', dpi=300)
+    plt_instance.clf()  # Clear the figure after saving
 
 
 def plot_image(file_name):
     image = Image.open(file_name)
     image.show()
-    """img = mpimg.imread(file_name)  # Load the image
-    plt.imshow(img)  # Display the image
-    plt.axis('off')  # Turn off axis labels and ticks
-    plt.show()  # Show the plot"""

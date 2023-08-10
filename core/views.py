@@ -121,10 +121,11 @@ def capital_market_investment_preferences_form(request, **kwargs):
             form.save()
 
             # Backend
-            stocks_collection_number = "1" # TODO: take from user investor profile
+            stocks_collection_number = "1" # TODO: take from user investor profile, default is 1
             risk_level = data_management.get_level_of_risk_by_score(answers_sum)
+            stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
             tables = data_management.get_extended_data_from_db(
-                stocks_symbols=settings.STOCKS_SYMBOLS,
+                stocks_symbols=stocks_symbols,
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
                 stocks_collection_number = stocks_collection_number,
@@ -132,7 +133,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
             )
             investment_amount = 0  # TODO: THINK ABOUT THIS (YARDEN AND GUY)
             portfolio = create_new_user_portfolio(
-                stocks_symbols=settings.STOCKS_SYMBOLS,
+                stocks_symbols=stocks_symbols,
                 investment_amount=investment_amount,
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
@@ -176,6 +177,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
                     total_change=total_change,
                     monthly_change=monthly_change,
                     daily_change=daily_change,
+
                     # TODO - maybe add more fields later
                 )
             # Frontend
@@ -195,7 +197,7 @@ def capital_market_investment_preferences_form(request, **kwargs):
 
 
 def convert_type_list_to_str_list(input_list: list):
-    # Convert all values within settings.STOCKS_SYMBOLS to `str`. Some values are `int`
+    # Convert all values within stocks_symbols to `str`. Some values are `int`
     str_list = []
     for value in input_list:
         str_list.append(str(value))

@@ -133,7 +133,7 @@ class PasswordChangingForm(PasswordChangeForm):
         fields = ('old_password', 'new_password1', 'new_password2',)
 
 
-class UpdateInvestorUserForm(forms.ModelForm):
+class UpdateInvestorUserForm(forms.ModelForm): # TODO - shocw collections of stocks and choices(GUY)
     starting_investment_amount = forms.CharField()
     stocks_symbols = forms.MultipleChoiceField(widget=forms.SelectMultiple)
 

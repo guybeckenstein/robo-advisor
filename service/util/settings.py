@@ -11,33 +11,11 @@ MODEL_NAME = ['Markowitz', 'Gini']
 MACHINE_LEARNING_MODEL = ['LinearRegression', 'ARIMA', 'GradientBoostingRegressor', 'Prophet']
 SELECTED_ML_MODEL_FOR_BUILD = MACHINE_LEARNING_MODEL[1]  # TODO
 NUM_OF_YEARS_HISTORY = 10  # the number of history years data
-# TODO order min max percent later
-LIMIT_PERCENT_MEDIUM_RISK_STOCKS = 0.3  # TODO
+LIMIT_PERCENT_MEDIUM_RISK_STOCKS = 0.3
 LIMIT_PERCENT_MEDIUM_RISK_COMMODITY = 0.1
 LIMIT_PERCENT_LOW_RISK_STOCKS = 0.15
 LIMIT_PERCENT_LOW_RISK_COMMODITY = 0
-# TODO , MAYBE ADD LIMIT FOR ALL SECTORS
-GINI_V_VALUE = 1.5
-#   'TA35.TA',
-#     'TA90.TA',
-# TODO
-STOCKS_SYMBOLS = [
-    601,
-    602,
-    700,
-    701,
-    702,
-    142,
-    143,
-    'SPY',
-    'QQQ',
-    '^RUT',
-    'IEI',
-    'LQD',
-    'GSG',
-    'GLD',
-    'OIL',
-]
+GINI_V_VALUE = 4
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
 PACKAGE_DIR = BASE_DIR
 RESOURCE_LOCATION = PACKAGE_DIR + 'impl/config/'
@@ -46,7 +24,6 @@ INDICES_LIST_JSON_NAME = RESOURCE_LOCATION + 'indicesList'  # indices list json 
 SECURITIES_LIST_JSON_NAME = RESOURCE_LOCATION + 'securitiesList'  # indices list json file
 # DB
 DB_LOCATION = PACKAGE_DIR + 'DB/'
-# NAME_OF_STOCKS_COLLECTION = '1'# TODO
 BASIC_STOCK_COLLECTION_REPOSITORY = DB_LOCATION + 'collection'
 COLLECTION_JSON_NAME = DB_LOCATION + 'stocks_collections'  # collection json file
 MACHINE_LEARNING_LOCATION = 'includingMachineLearning/'  # directory with 6 tables

@@ -104,7 +104,8 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     '</span>')
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        sub_folder = str(ml_answer) + str(model_answer)  # Sub folder for current user to fetch its relevant graphs
+        stocks_collection_number = "1" # TODO - get from investor profile(1 is default)
+        sub_folder = str(stocks_collection_number) + '/' + str(ml_answer) + str(model_answer)  # Sub folder for current user to fetch its relevant graphs
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #2: Which distribution do you prefer?'
@@ -150,13 +151,14 @@ class InvestmentPreferencesForm(forms.ModelForm):
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
         stocks_collection_number ="1" # user_preferences_instance.collection_number , TODO default = '1', get from user
+        stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
         db_tuple = data_management.get_extended_data_from_db(
-            backend_settings.STOCKS_SYMBOLS, ml_answer, model_answer, stocks_collection_number, mode=mode
+            stocks_symbols, ml_answer, model_answer, stocks_collection_number, mode=mode
         )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yield_list = db_tuple
         # Saves two graphs
-        sub_folder = str(ml_answer) + str(model_answer) + "/"
+        sub_folder = str(stocks_collection_number) + '/' + str(ml_answer) + str(model_answer) + "/"
         data_management.plot_distribution_of_portfolio(yield_list, mode=mode, sub_folder=sub_folder)
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode, sub_folder=sub_folder
