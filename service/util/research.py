@@ -15,23 +15,30 @@ def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
     plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + stock  + operation)
 
 
-def forecast_specific_stock(stock: str, machine_learning_model, num_of_years_history: int):
+def forecast_specific_stock(stock: str, machine_learning_model, models_data, num_of_years_history: int):
     plt = None
     file_name = str(stock) + '.csv'
     table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
                                             [stock], num_of_years_history, saveToCsv=False)
+    RECORD_PERCENT_TO_PREDICT = models_data["RECORD_PERCENT_TO_PREDICT"]
+    TEST_SIZE_MACHINE_LEARNING = models_data["TEST_SIZE_MACHINE_LEARNING"]
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
         df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_linear_regression(table,
                                                                                                        table.index,
+                                                                                                      RECORD_PERCENT_TO_PREDICT,
+                                                                                                      TEST_SIZE_MACHINE_LEARNING,
                                                                                                        closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:
         df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_arima(table, table.index,
+                                                                                          RECORD_PERCENT_TO_PREDICT,
                                                                                            closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:
         df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_gbm(table, table.index,
+                                                                                        RECORD_PERCENT_TO_PREDICT,
                                                                                          closing_prices_mode=True)
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:
         df, annual_return, excepted_returns, plt = helpers.analyze_with_machine_learning_prophet(table, table.index,
+                                                                                                 RECORD_PERCENT_TO_PREDICT,
                                                                                                   closing_prices_mode=True)
 
     plt_instance = plot_functions.plot_price_forecast(stock, df, annual_return, plt)

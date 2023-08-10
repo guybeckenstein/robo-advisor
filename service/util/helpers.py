@@ -4,6 +4,8 @@ import datetime
 import json
 import math
 import re
+
+import boto3
 from bidi import algorithm as bidi_algorithm
 
 import numpy as np
@@ -19,6 +21,7 @@ import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
 
+from ..impl.config import aws_settings
 from ..impl.sector import Sector
 from . import settings, tase_interaction
 
@@ -126,12 +129,12 @@ def return_sectors_weights_according_to_stocks_weights(sectors: list, stocks_wei
     return sectors_weights
 
 
-def analyze_with_machine_learning_linear_regression(returns_stock, table_index, closing_prices_mode=False):
+def analyze_with_machine_learning_linear_regression(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT, TEST_SIZE_MACHINE_LEARNING, closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
-    forecast_out = int(math.ceil(settings.RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # Added date
@@ -145,7 +148,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     df.dropna(inplace=True)
     y = np.array(df['label'])
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=settings.TEST_SIZE_MACHINE_LEARNING)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE_MACHINE_LEARNING)
     clf = LinearRegression()
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)
@@ -177,8 +180,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     return df, forecast_returns_annual, excepted_returns
 
 
-def analyze_with_machine_learning_arima(returns_stock, table_index, closing_prices_mode=False,
-                                        RECORD_PERCENT_TO_PREDICT=settings.RECORD_PERCENT_TO_PREDICT):
+def analyze_with_machine_learning_arima(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT = 0.05,  closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
@@ -224,13 +226,13 @@ def analyze_with_machine_learning_arima(returns_stock, table_index, closing_pric
     return df_final, forecast_returns_annual, excepted_returns
 
 
-def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices_mode=False):
+def analyze_with_machine_learning_gbm(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT,  closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
-    forecast_out = int(math.ceil(settings.RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     df_final.index = pd.to_datetime(table_index)
@@ -271,8 +273,9 @@ def analyze_with_machine_learning_gbm(returns_stock, table_index, closing_prices
     return df_final, forecast_returns_annual, excepted_returns
 
 
-def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_prices_mode=False,
-                                          RECORD_PERCENT_TO_PREDICT=settings.RECORD_PERCENT_TO_PREDICT):
+def analyze_with_machine_learning_prophet(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT= 0.05,
+                                          closing_prices_mode=False,
+                                          ):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
@@ -334,30 +337,35 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, closing_pr
     return df_final, forecast_returns_annual, excepted_returns, plt
 
 
-def update_daily_change_with_machine_learning(returns_stock, table_index, closing_prices_mode=False):
+def update_daily_change_with_machine_learning(returns_stock, table_index, models_data,  closing_prices_mode=False):
+    RECORD_PERCENT_TO_PREDICT = models_data["models_data"]["RECORD_PERCENT_TO_PREDICT"]
+    SELECTED_ML_MODEL_FOR_BUILD = models_data["models_data"]["SELECTED_ML_MODEL_FOR_BUILD"]
+    TEST_SIZE_MACHINE_LEARNING = models_data["models_data"]["TEST_SIZE_MACHINE_LEARNING"]
+
     num_of_rows = len(table_index)
-    prefix_row = int(math.ceil(settings.RECORD_PERCENT_TO_PREDICT * num_of_rows))
+    prefix_row = int(math.ceil(RECORD_PERCENT_TO_PREDICT * num_of_rows))
     for i, stock in enumerate(returns_stock.columns):
         df = None
         stock_name = str(stock)
-        if settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[0]:
+        if SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[0]:
             df, annual_return, excepted_returns = analyze_with_machine_learning_linear_regression(
-                returns_stock[stock_name], table_index, closing_prices_mode
+                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, TEST_SIZE_MACHINE_LEARNING,
+                closing_prices_mode
             )
-        elif settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[1]:
+        elif SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[1]:
             df, annual_return, excepted_returns = analyze_with_machine_learning_arima(
-                returns_stock[stock_name], table_index, closing_prices_mode
+                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, closing_prices_mode
             )
 
-        elif settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[2]:
+        elif SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[2]:
             df, annual_return, excepted_returns = analyze_with_machine_learning_gbm(
-                returns_stock[stock_name], table_index, closing_prices_mode
+                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, closing_prices_mode
             )
 
 
-        elif settings.SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[3]:
+        elif SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[3]:
             df, annual_return, excepted_returns, plt = analyze_with_machine_learning_prophet(
-                returns_stock[stock_name], table_index, closing_prices_mode
+                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, closing_prices_mode
             )
         else:
             raise ValueError('Invalid machine model')
@@ -543,7 +551,7 @@ def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):  # TODO - ALS
                 stocks_descriptions.append(description)
             except:
                 try:
-                    description = usa_indexes_table.loc[usa_indexes_table['symbol'] == stock, 'name'].item()
+                    description = usa_stocks_table.loc[usa_stocks_table['Symbol'] == stock, 'Name'].item()
                     stocks_descriptions.append(description)
                 except:
                     description = yf.Ticker(stock).info['shortName']
@@ -677,3 +685,28 @@ def save_usa_indexes_table(): # dont delete it, use for admin
         for stock_data in stock_data_list:
             writer.writerow(stock_data)
 
+
+# AWS , TODO
+def connect_to_s3() -> boto3.client:
+    s3 = boto3.resource(service_name='s3',
+                        region_name=aws_settings.region_name,
+                        aws_secret_access_key=aws_settings.aws_secret_access_key,
+                        aws_access_key_id=aws_settings.aws_access_key_id)
+
+    s3_client = boto3.client('s3', aws_access_key_id=aws_settings.aws_access_key_id,
+                             aws_secret_access_key=aws_settings.aws_secret_access_key,
+                             region_name=aws_settings.region_name)
+    return s3_client
+
+
+def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
+    # Local folder path to upload
+    local_folder_path = 'path/to/your/local/folder'
+
+    """for root, dirs, files in os.walk(local_folder_path):
+        for file in files:
+            local_file_path = os.path.join(root, file)
+            s3_object_key = os.path.relpath(local_file_path, local_folder_path)
+            upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
+
+    s3_client.upload_file(file_path, bucket_name, s3_object_key)"""

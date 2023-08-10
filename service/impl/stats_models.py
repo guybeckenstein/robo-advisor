@@ -13,10 +13,10 @@ class StatsModels:
             min_num_por_simulation,
             max_percent_commodity,
             max_percent_stocks,
-            closing_prices_table = None,
-            sectors = None,
-            model_name = None,
-            is_machine_learning: int = 0
+            closing_prices_table=None,
+            sectors=None,
+            model_name=None,
+            gini_value = 4
     ):
         self._df = None
         self._three_best_portfolios = None
@@ -27,20 +27,20 @@ class StatsModels:
         self._sectors_list = sectors
         self._model_name = model_name
         self._closing_prices_table = closing_prices_table
+        self.gini_v_value = gini_value
         if model_name == "Markowitz":
             self.get_optimal_portfolio_by_markowitz(
-                num_por_simulation, min_num_por_simulation, closing_prices_table, pct_change_table,  stocks_symbols,
-                max_percent_commodity, max_percent_stocks, is_machine_learning
+                num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
+                max_percent_commodity, max_percent_stocks
             )
         else:
             self.get_optimal_portfolio_by_gini(
-                num_por_simulation, min_num_por_simulation, pct_change_table,  stocks_symbols,
-                max_percent_commodity, max_percent_stocks, is_machine_learning
+                num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
+                max_percent_commodity, max_percent_stocks
             )
 
-    def get_optimal_portfolio_by_markowitz(self, num_por_simulation, min_num_por_simulation, closing_prices_table,
-                                           pct_change_table, stocks_symbols, max_percent_commodity, max_percent_stocks,
-                                           is_machine_learning: int):
+    def get_optimal_portfolio_by_markowitz(self, num_por_simulation, min_num_por_simulation,
+                                           pct_change_table, stocks_symbols, max_percent_commodity, max_percent_stocks):
 
         stocks_names: list = []
         for symbol in stocks_symbols:
@@ -48,7 +48,6 @@ class StatsModels:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
-
 
         returns_daily = pct_change_table
         returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
@@ -80,9 +79,13 @@ class StatsModels:
                 [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity"]
             )
             israeli_stocks_percentage = np.sum(
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks indexes"]
+            ) + np.sum(
                 [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks"]
             )
             us_stocks_percentage = np.sum(
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks indexes"]
+            ) + np.sum(
                 [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks"]
             )
 
@@ -122,15 +125,16 @@ class StatsModels:
         # reorder dataframe columns
         self._df = df[column_order]
 
-    def get_optimal_portfolio_by_gini(self, num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
-                                      max_percent_commodity, max_percent_stocks, is_machine_learning: int):
+    def get_optimal_portfolio_by_gini(self, num_por_simulation, min_num_por_simulation, pct_change_table,
+                                      stocks_symbols,
+                                      max_percent_commodity, max_percent_stocks):
         stocks_names: list = []
         for symbol in stocks_symbols:
             if type(symbol) == int:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
-        v_value = helpers.settings.GINI_V_VALUE  # TODO: not recognizing method
+        v_value = self.gini_v_value
         returns_daily = pct_change_table
         port_portfolio_annual = []
         port_gini_annual = []
@@ -157,9 +161,15 @@ class StatsModels:
                 commodity_percentage = np.sum(
                     [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity"])
                 israeli_stocks_percentage = np.sum(
-                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks"])
+                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks indexes"]
+                ) + np.sum(
+                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks"]
+                )
                 us_stocks_percentage = np.sum(
-                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks"])
+                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks indexes"]
+                ) + np.sum(
+                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks"]
+                )
 
                 if commodity_percentage > max_percent_commodity:
                     single_portfolio += 1
@@ -209,8 +219,6 @@ class StatsModels:
             # reorder dataframe columns
             self._df = df[column_order]
 
-
-
     def get_df(self):
         return self._df
 
@@ -246,6 +254,6 @@ class StatsModels:
         return max_vol_portfolio
 
     # def get(self):
-        # pass
-        # response = ResponseApi("Markowitz", final_invest_portfolio, amountToInvest, datetime.datetime.now())
-        # return jsonify(response.__str__())
+    # pass
+    # response = ResponseApi("Markowitz", final_invest_portfolio, amountToInvest, datetime.datetime.now())
+    # return jsonify(response.__str__())

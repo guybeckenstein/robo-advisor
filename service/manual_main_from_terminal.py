@@ -5,10 +5,10 @@ if __name__ == '__main__':
     data_management.main_menu()
     selection = data_management.selected_menu_option()  # TODO get selection from page in site
     exit_loop_operation = 8
+    login_name: str = 'yarden'  # data_management.get_name()
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
-            login_name: str = 'yarden'  # data_management.get_name()
             is_machine_learning: int = 0  # data_management.get_machine_learning_option()
             model_option: int = 0  # data_management.get_model_option()
             investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
@@ -34,7 +34,7 @@ if __name__ == '__main__':
             # question #2
             string_to_show = "Which distribution do you prefer?\nlow risk - 1, medium risk - 2, high risk - 3 ?\n"
             # display distribution of portfolio graph(matplotlib)
-            data_management.plot_distribution_of_portfolio(yield_list, mode='regular')
+            data_management.plot_distribution_of_portfolio(yield_list, mode='regular', sub_folder=sub_folder)
             data_management.plot_image(settings.GRAPH_IMAGES + sub_folder + 'distribution_graph.png')
             second_question_score = data_management.get_score_by_answer_from_user(string_to_show)
 
@@ -42,7 +42,7 @@ if __name__ == '__main__':
             string_to_show = "Which graph do you prefer?\nsafest - 1, sharpest - 2, max return - 3 ?\n"
             # display 3 best portfolios graph (matplotlib)
             data_management.plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights,
-                                                    sectors, pct_change_table, mode='regular')
+                                                    sectors, pct_change_table, mode='regular', sub_folder=sub_folder)
             # data_management.plot_functions.plot(plt_instance)
             data_management.plot_image(settings.GRAPH_IMAGES + sub_folder + 'three_portfolios.png')
             third_question_score = data_management.get_score_by_answer_from_user(string_to_show)
@@ -88,8 +88,9 @@ if __name__ == '__main__':
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     machine_learning_model = data_management.get_machine_learning_model()
+                    models_data = data_management.get_models_data_from_collections_file()
                     plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
-                                                                       num_of_years_history)
+                                                                       models_data, num_of_years_history)
                     operation = '_forecast'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
@@ -111,6 +112,7 @@ if __name__ == '__main__':
                 elif selection == 4:
                     # TODO - get group of stocks
                     selected_option = data_management.get_group_of_stocks_option()
+                    models_data = data_management.get_models_data_from_collections_file()
                     (max_returns_stocks_list,
                      min_volatility_stocks_list,
                      max_sharpest_stocks_list) = research.find_good_stocks(
@@ -124,8 +126,12 @@ if __name__ == '__main__':
                     is_machine_learning = data_management.get_machine_learning_option()
                     stocks_collection_number: str = data_management.get_collection_number()
                     stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
+                    models_data = data_management.get_models_data_from_collections_file()
+                    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY
+                                                 + stocks_collection_number + '/')
                     data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
-                                                          settings.MODEL_NAME[0], num_of_years_history)
+                                                          settings.MODEL_NAME[0], num_of_years_history,
+                                                          models_data, closing_prices_table_path)
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[0] + '_all_option' + '.png')
 
@@ -135,8 +141,13 @@ if __name__ == '__main__':
                     is_machine_learning = data_management.get_machine_learning_option()
                     stocks_collection_number: str = data_management.get_collection_number()  # 1 default, Option for the customer to choose TODO -user investor
                     stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
+                    models_data = data_management.get_models_data_from_collections_file()
+                    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY
+                                                  + stocks_collection_number + '/')
                     data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
-                                                          settings.MODEL_NAME[1], num_of_years_history)
+                                                          settings.MODEL_NAME[1], num_of_years_history,
+                                                          models_data, closing_prices_table_path
+                                                          )
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[1] + '_all_option' + '.png')
 

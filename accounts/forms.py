@@ -133,7 +133,7 @@ class PasswordChangingForm(PasswordChangeForm):
         fields = ('old_password', 'new_password1', 'new_password2',)
 
 
-class UpdateInvestorUserForm(forms.ModelForm): # TODO - shocw collections of stocks and choices(GUY)
+class UpdateInvestorUserForm(forms.ModelForm): # TODO - show collections of stocks and choices(GUY)
     starting_investment_amount = forms.CharField()
     stocks_symbols = forms.MultipleChoiceField(widget=forms.SelectMultiple)
 
@@ -141,7 +141,7 @@ class UpdateInvestorUserForm(forms.ModelForm): # TODO - shocw collections of sto
         super(UpdateInvestorUserForm, self).__init__(*args, **kwargs)
         self.fields['starting_investment_amount'].disabled = disabled_project
         self.fields['stocks_symbols'].disabled = disabled_project
-        if self.instance.stocks_symbols:
+        if type(self.instance.stocks_symbols) == str:
             symbols_list = self.instance.stocks_symbols[1:-1].split(',')
             self.fields['stocks_symbols'].choices = [(symbol.strip(), symbol.strip()) for symbol in symbols_list]
         else:

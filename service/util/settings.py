@@ -3,19 +3,15 @@
 # setting for stats Models
 import os
 
-NUM_POR_SIMULATION = 2000  # number of portfolios to simulate, the more, the better
-MIN_NUM_POR_SIMULATION = 30  # min number of final portfolios result
-RECORD_PERCENT_TO_PREDICT = 0.05  # the part of years to predict of the total years
-TEST_SIZE_MACHINE_LEARNING = 0.1
+from service.util import data_management
+
 MODEL_NAME = ['Markowitz', 'Gini']
 MACHINE_LEARNING_MODEL = ['LinearRegression', 'ARIMA', 'GradientBoostingRegressor', 'Prophet']
-SELECTED_ML_MODEL_FOR_BUILD = MACHINE_LEARNING_MODEL[1]  # TODO
 NUM_OF_YEARS_HISTORY = 10  # the number of history years data
 LIMIT_PERCENT_MEDIUM_RISK_STOCKS = 0.3
 LIMIT_PERCENT_MEDIUM_RISK_COMMODITY = 0.1
 LIMIT_PERCENT_LOW_RISK_STOCKS = 0.15
 LIMIT_PERCENT_LOW_RISK_COMMODITY = 0
-GINI_V_VALUE = 4
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
 PACKAGE_DIR = BASE_DIR
 RESOURCE_LOCATION = PACKAGE_DIR + 'impl/config/'
