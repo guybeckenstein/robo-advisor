@@ -3,14 +3,12 @@ import csv
 import datetime
 import json
 import math
-import re
 
 import boto3
 from bidi import algorithm as bidi_algorithm
 
 import numpy as np
 import pandas as pd
-import ta
 import yfinance as yf
 from matplotlib import pyplot as plt
 from sklearn import preprocessing
@@ -447,7 +445,7 @@ def set_sectors(stocks_symbols: list, mode: str = 'regular') -> list:  # TODO - 
     sectors_data = get_sectors_data_from_file(mode)
 
     for i in range(len(sectors_data)):
-        curr_sector = Sector(sectors_data[i]['sectorName'])
+        curr_sector = Sector(sectors_data[i]['name'])
         for j in range(len(stocks_symbols)):
             if stocks_symbols[j] in sectors_data[i]['stocks']:
                 curr_sector.add_stock(stocks_symbols[j])
@@ -561,11 +559,9 @@ def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):  # TODO - ALS
 
 
 def convert_israeli_symbol_number_to_name(symbol_number: int, is_index_type: bool, is_reverse_mode: bool = True) -> str:
-    hebrew_text = ""
-    if (is_index_type):
+    if is_index_type:
         json_data = get_json_data(settings.INDICES_LIST_JSON_NAME)
-        hebrew_text = \
-        [item['indexName'] for item in json_data['indicesList']['result'] if item['indexId'] == symbol_number][0]
+        hebrew_text = [item['name'] for item in json_data['indicesList']['result'] if item['id'] == symbol_number][0]
     else:
         json_data = get_json_data(settings.SECURITIES_LIST_JSON_NAME)
         hebrew_text = [item['securityName'] for item in json_data['tradeSecuritiesList']['result'] if
@@ -627,7 +623,7 @@ def collect_all_stocks():
         # append sector name to sectors list len(data) times
         for j in range(len(data)):
             stocks_symbols_list.append(data[j])
-            sectors_list.append(sectors_data[i]["sectorName"])
+            sectors_list.append(sectors_data[i]["name"])
 
             # maybe add more details later
             if i < 3:  # israeli indexes
@@ -689,13 +685,13 @@ def save_usa_indexes_table(): # dont delete it, use for admin
 # AWS , TODO
 def connect_to_s3() -> boto3.client:
     s3 = boto3.resource(service_name='s3',
-                        region_name=aws_settings.region_name,
-                        aws_secret_access_key=aws_settings.aws_secret_access_key,
-                        aws_access_key_id=aws_settings.aws_access_key_id)
+                        region_name=aws_settings.REGION_NAME,
+                        aws_secret_access_key=aws_settings.AWS_SECRET_ACCESS_KEY,
+                        aws_access_key_id=aws_settings.AWS_ACCESS_KEY_ID)
 
-    s3_client = boto3.client('s3', aws_access_key_id=aws_settings.aws_access_key_id,
-                             aws_secret_access_key=aws_settings.aws_secret_access_key,
-                             region_name=aws_settings.region_name)
+    s3_client = boto3.client('s3', aws_access_key_id=aws_settings.AWS_ACCESS_KEY_ID,
+                             aws_secret_access_key=aws_settings.AWS_SECRET_ACCESS_KEY,
+                             region_name=aws_settings.REGION_NAME)
     return s3_client
 
 

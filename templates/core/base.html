@@ -22,7 +22,7 @@
     {% endif %}
   </head>
   <body>
-    <div class="elements-container">
+    <div class="elements-container d-flex flex-column vh-100">
       <header>
         <!-- Navigation bar -->
         <nav>
@@ -73,10 +73,10 @@
         {% endif %}
       </header>
       <!-- Main Content -->
-      <div class="content-generic">
+      <main class="content-generic flex-grow-1">
         {% block content %}
         {% endblock %}
-      </div>
+      </main>
       <!-- Footer -->
       <footer class="py-3">
         <p>

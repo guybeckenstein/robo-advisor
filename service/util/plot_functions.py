@@ -457,7 +457,7 @@ def plot_portfolio_component(user_name: str, sectors_weights: List[float], secto
         x=sectors_weights,
         labels=sectors_names,
         autopct="%1.1f%%",
-        shadow=True,
+        shadow=False,
         startangle=140,
     )
     plt.axis("equal")

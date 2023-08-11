@@ -14,11 +14,11 @@ if __name__ == '__main__':
             investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
             stocks_collection_number = 1  # default
             # TODO in site(GUY)
-            # 1- default collection(recommended)
-            stocks_collection_number: str = data_management.get_collection_number()  # 1 default, Option for the customer to choose TODO -user investor
+            # 1 default collection, Option for the customer to choose (recommended)
+            stocks_collection_number: str = data_management.get_collection_number()  # TODO: user investor
             stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
             sub_folder = str(stocks_collection_number) + '/' + str(is_machine_learning) + str(model_option) + "/"
-            # Extended data from DB (CSV Tables)
+            # Extended data from datasets (CSV Tables)
             tables = data_management.get_extended_data_from_db(
                 stocks_symbols, is_machine_learning, model_option, stocks_collection_number,
                 mode='regular'
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             )
 
             user_portfolio = User(login_name, new_portfolio, stocks_collection_number)
-            # add user to DB(json file)
+            # add user to datasets (json file)
             user_portfolio.update_json_file(settings.USERS_JSON_NAME)
 
         elif selection == 2:
@@ -127,7 +127,7 @@ if __name__ == '__main__':
                     stocks_collection_number: str = data_management.get_collection_number()
                     stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
                     models_data = data_management.get_models_data_from_collections_file()
-                    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY
+                    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
                                                  + stocks_collection_number + '/')
                     data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
                                                           settings.MODEL_NAME[0], num_of_years_history,
@@ -142,7 +142,7 @@ if __name__ == '__main__':
                     stocks_collection_number: str = data_management.get_collection_number()  # 1 default, Option for the customer to choose TODO -user investor
                     stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
                     models_data = data_management.get_models_data_from_collections_file()
-                    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY
+                    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
                                                   + stocks_collection_number + '/')
                     data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
                                                           settings.MODEL_NAME[1], num_of_years_history,

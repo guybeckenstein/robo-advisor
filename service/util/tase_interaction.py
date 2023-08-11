@@ -43,18 +43,18 @@ def get_israeli_index_data(command, start_date, end_date, israeli_index_name):  
 
 
 def get_israeli_security_data(command, start_date, end_date, israeli_security_name):
-    used_app_url = settings.securityEndOfDayHistoryTenYears
+    used_app_url = settings.SECURITY_END_OF_DAY_HISTORY_TEN_YEARS
     return get_israeli_symbol_data(command, start_date, end_date, israeli_security_name, used_app_url)
 
 
 def get_israeli_companies_list():
-    appUrl = get_app_url_without_date(settings.basicSecuritiesListByType)
+    appUrl = get_app_url_without_date(settings.BASIC_SECURITIES_LIST_BY_TYPE)
     json_data = get_json_data_of_symbol(appUrl)
     return json_data
 
 
 def get_israeli_indexes_list():
-    appUrl = get_app_url_without_date(settings.basicIndexList)
+    appUrl = get_app_url_without_date(settings.BASIC_INDEX_LIST)
     json_data = get_json_data_of_symbol(appUrl)
     return json_data
 
@@ -107,7 +107,7 @@ def get_base_64_token():
     # key = '7e247414e7047349d83b7b8a427c529c'
     # secret = '7a809c498662c88a0054b767a92f0399'
 
-    token = settings.key + ':' + settings.secret
+    token = settings.KEY + ':' + settings.SECRET
     base_64_token = base64.b64encode(token.encode('ascii')).decode('ascii')
     return base_64_token
 
@@ -120,7 +120,7 @@ def get_tase_access_token():
     payload = 'grant_type=client_credentials&scope=tase'
     headers = {'Authorization': 'Basic ' + base_64_token,
                'Content-Type': 'application/x-www-form-urlencoded'}
-    response = requests.request('POST', settings.tokenUrl,
+    response = requests.request('POST', settings.TOKEN_URL,
                                 headers=headers, data=payload)
 
     return json.loads(response.text)['access_token']
@@ -149,7 +149,7 @@ def get_index_history(app_name, index_id, num_of_years):
 
 
 def get_app_url_without_date(app_name):  # /tase/prod/impl/v1/short-sales/weekly-balance
-    return settings.prefixUrl + '/' + app_name
+    return settings.PREFIX_URL + '/' + app_name
 
 
 def get_app_url_with_date_and_index(app_name, start_year, start_month, start_day,

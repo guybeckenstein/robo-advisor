@@ -44,7 +44,7 @@ def save_three_user_graphs_as_png(request) -> None:
     annual_volatility = investor_user.annual_volatility
     annual_sharpe = investor_user.annual_sharpe
     stocks_collection_number: str = '1' #investor_user.stocks_collection_number TODO
-    closing_price_table_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY + stocks_collection_number + '/'
+    closing_price_table_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
     closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_price_table_path, mode='regular')
     sectors = helpers.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
     portfolio: Portfolio = Portfolio(

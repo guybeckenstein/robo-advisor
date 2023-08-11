@@ -2,7 +2,7 @@
 	"sectorsList": {
 		"result": [
 			{
-				"sectorName": "Israel stocks indexes",
+				"name": "Israel stocks indexes",
 				"taseSector": "מניות ישראל מדדים",
 				"stocks": [1, 2, 3, 4, 13, 33, 41, 61,
 					73, 97, 117, 127, 137, 142, 143,
@@ -12,12 +12,12 @@
 					181, 182, 183, 184, 185, 187, 188]
 			},
 			{
-				"sectorName": "Israel general bonds indexes",
+				"name": "Israel general bonds indexes",
 				"taseSector": "אגרות חוב כללי - ישראל מדדים",
 				"stocks": [601, 602, 603, 604, 605, 606, 637, 646, 658, 690, 694]
 			},
 			{
-				"sectorName": "Israel government bonds indexes",
+				"name": "Israel government bonds indexes",
 				"taseSector": "אגרות חוב ממשלתי - ישראל מדדים",
 				"stocks": [700, 701, 702, 703, 704, 707, 708, 709,
 					710, 711, 712, 713, 714, 715, 716, 717, 718,
@@ -26,23 +26,23 @@
 					737, 738, 739, 740, 742, 743]
 			},
 			{
-				"sectorName": "US stocks indexes",
+				"name": "US stocks indexes",
 				"taseSector": "מניות - ארהב מדדים",
 				"stocks": ["SPY", "QQQ", "^RUT", "IWM", "DIA", "EFA", "EEM", "XLF", "XLE", "XLU", "XLK", "XLI", "XLB", "XLP", "XLV", "XLY", "XBI", "XHB", "XME", "XOP", "XRT", "XES", "XSW", "XSD", "XTN", "XAR"]
 
 			},
 			{
-				"sectorName": "US bonds indexes",
+				"name": "US bonds indexes",
 				"taseSector": "אגרות חוב כללי - ארהב מדדדים",
 				"stocks": ["LQD", "SHY", "SHV", "TLT", "GOVT", "IEF", "BIL", "IEI", "VGSH", "SCHO", "VGIT", "SCHR", "SPTS", "SPTI", "SPTL", "GBIL", "VGLT", "USFR", "TLH", "EDV", "SGOV", "CLTL", "FLGV", "TFLO", "ZROZ", "PLW"]
 			},
 			{
-				"sectorName": "US commodity indexes",
+				"name": "US commodity indexes",
 				"taseSector": "סחורות - ארהב מדדים",
 				"stocks": ["GLD","OIL","GSG"]
 			},
 			{
-				"sectorName": "Israel stocks",
+				"name": "Israel stocks",
 				"stocks": [
 						1166552,
 						1141795,
@@ -1952,7 +1952,7 @@
 				"taseSector": "מניות ישראל"
 			},
 			{
-				"sectorName": "US stocks",
+				"name": "US stocks",
 				"stocks": [
 					"A",
 					"AA",

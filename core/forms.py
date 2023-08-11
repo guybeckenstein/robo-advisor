@@ -31,7 +31,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
             'hx-target': '#preferences-form',
             'hx-swap': 'outerHTML'
         }
-        # TODO: make dynamic code that updates CSV files from `/service/DB/...`
+        # TODO: make dynamic code that updates CSV files from `/service/dataset/...`
         self.fields['ml_answer'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #1: Would you like to use machine learning algorithms for stock market investments?'
@@ -98,7 +98,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
             'hx-target': '#capital-market-form',
             'hx-swap': 'outerHTML'
         }
-        # TODO: make dynamic code that updates CSV files from `/service/DB/...`
+        # TODO: make dynamic code that updates CSV files from `/service/dataset/...`
         self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #1: For how many years do you want to invest?'
                                                     '</span>')

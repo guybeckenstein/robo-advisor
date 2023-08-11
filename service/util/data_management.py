@@ -26,7 +26,7 @@ def update_all_tables(numOfYearsHistory):  # build DB for withdraw
     for i, collection in enumerate(collections_json_data):
         curr_collection = collections_json_data[str(i + 1)][0]
         stocksSymbols = curr_collection['stocksSymbols']
-        __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY + str(str(i + 1)) + '/'  # where to save the DB
+        __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i + 1)) + '/'  # where to save the datasets
         update_closing_prices_tables(formatted_date, stocksSymbols, numOfYearsHistory, __path)
         update_data_frame_tables(formatted_date, curr_collection, __path, collections_json_data, str(i + 1))
 
@@ -199,7 +199,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     Get extended data information from DB (CSV tables)
     """
 
-    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY + stocks_collection_number + '/'
+    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
     if mode == 'regular':
         sectors_data = get_json_data(settings.SECTORS_JSON_NAME)
     else:
@@ -307,7 +307,7 @@ def get_user_from_db(user_name: str):
         stocks_collection_number = "1"  # default
     sectors = helpers.set_sectors(stocks_symbols)
 
-    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY + stocks_collection_number + '/'
+    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(__path=__path, mode='regular')
     portfolio: Portfolio = Portfolio(
@@ -566,9 +566,7 @@ def save_user_portfolio(curr_user: User) -> None:
     description: List[str] = helpers.get_stocks_descriptions(stocks_symbols)
 
     # pie chart of sectors & sectors weights
-    plt_sectors_component = plot_functions.plot_portfolio_component(curr_user.name,
-                                                                    sectors_weights,
-                                                                    sectors_names)
+    plt_sectors_component = plot_functions.plot_portfolio_component(curr_user.name, sectors_weights, sectors_names)
     plot_functions.save_graphs(plt_sectors_component, file_name=curr_user_directory + '/sectors_component')
 
     # pie chart of stocks & stocks weights , TODO: show as tables instead of pie chart

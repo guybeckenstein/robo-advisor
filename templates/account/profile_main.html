@@ -4,7 +4,7 @@
 
 {% block content %}
   <!-- User profile sidebar -->
-  <aside class="d-flex flex-column flex-shrink-0 p-3 bg-white border content-sidebar">
+  <aside class="d-flex flex-column flex-shrink-0 p-3 bg-white border content-sidebar" style="margin-left: 0;">
     <a href="{% url 'profile_main' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
       <span class="fs-4">{{ user.first_name }}'s Dashboard</span>
     </a>
@@ -41,7 +41,7 @@
     {% endblock %}
   </aside>
   <!-- Main Content -->
-  <div class="position-absolute" style="right: 100px; top: 250px; width: 1196px;">
+  <div class="position-absolute" style="right: 116px; top: 250px; width: 1000px;">
     {% block profile_content %}
       <div class="card px-5 py-2">
         <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">

@@ -101,7 +101,7 @@ def profile_account_details(request):
         'form': form,
         'title': "Update Details",
     }
-    return render(request, 'account/profile_account_name.html', context=context)
+    return render(request, 'account/profile_account_details.html', context=context)
 
 
 class MyPasswordChangeForm(PasswordChangeView):

@@ -11,7 +11,9 @@
 {% block profile_content %}
   <div class="card px-5 py-2">
     <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0 0 0;">
-      Account
+      {% block profile_account_title %}
+        Account
+      {% endblock %}
     </h1>
     <hr>
     <div class="d-flex justify-content-between mb-3">
