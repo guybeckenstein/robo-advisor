@@ -52,10 +52,10 @@ def plot_markowitz_graph(sectors: List, three_best_sectors_weights, min_variance
         plt.figtext(
             0.2,
             0.15,
-            "Max returns Portfolio: \n"
-            + "Annual returns: " + str(round(max_returns.iloc[0][0], 2)) + "%\n"
-            + "Annual volatility: " + str(round(max_returns.iloc[0][1], 2)) + "%\n"
-            + "Annual max loss: " + str(round(max_returns.iloc[0][0] - 1.65 * max_returns.iloc[0][1], 2)) + "%\n"
+            "Max Returns Portfolio: \n"
+            + "Annual Returns: " + str(round(max_returns.iloc[0][0], 2)) + "%\n"
+            + "Annual Volatility: " + str(round(max_returns.iloc[0][1], 2)) + "%\n"
+            + "Annual Max Loss: " + str(round(max_returns.iloc[0][0] - 1.65 * max_returns.iloc[0][1], 2)) + "%\n"
             + "Sharpe Ratio: " + str(round(max_returns.iloc[0][2], 2)) + "\n"
             + stocks_str_high,
             bbox=dict(facecolor="red", alpha=0.5),
@@ -70,9 +70,9 @@ def plot_markowitz_graph(sectors: List, three_best_sectors_weights, min_variance
             0.45,
             0.15,
             "Safest Portfolio: \n"
-            + "Annual returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
-            + "Annual volatility: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
-            + "Annual max loss: " + str(round(min_variance_port.iloc[0][0] - 1.65 * min_variance_port.iloc[0][1], 2))
+            + "Annual Returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
+            + "Annual Volatility: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
+            + "Annual Max Loss: " + str(round(min_variance_port.iloc[0][0] - 1.65 * min_variance_port.iloc[0][1], 2))
             + "%\n"
             + "Sharpe Ratio: " + str(round(min_variance_port.iloc[0][2], 2)) + "\n"
             + stocks_str_low,
@@ -88,9 +88,9 @@ def plot_markowitz_graph(sectors: List, three_best_sectors_weights, min_variance
             0.7,
             0.15,
             "Sharpe  Portfolio: \n"
-            + "Annual returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
-            + "Annual volatility: " + str(round(sharpe_portfolio.iloc[0][1], 2)) + "%\n"
-            + "Annual max loss: " + str(round(sharpe_portfolio.iloc[0][0] - 1.65 * sharpe_portfolio.iloc[0][1], 2))
+            + "Annual Returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
+            + "Annual Volatility: " + str(round(sharpe_portfolio.iloc[0][1], 2)) + "%\n"
+            + "Annual Max loss: " + str(round(sharpe_portfolio.iloc[0][0] - 1.65 * sharpe_portfolio.iloc[0][1], 2))
             + "%\n"
             + "Sharpe Ratio: " + str(round(sharpe_portfolio.iloc[0][2], 2)) + "\n"
             + stocks_str_medium,
@@ -107,7 +107,7 @@ def plot_markowitz_graph(sectors: List, three_best_sectors_weights, min_variance
 
 
 def plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port, sharpe_portfolio, max_portfolios_annual,
-                    max_ginis, df) -> plt:
+                    max_ginis, df: pd.DataFrame) -> plt:
     # plot frontier, max sharpe & min Gini values with a scatterplot
     plt.style.use('seaborn-dark')
     df.plot.scatter(x='Gini', y='Portfolio_annual', c='Sharpe Ratio',
@@ -118,7 +118,7 @@ def plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port, shar
     plt.style.use('seaborn-dark')
 
     plt.xlabel('Gini (Std. Deviation) Percentage %')
-    plt.ylabel('Expected portfolio annual Percentage %')
+    plt.ylabel('Expected Portfolio Annual Percentage %')
     plt.title('Efficient Frontier')
     plt.subplots_adjust(bottom=0.4)
 
@@ -145,10 +145,10 @@ def plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port, shar
         plt.figtext(
             0.2,
             0.15,
-            "Max returns Portfolio: \n"
-            + "Annual returns: " + str(round(max_portfolios_annual.iloc[0][0], 2)) + "%\n"
-            + "Annual gini: " + str(round(max_portfolios_annual.iloc[0][1], 2)) + "%\n"
-            + "Annual max loss: " + str(round(max_portfolios_annual.iloc[0][0]
+            "Max Returns Portfolio: \n"
+            + "Annual Returns: " + str(round(max_portfolios_annual.iloc[0][0], 2)) + "%\n"
+            + "Annual Gini: " + str(round(max_portfolios_annual.iloc[0][1], 2)) + "%\n"
+            + "Annual Max Loss: " + str(round(max_portfolios_annual.iloc[0][0]
                                               - 1.65 * max_portfolios_annual.iloc[0][1], 2))
             + "%\n"
             + "Sharpe Ratio: " + str(round(max_portfolios_annual.iloc[0][2], 2)) + "\n"
@@ -165,9 +165,9 @@ def plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port, shar
             0.45,
             0.15,
             "Safest Portfolio: \n"
-            + "Annual returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
-            + "Annual gini: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
-            + "Annual Max loss: " + str(round(min_variance_port.iloc[0][0] - 1.65 * min_variance_port.iloc[0][1], 2))
+            + "Annual Returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
+            + "Annual Gini: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
+            + "Annual Max Loss: " + str(round(min_variance_port.iloc[0][0] - 1.65 * min_variance_port.iloc[0][1], 2))
             + "%\n"
             + "Sharpe Ratio: " + str(round(min_variance_port.iloc[0][2], 2)) + "\n"
             + stocks_str_low,
@@ -183,8 +183,8 @@ def plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port, shar
             0.7,
             0.15,
             "Sharpe  Portfolio: \n"
-            + "Annual returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
-            + "Annual gini: " + str(round(sharpe_portfolio.iloc[0][1], 2)) + "%\n"
+            + "Annual Returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
+            + "Annual Gini: " + str(round(sharpe_portfolio.iloc[0][1], 2)) + "%\n"
             + "Annual Max loss: " + str(round(sharpe_portfolio.iloc[0][0] - 1.65 * sharpe_portfolio.iloc[0][1], 2))
             + "%\n"
             + "Sharpe Ratio: " + str(round(sharpe_portfolio.iloc[0][2], 2)) + "\n"
@@ -207,9 +207,9 @@ def plotbb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)
 
-    print("number of green :")
+    print("Number of green :")
     print(np.count_nonzero(~np.isnan(buy_price)))
-    print("number of red :")
+    print("Number of red :")
     print(np.count_nonzero(~np.isnan(sell_price)))
 
     return plt
@@ -233,10 +233,10 @@ def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio
         plt.figtext(
             0.45,
             0.15,
-            "your Portfolio: \n"
+            "Your Portfolio: \n"
             + "Returns: " + str(round(new_portfolio.annual_returns(), 2)) + "%\n"
             + "Volatility: " + str(round(new_portfolio.annual_volatility(), 2)) + "%\n"
-            + "max loss: " + str(round(new_portfolio.get_max_loss(), 2)) + "%\n"
+            + "Max Loss: " + str(round(new_portfolio.get_max_loss(), 2)) + "%\n"
             + "Sharpe Ratio: " + str(round(new_portfolio.annual_sharpe(), 2)) + "\n"
             + stocks_str,
             bbox=dict(facecolor="green", alpha=0.5),
@@ -306,11 +306,11 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
         plt.figtext(
             0.2,
             0.15,
-            "Max returns Portfolio: \n"
-            + "Annual returns: " + str(round(max_returns.iloc[0][0], 2)) + "%\n"
-            + "Annual volatility: " + str(round(max_returns.iloc[0][1], 2)) + "%\n"
-            + "Annual max loss: " + str(round(max_returns.iloc[0][0] - 1.65 * max_returns.iloc[0][1], 2)) + "%\n"
-            + "Annual sharpe Ratio: " + str(round(max_returns.iloc[0][2], 2)) + "\n"
+            "Max Returns Portfolio: \n"
+            + "Annual Returns: " + str(round(max_returns.iloc[0][0], 2)) + "%\n"
+            + "Annual Volatility: " + str(round(max_returns.iloc[0][1], 2)) + "%\n"
+            + "Annual Max Loss: " + str(round(max_returns.iloc[0][0] - 1.65 * max_returns.iloc[0][1], 2)) + "%\n"
+            + "Annual Sharpe Ratio: " + str(round(max_returns.iloc[0][2], 2)) + "\n"
             + stocks_str_high,
             bbox=dict(facecolor="red", alpha=0.5),
             fontsize=11,
@@ -324,11 +324,11 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
             0.8,
             0.15,
             "Sharpe  Portfolio: \n"
-            + "Annual returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
+            + "Annual Returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
             + "Annual Volatility: " + str(round(sharpe_portfolio.iloc[0][1], 2)) + "%\n"
-            + "Annual max loss: " + str(round(sharpe_portfolio.iloc[0][0] - 1.65 * sharpe_portfolio.iloc[0][1], 2))
+            + "Annual Max Loss: " + str(round(sharpe_portfolio.iloc[0][0] - 1.65 * sharpe_portfolio.iloc[0][1], 2))
             + "%\n"
-            + "Annual sharpe Ratio: " + str(round(sharpe_portfolio.iloc[0][2], 2)) + "\n"
+            + "Annual Sharpe Ratio: " + str(round(sharpe_portfolio.iloc[0][2], 2)) + "\n"
             + stocks_str_medium,
             bbox=dict(facecolor="green", alpha=0.5),
             fontsize=11,
@@ -342,11 +342,11 @@ def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns
             0.5,
             0.15,
             "Safest Portfolio: \n"
-            + "Annual returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
-            + "Annual volatility: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
-            + "Annual max loss: " + str(round(min_variance_port.iloc[0][0] - 1.65 * min_variance_port.iloc[0][1], 2))
+            + "Annual Returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
+            + "Annual Volatility: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
+            + "Annual Max Loss: " + str(round(min_variance_port.iloc[0][0] - 1.65 * min_variance_port.iloc[0][1], 2))
             + "%\n"
-            + "Annual sharpe Ratio: " + str(round(min_variance_port.iloc[0][2], 2)) + "\n"
+            + "Annual Sharpe Ratio: " + str(round(min_variance_port.iloc[0][2], 2)) + "\n"
             + stocks_str_low,
             bbox=dict(facecolor="yellow", alpha=0.5),
             fontsize=11,
@@ -387,7 +387,7 @@ def plot_distribution_of_portfolio(yields) -> plt:
     plt.ylabel('Distribution', fontsize=12)
     plt.grid(True)
     plt.legend()
-    plt.title("Distribution of Portfolios - by monthly returns")
+    plt.title("Distribution of Portfolios - By Monthly Returns")
 
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         plt.figtext(0.2, 0.15, "low risk\n" + str(df_describes[0]), bbox=dict(facecolor="blue", alpha=0.5),
@@ -429,11 +429,11 @@ def plot_investment_portfolio_yield(user_name, table, stats_details_tuple, secto
             0.45,
             0.15,
             "your Portfolio: \n"
-            + "Total change: " + str(round(total_change, 2)) + "%\n"
-            + "Annual returns: " + str(round(annual_returns, 2)) + "%\n"
-            + "Annual volatility: " + str(round(volatility, 2)) + "%\n"
-            + "max loss: " + str(round(max_loss, 2)) + "%\n"
-            + "Annual sharpe Ratio: " + str(round(sharpe, 2)) + "\n"
+            + "Total Change: " + str(round(total_change, 2)) + "%\n"
+            + "Annual Returns: " + str(round(annual_returns, 2)) + "%\n"
+            + "Annual Volatility: " + str(round(volatility, 2)) + "%\n"
+            + "Max Loss: " + str(round(max_loss, 2)) + "%\n"
+            + "Annual Sharpe Ratio: " + str(round(sharpe, 2)) + "\n"
             + stocks_str,
             bbox=dict(facecolor="green", alpha=0.5),
             fontsize=11,
@@ -482,7 +482,7 @@ def plot_portfolio_component_stocks(user_name: str, stocks_weights: List[float],
     return plt
 
 
-def plot_price_forecast(stocks_symbols, df, annual_returns, plt_instance=None) -> plt:  # TODO
+def plot_price_forecast(stocks_symbols, df: pd.DataFrame, annual_returns, plt_instance=None) -> plt:  # TODO
     if plt_instance is not None:
         return plt_instance
     df[df.columns[0]].plot()
@@ -492,7 +492,7 @@ def plot_price_forecast(stocks_symbols, df, annual_returns, plt_instance=None) -
     plt.figtext(
         0.2,
         0.8,
-        "Annual return with prediction: " + str(round(annual_returns, 2)) + " %" + "\n"
+        "Annual Return With Prediction: " + str(round(annual_returns, 2)) + " %" + "\n"
     )
 
     plt.legend(loc=4)
