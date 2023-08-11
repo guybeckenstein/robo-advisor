@@ -339,7 +339,8 @@ def update_daily_change_with_machine_learning(returns_stock, table_index, models
     RECORD_PERCENT_TO_PREDICT = models_data["models_data"]["RECORD_PERCENT_TO_PREDICT"]
     SELECTED_ML_MODEL_FOR_BUILD = models_data["models_data"]["SELECTED_ML_MODEL_FOR_BUILD"]
     TEST_SIZE_MACHINE_LEARNING = models_data["models_data"]["TEST_SIZE_MACHINE_LEARNING"]
-
+    SELECTED_ML_MODEL_FOR_BUILD = settings.MACHINE_LEARNING_MODEL[SELECTED_ML_MODEL_FOR_BUILD]
+    
     num_of_rows = len(table_index)
     prefix_row = int(math.ceil(RECORD_PERCENT_TO_PREDICT * num_of_rows))
     for i, stock in enumerate(returns_stock.columns):

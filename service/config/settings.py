@@ -36,8 +36,5 @@ GRAPH_IMAGES = BASE_SERVICE_DIR + '../static/img/graphs/'
 USER_IMAGES = BASE_SERVICE_DIR + '../static/img/user/'
 
 # RESEARCH
-RESEARCH_LOCATION = DJANGO_DIR + 'research/'
-RESEARCH_RESULTS_LOCATION = BASE_SERVICE_DIR + '../static/img/research/'
-GROUP_OF_STOCKS = [
-    "usa_stocks", "usa_bonds", "israel_indexes", "nasdaq", "sp500", "dowjones", "TA35", "TA90", "TA125", "TA125", "all"
-]
+RESEARCH_LOCATION = BASE_SERVICE_DIR + 'research/'
+RESEARCH_RESULTS_LOCATION = RESEARCH_LOCATION + 'img/'
