@@ -1,31 +1,27 @@
-from typing import List
-
-import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 import seaborn as sns
 from PIL import Image
 
+from typing import List
+
 
 def plot_markowitz_graph(sectors: List, three_best_sectors_weights, min_variance_port, sharpe_portfolio,
-                         max_returns, max_vols, df) -> plt:
+                         max_returns, max_vols, df: pd.DataFrame) -> plt:
     # plot frontier, max sharpe & min Volatility values with a scatterplot
-    fig_size_X = 10
-    fig_size_Y = 8
-    fig_size = (fig_size_X, fig_size_Y)
+    fig_size_X: int = 10
+    fig_size_Y: int = 8
+    fig_size: tuple[int, int] = (fig_size_X, fig_size_Y)
     plt.style.use("seaborn-dark")
     df.plot.scatter(
         x="Volatility", y="Returns", c="Sharpe Ratio", cmap="RdYlGn", edgecolors="black", figsize=fig_size, grid=True,
     )
-    plt.scatter(
-        x=sharpe_portfolio["Volatility"], y=sharpe_portfolio["Returns"], c="green", marker="D", s=200,
-    )
-    plt.scatter(
-        x=min_variance_port["Volatility"], y=min_variance_port["Returns"], c="orange", marker="D", s=200,
-    )
-    plt.scatter(
-        x=max_vols["Volatility"], y=max_returns["Returns"], c="red", marker="D", s=200
-    )
+    plt.scatter(x=sharpe_portfolio["Volatility"], y=sharpe_portfolio["Returns"], c="green", marker="D", s=200)
+    plt.scatter(x=min_variance_port["Volatility"], y=min_variance_port["Returns"], c="orange", marker="D", s=200)
+    plt.scatter(x=max_vols["Volatility"], y=max_returns["Returns"], c="red", marker="D", s=200)
     plt.style.use("seaborn-dark")
 
     plt.xlabel("Volatility (Std. Deviation) Percentage %")
