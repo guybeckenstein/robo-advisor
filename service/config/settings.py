@@ -16,15 +16,16 @@ BASE_SERVICE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +
 DJANGO_DIR = BASE_SERVICE_DIR
 if 'service/' in DJANGO_DIR:
     DJANGO_DIR = DJANGO_DIR[:(0 - len('service/'))]
-RESOURCE_LOCATION = BASE_SERVICE_DIR + 'impl/config/'
-SECTORS_JSON_NAME = RESOURCE_LOCATION + 'sectors'  # sectors json file
-INDICES_LIST_JSON_NAME = RESOURCE_LOCATION + 'indicesList'  # indices list json file
-SECURITIES_LIST_JSON_NAME = RESOURCE_LOCATION + 'securitiesList'  # indices list json file
+CONFIG = 'config/'
+CONFIG_RESOURCE_LOCATION = BASE_SERVICE_DIR + CONFIG
+SECTORS_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'sectors'  # sectors json file
+INDICES_LIST_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'indicesList'  # indices list json file
+SECURITIES_LIST_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'securitiesList'  # indices list json file
 # Datasets
-DB_LOCATION = BASE_SERVICE_DIR + 'dataset/'
-BASIC_STOCK_COLLECTION_REPOSITORY_DIR = DB_LOCATION + 'collection'
-COLLECTION_JSON_NAME = DB_LOCATION + 'stocks_collections'  # collection json file
-USERS_JSON_NAME = DB_LOCATION + 'users'  # where to save the users details
+DATASET_LOCATION = BASE_SERVICE_DIR + 'dataset/'
+BASIC_STOCK_COLLECTION_REPOSITORY_DIR = DATASET_LOCATION + 'collection'
+STOCKS_JSON_NAME = DATASET_LOCATION + 'stocks'  # collection json file
+USERS_JSON_NAME = DATASET_LOCATION + 'users'  # where to save the users details
 
 MACHINE_LEARNING_LOCATION = 'includingMachineLearning/'  # directory with 6 tables
 NON_MACHINE_LEARNING_LOCATION = 'withoutMachineLearning/'  # directory with 6 tables

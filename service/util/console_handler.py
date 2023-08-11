@@ -74,18 +74,18 @@ def get_group_of_stocks_option() -> int:
     return model_option
 
 
-def get_collection_number(stocks_collections: List) -> str: # TODO -display in site
+def get_collection_number(stocks: List) -> str: # TODO -display in site
     collection_description = ["indexes(recommended)", "mostly indexes and stocks", "yarden portfolio",
                           "Combined from everything"]
     print("Choose a collection of stocks:")
-    for i, collection in enumerate(stocks_collections):
+    for i, collection in enumerate(stocks):
         print(f"{i + 1} - {collection_description[i]}")
-        print_collection_table(stocks_collections[collection][0],
-                                 stocks_collections[collection][1])
+        print_collection_table(stocks[collection][0],
+                               stocks[collection][1])
         print()
     collection_number = int(input("Enter the collection number: "))
 
-    while collection_number < 1 or collection_number > len(stocks_collections):
+    while collection_number < 1 or collection_number > len(stocks):
         print("Please enter a valid option.")
         collection_number = int(input("Enter the collection number: "))
 

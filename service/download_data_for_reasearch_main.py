@@ -1,4 +1,5 @@
-from util import data_management, settings
+from util import data_management
+from service.config import settings
 
 if __name__ == '__main__':
     # TODO filter with volume

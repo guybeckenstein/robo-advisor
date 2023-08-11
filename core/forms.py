@@ -4,7 +4,7 @@ from crispy_forms.layout import Submit, Layout, Div, HTML
 from django import forms
 from django.utils.html import format_html
 
-from service.util import data_management, settings as backend_settings
+from service.util import data_management
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 

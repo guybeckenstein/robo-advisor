@@ -6,7 +6,8 @@ from django.shortcuts import get_object_or_404
 
 from service.impl.user import User
 from service.impl.portfolio import Portfolio
-from service.util import data_management, settings
+from service.util import data_management
+from service.config import settings
 from service.util import helpers
 from service.util.data_management import get_closing_prices_table
 from core.models import QuestionnaireA

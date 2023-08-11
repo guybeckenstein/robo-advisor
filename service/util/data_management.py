@@ -6,15 +6,12 @@ import pandas as pd
 from datetime import date
 from typing import Tuple, List
 
-from pip._internal.utils.misc import tabulate
-
 from ..impl.portfolio import Portfolio
 from ..impl.stats_models import StatsModels
 from ..impl.sector import Sector
 from ..impl.user import User
-from ..impl.config import aws_settings
-from . import helpers, console_handler, plot_functions, settings
-import boto3
+from ..config import settings
+from . import helpers, console_handler, plot_functions
 
 
 ######################################################################################
@@ -333,7 +330,7 @@ def get_user_from_db(user_name: str):
 
 
 def get_collection_json_data():
-    return get_json_data(settings.COLLECTION_JSON_NAME)['collections']
+    return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
 
 def get_stocks_symbols_from_collection(stocks_collection_number) -> List:
@@ -412,7 +409,7 @@ def creates_json_file(json_obj, name_product: str) -> None:
     # Open a file in write mode
     parts: list = name_product.split("/")
     last_element: str = parts[-1]
-    with open("impl/config/" + last_element + ".json", "w") as f:
+    with open(settings.CONFIG + last_element + ".json", "w") as f:
         json.dump(json_obj, f)  # Use the `dump()` function to write the JSON data to the file
 
 
@@ -642,15 +639,15 @@ def get_investment_amount() -> int:
 
 
 def get_collection_number() -> str:
-    stocks_collections = get_stocks_collections_from_json_file()
-    return console_handler.get_collection_number(stocks_collections)
+    stocks = get_stocks_from_json_file()
+    return console_handler.get_collection_number(stocks)
 
 
-def get_stocks_collections_from_json_file():
+def get_stocks_from_json_file():
     collections_data = get_collection_json_data()
-    stocks_collections = {}
+    stocks = {}
     for i in range(1, len(collections_data)):
         stocks_symbols_list = collections_data[str(i)][0]['stocksSymbols']
         stocks_description_list = helpers.get_stocks_descriptions(stocks_symbols_list, is_reverse_mode=False)
-        stocks_collections[str(i)] = [stocks_symbols_list, stocks_description_list]
-    return stocks_collections
+        stocks[str(i)] = [stocks_symbols_list, stocks_description_list]
+    return stocks

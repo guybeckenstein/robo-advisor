@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
 from service.util.web_actions import save_three_user_graphs_as_png
-from service.util import data_management, settings
+from service.util import data_management
 from service.util.data_management import create_new_user_portfolio
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB

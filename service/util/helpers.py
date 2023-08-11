@@ -19,9 +19,9 @@ import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
 
-from ..impl.config import aws_settings
+from ..config import aws_settings, settings
 from ..impl.sector import Sector
-from . import settings, tase_interaction
+from . import tase_interaction
 
 
 def get_best_portfolios(df, model_name: str):
@@ -602,17 +602,17 @@ def get_israeli_indexes_list():
 
 
 def get_usa_stocks_table():
-    return pd.read_csv(settings.RESOURCE_LOCATION + "nasdaq_all_stocks.csv")
+    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "nasdaq_all_stocks.csv")
 
 
 def get_usa_indexes_table():
-    return pd.read_csv(settings.RESOURCE_LOCATION + "usa_indexes.csv")
+    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "usa_indexes.csv")
 
 
 
 
 def collect_all_stocks():
-    path = settings.RESOURCE_LOCATION + "all_stocks_basic_data.csv"
+    path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
     sectors_data = get_sectors_data_from_file(mode="regular")
     sectors_list = []
     stocks_symbols_list = []
@@ -671,7 +671,7 @@ def save_usa_indexes_table(): # dont delete it, use for admin
 
 
     # Define the CSV file path
-    csv_file_path = settings.RESOURCE_LOCATION + 'usa_indexes.csv'
+    csv_file_path = settings.CONFIG_RESOURCE_LOCATION + 'usa_indexes.csv'
 
     # Write the data to a CSV file
     with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:

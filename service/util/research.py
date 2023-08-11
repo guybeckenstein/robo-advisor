@@ -4,7 +4,8 @@ import ta
 import yfinance as yf
 
 from .data_management import read_csv_file
-from . import settings, plot_functions, helpers
+from . import plot_functions, helpers
+from ..config import settings
 from .helpers import get_sectors_data_from_file, get_israeli_indexes_list
 
 
@@ -19,7 +20,7 @@ def forecast_specific_stock(stock: str, machine_learning_model, models_data, num
     plt = None
     file_name = str(stock) + '.csv'
     table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
-                                            [stock], num_of_years_history, saveToCsv=False)
+                                           [stock], num_of_years_history, saveToCsv=False)
     RECORD_PERCENT_TO_PREDICT = models_data["RECORD_PERCENT_TO_PREDICT"]
     TEST_SIZE_MACHINE_LEARNING = models_data["TEST_SIZE_MACHINE_LEARNING"]
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:

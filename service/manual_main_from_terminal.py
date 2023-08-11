@@ -1,5 +1,6 @@
 from impl.user import User
-from service.util import data_management, settings, research, helpers
+from service.util import data_management, research, helpers
+from service.config import settings
 
 if __name__ == '__main__':
     data_management.main_menu()
@@ -94,7 +95,7 @@ if __name__ == '__main__':
                     operation = '_forecast'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
-                                           + stock_name + operation + '.png')
+                                               + stock_name + operation + '.png')
                 elif selection == 2: # TODO : add to research page
                     # plotbb_strategy_stock for specific stock
                     stock_name = data_management.get_name()
@@ -143,7 +144,7 @@ if __name__ == '__main__':
                     stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
                     models_data = data_management.get_models_data_from_collections_file()
                     closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                                  + stocks_collection_number + '/')
+                                                 + stocks_collection_number + '/')
                     data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
                                                           settings.MODEL_NAME[1], num_of_years_history,
                                                           models_data, closing_prices_table_path
