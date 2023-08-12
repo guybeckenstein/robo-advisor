@@ -72,4 +72,8 @@ def save_three_user_graphs_as_png(request) -> None:
         annual_sharpe=annual_sharpe,
     )
     # Save plots
-    data_management.save_user_portfolio(User(str(investor_user.user.id), portfolio))
+    data_management.save_user_portfolio(User(
+        user_id=request.user.id,
+        name=f'{request.user.first_name} {request.user.last_name}',
+        portfolio=portfolio)
+    )

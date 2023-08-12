@@ -8,6 +8,7 @@ class User:
 
     def __init__(
             self,
+            user_id: int = "",
             name: str = "",
             portfolio: Portfolio = Portfolio(
                 stocks_symbols=[],
@@ -19,9 +20,14 @@ class User:
             ),
             stocks_collection_number = "1"
     ):
+        self._id: int = user_id
         self._name: str = name
         self._myPortfolio: Portfolio = portfolio
         self.stocks_collection_number = stocks_collection_number
+
+    @property
+    def id(self) -> str:
+        return str(self._id)
 
     @property
     def name(self) -> str:

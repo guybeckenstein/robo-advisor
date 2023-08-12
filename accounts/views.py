@@ -1,3 +1,5 @@
+import json
+
 from allauth.account.views import SignupView, LoginView
 from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
 from django import forms
@@ -10,6 +12,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 
+from service.util.data_management import get_stocks_from_json_file
 from .forms import UserRegisterForm, AccountMetadataForm, UpdateUserNameAndPhoneNumberForm, UpdateInvestorUserForm, \
     PasswordChangingForm
 from .models import InvestorUser, CustomUser
@@ -93,7 +96,7 @@ def profile_account_details(request):
         form: forms.ModelForm = UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-            # messages.success(request, 'Your account details have been updated successfully.')
+            messages.success(request, 'Your account details have been updated successfully.')
             return redirect('profile_account')
     else:
         raise BadRequest
@@ -115,19 +118,39 @@ class MyPasswordChangeForm(PasswordChangeView):
         return context
 
 
+def get_styled_stocks_symbols_data(stocks_symbols_data) -> dict[list]:
+    styled_stocks_symbols_data: dict[list] = dict()
+    for key, value in stocks_symbols_data.items():
+        styled_value: list[str] = list()
+        for symbol, description in zip(value[0], value[1]):
+            styled_value.append(f'{symbol} -> {description}')
+        styled_stocks_symbols_data[key] = styled_value
+    return styled_stocks_symbols_data
+
+
 @login_required
 def profile_investor(request): # TODO (GUY)
+    stocks_symbols_data: dict[list] = get_stocks_from_json_file()
+    styled_stocks_symbols_data: dict[list] = get_styled_stocks_symbols_data(stocks_symbols_data=stocks_symbols_data)
     is_form_filled = True
+
     try:
-        get_object_or_404(InvestorUser, user=request.user)
+        investor_user_instance = get_object_or_404(InvestorUser, user=request.user)
         if request.method == 'GET':
-            investor_user = InvestorUser.objects.get(user=request.user)
-            form: forms.ModelForm = UpdateInvestorUserForm(instance=investor_user, disabled_project=True)
+            form: forms.ModelForm = UpdateInvestorUserForm(
+                instance=investor_user_instance,
+                investor_user_instance=investor_user_instance,
+                disabled_project=True,
+            )
         elif request.method == 'POST':
-            form: forms.ModelForm = UpdateInvestorUserForm(request.POST, instance=request.user)
+            form: forms.ModelForm = UpdateInvestorUserForm(
+                request.POST,
+                investor_user_instance=investor_user_instance,
+                instance=investor_user_instance,
+            )
             if form.is_valid():
                 form.save()
-                # messages.success(request, 'Your account details have been updated successfully.')
+                messages.success(request, 'Your account details have been updated successfully.')
                 return redirect('profile_main')
         else:
             raise BadRequest
@@ -137,6 +160,7 @@ def profile_investor(request): # TODO (GUY)
     context = {
         'form': form,
         'is_form_filled': is_form_filled,
+        'stocks_symbols_data': json.dumps(styled_stocks_symbols_data),
         'title': "Update Collections of Stocks Details",
     }
     return render(request, 'account/profile_investor.html', context=context)

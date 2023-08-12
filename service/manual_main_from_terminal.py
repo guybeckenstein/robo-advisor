@@ -6,6 +6,7 @@ if __name__ == '__main__':
     data_management.main_menu()
     selection = data_management.selected_menu_option()  # TODO get selection from page in site
     exit_loop_operation = 8
+    login_id: int = 1
     login_name: str = 'yarden'  # data_management.get_name()
 
     while selection != exit_loop_operation:
@@ -13,7 +14,6 @@ if __name__ == '__main__':
             is_machine_learning: int = 0  # data_management.get_machine_learning_option()
             model_option: int = 0  # data_management.get_model_option()
             investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
-            stocks_collection_number = 1  # default
             # TODO in site(GUY)
             # 1 default collection, Option for the customer to choose (recommended)
             stocks_collection_number: str = data_management.get_collection_number()  # TODO: user investor
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
         elif selection == 3:
             # plot user portfolio's data
-            selected_user = data_management.get_user_from_db(login_name)
+            selected_user = data_management.get_user_from_db(login_id, login_name)
             if selected_user is not None:
                 data_management.save_user_portfolio(selected_user)
                 data_management.plot_image(settings.USER_IMAGES + login_name + '/sectors_component.png')

@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 
+from . import views
 from .models import InvestorUser, CustomUser
 
 
@@ -133,20 +134,59 @@ class PasswordChangingForm(PasswordChangeForm):
         fields = ('old_password', 'new_password1', 'new_password2',)
 
 
+def get_indexes_tuple(size) -> tuple:
+    res: list = []
+    for i in range(1, size + 1):
+        str_i = str(i)
+        curr_tuple = (str_i, str_i)
+        res.append(curr_tuple)
+    return res
+
+
 class UpdateInvestorUserForm(forms.ModelForm): # TODO - show collections of stocks and choices(GUY)
-    starting_investment_amount = forms.CharField()
-    stocks_symbols = forms.MultipleChoiceField(widget=forms.SelectMultiple)
+    starting_investment_amount = forms.CharField(required=False)
+    list_of_indexes_tuple: list[tuple] = get_indexes_tuple(size=4)
+    stocks_collection_number = forms.ChoiceField(
+        widget=forms.RadioSelect(attrs={'class': 'horizontal-radio'}), choices=list_of_indexes_tuple
+    )
+    stocks_symbols = forms.MultipleChoiceField(widget=forms.SelectMultiple, required=False)
 
     def __init__(self, *args, disabled_project=True, **kwargs):
+        investor_user_instance: InvestorUser = kwargs.pop('investor_user_instance', None)
+        collection_number: str = str(investor_user_instance.stocks_collection_number)
+        stocks_symbols_data: dict[list] = views.get_stocks_from_json_file()
+        symbols_list: list[str] = sorted(views.get_styled_stocks_symbols_data(stocks_symbols_data)[collection_number])
+
+        # Form
         super(UpdateInvestorUserForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'investor-form'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('profile_investor'),
+            'hx-target': '#investor-form',
+            'hx-swap': 'outerHTML'
+        }
         self.fields['starting_investment_amount'].disabled = disabled_project
         self.fields['stocks_symbols'].disabled = disabled_project
-        if type(self.instance.stocks_symbols) == str:
-            symbols_list = self.instance.stocks_symbols[1:-1].split(',')
-            self.fields['stocks_symbols'].choices = [(symbol.strip(), symbol.strip()) for symbol in symbols_list]
-        else:
-            self.fields['stocks_symbols'].choices = []  # or provide default choices if needed
+        self.fields['stocks_symbols'].choices = [(symbol.strip(), symbol.strip()) for symbol in symbols_list]
+        self.helper.add_input(Submit('update', 'Update', css_class='btn-dark'))
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        selected_symbols = self.cleaned_data.get('stocks_symbols', [])
+        raise ValueError(selected_symbols)
+
+        # Convert the list to a formatted string
+        symbols_list = "{" + ",".join(selected_symbols) + "}"
+
+        instance.stocks_symbols = symbols_list
+
+        if commit:
+            instance.save()
+
+        return instance
 
     class Meta:
         model = InvestorUser
-        fields = ('starting_investment_amount', 'stocks_symbols',)
+        fields = ('starting_investment_amount', 'stocks_collection_number', 'stocks_symbols',)

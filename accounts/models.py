@@ -61,6 +61,7 @@ class InvestorUser(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.RESTRICT)
     risk_level = models.IntegerField(validators=[MinValueValidator(RISK_MIN), MaxValueValidator(RISK_MAX)])
     starting_investment_amount = models.IntegerField()
+    stocks_collection_number = models.CharField(max_length=1, default='1')
     stocks_symbols = ArrayField(models.CharField(max_length=50))
     stocks_weights = ArrayField(models.FloatField())
     sectors_names = ArrayField(models.CharField(max_length=50))
@@ -72,7 +73,6 @@ class InvestorUser(models.Model):
     total_change = models.FloatField()
     monthly_change = models.FloatField()
     daily_change = models.FloatField()
-    # stocks_collection_number = models.stringField() TODO(GUY)
 
 
     class Meta:

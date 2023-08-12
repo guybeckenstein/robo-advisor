@@ -31,6 +31,7 @@ oauthlib==3.2.2
 packaging==23.1
 pandas==2.0.3
 phonenumberslite==8.13.17
+selenium==4.11.2
 Pillow==10.0.0
 pluggy==1.2.0
 pmdarima=2.0.3

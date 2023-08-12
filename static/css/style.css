@@ -181,3 +181,12 @@ svg {
 .capital-market-form-img img {
     width: 100%;
 }
+
+.horizontal-radio {
+    justify-content: center;
+}
+
+#div_id_stocks_collection_number div .form-check {
+    display: inline-block;
+    margin-right: 20px;
+}

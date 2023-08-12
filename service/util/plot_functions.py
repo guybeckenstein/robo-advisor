@@ -428,7 +428,7 @@ def plot_investment_portfolio_yield(user_name, table, stats_details_tuple, secto
         plt.figtext(
             0.45,
             0.15,
-            "your Portfolio: \n"
+            "Your Portfolio: \n"
             + "Total Change: " + str(round(total_change, 2)) + "%\n"
             + "Annual Returns: " + str(round(annual_returns, 2)) + "%\n"
             + "Annual Volatility: " + str(round(volatility, 2)) + "%\n"
@@ -446,7 +446,7 @@ def plot_investment_portfolio_yield(user_name, table, stats_details_tuple, secto
     return plt
 
 
-def plot_portfolio_component(user_name: str, sectors_weights: List[float], sectors_names: List[str]):
+def plot_sectors_component(user_name: str, sectors_weights: List[float], sectors_names: List[str]):
     plt.figure(1)
     plt.title(f"{user_name}'s portfolio\n")
     plt.pie(

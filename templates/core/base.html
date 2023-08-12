@@ -9,7 +9,9 @@
     <script src=https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js></script>
     <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    <script src="{% static 'js/app.js' %}"></script> <!-- Only relevant if we use JS -->
+    <script src="{% static 'js/app.js' %}"></script>
+    {% block extra_js %}
+    {% endblock %}
     <link rel="icon" type="image/x-icon" href="{% static 'img/Logo.png' %}">
     {% if title %}
       <title>
@@ -65,7 +67,7 @@
         {% if messages %}
           <div class="position-absolute d-flex justify-content-center w-100 js-messages-element" style="margin-top: -100px;">
             {% for message in messages %}
-              <div id="alert" class="alert alert-{{ message.tags }}">
+              <div id="alert" class="alert alert-{{ message.tags }}" style="z-index: 100;">
                 {{ message }}
               </div>
             {% endfor %}

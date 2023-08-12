@@ -104,7 +104,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     '</span>')
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        stocks_collection_number = "1" # TODO - get from investor profile(1 is default)
+        stocks_collection_number = "1" # TODO - get from investor profile (1 is default)
         sub_folder = str(stocks_collection_number) + '/' + str(ml_answer) + str(model_answer)  # Sub folder for current user to fetch its relevant graphs
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'

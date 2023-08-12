@@ -122,6 +122,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("starting_investment_amount", models.IntegerField()),
+                ("stocks_collection_number", models.CharField(max_length=1, default='1')),
                 (
                     "stocks_symbols",
                     django.contrib.postgres.fields.ArrayField(
