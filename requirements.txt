@@ -33,6 +33,7 @@ pandas==2.0.3
 phonenumberslite==8.13.17
 selenium==4.11.2
 Pillow==10.0.0
+plotly==5.16.0
 pluggy==1.2.0
 pmdarima=2.0.3
 prophet=1.1.4

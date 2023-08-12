@@ -258,118 +258,87 @@ def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio
     return plt
 
 
-def plot_three_portfolios_graph(min_variance_port, sharpe_portfolio, max_returns, three_best_sectors_weights, sectors,
+def plot_three_portfolios_graph(min_variance_portfolio, sharpe_portfolio, max_returns, three_best_sectors_weights, sectors,
                                 pct_change_table):
     plt.figure()  # Create a new plot instance
     # plot frontier, max sharpe & min Volatility values with a scatterplot
-    fig_size_X = 10
-    fig_size_Y = 8
-    fig_size = (fig_size_X, fig_size_Y)
+    fig_size: tuple[int, int] = (10, 8)
     plt.style.use("seaborn-dark")
     plt.xlabel("Date")
     plt.ylabel("Returns %")
-    plt.title("3 best portfolios")
+    plt.title("3 Best Portfolios")
 
     pct_change_table['yield_1_percent'] = (pct_change_table['yield_1'] - 1) * 100
     pct_change_table['yield_2_percent'] = (pct_change_table['yield_2'] - 1) * 100
     pct_change_table['yield_3_percent'] = (pct_change_table['yield_3'] - 1) * 100
 
-    pct_change_table['yield_1_percent'].plot(figsize=fig_size, grid=True, color="yellow", linewidth=2, label="safest",
-                                             legend=True, linestyle="dashed")
-    pct_change_table['yield_2_percent'].plot(figsize=fig_size, grid=True, color="green", linewidth=2, label="sharpe",
-                                             legend=True, linestyle="dashed")
-    pct_change_table['yield_3_percent'].plot(figsize=fig_size, grid=True, color="red", linewidth=2, label="max return",
-                                             legend=True, linestyle="dashed")
+    pct_change_table['yield_1_percent'].plot(
+        figsize=fig_size, grid=True, color="yellow", linewidth=2, label="Safest", legend=True, linestyle="dashed"
+    )
+    pct_change_table['yield_2_percent'].plot(
+        figsize=fig_size, grid=True, color="green", linewidth=2, label="Sharpe", legend=True, linestyle="dashed"
+    )
+    pct_change_table['yield_3_percent'].plot(
+        figsize=fig_size, grid=True, color="red", linewidth=2, label="Max return", legend=True, linestyle="dashed"
+    )
 
     plt.subplots_adjust(bottom=0.4)
 
     # ------------------ Printing 3 optimal Portfolios -----------------------
     # Setting max_X, max_Y to act as relative border for window size
-    stocks_str_high = ""
-    stocks_str_medium = ""
-    stocks_str_low = ""
+    stocks_str_high: str = ""
+    stocks_str_medium: str = ""
+    stocks_str_low: str = ""
 
-    # stocks_str_high
     for i in range(len(sectors)):
         weight = three_best_sectors_weights[2][i] * 100
         stocks_str_high += sectors[i].name + "(" + str("{:.2f}".format(weight)) + "%),\n "
-    # stocks_str_medium
-    for i in range(len(sectors)):
         weight = three_best_sectors_weights[1][i] * 100
         stocks_str_medium += sectors[i].name + "(" + str("{:.2f}".format(weight)) + "%),\n "
-    # stocks_str_low
-    for i in range(len(sectors)):
         weight = three_best_sectors_weights[0][i] * 100
         stocks_str_low += sectors[i].name + "(" + str("{:.2f}".format(weight)) + "%),\n "
 
     with pd.option_context("display.float_format", "%{:,.2f}".format):
-        plt.figtext(
-            0.2,
-            0.15,
-            "Max Returns Portfolio: \n"
-            + "Annual Returns: " + str(round(max_returns.iloc[0][0], 2)) + "%\n"
-            + "Annual Volatility: " + str(round(max_returns.iloc[0][1], 2)) + "%\n"
-            + "Annual Max Loss: " + str(round(max_returns.iloc[0][0] - 1.65 * max_returns.iloc[0][1], 2)) + "%\n"
-            + "Annual Sharpe Ratio: " + str(round(max_returns.iloc[0][2], 2)) + "\n"
-            + stocks_str_high,
-            bbox=dict(facecolor="red", alpha=0.5),
-            fontsize=11,
-            style="oblique",
-            ha="center",
-            va="center",
-            fontname="Arial",
-            wrap=True,
-        )
-        plt.figtext(
-            0.8,
-            0.15,
-            "Sharpe  Portfolio: \n"
-            + "Annual Returns: " + str(round(sharpe_portfolio.iloc[0][0], 2)) + "%\n"
-            + "Annual Volatility: " + str(round(sharpe_portfolio.iloc[0][1], 2)) + "%\n"
-            + "Annual Max Loss: " + str(round(sharpe_portfolio.iloc[0][0] - 1.65 * sharpe_portfolio.iloc[0][1], 2))
-            + "%\n"
-            + "Annual Sharpe Ratio: " + str(round(sharpe_portfolio.iloc[0][2], 2)) + "\n"
-            + stocks_str_medium,
-            bbox=dict(facecolor="green", alpha=0.5),
-            fontsize=11,
-            style="oblique",
-            ha="center",
-            va="center",
-            fontname="Arial",
-            wrap=True,
-        )
-        plt.figtext(
-            0.5,
-            0.15,
-            "Safest Portfolio: \n"
-            + "Annual Returns: " + str(round(min_variance_port.iloc[0][0], 2)) + "%\n"
-            + "Annual Volatility: " + str(round(min_variance_port.iloc[0][1], 2)) + "%\n"
-            + "Annual Max Loss: " + str(round(min_variance_port.iloc[0][0] - 1.65 * min_variance_port.iloc[0][1], 2))
-            + "%\n"
-            + "Annual Sharpe Ratio: " + str(round(min_variance_port.iloc[0][2], 2)) + "\n"
-            + stocks_str_low,
-            bbox=dict(facecolor="yellow", alpha=0.5),
-            fontsize=11,
-            style="oblique",
-            ha="center",
-            va="center",
-            fontname="Arial",
-            wrap=True,
-        )
+        fig_text_data: dict = {
+            'name': ['Max Returns', 'Sharpe', 'Safest'],
+            'portfolio': [max_returns.iloc[0], sharpe_portfolio.iloc[0], min_variance_portfolio.iloc[0]],
+            'stocks': [stocks_str_high, stocks_str_medium, stocks_str_low],
+            'facecolor': ['red', 'green', 'yellow']
+        }
+        for i in range(3):
+            portfolio = fig_text_data['portfolio'][i]
+            plt.figtext(
+                x=0.2 + 0.3 * i,
+                y=0.15,
+                s=f"Annual Returns: {str(round(portfolio[0], 2))}%\n"
+                  f"Annual Volatility: {str(round(portfolio[1], 2))}%\n"
+                  f"Annual Max Loss: {str(round(portfolio[0] - 1.65 * portfolio[1], 2))}%\n"
+                  f"Annual Sharpe Ratio: {str(round(portfolio[2], 2))}\n"
+                  f"{fig_text_data['stocks'][i][:-2]}",
+                bbox=dict(facecolor=fig_text_data['facecolor'][i], alpha=0.5),
+                fontsize=10,
+                style="oblique",
+                ha="center",
+                va="center",
+                fontname="Arial",
+                wrap=True,
+            )
+            plt.figtext(
+                x=0.2 + 0.3 * i, y=0.27, s=f"{fig_text_data['name'][i]} Portfolio:", fontsize=12, fontweight="bold",
+                ha="center", va="center", fontname="Arial", wrap=True,
+            )
     return plt
 
 
 def plot_distribution_of_portfolio(yields) -> plt:
     plt.figure()  # Create a new plot instance
-    labels = ['low risk', 'medium risk', 'high risk']
-    plt.subplots(figsize=(8, 8))
+    labels = ['Low Risk', 'Medium Risk', 'High Risk']
+    plt.subplots(figsize=(10, 8))
     plt.subplots_adjust(bottom=0.4)
 
-    monthly_changes = [None] * len(yields)  # yield changes
-    monthly_yields = [None] * len(yields)  # monthly yield change
-    df_describes = [None] * len(yields)  # describe of yield changes
-    # monthlyCompoundedReturns = [None] * len(yields) # total change in percent from beginning
-    # monthlyCompoundedReturns[i] = (1 + monthly_changes[i]).cumprod() - 1
+    monthly_yields: list[pd.core.series.Series] = [None] * len(yields)  # monthly yield change
+    monthly_changes: list[pd.core.series.Series] = [None] * len(yields)  # yield changes
+    df_describes: list[pd.core.series.Series] = [None] * len(yields)  # describe of yield changes
 
     for i in range(len(yields)):
         # Convert the index to datetime if it's not already in the datetime format
@@ -377,11 +346,19 @@ def plot_distribution_of_portfolio(yields) -> plt:
         if not pd.api.types.is_datetime64_any_dtype(curr_yield.index):
             yields[i].index = pd.to_datetime(curr_yield.index)
 
-        monthly_yields[i]: List[np.ndarray] = curr_yield.resample('M').first()
-        monthly_changes[i]: pd.DataFrame = monthly_yields[i].pct_change().dropna() * 100
-        df_describes[i]: pd.DataFrame = monthly_changes[i].describe().drop(["count"], axis=0)
-        sns.distplot(pd.Series(monthly_changes[i]), kde=True, hist_kws={'alpha': 0.2}, norm_hist=False,
-                     rug=False, label=labels[i])
+        monthly_yields[i]: pd.core.series.Series = curr_yield.resample('M').first()
+        monthly_changes[i]: pd.core.series.Series = monthly_yields[i].pct_change().dropna() * 100
+        df_describes[i]: pd.core.series.Series = monthly_changes[i].describe().drop(["count"], axis=0)
+        df_describes[i]: pd.core.series.Series = df_describes[i].rename(index={'std': 'Standard Deviation'})
+        df_describes[i].index = df_describes[i].index.str.capitalize()
+        df_describes[i]: pd.core.series.Series = df_describes[i].rename(index={'std': 'Standard Deviation'})
+        sns.distplot(
+            a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False, label=labels[i],
+        )
+        # Using sns.histplot(...):
+        # sns.histplot(
+        #     data=monthly_changes[i], kde=True, label=labels[i],
+        # )
 
     plt.xlabel('Monthly Return %', fontsize=12)
     plt.ylabel('Distribution', fontsize=12)
@@ -389,13 +366,36 @@ def plot_distribution_of_portfolio(yields) -> plt:
     plt.legend()
     plt.title("Distribution of Portfolios - By Monthly Returns")
 
+    # Creates figtext under the main graph
     with pd.option_context("display.float_format", "%{:,.2f}".format):
-        plt.figtext(0.2, 0.15, "low risk\n" + str(df_describes[0]), bbox=dict(facecolor="blue", alpha=0.5),
-                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
-        plt.figtext(0.5, 0.15, "medium risk\n" + str(df_describes[1]), bbox=dict(facecolor="pink", alpha=0.5),
-                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
-        plt.figtext(0.8, 0.15, "high risk\n" + str(df_describes[2]), bbox=dict(facecolor="green", alpha=0.5),
-                    fontsize=11, style="oblique", ha="center", va="center", fontname="Arial", wrap=True)
+        y_header: float = 0.23
+        y_content: float = 0.15
+        alpha: float = 0.5
+        s_params: list = ['Low', 'Medium', 'High']
+        facecolor: list = ['blue', 'pink', 'green']
+        header_fontsize: int = 14
+        content_fontsize: int = 10
+        style: str = 'oblique'
+        ha_header: str = 'center'
+        ha_content: str = 'center'
+        va: str = 'center'
+        fontname: str = 'Arial'
+        wrap: bool = True
+        for i in range(3):
+            x = 0.2 + 0.3 * i
+            s_content = df_describes[i].to_string()
+            bbox: dict = {'facecolor': facecolor[i], 'alpha': alpha}
+
+            # Content figtext
+            plt.figtext(
+                x=x, y=y_content, s=s_content, bbox=bbox, fontsize=content_fontsize, style=style, ha=ha_content,
+                va=va, fontname=fontname, wrap=wrap,
+            )
+            # Header figtext
+            plt.figtext(
+                x=x, y=y_header, s=f'{s_params[i]} Risk', fontsize=header_fontsize, fontweight='bold',
+                ha=ha_header, fontname=fontname, wrap=wrap,
+            )
 
     return plt
 
@@ -460,11 +460,12 @@ def plot_sectors_component(user_name: str, sectors_weights: List[float], sectors
     return plt
 
 
-def plot_portfolio_component_stocks(user_name: str, stocks_weights: List[float], stocks_symbols,
-                                    descriptions):
+def plot_portfolio_component_stocks(user_name: str, stocks_weights: List[float], stocks_symbols: list[int],
+                                    descriptions: list[str]):
     if len(stocks_weights) != len(stocks_symbols) or len(stocks_weights) != len(descriptions):
         raise ValueError("Input lists must have the same length.")
-    plt.figure(figsize=(8, 4))
+    figsize: tuple[int, int] = (8, 4)
+    plt.figure(figsize=figsize)
     plt.title(f"{user_name}'s Portfolio", fontsize=16, pad=20)
 
     data = [["Stock", "Weight", "Description"]]
@@ -508,8 +509,9 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
     plt.xlabel('Return', fontsize=12)
     plt.ylabel('Distribution', fontsize=12)
     for i in range(len(stock_names)):
-        sns.distplot(pct_change_table[stock_names[i]][::30] * 100, kde=True, hist=False, rug=False,
-                     label=stock_names[i])
+        sns.distplot(
+            a=pct_change_table[stock_names[i]][::30] * 100, kde=True, hist=False, rug=False, label=stock_names[i],
+        )
     plt.grid(True)
     plt.legend()
     return plt

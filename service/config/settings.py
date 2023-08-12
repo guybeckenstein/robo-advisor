@@ -32,8 +32,8 @@ NON_MACHINE_LEARNING_LOCATION = 'withoutMachineLearning/'  # directory with 6 ta
 CLOSING_PRICES_FILE_NAME = "closing_prices"
 
 # STATIC FILES
-GRAPH_IMAGES = BASE_SERVICE_DIR + '../static/img/graphs/'
-USER_IMAGES = BASE_SERVICE_DIR + '../static/img/user/'
+GRAPH_IMAGES = DJANGO_DIR + 'static/img/graphs/'
+USER_IMAGES = DJANGO_DIR + 'static/img/user/'
 
 # RESEARCH
 RESEARCH_LOCATION = BASE_SERVICE_DIR + 'research/'

@@ -159,6 +159,7 @@ svg {
     margin-top: 10px;
     border: none;
     padding: 0;
+    width: 100%;
 }
 
 .capital-market-form-radio {
@@ -172,10 +173,6 @@ svg {
 .capital-market-form-radio div label {
     font-weight: 600;
     color: rgb(50, 50, 50);
-}
-
-.capital-market-form-img {
-    width: 500px;
 }
 
 .capital-market-form-img img {

@@ -547,6 +547,11 @@ def save_user_portfolio(curr_user: User) -> None:
     TEST_SIZE_MACHINE_LEARNING = models_data['TEST_SIZE_MACHINE_LEARNING']
 
     try:
+        os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+
+    try:
         os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
     except FileExistsError:  # Ignore the exception
         pass
