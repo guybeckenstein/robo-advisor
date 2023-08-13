@@ -75,16 +75,16 @@ if __name__ == '__main__':
             selected_user = data_management.get_user_from_db(login_id, login_name)
             if selected_user is not None:
                 data_management.save_user_portfolio(selected_user)
-                data_management.plot_image(settings.USER_IMAGES + login_name + '/sectors_component.png')
-                data_management.plot_image(settings.USER_IMAGES + login_name + '/stocks_component.png')
-                data_management.plot_image(settings.USER_IMAGES + login_name + '/yield_graph.png')
+                data_management.plot_image(f'{settings.USER_IMAGES}{login_name}/sectors_component.png')
+                data_management.plot_image(f'{settings.USER_IMAGES}{login_name}/stocks_component.png')
+                data_management.plot_image(f'{settings.USER_IMAGES}{login_name}/yield_graph.png')
 
         elif selection == 4:
 
             data_management.expert_menu()
             selection = data_management.selected_menu_option()
             while selection != exit_loop_operation:
-                if selection == 1: # TODO : add to research page
+                if selection == 1: # TODO: add to research page
                     # forecast specific stock using machine learning
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
@@ -96,7 +96,7 @@ if __name__ == '__main__':
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
                                                + stock_name + operation + '.png')
-                elif selection == 2: # TODO : add to research page
+                elif selection == 2: # TODO: add to research page
                     # plotbb_strategy_stock for specific stock
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
@@ -121,7 +121,7 @@ if __name__ == '__main__':
                     # TODO - SHOW IMAGES
 
                 # plot 3 best portfolios graph
-                elif selection == 5: # TODO : maybe show in the site
+                elif selection == 5: # TODO: maybe show in the site
                     # plot Markowitz graph
                     num_of_years_history = data_management.get_num_of_years_history()
                     is_machine_learning = data_management.get_machine_learning_option()
@@ -136,7 +136,7 @@ if __name__ == '__main__':
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[0] + '_all_option' + '.png')
 
-                elif selection == 6:  # TODO : maybe show in the site
+                elif selection == 6:  # TODO: maybe show in the site
                     # plot Gini graph
                     num_of_years_history = data_management.get_num_of_years_history()
                     is_machine_learning = data_management.get_machine_learning_option()

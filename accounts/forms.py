@@ -3,9 +3,11 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, HTML
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 
+from service.util.data_management import get_stocks_from_json_file, get_stocks_symbols_from_json_file
 from . import views
 from .models import InvestorUser, CustomUser
 
@@ -143,7 +145,7 @@ def get_indexes_tuple(size) -> tuple:
     return res
 
 
-class UpdateInvestorUserForm(forms.ModelForm): # TODO - show collections of stocks and choices(GUY)
+class UpdateInvestorUserForm(forms.ModelForm):
     starting_investment_amount = forms.CharField(required=False)
     list_of_indexes_tuple: list[tuple] = get_indexes_tuple(size=4)
     stocks_collection_number = forms.ChoiceField(
@@ -166,21 +168,20 @@ class UpdateInvestorUserForm(forms.ModelForm): # TODO - show collections of stoc
             'hx-target': '#investor-form',
             'hx-swap': 'outerHTML'
         }
+
         self.fields['starting_investment_amount'].disabled = disabled_project
-        self.fields['stocks_symbols'].disabled = disabled_project
         self.fields['stocks_symbols'].choices = [(symbol.strip(), symbol.strip()) for symbol in symbols_list]
         self.helper.add_input(Submit('update', 'Update', css_class='btn-dark'))
 
     def save(self, commit=True):
         instance = super().save(commit=False)
 
-        selected_symbols = self.cleaned_data.get('stocks_symbols', [])
-        raise ValueError(selected_symbols)
+        collection_number: int = self.cleaned_data.get('stocks_collection_number', -1)
+        stocks_symbols: list[str] = get_stocks_symbols_from_json_file(collection_number=collection_number)
 
         # Convert the list to a formatted string
-        symbols_list = "{" + ",".join(selected_symbols) + "}"
 
-        instance.stocks_symbols = symbols_list
+        instance.stocks_symbols = stocks_symbols
 
         if commit:
             instance.save()

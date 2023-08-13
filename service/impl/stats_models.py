@@ -42,7 +42,7 @@ class StatsModels:
     def get_optimal_portfolio_by_markowitz(self, num_por_simulation, min_num_por_simulation,
                                            pct_change_table, stocks_symbols, max_percent_commodity, max_percent_stocks):
 
-        stocks_names: list = []
+        stocks_names: list[str] = []
         for symbol in stocks_symbols:
             if type(symbol) == int:
                 stocks_names.append(str(symbol))
@@ -128,7 +128,7 @@ class StatsModels:
     def get_optimal_portfolio_by_gini(self, num_por_simulation, min_num_por_simulation, pct_change_table,
                                       stocks_symbols,
                                       max_percent_commodity, max_percent_stocks):
-        stocks_names: list = []
+        stocks_names: list[str] = []
         for symbol in stocks_symbols:
             if type(symbol) == int:
                 stocks_names.append(str(symbol))
@@ -136,8 +136,8 @@ class StatsModels:
                 stocks_names.append(symbol)
         v_value = self.gini_v_value
         returns_daily = pct_change_table
-        port_portfolio_annual = []
-        port_gini_annual = []
+        portfolio_annual = []
+        portfolio_gini_annual = []
         sharpe_ratio = []
         stock_weights = []
 
@@ -195,15 +195,15 @@ class StatsModels:
                 portfolio_annual = ((1 + mue) ** 254) - 1
                 sharpe = portfolio_annual / gini_annual
                 sharpe_ratio.append(sharpe)
-                port_portfolio_annual.append(portfolio_annual * 100)
-                port_gini_annual.append(gini_annual * 100)
+                portfolio_annual.append(portfolio_annual * 100)
+                portfolio_gini_annual.append(gini_annual * 100)
                 stock_weights.append(weights)
 
                 single_portfolio += 1
 
             # a dictionary for Returns and Risk values of each portfolio
-            portfolio = {'Portfolio_annual': port_portfolio_annual,
-                         'Gini': port_gini_annual,
+            portfolio = {'Portfolio Annual': portfolio_annual,
+                         'Gini': portfolio_gini_annual,
                          'Sharpe Ratio': sharpe_ratio}
 
             # extend original dictionary to accommodate each ticker and weight in the portfolio
@@ -214,7 +214,7 @@ class StatsModels:
             df = pd.DataFrame(portfolio)
 
             # get better labels for desired arrangement of columns
-            column_order = ['Portfolio_annual', 'Gini', 'Sharpe Ratio'] + [stock + ' Weight' for stock in stocks_names]
+            column_order = ['Portfolio Annual', 'Gini', 'Sharpe Ratio'] + [stock + ' Weight' for stock in stocks_names]
 
             # reorder dataframe columns
             self._df = df[column_order]

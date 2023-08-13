@@ -1,6 +1,8 @@
 import csv
 import json
 import os
+from numbers import Number
+
 import numpy as np
 import pandas as pd
 from datetime import date
@@ -116,9 +118,9 @@ def update_three_level_data_frame_tables(machingLearningOpt, modelName, stocksSy
 def update_specific_data_frame_table(is_machine_learning, model_name, stocks_symbols, sectors, levelOfRisk,
                                      max_percent_commodity, max_percent_stocks, closing_prices_table, pct_change_table,
                                      __path, models_data):
-    NUM_POR_SIMULATION = models_data["models_data"]['NUM_POR_SIMULATION']
-    MIN_NUM_POR_SIMULATION = models_data["models_data"]['MIN_NUM_POR_SIMULATION']
-    GINI_V_VALUE = models_data["models_data"]['GINI_V_VALUE']
+    num_por_simulation: int = models_data["models_data"]['num_por_simulation']
+    min_num_por_simulation: int = models_data["models_data"]['min_num_por_simulation']
+    gini_v_value: int = models_data["models_data"]['GINI_V_VALUE']
 
     if is_machine_learning:
         locationForSaving = __path + settings.MACHINE_LEARNING_LOCATION
@@ -141,12 +143,12 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
         sectors=sectors,
         closing_prices_table=closing_prices_table,
         pct_change_table=pct_change_table,
-        num_por_simulation=NUM_POR_SIMULATION,
-        min_num_por_simulation=MIN_NUM_POR_SIMULATION,
+        num_por_simulation=num_por_simulation,
+        min_num_por_simulation=min_num_por_simulation,
         max_percent_commodity=max_percent_commodity,
         max_percent_stocks=max_percent_stocks,
         model_name=model_name,
-        gini_value=GINI_V_VALUE
+        gini_value=gini_v_value
 
     )
     df = stats_models.get_df()
@@ -342,7 +344,7 @@ def get_stocks_symbols_from_collection(stocks_collection_number) -> List:
     return stocks_symbols
 
 
-def get_models_data_from_collections_file():  # TODO - maybe use from admin
+def get_models_data_from_collections_file() -> dict:
     json_data = get_collection_json_data()
     return json_data["models_data"]
 
@@ -430,19 +432,27 @@ def get_from_and_to_date(num_of_years):  # TODO FIX RETURN TUPLE
     return helpers.get_from_and_to_dates(num_of_years)
 
 
-def update_models_data_settings(NUM_POR_SIMULATION,
-                                MIN_NUM_POR_SIMULATION,
-                                RECORD_PERCENT_TO_PREDICT,
-                                TEST_SIZE_MACHINE_LEARNING,
-                                SELECTED_ML_MODEL_FOR_BUILD,
-                                GINI_V_VALUE):
-    models_data = get_models_data_from_collections_file()
-    models_data['NUM_POR_SIMULATION'] = NUM_POR_SIMULATION
-    models_data['MIN_NUM_POR_SIMULATION'] = MIN_NUM_POR_SIMULATION
-    models_data['RECORD_PERCENT_TO_PREDICT'] = RECORD_PERCENT_TO_PREDICT
-    models_data['TEST_SIZE_MACHINE_LEARNING'] = TEST_SIZE_MACHINE_LEARNING
-    models_data['SELECTED_ML_MODEL_FOR_BUILD'] = SELECTED_ML_MODEL_FOR_BUILD
-    models_data['GINI_V_VALUE'] = GINI_V_VALUE
+def update_models_data_settings(
+        num_por_simulation: int, min_num_por_simulation: int, record_percent_to_predict: float,
+        test_size_machine_learning: float, selected_ml_model_for_build: int, gini_v_value: int
+) -> None:
+    # Read the JSON file
+    fully_qualified_file_name: str = f'{settings.STOCKS_JSON_NAME}.json'
+    with open(file=fully_qualified_file_name, mode='r') as json_file:
+        data = json.load(json_file)
+
+    # Update the nested dictionary
+    data['collections']['models_data']['num_por_simulation'] = num_por_simulation
+    data['collections']['models_data']['min_num_por_simulation'] = min_num_por_simulation
+    data['collections']['models_data']['record_percent_to_predict'] = record_percent_to_predict
+    data['collections']['models_data']['test_size_machine_learning'] = test_size_machine_learning
+    data['collections']['models_data']['selected_ml_model_for_build'] = selected_ml_model_for_build
+    data['collections']['models_data']['gini_v_value'] = gini_v_value
+
+    # Write the updated data back to the JSON file
+    with open(file=fully_qualified_file_name, mode='w') as json_file:
+        json.dump(data, json_file, indent=4)
+
 
 
 def get_score_by_answer_from_user(string_to_show: str) -> int:
@@ -489,9 +499,9 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
                           num_of_years_history=settings.NUM_OF_YEARS_HISTORY, models_data: dict = None,
                           closing_prices_table_path: str = "") -> None:
     sectors: list = set_sectors(stocks_symbols)
-    NUM_POR_SIMULATION = models_data["models_data"]['NUM_POR_SIMULATION']
-    MIN_NUM_POR_SIMULATION = models_data["models_data"]['MIN_NUM_POR_SIMULATION']
-    GINI_V_VALUE = models_data["models_data"]['GINI_V_VALUE']
+    num_por_simulation: int = models_data["models_data"]['num_por_simulation']
+    min_num_por_simulation: int = models_data["models_data"]['min_num_por_simulation']
+    gini_v_value: int = models_data["models_data"]['gini_v_value']
     closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_prices_table_path,
                                                                   mode='regular')
     pct_change_table = closing_prices_table.pct_change()
@@ -499,8 +509,9 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
         pct_change_table = pct_change_table.tail(num_of_years_history * 252)
 
     if is_machine_learning == 1:
-        pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
-            pct_change_table, models_data, closing_prices_table.index)
+        pct_change_table, _, _ = helpers.update_daily_change_with_machine_learning(
+            pct_change_table, models_data, closing_prices_table.index
+        )
 
     if model_option == "Markowitz":
         model_name = "Markowitz"
@@ -512,39 +523,45 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
         sectors=sectors,
         closing_prices_table=closing_prices_table,
         pct_change_table=pct_change_table,
-        num_por_simulation=NUM_POR_SIMULATION,
-        min_num_por_simulation=MIN_NUM_POR_SIMULATION,
+        num_por_simulation=num_por_simulation,
+        min_num_por_simulation=min_num_por_simulation,
         max_percent_commodity=1,
         max_percent_stocks=1,
         model_name=model_name,
-        gini_value=GINI_V_VALUE,
+        gini_value=gini_v_value,
     )
     df = stats_models.get_df()
     three_best_portfolios = helpers.get_best_portfolios(df=[df, df, df], model_name=model_option)
     three_best_stocks_weights = helpers.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = helpers.get_three_best_sectors_weights(sectors, three_best_stocks_weights)
-    min_variance_port = three_best_portfolios[0]
+    min_variance_portfolio = three_best_portfolios[0]
     sharpe_portfolio = three_best_portfolios[1]
     max_returns = three_best_portfolios[2]
-    max_vols = stats_models.get_max_vols()
+    max_vols_portfolio = stats_models.get_max_vols()
     df = stats_models.get_df()
 
     if model_option == "Markowitz":
-        plt_instance = plot_functions.plot_markowitz_graph(sectors, three_best_sectors_weights, min_variance_port,
-                                                           sharpe_portfolio, max_returns, max_vols, df)
+        plt_instance = plot_functions.plot_markowitz_graph(
+            sectors=sectors, three_best_sectors_weights=three_best_sectors_weights,
+            min_variance_portfolio=min_variance_portfolio, sharpe_portfolio=sharpe_portfolio,
+            max_returns=max_returns, max_vols_portfolio=max_vols_portfolio, df=df
+        )
     else:
-        plt_instance = plot_functions.plot_gini_graph(sectors, three_best_sectors_weights, min_variance_port,
-                                                      sharpe_portfolio, max_returns, max_vols, df)
+        plt_instance = plot_functions.plot_gini_graph(
+            sectors=sectors, three_best_sectors_weights=three_best_sectors_weights,
+            min_variance_portfolio=min_variance_portfolio, sharpe_portfolio=sharpe_portfolio,
+            max_portfolios_annual=max_returns, max_ginis=max_vols_portfolio, df=df
+        )
 
-    plot_functions.save_graphs(plt_instance, settings.GRAPH_IMAGES + model_option + '_all_option')  # TODO plot at site
+    plot_functions.save_graphs(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO plot at site
 
 
-def save_user_portfolio(curr_user: User) -> None:
+def save_user_portfolio(user: User) -> None:
     # Creating directories
-    curr_user_directory = settings.USER_IMAGES + curr_user.id
+    curr_user_directory = settings.USER_IMAGES + user.id
     models_data = get_models_data_from_collections_file()
-    RECORD_PERCENT_TO_PREDICT = models_data['RECORD_PERCENT_TO_PREDICT']
-    TEST_SIZE_MACHINE_LEARNING = models_data['TEST_SIZE_MACHINE_LEARNING']
+    record_percent_to_predict = models_data['record_percent_to_predict']
+    test_size_machine_learning = models_data['test_size_machine_learning']
 
     try:
         os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
@@ -557,44 +574,41 @@ def save_user_portfolio(curr_user: User) -> None:
         pass
 
     # get data from user
-    portfolio: Portfolio = curr_user.portfolio
-    stocks_weights: List[float] = portfolio.stocks_weights
+    portfolio: Portfolio = user.portfolio
     stocks_symbols: List[str] = portfolio.stocks_symbols
-    sectors_weights: list[float] = portfolio.get_sectors_weights()
-    sectors_names: list[str] = portfolio.get_sectors_names()
-    table = portfolio.pct_change_table
-    stats_details_tuple = portfolio.get_portfolio_stats()
-    sectors: List[Sector] = portfolio.sectors
-    description: List[str] = helpers.get_stocks_descriptions(stocks_symbols)
 
     # pie chart of sectors & sectors weights
-    plt_sectors_component = plot_functions.plot_sectors_component(curr_user.name, sectors_weights, sectors_names)
-    plot_functions.save_graphs(plt_sectors_component, file_name=curr_user_directory + '/sectors_component')
+    plt_sectors_component = plot_functions.plot_sectors_component(
+        user_name=user.name, weights=portfolio.get_sectors_weights(), names=portfolio.get_sectors_names()
+    )
+
+    plot_functions.save_graphs(plt_sectors_component, file_name=f'{curr_user_directory}/sectors_component')
 
     # pie chart of stocks & stocks weights , TODO: show as tables instead of pie chart
-    plt_stocks_component = plot_functions.plot_portfolio_component_stocks(curr_user.name,
-                                                                          stocks_weights,
-                                                                          stocks_symbols,
-                                                                          description[1:]
-                                                                          )
-    plot_functions.save_graphs(plt_stocks_component, file_name=curr_user_directory + '/stocks_component')
+    plt_stocks_component = plot_functions.plot_portfolio_component_stocks(
+        user_name=user.name, stocks_weights=portfolio.stocks_weights, stocks_symbols=stocks_symbols,
+        descriptions=helpers.get_stocks_descriptions(stocks_symbols)[1:]
+    )
+    plot_functions.save_graphs(plt_stocks_component, file_name=f'{curr_user_directory}/stocks_component')
 
-    # total yield graph with sectors weights
+    # Total yield graph with sectors weights
+    table: pd.DataFrame = portfolio.pct_change_table
     table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
-    df, returns_forecast, returns_annual = helpers.analyze_with_machine_learning_linear_regression(
-        table['yield__selected_percent'],
-        table.index,
-        RECORD_PERCENT_TO_PREDICT,
-        TEST_SIZE_MACHINE_LEARNING,
-        closing_prices_mode=True)
+    df, _, _ = helpers.analyze_with_machine_learning_linear_regression(
+        returns_stock=table['yield__selected_percent'],
+        table_index=table.index,
+        record_percent_to_predict=record_percent_to_predict,
+        test_size_machine_learning=test_size_machine_learning,
+        closing_prices_mode=True
+    )
     df['yield__selected_percent'] = df['col']
     df['yield__selected_percent_forecast'] = df["Forecast"]
 
-    plt_yield_graph = plot_functions.plot_investment_portfolio_yield(curr_user.name,
-                                                                     df,
-                                                                     stats_details_tuple,
-                                                                     sectors)
-    plot_functions.save_graphs(plt_yield_graph, file_name=curr_user_directory + '/yield_graph')
+    stats_details_tuple = portfolio.get_portfolio_stats()
+    plt_yield_graph = plot_functions.plot_investment_portfolio_yield(
+        user_name=user.name, table=df, stats_details_tuple=stats_details_tuple, sectors=portfolio.sectors
+    )
+    plot_functions.save_graphs(plt_yield_graph, file_name=f'{curr_user_directory}/yield_graph')
 
 
 def plot_image(file_name) -> None:
@@ -656,3 +670,10 @@ def get_stocks_from_json_file() -> dict:
         stocks_description_list = helpers.get_stocks_descriptions(stocks_symbols_list, is_reverse_mode=False)
         stocks[str(i)] = [stocks_symbols_list, stocks_description_list]
     return stocks
+
+def get_stocks_symbols_from_json_file(collection_number: int) -> list[str]:
+    collection: dict = get_collection_json_data()[str(collection_number)][0]
+    stocks_symbols: list[str] = collection['stocksSymbols']
+    return stocks_symbols
+
+

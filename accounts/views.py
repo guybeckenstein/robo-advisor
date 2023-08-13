@@ -15,7 +15,7 @@ from django.urls import reverse_lazy
 from service.util.data_management import get_stocks_from_json_file
 from .forms import UserRegisterForm, AccountMetadataForm, UpdateUserNameAndPhoneNumberForm, UpdateInvestorUserForm, \
     PasswordChangingForm
-from .models import InvestorUser, CustomUser
+from .models import InvestorUser
 
 
 class SignUpView(SignupView):
@@ -129,7 +129,7 @@ def get_styled_stocks_symbols_data(stocks_symbols_data) -> dict[list]:
 
 
 @login_required
-def profile_investor(request): # TODO (GUY)
+def profile_investor(request):  # TODO (GUY)
     stocks_symbols_data: dict[list] = get_stocks_from_json_file()
     styled_stocks_symbols_data: dict[list] = get_styled_stocks_symbols_data(stocks_symbols_data=stocks_symbols_data)
     is_form_filled = True
@@ -151,7 +151,7 @@ def profile_investor(request): # TODO (GUY)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Your account details have been updated successfully.')
-                return redirect('profile_main')
+                return redirect('capital_market_algorithm_preferences_form')
         else:
             raise BadRequest
     except Http404:

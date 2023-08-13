@@ -50,6 +50,11 @@
               <a href="{% url 'capital_market_algorithm_preferences_form' %}">
                 Capital Market Form
               </a>
+              {% if user.is_superuser %}
+                <a href="{% url 'administrative_tools_form' %}">
+                  Administrative Tools
+                </a>
+              {% endif %}
               <a href="{% url 'account_logout' %}">
                 Logout
               </a>

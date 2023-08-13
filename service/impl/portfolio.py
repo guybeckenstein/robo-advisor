@@ -69,7 +69,7 @@ class Portfolio:
         return self._closing_prices_table
 
     @property
-    def pct_change_table(self):
+    def pct_change_table(self) -> pd.DataFrame:
         return self._pct_change_table
 
     @property
@@ -156,8 +156,8 @@ class Portfolio:
 
         return weights
 
-    def get_sectors_names(self):
-        names = []
+    def get_sectors_names(self) -> list[str]:
+        names: list[str] = []
 
         for sector in self._sectors:
             names.append(sector.name)

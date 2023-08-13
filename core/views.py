@@ -1,4 +1,8 @@
+from numbers import Number
+
 from crispy_forms.utils import render_crispy_form
+from django.contrib import messages
+from django.db import transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -7,7 +11,7 @@ from django.template.context_processors import csrf
 from service.util.web_actions import save_three_user_graphs_as_png
 from service.util import data_management
 from service.util.data_management import create_new_user_portfolio
-from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm
+from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from accounts.models import InvestorUser
 
@@ -22,6 +26,51 @@ def about(request):
 
 
 @login_required
+def administrative_tools_form(request):
+    if request.user.is_superuser is False:
+        raise Http404
+    if request.method == 'GET':
+        models_data: dict[Number] = data_management.get_models_data_from_collections_file()
+        context = {
+            'title': 'Administrative Tools',
+            'form': AdministrativeToolsForm(initial=models_data),
+        }
+        return render(request, 'core/form.html', context=context)
+    elif request.method == 'POST':
+        form = AdministrativeToolsForm(request.POST)
+        if form.is_valid():  # CREATE and UPDATE
+            # Access cleaned data from the form
+            with transaction.atomic():
+                num_por_simulation = form.cleaned_data['num_por_simulation']
+                min_num_por_simulation = form.cleaned_data['min_num_por_simulation']
+                record_percent_to_predict = form.cleaned_data['record_percent_to_predict']
+                test_size_machine_learning = form.cleaned_data['test_size_machine_learning']
+                selected_ml_model_for_build = form.cleaned_data['selected_ml_model_for_build']
+                gini_v_value = form.cleaned_data['gini_v_value']
+                data_management.update_models_data_settings(
+                    num_por_simulation=num_por_simulation,
+                    min_num_por_simulation=min_num_por_simulation,
+                    record_percent_to_predict=record_percent_to_predict,
+                    test_size_machine_learning=test_size_machine_learning,
+                    selected_ml_model_for_build=selected_ml_model_for_build,
+                    gini_v_value=gini_v_value,
+                )
+            messages.success(request, message="Successfully updated models' data.")
+            return redirect('administrative_tools_form')
+        else:  # CREATE and UPDATE
+            context = {
+                'title': 'Administrative Tools',
+                'form': form,
+            }
+            ctx = {}
+            ctx.update(csrf(request))
+            form_html = render_crispy_form(form=context['form'], context=ctx)
+            return HttpResponse(form_html)
+    else:
+        raise Http404
+
+
+@login_required
 def capital_market_algorithm_preferences_form(request):
     try:
         preferences = QuestionnaireA.objects.get(user=request.user)
@@ -33,13 +82,13 @@ def capital_market_algorithm_preferences_form(request):
                 'title': 'Fill Form',
                 'form': AlgorithmPreferencesForm(form_type='create')
             }
-            return render(request, 'core/capital_market_preferences_form.html', context=context)
+            return render(request, 'core/form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
                 'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
             }
-            return render(request, 'core/capital_market_preferences_form.html', context=context)
+            return render(request, 'core/form.html', context=context)
     elif request.method == 'POST':
         if preferences is None:  # CREATE
             form = AlgorithmPreferencesForm(request.POST)
@@ -52,6 +101,7 @@ def capital_market_algorithm_preferences_form(request):
             return redirect('capital_market_investment_preferences_form')
         else:  # CREATE and UPDATE
             context = {
+                'title': 'Update Filled Form',
                 'form': form,
             }
             ctx = {}
@@ -63,7 +113,7 @@ def capital_market_algorithm_preferences_form(request):
 
 
 @login_required
-def capital_market_investment_preferences_form(request, **kwargs):
+def capital_market_investment_preferences_form(request):
     try:
         user_preferences_instance = get_object_or_404(QuestionnaireA, user=request.user)
     except Http404:
@@ -76,24 +126,32 @@ def capital_market_investment_preferences_form(request, **kwargs):
         questionnaire = None
         # Retrieve the UserPreferencesA instance for the current user
     if request.method == 'GET':
+        try:
+            investor_user: InvestorUser = InvestorUser.objects.get(user=request.user)
+            collections_number: str = investor_user.stocks_collection_number
+        except InvestorUser.DoesNotExist:
+            collections_number: str = '1'
         if questionnaire is None:  # CREATE
             context = {
                 'title': 'Fill Form',
                 'form': InvestmentPreferencesForm(
-                    form_type='create', user_preferences_instance=user_preferences_instance
+                    form_type='create',
+                    user_preferences_instance=user_preferences_instance,
+                    collections_number=collections_number,
                 )
             }
-            return render(request, 'core/capital_market_preferences_form.html', context=context)
+            return render(request, 'core/form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
                 'form': InvestmentPreferencesForm(
                     form_type='update',
                     instance=questionnaire,
-                    user_preferences_instance=user_preferences_instance
+                    user_preferences_instance=user_preferences_instance,
+                    collections_number=collections_number,
                 )
             }
-            return render(request, 'core/capital_market_preferences_form.html', context=context)
+            return render(request, 'core/form.html', context=context)
 
     elif request.method == 'POST':
         if questionnaire is None:  # CREATE

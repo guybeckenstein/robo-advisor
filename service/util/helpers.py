@@ -127,12 +127,13 @@ def return_sectors_weights_according_to_stocks_weights(sectors: list, stocks_wei
     return sectors_weights
 
 
-def analyze_with_machine_learning_linear_regression(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT, TEST_SIZE_MACHINE_LEARNING, closing_prices_mode=False):
+def analyze_with_machine_learning_linear_regression(returns_stock, table_index, record_percent_to_predict,
+                                                    test_size_machine_learning, closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
-    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # Added date
@@ -146,7 +147,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     df.dropna(inplace=True)
     y = np.array(df['label'])
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE_MACHINE_LEARNING)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size_machine_learning)
     clf = LinearRegression()
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)
@@ -178,17 +179,18 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     return df, forecast_returns_annual, excepted_returns
 
 
-def analyze_with_machine_learning_arima(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT = 0.05,  closing_prices_mode=False):
+def analyze_with_machine_learning_arima(returns_stock, table_index, record_percent_to_predict=0.05,
+                                        closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
-    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # ARIMA requires datetime index for time series data
-    df_final.index = pd.to_datetime(table_index)
+    df_final.index = pd.to_datetime(table_index, format='%Y-%m-%d')
 
     # Perform ARIMA forecasting
     model = pm.auto_arima(df_final[forecast_col], seasonal=False, suppress_warnings=True)
@@ -224,13 +226,13 @@ def analyze_with_machine_learning_arima(returns_stock, table_index, RECORD_PERCE
     return df_final, forecast_returns_annual, excepted_returns
 
 
-def analyze_with_machine_learning_gbm(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT,  closing_prices_mode=False):
+def analyze_with_machine_learning_gbm(returns_stock, table_index, record_percent_to_predict, closing_prices_mode=False):
     df_final = pd.DataFrame({})
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
-    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     df_final.index = pd.to_datetime(table_index)
@@ -271,7 +273,7 @@ def analyze_with_machine_learning_gbm(returns_stock, table_index, RECORD_PERCENT
     return df_final, forecast_returns_annual, excepted_returns
 
 
-def analyze_with_machine_learning_prophet(returns_stock, table_index, RECORD_PERCENT_TO_PREDICT= 0.05,
+def analyze_with_machine_learning_prophet(returns_stock, table_index, record_percent_to_predict=0.05,
                                           closing_prices_mode=False,
                                           ):
     df_final = pd.DataFrame({})
@@ -279,7 +281,7 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, RECORD_PER
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
-    forecast_out = int(math.ceil(RECORD_PERCENT_TO_PREDICT * len(df_final)))
+    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # Prepare the data for Prophet
@@ -335,36 +337,36 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, RECORD_PER
     return df_final, forecast_returns_annual, excepted_returns, plt
 
 
-def update_daily_change_with_machine_learning(returns_stock, table_index, models_data,  closing_prices_mode=False):
-    RECORD_PERCENT_TO_PREDICT = models_data["models_data"]["RECORD_PERCENT_TO_PREDICT"]
-    SELECTED_ML_MODEL_FOR_BUILD = models_data["models_data"]["SELECTED_ML_MODEL_FOR_BUILD"]
-    TEST_SIZE_MACHINE_LEARNING = models_data["models_data"]["TEST_SIZE_MACHINE_LEARNING"]
-    SELECTED_ML_MODEL_FOR_BUILD = settings.MACHINE_LEARNING_MODEL[SELECTED_ML_MODEL_FOR_BUILD]
-    
+def update_daily_change_with_machine_learning(returns_stock, table_index, models_data, closing_prices_mode=False):
+    record_percent_to_predict = models_data["models_data"]["record_percent_to_predict"]
+    selected_ml_model_for_build = models_data["models_data"]["selected_ml_model_for_build"]
+    test_size_machine_learning = models_data["models_data"]["test_size_machine_learning"]
+    selected_ml_model_for_build = settings.MACHINE_LEARNING_MODEL[selected_ml_model_for_build]
+
     num_of_rows = len(table_index)
-    prefix_row = int(math.ceil(RECORD_PERCENT_TO_PREDICT * num_of_rows))
+    prefix_row = int(math.ceil(record_percent_to_predict * num_of_rows))
     for i, stock in enumerate(returns_stock.columns):
         df = None
         stock_name = str(stock)
-        if SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[0]:
+        if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:
             df, annual_return, excepted_returns = analyze_with_machine_learning_linear_regression(
-                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, TEST_SIZE_MACHINE_LEARNING,
+                returns_stock[stock_name], table_index, record_percent_to_predict, test_size_machine_learning,
                 closing_prices_mode
             )
-        elif SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[1]:
+        elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:
             df, annual_return, excepted_returns = analyze_with_machine_learning_arima(
-                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, closing_prices_mode
+                returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
             )
 
-        elif SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[2]:
+        elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:
             df, annual_return, excepted_returns = analyze_with_machine_learning_gbm(
-                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, closing_prices_mode
+                returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
             )
 
 
-        elif SELECTED_ML_MODEL_FOR_BUILD == settings.MACHINE_LEARNING_MODEL[3]:
+        elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:
             df, annual_return, excepted_returns, plt = analyze_with_machine_learning_prophet(
-                returns_stock[stock_name], table_index, RECORD_PERCENT_TO_PREDICT, closing_prices_mode
+                returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
             )
         else:
             raise ValueError('Invalid machine model')
@@ -380,15 +382,22 @@ def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHi
     file_url = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocksNames):
-
+        if type(stock) == float:
+            continue
         if type(stock) == int or stock.isnumeric():
+            if numOfYearsHistory > 10:
+                numOfYearsHistory = 10
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
             else:
                 is_index_type = True
-            df = get_israeli_symbol_data("get_past_10_years_history",
+            try:
+                df = get_israeli_symbol_data("get_past_10_years_history",
                                          start_date, end_date, stock, is_index_type)
+            except:
+                print("Error in stock: " + stock)
+                continue
             # list to dateframe
             df = pd.DataFrame(df)
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
@@ -399,7 +408,11 @@ def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHi
                 price = df[["closingPrice"]]
             frame[stocksNames[i]] = price
         else:
-            df = yf.download(stock, start=start_date, end=end_date)
+            try:
+                df = yf.download(stock, start=start_date, end=end_date)
+            except:
+                print("Error in stock: " + stock)
+                continue
             price = df[["Adj Close"]]
             frame[stock] = price
 
@@ -424,7 +437,7 @@ def choose_portfolio_by_risk_score(optional_portfolios_list, risk_score):
 
 
 def get_json_data(name: str):
-    with codecs.open(name + ".json", "r", encoding="utf-8") as file:
+    with codecs.open(f"{name}.json", "r", encoding="utf-8") as file:
         json_data = json.load(file)
     return json_data
 
@@ -471,10 +484,10 @@ def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     return stock_sectors
 
 
-def drop_stocks_from_us_commodity_sector(stocks_symbols, stock_sectors):  # TODO - MAKE DYNAMIC
+def drop_stocks_from_specific_sector(stocks_symbols, stock_sectors, sector_name):  # TODO - MAKE DYNAMIC
     new_stocks_symbols = []
     for i in range(len(stock_sectors)):
-        if stock_sectors[i] != "US commodity":
+        if stock_sectors[i] != sector_name:
             new_stocks_symbols.append(stocks_symbols[i])
 
     return new_stocks_symbols
@@ -493,8 +506,8 @@ def get_from_and_to_dates(num_of_years) -> Tuple[str, str]:
     return from_date, to_date
 
 
-def setStockSectors(stocksSymbols, sectorList) -> list:  # TODO
-    stock_sectors = []  # TODO - FIX ORDER
+def setStockSectors(stocksSymbols, sectorList) -> list:
+    stock_sectors = []
     for symbol in stocksSymbols:
         found_sector = False
         for sector in sectorList:
@@ -522,15 +535,16 @@ def makes_yield_column(_yield, weighted_sum_column):
 def get_israeli_symbol_data(command, start_date, end_date, israeli_symbol_name, is_index_type):
     if is_index_type:
         data = \
-        tase_interaction.get_israeli_index_data(command, start_date, end_date, israeli_symbol_name)["indexEndOfDay"][
-            "result"]
+            tase_interaction.get_israeli_index_data(command, start_date, end_date, israeli_symbol_name)[
+                "indexEndOfDay"][
+                "result"]
     else:
         data = tase_interaction.get_israeli_security_data(
             command, start_date, end_date, israeli_symbol_name)["securitiesEndOfDayTradingData"]["result"]
     return data
 
 
-def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):  # TODO - ALSO FOR STOCKS
+def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):
     stocks_descriptions = [len(stocks_symbols)]
     usa_stocks_table = get_usa_stocks_table()
     usa_indexes_table = get_usa_indexes_table()
@@ -539,7 +553,7 @@ def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):  # TODO - ALS
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
-            else:
+            else:  # israeli index name always has maximum of 3 digits
                 is_index_type = True
             stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
                                                                              is_reverse_mode=is_reverse_mode))
@@ -573,22 +587,6 @@ def convert_israeli_symbol_number_to_name(symbol_number: int, is_index_type: boo
     return hebrew_text
 
 
-def convert_israeli_security_number_to_company_name(israeli_security_number: str) -> str:
-    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
-    result = [item['companyName'] for item in securities_list if
-              item['securityId'] == israeli_security_number]
-
-    return result[0]
-
-
-def convert_company_name_to_israeli_security_number(companyName: str) -> str:
-    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
-    result = [item['securityId'] for item in securities_list if
-              item['companyName'] == companyName]
-
-    return result[0]
-
-
 # get directly from tase api instead of json file config
 def get_israeli_companies_list():
     json_data = tase_interaction.get_israeli_companies_list()
@@ -610,43 +608,77 @@ def get_usa_indexes_table():
     return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "usa_indexes.csv")
 
 
+def get_all_stocks_table():
+    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv")
 
 
-def collect_all_stocks():
+def get_sector_by_symbol(symbol):
+    all_stocks_Data = get_all_stocks_table()
+    sector = all_stocks_Data.loc[all_stocks_Data['Symbol'] == str(symbol), 'sector'].item()
+    return sector
+
+
+def get_description_by_symbol(symbol):
+    all_stocks_Data = get_all_stocks_table()
+    try:
+        description = all_stocks_Data.loc[all_stocks_Data['Symbol'] == str(symbol), 'description'].item()
+    except:
+        description = yf.Ticker(symbol).info['shortName']
+    return description
+
+
+def get_stocks_symbols_list_by_sector(sector):
+    all_stocks_Data = get_all_stocks_table()
+    stocks_list = all_stocks_Data.loc[all_stocks_Data['sector'] == sector, 'Symbol'].tolist()
+    return stocks_list
+
+
+def get_sectors_names_list():
+    all_stocks_Data = get_all_stocks_table()
+    sectors_list = all_stocks_Data['sector'].unique().tolist()
+    return sectors_list
+
+
+def convert_israeli_security_number_to_company_name(israeli_security_number: str) -> str:
+    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
+    result = [item['companyName'] for item in securities_list if
+              item['securityId'] == israeli_security_number]
+
+    return result[0]
+
+
+def convert_company_name_to_israeli_security_number(companyName: str) -> str:
+    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
+    result = [item['securityId'] for item in securities_list if
+              item['companyName'] == companyName]
+
+    return result[0]
+
+
+def save_all_stocks():
     path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
     sectors_data = get_sectors_data_from_file(mode="regular")
-    sectors_list = []
-    stocks_symbols_list = []
-    description_list = []
+    # Assuming you have lists named list_symbol, list_sector, and list_description
+    list_symbol = []
+    list_sector = []
+    list_description = []
+
+    # Assuming you have lists named list_symbol, list_sector, and list_description
 
     for i in range(len(sectors_data)):
-        data = sectors_data[i]["stocks"]
-        # append sector name to sectors list len(data) times
-        for j in range(len(data)):
-            stocks_symbols_list.append(data[j])
-            sectors_list.append(sectors_data[i]["name"])
+        sector_name = sectors_data[i]["name"]
+        stocks_data = sectors_data[i]["stocks"]
 
-            # maybe add more details later
-            if i < 3:  # israeli indexes
-                pass
-            elif i < 5:  # usa indexes
-                pass
-            elif i == 6:  # israeli stocks
-                pass
-            else:  # usa stocks
-                # TODO - MAYBE ADD HERE DESCRITON FOR USA STOCKS
-                pass
+        for stock_symbol in stocks_data:
+            list_symbol.append(stock_symbol)
+            list_sector.append(sector_name)
+            description = get_stocks_descriptions([stock_symbol], is_reverse_mode=False)[1]
+            list_description.append(description)
 
-    description_list.append(get_stocks_descriptions(stocks_symbols_list))
+    data = list(zip(list_symbol, list_sector, list_description))
 
-    data = [
-        sectors_list,
-        stocks_symbols_list,
-        description_list
-    ]
-    with open(path, 'w', newline='') as csv_file:
+    with open(path, 'w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
-        # TODO - maybe add more details later
         csv_writer.writerow(['Symbol', 'sector', 'description'])
 
         # Write data rows
@@ -655,11 +687,12 @@ def collect_all_stocks():
 
     print("CSV file created successfully!")
 
-def save_usa_indexes_table(): # dont delete it, use for admin
+
+def save_usa_indexes_table():  # dont delete it
     sectors_data = get_sectors_data_from_file(mode="regular")
     stock_data_list = []
     # create table
-    for i in range(3,6):
+    for i in range(3, 6):
         stocks = sectors_data[i]["stocks"]
         for j in range(len(stocks)):
             stock_info = yf.Ticker(stocks[j]).info
@@ -669,7 +702,6 @@ def save_usa_indexes_table(): # dont delete it, use for admin
     all_keys = set()
     for stock_data in stock_data_list:
         all_keys.update(stock_data.keys())
-
 
     # Define the CSV file path
     csv_file_path = settings.CONFIG_RESOURCE_LOCATION + 'usa_indexes.csv'

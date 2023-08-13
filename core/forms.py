@@ -1,6 +1,8 @@
+from numbers import Number
+
 from crispy_forms.bootstrap import InlineRadios
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div, HTML
+from crispy_forms.layout import Submit, Layout, Div, HTML, Field
 from django import forms
 from django.utils.html import format_html
 
@@ -31,7 +33,6 @@ class AlgorithmPreferencesForm(forms.ModelForm):
             'hx-target': '#preferences-form',
             'hx-swap': 'outerHTML'
         }
-        # TODO: make dynamic code that updates CSV files from `/service/dataset/...`
         self.fields['ml_answer'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #1: Would you like to use machine learning algorithms for stock market investments?'
@@ -47,7 +48,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
         if form_type == 'create':
             self.helper.layout = Layout(
                 HTML(main_header),
-                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                HTML('<h5 class="text-info">'
                      'Completing the survey is <u>essential</u> for using our website and AI algorithm'
                      '</h5>'),
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
@@ -57,7 +58,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
         elif form_type == 'update':
             self.helper.layout = Layout(
                 HTML(main_header),
-                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                HTML('<h5 class="text-info">'
                      'Update your capital market algorithm preferences form'
                      '</h5>'),
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
@@ -90,6 +91,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
 
         # Form
         form_type = kwargs.pop('form_type', 'create')
+        stocks_collections_number: str = kwargs.pop('collections_number', None)
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_id = 'capital-market-form'
@@ -98,14 +100,12 @@ class InvestmentPreferencesForm(forms.ModelForm):
             'hx-target': '#capital-market-form',
             'hx-swap': 'outerHTML'
         }
-        # TODO: make dynamic code that updates CSV files from `/service/dataset/...`
         self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #1: For how many years do you want to invest?'
                                                     '</span>')
-        ml_answer = user_preferences_instance.ml_answer
-        model_answer = user_preferences_instance.model_answer
-        stocks_collection_number = "1" # TODO - get from investor profile (1 is default)
-        sub_folder = str(stocks_collection_number) + '/' + str(ml_answer) + str(model_answer)  # Sub folder for current user to fetch its relevant graphs
+        ml_answer: int = user_preferences_instance.ml_answer
+        model_answer: int = user_preferences_instance.model_answer
+        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'  # Sub folder for current user to fetch its relevant graphs
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #2: Which distribution do you prefer?'
@@ -125,7 +125,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
         if form_type == 'create':
             self.helper.layout = Layout(
                 HTML(main_header),
-                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                HTML('<h5 class="text-info">'
                      'Completing the survey is <u>essential</u> for using our website and AI algorithm'
                      '</h5>'),
                 Div(InlineRadios('answer_1', css_class='capital-market-form-radio')),
@@ -136,7 +136,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
         elif form_type == 'update':
             self.helper.layout = Layout(
                 HTML(main_header),
-                HTML('<h5 style="color: rgb(150, 150, 150);">'
+                HTML('<h5 class="text-info">'
                      'Update your capital market investment preferences form'
                      '</h5>'),
                 Div(InlineRadios('answer_1', css_class='capital-market-form-radio')),
@@ -167,3 +167,40 @@ class InvestmentPreferencesForm(forms.ModelForm):
     class Meta:
         model = QuestionnaireB
         fields = ['answer_1', 'answer_2', 'answer_3']
+
+
+class CustomNumberInput(forms.widgets.NumberInput):
+    template_name = 'widgets/custom_number_input.html'
+
+
+class AdministrativeToolsForm(forms.Form):
+    num_por_simulation = forms.CharField(widget=forms.TextInput(attrs={'type': 'number'}))
+    min_num_por_simulation = forms.CharField(widget=forms.TextInput(attrs={'type': 'number'}))
+    record_percent_to_predict = forms.CharField(widget=CustomNumberInput(attrs={'type': 'number', 'step': '0.01'}))
+    test_size_machine_learning = forms.CharField(widget=CustomNumberInput(attrs={'type': 'number', 'step': '0.01'}))
+    selected_ml_model_for_build = forms.CharField(widget=forms.TextInput(attrs={'type': 'number'}))
+    gini_v_value = forms.CharField(widget=forms.TextInput(attrs={'type': 'number'}))
+
+    def __init__(self, *args, **kwargs):
+        # Form
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'administrative-tools-form'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('administrative_tools_form'),
+            'hx-target': '#administrative-tools-form',
+            'hx-swap': 'outerHTML'
+        }
+        self.helper.layout = Layout(
+            HTML('<h1 style="font-weight: 900;">Update Models\' Data</h1>'),
+            HTML('<h5 class="text-info">'
+                 'Administration Tools enable modification of some of the metadata, which affects models directly'
+                 '</h5>'),
+            Field('num_por_simulation'),
+            Field('min_num_por_simulation'),
+            Field('record_percent_to_predict'),
+            Field('test_size_machine_learning'),
+            Field('selected_ml_model_for_build'),
+            Field('gini_v_value'),
+        )
+        self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
