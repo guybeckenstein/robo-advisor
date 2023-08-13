@@ -23,6 +23,9 @@ def save_three_user_graphs_as_png(request) -> None:
     selected_model: int = questionnaire_a.model_answer
     starting_investment_amount: int = investor_user.starting_investment_amount
     risk_level: int = investor_user.risk_level
+
+    stocks_symbols: List[str] = None
+    stocks_weights: List[float] = None
     if type(investor_user.stocks_symbols) is list:
         stocks_symbols: List[str] = investor_user.stocks_symbols
         for idx, symbol in enumerate(stocks_symbols):
@@ -41,12 +44,6 @@ def save_three_user_graphs_as_png(request) -> None:
         stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
     else:
         ValueError("Invalid type for stocks_symbols of investor_user")
-    annual_returns = investor_user.annual_returns
-    annual_volatility = investor_user.annual_volatility
-    annual_sharpe = investor_user.annual_sharpe
-    stocks_collection_number: str = '1' #investor_user.stocks_collection_number TODO
-    closing_price_table_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_price_table_path, mode='regular')
     sectors = helpers.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
     portfolio: Portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
@@ -56,6 +53,12 @@ def save_three_user_graphs_as_png(request) -> None:
         selected_model=selected_model,
         is_machine_learning=is_machine_learning
     )
+    annual_returns = investor_user.annual_returns
+    annual_volatility = investor_user.annual_volatility
+    annual_sharpe = investor_user.annual_sharpe
+    stocks_collection_number: str = '1' #investor_user.stocks_collection_number TODO
+    closing_price_table_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_price_table_path, mode='regular')
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)

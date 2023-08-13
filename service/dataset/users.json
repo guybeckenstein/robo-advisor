@@ -2,6 +2,7 @@
     "usersList": {
         "tom": [
             {
+                "id": 1,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -67,6 +68,7 @@
         ],
         "yarden": [
             {
+                "id": 2,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -149,6 +151,7 @@
         ],
         "hanael": [
             {
+                "id": 3,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -214,6 +217,7 @@
         ],
         "tommy": [
             {
+                "id": 4,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -269,6 +273,7 @@
         ],
         "MORNA": [
             {
+                "id": 5,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -334,6 +339,7 @@
         ],
         "FDA": [
             {
+                "id": 6,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -389,6 +395,7 @@
         ],
         "dor": [
             {
+                "id": 7,
                 "levelOfRisk": 3,
                 "startingInvestmentAmount": 25000,
                 "stocksSymbols": [
@@ -444,6 +451,7 @@
         ],
         "gogl": [
             {
+                "id": 8,
                 "levelOfRisk": 3,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -499,6 +507,7 @@
         ],
         "moran": [
             {
+                "id": 9,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 2000,
                 "stocksSymbols": [
@@ -554,6 +563,7 @@
         ],
         "tommer": [
             {
+                "id": 10,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 4000,
                 "stocksSymbols": [
@@ -621,6 +631,7 @@
         ],
         "fadfa": [
             {
+                "id": 11,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -686,6 +697,7 @@
         ],
         "agami": [
             {
+                "id": 12,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 2000,
                 "stocksSymbols": [
@@ -763,6 +775,7 @@
         ],
         "test": [
             {
+                "id": 13,
                 "levelOfRisk": 1,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -822,6 +835,7 @@
         ],
         "ORNA": [
             {
+                "id": 14,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -899,6 +913,7 @@
         ],
         "YARDEN": [
             {
+                "id": 15,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -964,6 +979,7 @@
         ],
         "re": [
             {
+                "id": 16,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -1029,6 +1045,7 @@
         ],
         "guy": [
             {
+                "id": 17,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -1094,6 +1111,7 @@
         ],
         "morna": [
             {
+                "id": 18,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [

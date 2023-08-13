@@ -1,7 +1,6 @@
 import csv
 import json
 import os
-from numbers import Number
 
 import numpy as np
 import pandas as pd
@@ -10,7 +9,6 @@ from typing import Tuple, List
 
 from ..impl.portfolio import Portfolio
 from ..impl.stats_models import StatsModels
-from ..impl.sector import Sector
 from ..impl.user import User
 from ..config import settings
 from . import helpers, console_handler, plot_functions
@@ -276,8 +274,9 @@ def get_all_users() -> List:
     num_of_user = len(json_data['usersList'])
     users_data = json_data['usersList']
     users: List = [] * num_of_user
-    for name in users_data.items():
-        users.append(get_user_from_db(name))
+    for user_name in users_data.items():
+        user_id: int = user_name['id']
+        users.append(get_user_from_db(user_id=user_id, user_name=user_name))
 
     return users
 
@@ -302,8 +301,8 @@ def get_user_from_db(user_id: int, user_name: str):
     annual_sharpe = user_data['annualSharpe']
     try:
         stocks_collection_number = user_data['stocksCollectionNumber']
-    except:
-        stocks_collection_number = "1"  # default
+    except KeyError:  # Default value
+        stocks_collection_number = "1"
     sectors = helpers.set_sectors(stocks_symbols)
 
     __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'

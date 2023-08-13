@@ -1,7 +1,5 @@
 from typing import List
 
-from pip._internal.utils.misc import tabulate
-
 
 def get_name() -> str:
     print("enter name")

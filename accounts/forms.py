@@ -3,11 +3,10 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, HTML
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
-from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 
-from service.util.data_management import get_stocks_from_json_file, get_stocks_symbols_from_json_file
+from service.util.data_management import get_stocks_symbols_from_json_file
 from . import views
 from .models import InvestorUser, CustomUser
 

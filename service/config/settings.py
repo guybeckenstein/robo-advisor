@@ -1,9 +1,7 @@
 ############################################
 # TODO - order this file and makes multiple settings - class
-# setting for stats Models
+# Global constants for Stats Models
 import os
-
-from service.util import data_management
 
 MODEL_NAME = ['Markowitz', 'Gini']
 MACHINE_LEARNING_MODEL = ['LinearRegression', 'ARIMA', 'GradientBoostingRegressor', 'Prophet']

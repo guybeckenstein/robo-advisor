@@ -172,7 +172,7 @@ class Portfolio:
 
     # get changes
     def get_total_change(self):
-        total_change = self.get_total_value_change()  # + self.__startingInvestmentAmount)/self.__startingInvestmentAmount
+        total_change = self.get_total_value_change()  # + self.__startingInvestmentAmount/self.__startingInvestmentAmount
         total_change = total_change * 100 - 100
         return total_change
 
