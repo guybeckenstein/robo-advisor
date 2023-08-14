@@ -18,7 +18,8 @@ class User:
                 selected_model=1,
                 is_machine_learning=0
             ),
-            stocks_collection_number = "1"
+            stocks_collection_number="1",
+
     ):
         self._id: int = user_id
         self._name: str = name
@@ -37,14 +38,6 @@ class User:
     def portfolio(self) -> Portfolio:
         return self._myPortfolio
 
-    def update_portfolio(self, portfolio: Portfolio) -> None:
-        # TODO: decide what to do with this method
-        self._myPortfolio.set_portfolio(
-            portfolio.risk_level, portfolio.investment_amount,
-            portfolio.get_israeli_stocks_indexes(), portfolio.get_usa_stocks_indexes()
-        )
-
-
     @staticmethod
     def get_json_data(name):
         with codecs.open(name + ".json", "r", encoding="utf-8") as file:
@@ -59,26 +52,22 @@ class User:
          daily_change, selected_model, machine_learning_opt) = self._myPortfolio.get_portfolio_data()
 
         # Create a new dictionary
-        # TODO - change starting_investment_amount with something better (yarden)
-        new_user_data = {
-            "levelOfRisk": level_of_risk,
-            "startingInvestmentAmount": starting_investment_amount,
-            "stocksSymbols": stocks_symbols,
-            "sectorsNames": sectors_names,
-            "sectorsWeights": sectors_weights,
-            "stocksWeights": stocks_weights,
-            "annualReturns": annual_returns,
-            "annualMaxLoss": annual_max_loss,
-            "annualVolatility": annual_volatility,
-            "annualSharpe": annual_sharpe,
-            "totalChange": total_change,
-            "monthlyChange": monthly_change,
-            "dailyChange": daily_change,
-            "selectedModel": selected_model,
-            "machineLearningOpt": machine_learning_opt,
-            "stocksCollectionNumber": self.stocks_collection_number
-        }
-        json_data['usersList'][self._name] = [new_user_data]
-
+        json_data['usersList'][self._name][0]["levelOfRisk"] = level_of_risk
+        json_data['usersList'][self._name][0]["startingInvestmentAmount"] = starting_investment_amount
+        json_data['usersList'][self._name][0]["stocksSymbols"] = stocks_symbols
+        json_data['usersList'][self._name][0]["sectorsNames"] = sectors_names
+        json_data['usersList'][self._name][0]["sectorsWeights"] = sectors_weights
+        json_data['usersList'][self._name][0]["stocksWeights"] = stocks_weights
+        json_data['usersList'][self._name][0]["annualReturns"] = annual_returns
+        json_data['usersList'][self._name][0]["annualMaxLoss"] = annual_max_loss
+        json_data['usersList'][self._name][0]["annualVolatility"] = annual_volatility
+        json_data['usersList'][self._name][0]["annualSharpe"] = annual_sharpe
+        json_data['usersList'][self._name][0]["totalChange"] = total_change
+        json_data['usersList'][self._name][0]["monthlyChange"] = monthly_change
+        json_data['usersList'][self._name][0]["dailyChange"] = daily_change
+        json_data['usersList'][self._name][0]["selectedModel"] = selected_model
+        json_data['usersList'][self._name][0]["machineLearningOpt"] = machine_learning_opt
+        json_data['usersList'][self._name][0]["stocksCollectionNumber"] = self.stocks_collection_number
         with open(json_name + ".json", 'w') as f:
             json.dump(json_data, f, indent=4)
+

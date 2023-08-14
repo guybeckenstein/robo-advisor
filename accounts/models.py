@@ -74,7 +74,6 @@ class InvestorUser(models.Model):
     monthly_change = models.FloatField()
     daily_change = models.FloatField()
 
-
     class Meta:
         db_table = 'InvestorUser'
         verbose_name = 'Investor User'

@@ -189,7 +189,7 @@ def capital_market_investment_preferences_form(request):
                 stocks_collection_number=stocks_collection_number,
                 mode='regular'
             )
-            investment_amount = 0  # TODO: THINK ABOUT THIS (YARDEN AND GUY)
+            investment_amount = 0  # TODO: REMOVE IN ALL PROJECT
             portfolio = create_new_user_portfolio(
                 stocks_symbols=stocks_symbols,
                 investment_amount=investment_amount,
@@ -217,7 +217,6 @@ def capital_market_investment_preferences_form(request):
                 investor_user.total_change = total_change
                 investor_user.monthly_change = monthly_change
                 investor_user.daily_change = daily_change
-                # TODO - maybe add more fields later
             except InvestorUser.DoesNotExist:
                 # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
                 InvestorUser.objects.create(
@@ -235,10 +234,9 @@ def capital_market_investment_preferences_form(request):
                     total_change=total_change,
                     monthly_change=monthly_change,
                     daily_change=daily_change,
-                    # TODO - maybe add more fields later
                 )
             # Frontend
-            save_three_user_graphs_as_png(request)
+            save_three_user_graphs_as_png(request)  # TODO - call when dataset updated
             return redirect('homepage')
 
         else:  # CREATE and UPDATE

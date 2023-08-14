@@ -1124,26 +1124,6 @@
       },
       {
         "tradeDate": "2023-08-08T00:00:00",
-        "securityId": 299016,
-        "securityFullTypeCode": "0101",
-        "isin": "IL0002990161",
-        "corporateId": "520037458",
-        "issuerId": 299,
-        "securityIsIncludedInContinuousIndices": [
-          2,
-          1,
-          161,
-          162
-        ],
-        "securityName": "אראסאל",
-        "symbol": "רסל",
-        "companySuperSector": "הייטק",
-        "companySector": "טכנולוגיה",
-        "companySubSector": "ביטחוניות",
-        "companyName": "אראסאל"
-      },
-      {
-        "tradeDate": "2023-08-08T00:00:00",
         "securityId": 312017,
         "securityFullTypeCode": "0101",
         "isin": "IL0003120172",
@@ -14911,21 +14891,6 @@
         "securityIsIncludedInContinuousIndices": null,
         "securityName": "קסם.מחתא 35פי2",
         "symbol": "קסם.ס27",
-        "companySuperSector": "מכשירים פיננסים",
-        "companySector": "קרנות סל",
-        "companySubSector": "קרנות סל",
-        "companyName": "קסם קרנות נאמנו"
-      },
-      {
-        "tradeDate": "2023-08-08T00:00:00",
-        "securityId": 1146067,
-        "securityFullTypeCode": "4201",
-        "isin": "IL0011460677",
-        "corporateId": "510938608",
-        "issuerId": 1733,
-        "securityIsIncludedInContinuousIndices": null,
-        "securityName": "קסם.DJUSDIV",
-        "symbol": "קסם.ס28",
         "companySuperSector": "מכשירים פיננסים",
         "companySector": "קרנות סל",
         "companySubSector": "קרנות סל",
@@ -29645,21 +29610,6 @@
         "companySector": "שרותים פיננסיים",
         "companySubSector": "אשראי חוץ בנקאי",
         "companyName": "יעקב פיננסים"
-      },
-      {
-        "tradeDate": "2023-08-08T00:00:00",
-        "securityId": 1185123,
-        "securityFullTypeCode": "4301",
-        "isin": "IL0011851230",
-        "corporateId": "510938608",
-        "issuerId": 1733,
-        "securityIsIncludedInContinuousIndices": null,
-        "securityName": "קסם.תלבשקלי5-15",
-        "symbol": "קסם.ס207",
-        "companySuperSector": "מכשירים פיננסים",
-        "companySector": "קרנות סל",
-        "companySubSector": "קרנות סל",
-        "companyName": "קסם קרנות נאמנו"
       },
       {
         "tradeDate": "2023-08-08T00:00:00",
