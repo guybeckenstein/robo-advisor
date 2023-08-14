@@ -1,37 +1,48 @@
 import csv
+import datetime
 import json
-import os
-
 import numpy as np
 import pandas as pd
-from datetime import date
 from typing import Tuple, List
 
 from ..impl.portfolio import Portfolio
 from ..impl.stats_models import StatsModels
+from ..impl.sector import Sector
 from ..impl.user import User
 from ..config import settings
 from . import helpers, console_handler, plot_functions
+import os
+
+# django imports
+import django
+from django.conf import settings as django_settings
+# Set up Django settings
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
+django.setup()
+from django.db import models
+from accounts.models import InvestorUser
 
 
 ######################################################################################
 # update DB tables
-def update_all_tables(numOfYearsHistory):  # build DB for withdraw
-    today = date.today()
+def update_all_tables(numOfYearsHistory, is_daily_running=True):  # build DB for withdraw
+    today = datetime.date.today()
     formatted_date = today.strftime("%Y-%m-%d")
-    collections_json_data = get_collection_json_data()
+    collections_json_data = helpers.get_collection_json_data()
     for i, collection in enumerate(collections_json_data):
         curr_collection = collections_json_data[str(i + 1)][0]
-        stocks_symbols = curr_collection['stocksSymbols']
+        stocksSymbols = curr_collection['stocksSymbols']
         __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i + 1)) + '/'  # where to save the datasets
-        update_closing_prices_tables(formatted_date, stocks_symbols, numOfYearsHistory, __path)
-        update_data_frame_tables(formatted_date, curr_collection, __path, collections_json_data, str(i + 1))
+        update_closing_prices_tables(formatted_date, stocksSymbols, numOfYearsHistory, __path, is_daily_running)
+        update_data_frame_tables(formatted_date, curr_collection, __path, collections_json_data, str(i + 1),
+                                 is_daily_running)
 
 
-def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYearsHistory, __path):
+def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYearsHistory, __path, is_daily_running):
     with open(__path + "lastUpdatedClosingPrice.txt", "r") as file:
         lastUpdatedDateClosingPrices = file.read().strip()
-    if lastUpdatedDateClosingPrices != formatted_date_today:
+
+    if lastUpdatedDateClosingPrices != formatted_date_today or not is_daily_running:
         helpers.convert_data_to_tables(__path, settings.CLOSING_PRICES_FILE_NAME,
                                        stocksSymbols,
                                        numOfYearsHistory, saveToCsv=True)
@@ -40,13 +51,13 @@ def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYears
             file.write(formatted_date_today)
 
 
-def update_data_frame_tables(formatted_date_today, collection_json_data, __path, models_data, collection_num):
+def update_data_frame_tables(formatted_date_today, collection_json_data, __path, models_data, collection_num,
+                             is_daily_running=True):
     stocksSymbols = collection_json_data['stocksSymbols']
-
 
     with open(__path + "lastUpdatedDftables.txt", "r") as file:
         lastUpdatedDftables = file.read().strip()
-    if lastUpdatedDftables != formatted_date_today:
+    if lastUpdatedDftables != formatted_date_today or not is_daily_running:
         sectorsList = helpers.set_sectors(stocksSymbols, mode='regular')
         closingPricesTable = get_closing_prices_table(__path, mode='regular')
         pct_change_table = closingPricesTable.pct_change()
@@ -166,8 +177,8 @@ def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_m
     final_portfolio = three_best_portfolios[risk_level - 1]
     if risk_level == 1:
         # drop from stocks_symbols the stocks that are in Us Commodity sector
-        stocks_symbols = helpers.drop_stocks_from_us_commodity_sector(
-            stocks_symbols, helpers.set_stock_sectors(stocks_symbols, sectors)
+        stocks_symbols = helpers.drop_stocks_from_specific_sector(
+            stocks_symbols, helpers.set_stock_sectors(stocks_symbols, sectors), sector_name="US commodity"
         )
 
     portfolio = Portfolio(
@@ -184,6 +195,52 @@ def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_m
         final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2]
     )
     return portfolio
+
+
+def get_investment_format(investment_amount, entered_as_an_automatic_investment):
+    purchase_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    is_it_active = True
+    new_investment = {
+        "amount": investment_amount,
+        "date": purchase_date,
+        "status": is_it_active,
+        "automatic_investment": entered_as_an_automatic_investment
+    }
+
+    return new_investment
+
+
+def add_new_investment(user_id, investment_amount, entered_as_an_automatic_investment=False,
+                       db_type="django", investments_list=[]) -> dict:
+    if investment_amount < 0:
+        return None
+    new_investment = get_investment_format(investment_amount, entered_as_an_automatic_investment)
+
+    if (investments_list == []):
+        try:
+            get_investments_from_db(user_id, db_type)
+        except:
+            investments_list = []
+    investments_list.append(new_investment)
+
+    # save the new investment to the db
+
+    save_new_investments_to_db(user_id, investments_list, db_type)
+
+    return new_investment, investments_list
+
+
+def changing_portfolio_investments_treatment(selected_user, investments_list: list) -> None:
+    user_portfolio = selected_user.portfolio
+    if investments_list != []:
+        total_profit = user_portfolio.get_total_profit_according_to_dates_dates(investments_list)
+        capital_investments = get_total_capital_investments(investments_list)
+        for i, investment in enumerate(investments_list):
+            if investment["status"]:
+                investment["status"] = False
+                investments_list[i] = investment
+        add_new_investment(selected_user.name, (total_profit + capital_investments),
+                           entered_as_an_automatic_investment=True, db_type="json", investments_list=investments_list)
 
 
 ############################################################################################################
@@ -227,7 +284,12 @@ def get_closing_prices_table(__path, mode: str) -> pd.DataFrame:
         closing_prices_table = pd.read_csv(
             '../../' + __path + 'closing_prices.csv', index_col=0
         )
-    closing_prices_table = closing_prices_table.iloc[1:]
+        # Check if there's a key with a numeric value in the table
+    numeric_keys = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
+    if len(numeric_keys) > 0:
+        closing_prices_table = closing_prices_table.iloc[1:]
+    else:
+        closing_prices_table = closing_prices_table.iloc[2:]
     closing_prices_table = closing_prices_table.apply(pd.to_numeric, errors='coerce')
 
     return closing_prices_table
@@ -320,6 +382,11 @@ def get_user_from_db(user_id: int, user_name: str):
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
+    models_data = helpers.get_collection_json_data()
+    if is_machine_learning:
+        weighted_sum = helpers.update_daily_change_with_machine_learning([weighted_sum],
+                                                                         pct_change_table.index,
+                                                                         models_data)[0][0]
     yield_column: str = "yield_" + str(risk_level)
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
@@ -330,21 +397,17 @@ def get_user_from_db(user_id: int, user_name: str):
     return curr_user
 
 
-def get_collection_json_data():
-    return get_json_data(settings.STOCKS_JSON_NAME)['collections']
-
-
 def get_stocks_symbols_from_collection(stocks_collection_number) -> List:
     """
     Get all stocks symbols from json file
     """
-    json_data = get_collection_json_data()
+    json_data = helpers.get_collection_json_data()
     stocks_symbols = json_data[str(stocks_collection_number)][0]['stocksSymbols']
     return stocks_symbols
 
 
-def get_models_data_from_collections_file() -> dict:
-    json_data = get_collection_json_data()
+def get_models_data_from_collections_file():  # TODO - maybe use from admin
+    json_data = helpers.get_collection_json_data()
     return json_data["models_data"]
 
 
@@ -358,6 +421,105 @@ def find_user_in_list(user_name: str, users: list):
 def get_num_of_users_in_db() -> int:
     json_data = get_json_data(settings.USERS_JSON_NAME)
     return len(json_data['usersList'])
+
+
+def save_investment_to_json_File(user_id, investments):
+    json_data = get_json_data(settings.USERS_JSON_NAME)
+    if user_id not in json_data['usersList']:
+        print("User not found")
+        return None
+    # save in DB
+    json_data['usersList'][user_id][0]['investments_list'] = investments
+
+    # Write the updated JSON data back to the file
+    with open(settings.USERS_JSON_NAME + ".json", 'w') as file:
+        json.dump(json_data, file, indent=4)
+
+
+def get_total_capital_investments(investments):  # Returning the investment amount that the useer invested
+    total_capital = 0
+    for investment in investments:
+        if not investment["automatic_investment"]:
+            total_capital += investment["amount"]
+    return total_capital
+
+
+def get_total_active_investments(investments):
+    total_amount = 0
+
+    for investment in investments:
+        if investment["status"]:  # TODO
+            total_amount += investment["amount"]
+
+    return total_amount
+
+
+def get_total_investments_details(selected_user, investments) -> Tuple:
+    """
+return:
+- The amount of capital investments
+- The amount of profit on the current portfolio only
+- The amount of profit in general
+- The sum of all investments including the profit
+    """
+    total_capital = get_total_capital_investments(investments)  # capital investments
+
+    user_portfolio = selected_user.portfolio
+
+    total_portfolio_profit = user_portfolio.get_total_profit_according_to_dates_dates(investments)
+
+    total_investments_value = get_total_active_investments(investments) + total_portfolio_profit
+
+    total_profit = total_investments_value - total_capital
+
+    return total_capital, total_portfolio_profit, total_profit, total_investments_value
+
+
+def get_user_investments_from_json_file(user_id):
+    json_data = get_json_data(settings.USERS_JSON_NAME)
+    if user_id not in json_data['usersList']:
+        print("User not found")
+        return None
+    try:
+        investment_list = json_data['usersList'][user_id][0]['investments_list']
+    except:
+        investment_list = []
+    return investment_list
+
+
+def get_investments_from_db(user_id, db_type):
+    if db_type == "django":  # TODO
+        pass
+        investment_id = 1  # Replace with the actual Investment ID
+        #investments_list = Investment.objects.get(pk=investment_id)
+
+        #try:
+            # Try to get the existing InvestorUser instance
+            #investor_user = InvestorUser.objects.get(pk=1)
+        #except InvestorUser.DoesNotExist:
+            # If the user doesn't exist, create a new instance
+            #investor_user = InvestorUser.objects.create()
+
+        #investments = investor_user.investments if investor_user.investments else []
+
+
+    else:
+        investments_list = get_user_investments_from_json_file(user_id)  # from json file
+
+    return investments_list
+
+
+def save_new_investments_to_db(user_id, investments_list, db_type):
+    if db_type == "django":
+        pass  # TODO
+        # Append the new investment to the list of investments
+        # investor_user.investments.append(new_investment)
+        # Update the investor_user's investments field
+        # investor_user.investments = investments_list
+        # Save the updated InvestorUser instance
+        # investor_user.save()
+    else:
+        save_investment_to_json_File(user_id, investments_list)
 
 
 def update_pct_change_table(best_stocks_weights_column, pct_change_table):
@@ -451,7 +613,6 @@ def update_models_data_settings(
     # Write the updated data back to the JSON file
     with open(file=fully_qualified_file_name, mode='w') as json_file:
         json.dump(data, json_file, indent=4)
-
 
 
 def get_score_by_answer_from_user(string_to_show: str) -> int:
@@ -555,6 +716,42 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
     plot_functions.save_graphs(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO plot at site
 
 
+def plot_research_graphs(data_tuple: Tuple):
+    returns = data_tuple[0]
+    volatility = data_tuple[1]
+    sharpe_ratio = data_tuple[2]
+    max_returns_descriptions = []
+    for i, collection in enumerate(returns):
+        descriptions = []
+        print("top returns" + str(i) + ":\n")
+        for j, stock in enumerate(collection.values):
+            description = helpers.get_description_by_symbol(collection.index[j])
+            descriptions.append(description)
+            print(collection.index[i] + '-' + str(stock) + '-' + description + '\n')
+        max_returns_descriptions.append(descriptions)
+
+        volatility_descriptions = []
+        for i, collection in enumerate(volatility):
+            descriptions = []
+            print("min volatility" + str(i) + ":\n")
+            for j, stock in enumerate(collection.values):
+                description = helpers.get_description_by_symbol(collection.index[j])
+                volatility_descriptions.append(description)
+                print(collection.index[i] + '-' + str(stock) + '-' + description + '\n')
+            max_returns_descriptions.append(descriptions)
+
+    sharpe_ratio_descriptions = []
+    for i, collection in enumerate(sharpe_ratio):
+        descriptions = []
+        print("max sharpe ratio" + str(i) + ":\n")
+        for j, stock in enumerate(collection.values):
+            description = helpers.get_description_by_symbol(collection.index[j])
+            descriptions.append(description)
+            print(collection.index[i] + '-' + str(stock) + '-' + description + '\n')
+        sharpe_ratio_descriptions.append(descriptions)
+    # plot_instance = plot_functions.plot_research_graphs(data_tuple)
+    # TODO save
+
 def save_user_portfolio(user: User) -> None:
     # Creating directories
     curr_user_directory = settings.USER_IMAGES + user.id
@@ -648,21 +845,12 @@ def get_machine_learning_model() -> str:
     return settings.MACHINE_LEARNING_MODEL[option - 1]
 
 
-def get_group_of_stocks_option() -> int:
-    return console_handler.get_group_of_stocks_option()
-
-
 def get_investment_amount() -> int:
     return console_handler.get_investment_amount()
 
 
-def get_collection_number() -> str:
-    stocks = get_stocks_from_json_file()
-    return console_handler.get_collection_number(stocks)
-
-
-def get_stocks_from_json_file() -> dict:
-    collections_data = get_collection_json_data()
+def get_stocks_from_json_file():
+    collections_data = helpers.get_collection_json_data()
     stocks = {}
     for i in range(1, len(collections_data)):
         stocks_symbols_list = collections_data[str(i)][0]['stocksSymbols']
@@ -670,8 +858,13 @@ def get_stocks_from_json_file() -> dict:
         stocks[str(i)] = [stocks_symbols_list, stocks_description_list]
     return stocks
 
+
+def get_collection_number() -> str:
+    stocks = get_stocks_from_json_file()
+    return console_handler.get_collection_number(stocks)
+
 def get_stocks_symbols_from_json_file(collection_number: int) -> list[str]:
-    collection: dict = get_collection_json_data()[str(collection_number)][0]
+    collection: dict = helpers.get_collection_json_data()[str(collection_number)][0]
     stocks_symbols: list[str] = collection['stocksSymbols']
     return stocks_symbols
 

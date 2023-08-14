@@ -7,7 +7,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import InvestorUser
 from investment.models import Investment
 
-
+# TODO - show the only the investments with "Mode" = USER
+"""
+explaination:
+When changing an investment portfolio,
+ the robot takes all the investments and invests the amount including the profit as one new investment,
+  this is not a manual investment by the customer
+"""
 @login_required
 def investments_list_view(request):
     investments: QuerySet[Investment] = _investments_list_view(request)

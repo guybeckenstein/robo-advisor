@@ -19,7 +19,7 @@ LANGUAGE = "he-IL"
 
 
 # INDEXES:
-INDEX_EOD_HISTORY_TEN_YEARS = "indices/eod/history/ten-years/by-index?id="  # past 10 years
+INDEX_EOD_HISTORY_TEN_YEARS = "indices/eod/history/ten-years/by-index?indexId="  # past 10 years
 INDEX_END_OF_DAY_HISTORY_FIVE_YEARS_UP_TO_TODAY = "indices/eod/history/five-years/by-index?id="  # past 5 years
 
 # SECURITIES:

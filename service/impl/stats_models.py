@@ -16,7 +16,7 @@ class StatsModels:
             closing_prices_table=None,
             sectors=None,
             model_name=None,
-            gini_value = 4
+            gini_value=4
     ):
         self._df = None
         self._three_best_portfolios = None

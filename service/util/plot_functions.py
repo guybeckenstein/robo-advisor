@@ -1,7 +1,7 @@
 import matplotlib
 
 from service.impl.sector import Sector
-
+import scipy.stats as stats
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -15,6 +15,7 @@ from typing import List
 FIG_SIZE1: tuple[int, int] = (10, 8)
 FIG_SIZE2: tuple[int, int] = (10, 4)
 FIG_SIZE3: tuple[int, int] = (8, 4)
+FIG_SIZE4: tuple[int, int] = (10, 6)
 STYLE = 'oblique'
 HA: str = 'center'
 VA: str = 'center'
@@ -58,12 +59,13 @@ def plot_markowitz_graph(sectors: List[Sector], three_best_sectors_weights, min_
                 x=x,
                 y=0.15,
                 s=f"Max Returns Portfolio:\n"
-                f"Annual Returns: {str(round(portfolios[i][0], 2))}%\n"
-                f"Annual Volatility: {str(round(portfolios[i][1], 2))}%\n"
-                f"Annual Max Loss: {str(round(portfolios[i][0] - 1.65 * portfolios[i][1], 2))}%\n"
-                f"Sharpe Ratio: {str(round(portfolios[i][2], 2))}\n"
-                f"{stocks[i]}",
-                bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
+                  f"Annual Returns: {str(round(portfolios[i][0], 2))}%\n"
+                  f"Annual Volatility: {str(round(portfolios[i][1], 2))}%\n"
+                  f"Annual Max Loss: {str(round(portfolios[i][0] - 1.65 * portfolios[i][1], 2))}%\n"
+                  f"Sharpe Ratio: {str(round(portfolios[i][2], 2))}\n"
+                  f"{stocks[i]}",
+                bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME,
+                wrap=WRAP,
             )
 
     return plt
@@ -159,12 +161,13 @@ def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio
             x=0.45,
             y=0.15,
             s=f"Your Portfolio:\n"
-            f"Returns: {str(round(new_portfolio.annual_returns(), 2))}%\n"
-            f"Volatility: {str(round(new_portfolio.annual_volatility(), 2))}%\n"
-            f"Max Loss: {str(round(new_portfolio.get_max_loss(), 2))}%\n"
-            f"Sharpe Ratio: {str(round(new_portfolio.annual_sharpe(), 2))}\n"
-            f"{stocks_str}",
-            bbox=dict(facecolor="green", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA,  fontname=FONT_NAME, wrap=WRAP,
+              f"Returns: {str(round(new_portfolio.annual_returns(), 2))}%\n"
+              f"Volatility: {str(round(new_portfolio.annual_volatility(), 2))}%\n"
+              f"Max Loss: {str(round(new_portfolio.get_max_loss(), 2))}%\n"
+              f"Sharpe Ratio: {str(round(new_portfolio.annual_sharpe(), 2))}\n"
+              f"{stocks_str}",
+            bbox=dict(facecolor="green", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME,
+            wrap=WRAP,
         )
 
     plt.subplots_adjust(bottom=BOTTOM)
@@ -186,7 +189,7 @@ def plot_three_portfolios_graph(min_variance_portfolio, sharpe_portfolio, max_re
     plt.ylabel("Returns %")
     plt.title("Three Best Portfolios")
 
-    for i in range (1, 3 + 1):
+    for i in range(1, 3 + 1):
         pct_change_table[f'yield_{i}_percent'] = (pct_change_table[f'yield_{i}'] - 1) * 100
 
     labels: list[str] = ['Max Returns', 'Sharpe', 'Safest']
@@ -195,7 +198,8 @@ def plot_three_portfolios_graph(min_variance_portfolio, sharpe_portfolio, max_re
     for i in range(1, 3 + 1):
         j = i - 1
         pct_change_table[f'yield_{str(4 - i)}_percent'].plot(
-            figsize=FIG_SIZE1, grid=GRID, color=colors[j], linewidth=2, label=labels[j], legend=True, linestyle=LINE_STYLE
+            figsize=FIG_SIZE1, grid=GRID, color=colors[j], linewidth=2, label=labels[j], legend=True,
+            linestyle=LINE_STYLE
         )
 
     plt.subplots_adjust(bottom=BOTTOM)
@@ -315,7 +319,8 @@ def plot_investment_portfolio_yield(user_name, table, stats_details_tuple: tuple
 
     for i in range(len(tables)):
         table[f'yield__{tables[i]}'].plot(
-            figsize=FIG_SIZE1, grid=GRID, color=colors[i], linewidth=2, label=labels[i], legend=True, linestyle=LINE_STYLE
+            figsize=FIG_SIZE1, grid=GRID, color=colors[i], linewidth=2, label=labels[i], legend=True,
+            linestyle=LINE_STYLE
         )
     plt.subplots_adjust(bottom=BOTTOM)
     stocks_str: str = get_stocks_as_str(sectors)
@@ -325,13 +330,14 @@ def plot_investment_portfolio_yield(user_name, table, stats_details_tuple: tuple
             x=0.45,
             y=0.15,
             s=f"Your Portfolio:\n"
-            f"Total Change: {str(round(total_change, 2))}%\n"
-            f"Annual Returns: {str(round(annual_returns, 2))}%\n"
-            f"Annual Volatility: {str(round(volatility, 2))}%\n"
-            f"Max Loss: {str(round(max_loss, 2))}%\n"
-            f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
-            f"{stocks_str}",
-            bbox=dict(facecolor="green", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
+              f"Total Change: {str(round(total_change, 2))}%\n"
+              f"Annual Returns: {str(round(annual_returns, 2))}%\n"
+              f"Annual Volatility: {str(round(volatility, 2))}%\n"
+              f"Max Loss: {str(round(max_loss, 2))}%\n"
+              f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
+              f"{stocks_str}",
+            bbox=dict(facecolor="green", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME,
+            wrap=WRAP,
         )
     return plt
 
@@ -363,30 +369,37 @@ def plot_portfolio_component_stocks(user_name: str, stocks_weights: List[float],
                                     descriptions: list[str]):
     if len(stocks_weights) != len(stocks_symbols) or len(stocks_weights) != len(descriptions):
         raise ValueError("Input lists must have the same length.")
-    plt.figure(figsize=FIG_SIZE3)
-    plt.title(f"{user_name}'s Portfolio", fontsize=16, pad=20)
-
+    plt.figure(figsize=FIG_SIZE4)
+    plt.title(f"{user_name}'s Portfolio", fontsize=20, pad=10)
     data = [["Stock", "Weight", "Description"]]
     for symbol, weight, description in zip(stocks_symbols, stocks_weights, descriptions):
         data.append([symbol, f"{weight:.1%}", description])
 
-    table = plt.table(cellText=data, colLabels=None, cellLoc='center', loc='center',
-                      cellColours=[['#D5DBDB', '#D5DBDB', '#D5DBDB']] * len(data))
+    table = plt.table(cellText=data, colLabels=None, cellLoc='left', loc='center',
+                      cellColours=[['#D5DBDB', '#D5DBDB', '#D5DBDB']] * len(data),
+                      colWidths=[0.1, 0.1, 0.8])
+
     table.auto_set_font_size(False)
-    table.set_fontsize(10)
+    table.set_fontsize(12)
     table.scale(1.2, 1.2)  # Adjust scaling to fit the plot better
 
     plt.axis('off')  # Turn off the axis
 
-    return plt
+    # Automatically adjust the layout to prevent overlapping
+    plt.tight_layout()
+    plt_instance = plt.gcf()  # Get the current figure
+
+    return plt_instance
 
 
-def plot_price_forecast(stocks_symbols, df: pd.DataFrame, annual_returns, plt_instance=None) -> plt:  # TODO
+def plot_price_forecast(stocks_symbols, description, df: pd.DataFrame, annual_returns, plt_instance=None) -> plt:
     if plt_instance is not None:
         return plt_instance
     df[df.columns[0]].plot()
     df['Forecast'].plot()
-    plt.title(f"{stocks_symbols} Stock Price Forecast")
+    plt.title(f"{stocks_symbols} Stock Price Forecast\n{description}")
+    # sub titile
+    plt.suptitle("Annual Return With Prediction: " + str(round(annual_returns, 2)) + " %")
     # add text box with annual returns value
     plt.figtext(
         x=0.2,
@@ -415,8 +428,37 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
     return plt
 
 
-def plot_top_stocks(top_stocks) -> None:
-    print(top_stocks)
+def plot_research_graphs(data_tuple):
+    max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list = data_tuple
+
+    plt.figure()
+    plt.title("Stocks with Max Returns")
+    plt.xlabel("Date")
+    plt.ylabel("Returns %")
+    for stock in max_returns_stocks_list:
+        stock.plot()
+    plt.legend(max_returns_stocks_list)
+    plt.grid(True)
+
+    plt.figure()
+    plt.title("Stocks with Min Volatility")
+    plt.xlabel("Date")
+    plt.ylabel("Returns %")
+    for stock in min_volatility_stocks_list:
+        stock.plot()
+    plt.legend(min_volatility_stocks_list)
+    plt.grid(True)
+
+    plt.figure()
+    plt.title("Stocks with Max Sharpe Ratio")
+    plt.xlabel("Date")
+    plt.ylabel("Returns %")
+    for stock in max_sharpest_stocks_list:
+        stock.plot()
+    plt.legend(max_sharpest_stocks_list)
+    plt.grid(True)
+
+    return plt
 
 
 def save_graphs(plt_instance, file_name) -> None:
