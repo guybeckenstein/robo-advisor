@@ -192,7 +192,7 @@ def find_good_stocks(sector="US stocks indexes", num_of_best_stocks=10,
     data_pct_change = get_stocks_data_for_research_by_group(sector)
     # TODO
     # Correct way to change value of a stock and its instance
-    top_stock: TopStock = TopStock.objects.filter(sector_name=).first()  # Gets a stock from a certain sector
+    top_stock: TopStock = TopStock.objects.filter(sector_name="").first()  # Gets a stock from a certain sector
     saved_image_name: str = None  # TODO
     top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{saved_image_name}.png'
     top_stock.save()
