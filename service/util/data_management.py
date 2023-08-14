@@ -50,7 +50,7 @@ def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYears
     if lastUpdatedDateClosingPrices != formatted_date_today or not is_daily_running:
         helpers.convert_data_to_tables(__path, settings.CLOSING_PRICES_FILE_NAME,
                                        stocksSymbols,
-                                       numOfYearsHistory, saveToCsv=True)
+                                       numOfYearsHistory, save_to_csv=True)
 
         with open(__path + "lastUpdatedClosingPrice.txt", "w") as file:
             file.write(formatted_date_today)

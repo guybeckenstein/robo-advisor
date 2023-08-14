@@ -183,7 +183,14 @@ svg {
     justify-content: center;
 }
 
-#div_id_stocks_collection_number div .form-check {
+#div_id_stocks_collection_number div .form-check , #div_id_ml_model div .form-check {
     display: inline-block;
     margin-right: 20px;
+}
+
+#div_id_start_date input {
+    border-radius: 5px 0px 0px 5px;
+}
+#div_id_end_date input {
+    border-radius: 0px 5px 5px 0px;
 }

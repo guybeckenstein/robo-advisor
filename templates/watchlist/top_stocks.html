@@ -1,0 +1,29 @@
+{% extends "investment_portfolio/investments_main.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block top_stocks_link %}
+  <a href="{% url 'top_stocks' %}" class="nav-link active">
+    Top Stocks
+  </a>
+{% endblock %}
+
+<!-- Main Content -->
+{% block investments_content %}
+  <div class="card px-5 py-2">
+    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+      Top stocks
+    </h1>
+    <hr>
+    {% if top_stocks %}
+      {% for top_stock in top_stocks %}
+        <figure class="figure">
+          <img src="{% static top_stock.img_src %}" class="figure-img img-fluid rounded" alt="{{ top_stock.img_alt }}">
+          <figcaption class="figure-caption">
+            {{ top_stock.sector_name }}
+          </figcaption>
+        </figure>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endblock %}

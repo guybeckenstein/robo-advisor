@@ -21,8 +21,16 @@
       <!-- Search stocks -->
       <li>
         {% block discover_stocks_link %}
-          <a href="{% url 'discover_stocks' %}" class="nav-link link-body-emphasis">
+          <a href="{% url 'discover_stocks_form' %}" class="nav-link link-body-emphasis">
             Discover Stocks
+          </a>
+        {% endblock %}
+      </li>
+      <!-- Top stocks -->
+      <li>
+        {% block top_stocks_link %}
+          <a href="{% url 'top_stocks' %}" class="nav-link link-body-emphasis">
+            Top Stocks
           </a>
         {% endblock %}
       </li>

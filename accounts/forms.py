@@ -135,7 +135,7 @@ class PasswordChangingForm(PasswordChangeForm):
         fields = ('old_password', 'new_password1', 'new_password2',)
 
 
-def get_indexes_tuple(size) -> tuple:
+def get_indexes_tuple(size) -> list[tuple]:
     res: list = []
     for i in range(1, size + 1):
         str_i = str(i)

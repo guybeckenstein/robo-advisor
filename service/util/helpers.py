@@ -178,14 +178,15 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     return df, forecast_returns_annual, excepted_returns
 
 
-def analyze_with_machine_learning_arima(returns_stock, table_index, record_percent_to_predict=0.05,
-                                        closing_prices_mode=False):
-    df_final = pd.DataFrame({})
-    forecast_col = 'col'
+def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index,
+                                        record_percent_to_predict: float = 0.05, closing_prices_mode: bool = False):
+    df_final: pd.DataFrame = pd.DataFrame({})
+    forecast_col: str = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
-
-    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
+    multiplication = record_percent_to_predict * len(df_final)
+    ceil_value = math.ceil(multiplication)
+    forecast_out = int(ceil_value)
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # ARIMA requires datetime index for time series data
@@ -383,30 +384,34 @@ def update_daily_change_with_machine_learning(returns_stock, table_index, models
     return returns_stock, annual_return, excepted_returns
 
 
-def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHistory, saveToCsv):
+def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_years_history, save_to_csv,
+                           start_date: str = None, end_date: str = None):
     frame = {}
     yf.pdr_override()
-    start_date, end_date = get_from_and_to_dates(numOfYearsHistory)
+    if start_date is None or end_date is None:
+        start_date, end_date = get_from_and_to_dates(num_of_years_history)
     file_url = location_saving + file_name + ".csv"
 
-    for i, stock in enumerate(stocksNames):
+    for i, stock in enumerate(stocks_names):
         if type(stock) == float:
             continue
         if type(stock) == int or stock.isnumeric():
-            if numOfYearsHistory > 10:
-                numOfYearsHistory = 10
+            # TODO: add code that uses start_date and end_date that are passed as parameters to the function (num_of_years == None)
+            # if num_of_years_history and num_of_years_history > 10:
+            #     num_of_years_history = 10
+            # else:
+            #     num_of_years_history
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
             else:
                 is_index_type = True
             try:
-                df = get_israeli_symbol_data("get_past_10_years_history",
-                                         start_date, end_date, stock, is_index_type)
+                df = get_israeli_symbol_data('get_past_10_years_history', start_date, end_date, stock, is_index_type)
             except:
                 print("Error in stock: " + stock)
                 continue
-            # list to dateframe
+            # list to DateFrame
             df = pd.DataFrame(df)
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
             df.set_index("tradeDate", inplace=True)
@@ -414,7 +419,7 @@ def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHi
                 price = df[["closingIndexPrice"]]
             else:
                 price = df[["closingPrice"]]
-            frame[stocksNames[i]] = price
+            frame[stocks_names[i]] = price
         else:
             try:
                 df = yf.download(stock, start=start_date, end=end_date)
@@ -424,13 +429,13 @@ def convert_data_to_tables(location_saving, file_name, stocksNames, numOfYearsHi
             price = df[["Adj Close"]]
             frame[stock] = price
 
-    closingPricesTable = pd.concat(frame.values(), axis=1, keys=frame.keys())
+    closing_prices_table = pd.concat(frame.values(), axis=1, keys=frame.keys())
 
-    if saveToCsv:
+    if save_to_csv:
         # convert to csv
-        closingPricesTable.to_csv(file_url, index=True, header=True)
+        closing_prices_table.to_csv(file_url, index=True, header=True)
 
-    return closingPricesTable
+    return closing_prices_table
 
 
 def choose_portfolio_by_risk_score(optional_portfolios_list, risk_score):
@@ -640,7 +645,7 @@ def get_stocks_symbols_list_by_sector(sector):
     return stocks_list
 
 
-def get_sectors_names_list():
+def get_sectors_names_list() -> list:
     all_stocks_Data = get_all_stocks_table()
     sectors_list = all_stocks_Data['sector'].unique().tolist()
     return sectors_list
@@ -750,3 +755,10 @@ def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
             upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
 
     s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
+
+
+def get_symbols_names_list() -> list[str]:
+    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
+    symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
+    return symbols_list
+

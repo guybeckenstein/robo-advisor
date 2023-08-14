@@ -1,16 +1,13 @@
 from django.db import models
 
-from accounts.models import CustomUser
-from investment.models import Investment
 
-
-class Watchlist(models.Model):
+class TopStock(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    user = models.OneToOneField(CustomUser, on_delete=models.RESTRICT)
-    investment = models.OneToOneField(Investment, on_delete=models.RESTRICT)
-    date = models.DateTimeField(auto_now_add=True)
+    sector_name = models.CharField(max_length=70)
+    img_src = models.CharField(max_length=50)
+    img_alt = models.CharField(max_length=50)
 
     class Meta:
-        db_table = 'Watchlist'
-        verbose_name = 'Watchlist'
-        verbose_name_plural = 'Watchlist'
+        db_table = 'TopStock'
+        verbose_name = 'Top Stock'
+        verbose_name_plural = 'Top Stock'

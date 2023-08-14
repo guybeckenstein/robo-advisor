@@ -11,7 +11,8 @@
     <script src="https://unpkg.com/htmx.org@1.9.4"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/default_date.js' %}"></script>
+    <script src="{% static 'js/footer.js' %}"></script>
     {% block extra_js %}
     {% endblock %}
     <link rel="icon" type="image/x-icon" href="{% static 'img/Logo.png' %}">
@@ -94,19 +95,19 @@
         {% endblock %}
       </main>
       <!-- Footer -->
-      <footer class="py-3">
-        <p>
-          <span>Hello</span>
-          {% if user.is_authenticated %}
-            <span class="greeting">{{ user.first_name | title }} {{ user.last_name | title }}</span>
-          {% else %}
-            <span class="greeting">guest</span>
-          {% endif %}
-          <span>
-            !
-          </span>
-        </p>
-      </footer>
+<!--      <footer class="py-3">-->
+<!--        <p>-->
+<!--          <span>Hello</span>-->
+<!--          {% if user.is_authenticated %}-->
+<!--            <span class="greeting">{{ user.first_name | title }} {{ user.last_name | title }}</span>-->
+<!--          {% else %}-->
+<!--            <span class="greeting">guest</span>-->
+<!--          {% endif %}-->
+<!--          <span>-->
+<!--            !-->
+<!--          </span>-->
+<!--        </p>-->
+<!--      </footer>-->
     </div>
   </body>
 </html>

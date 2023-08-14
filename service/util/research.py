@@ -3,43 +3,62 @@ import pandas as pd
 import ta
 import yfinance as yf
 
+from watchlist.models import TopStock
 from . import plot_functions, helpers
 from ..config import settings
 
 
 def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
     # Creating directories
-    curr_user_directory = settings.RESEARCH_RESULTS_LOCATION
+    # curr_user_directory = settings.RESEARCH_RESULTS_LOCATION
+    curr_user_directory = settings.RESEARCH_IMAGES
     # Saving files
     plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + stock + operation)
 
 
-def forecast_specific_stock(stock: str, machine_learning_model, models_data: dict, num_of_years_history: int):
+def forecast_specific_stock(stock: str, machine_learning_model: str, models_data: dict, num_of_years_history: int,
+                            start_date: str = None, end_date: str = None):
     plt = None
     file_name = str(stock) + '.csv'
     description = helpers.get_description_by_symbol(stock)
-    table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
-                                           [stock], num_of_years_history, saveToCsv=False)
-    record_percent_to_predict = models_data["record_percent_to_predict"]
-    test_size_machine_learning = models_data["test_size_machine_learning"]
+    if start_date is None or end_date is None:
+        table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
+                                               [stock], num_of_years_history, save_to_csv=False)
+    else:
+        table = helpers.convert_data_to_tables(
+            location_saving=settings.RESEARCH_LOCATION,
+            file_name=file_name,
+            stocks_names=[stock],
+            num_of_years_history=None,
+            save_to_csv=False,
+            start_date=start_date,
+            end_date=end_date
+        )
+    record_percent_to_predict: float = models_data["record_percent_to_predict"]
+    test_size_machine_learning: float = models_data["test_size_machine_learning"]
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
         df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_linear_regression(
-            table, table.index, record_percent_to_predict, test_size_machine_learning, closing_prices_mode=True
+            table, table.index, float(record_percent_to_predict), test_size_machine_learning, closing_prices_mode=True
         )
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:
         df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_arima(
-            table, table.index, record_percent_to_predict, closing_prices_mode=True
+            table, table.index, float(record_percent_to_predict), closing_prices_mode=True
         )
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:
         df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_gbm(
-            table, table.index, record_percent_to_predict, closing_prices_mode=True
+            table, table.index, float(record_percent_to_predict), closing_prices_mode=True
         )
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:
         df, annual_return, excepted_returns, plt = helpers.analyze_with_machine_learning_prophet(
-            table, table.index, record_percent_to_predict, closing_prices_mode=True
+            table, table.index, float(record_percent_to_predict), closing_prices_mode=True
         )
     else:
-        raise ValueError('Invalid machine learning model given!')
+        raise ValueError(f'Invalid machine learning model given: {machine_learning_model}!\n'
+                         f'Pick one of:\n'
+                         f'{settings.MACHINE_LEARNING_MODEL[0]}\n'
+                         f'{settings.MACHINE_LEARNING_MODEL[1]}\n'
+                         f'{settings.MACHINE_LEARNING_MODEL[2]}\n'
+                         f'{settings.MACHINE_LEARNING_MODEL[3]}\n')
 
     plt_instance = plot_functions.plot_price_forecast(stock, description, df, annual_return, plt)
     return plt_instance
@@ -138,7 +157,7 @@ def download_data_for_research(num_of_years_history: int) -> None:
         converted_name = sector_name.replace(" ", "_") + "_closing_price"
         closing_price_table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
                                                              converted_name, stocks_symbols, num_of_years_history,
-                                                             saveToCsv=True)
+                                                             save_to_csv=True)
         print(f"table of sector::{sector_name} saved ")
         closing_price_all_sectors_table = pd.concat([closing_price_all_sectors_table, closing_price_table], axis=1)
 
@@ -171,6 +190,12 @@ def find_good_stocks(sector="US stocks indexes", num_of_best_stocks=10,
     filters = min_cap, max_cap, min_annual_returns, max_volatility, min_sharpe
     # get the relevant data
     data_pct_change = get_stocks_data_for_research_by_group(sector)
+    # TODO
+    # Correct way to change value of a stock and its instance
+    top_stock: TopStock = TopStock.objects.filter(sector_name=).first()  # Gets a stock from a certain sector
+    saved_image_name: str = None  # TODO
+    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{saved_image_name}.png'
+    top_stock.save()
 
     # calculate total returns, volatility and sharpe ratio
     total_return, total_volatility, total_sharpe = calculate_stats_of_stocks(data_pct_change,
@@ -277,7 +302,6 @@ def get_stocks_data_for_research_by_group(group_of_stocks: str):
     elif group_of_stocks == "US commodity indexes":
         tickers_table = get_US_commodity_indexes_closing_price()
     elif group_of_stocks == "US bonds indexes":
-        tickers_table = get_US_bonds_indexes_closing_price()
         tickers_table = get_US_bonds_indexes_closing_price()
     elif group_of_stocks == "US stocks indexes":
         tickers_table = get_US_stocks_indexes_closing_price()

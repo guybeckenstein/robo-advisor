@@ -32,6 +32,8 @@ CLOSING_PRICES_FILE_NAME = "closing_prices"
 # STATIC FILES
 GRAPH_IMAGES = DJANGO_DIR + 'static/img/graphs/'
 USER_IMAGES = DJANGO_DIR + 'static/img/user/'
+RESEARCH_IMAGES = DJANGO_DIR + 'static/img/research/'
+RESEARCH_TOP_STOCKS_IMAGES = DJANGO_DIR + 'static/img/research/'
 
 # RESEARCH
 RESEARCH_LOCATION = BASE_SERVICE_DIR + 'research/'

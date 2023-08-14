@@ -1,0 +1,8 @@
+{% load static %}
+
+{% if is_chosen_stock_template is True %}
+  <div>
+    <img class="img-fluid" src="{% static forecast_stock_img_name %}" alt="Forecast Stock of {{ symbol }}" name="Forecast Stock of {{ symbol }}">
+    <img class="img-fluid" src="{% static bb_strategy_img_name %}" alt="BB Strategy Graph of {{ symbol }}" name="BB Strategy Graph of {{ symbol }}">
+  </div>
+{% endif %}

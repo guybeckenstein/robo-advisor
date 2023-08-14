@@ -31,11 +31,3 @@ def investment_main(request):
         'title': 'Investments',
     }
     return render(request, 'investment_portfolio/investments_main.html', context=context)
-
-
-@login_required
-def discover_stocks(request):
-    context = {
-        'title': 'Discover Stocks',
-    }
-    return render(request, 'investment_portfolio/discover_stocks.html', context=context)
