@@ -162,11 +162,6 @@ class UpdateInvestorUserForm(forms.ModelForm):
         super(UpdateInvestorUserForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_id = 'investor-form'
-        self.helper.attrs = {
-            'hx-post': reverse_lazy('profile_investor'),
-            'hx-target': '#investor-form',
-            'hx-swap': 'outerHTML'
-        }
 
         self.fields['starting_investment_amount'].disabled = disabled_project
         self.fields['stocks_symbols'].choices = [(symbol.strip(), symbol.strip()) for symbol in symbols_list]

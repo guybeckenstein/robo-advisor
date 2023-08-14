@@ -28,14 +28,6 @@ def investment_main(request):
 
 
 @login_required
-def my_investments_history(request):
-    context = {
-        'title': "My Investments' History"
-    }
-    return render(request, 'investment_portfolio/my_investments_history.html', context=context)
-
-
-@login_required
 def discover_stocks(request):
     context = {
         'title': 'Discover Stocks'

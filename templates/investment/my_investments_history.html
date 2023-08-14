@@ -1,0 +1,29 @@
+{% extends "investment_portfolio/investments_main.html" %}
+{% load crispy_forms_tags %}
+
+{% block investments_history_link %}
+  <a href="{% url 'my_investments_history' %}" class="nav-link active">
+    Investments History
+  </a>
+{% endblock %}
+
+{% block investments_content %}
+  <div class="card px-5 py-2" style="background-color: rgb(255, 255, 255);">
+    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+      My Investments History
+    </h1>
+    <form class="mb-4" hx-post="{% url 'add_investment' %}" hx-target="body" hx-swap="outerHTML" hx-trigger="submit" id="investments-form">
+      {% csrf_token %}
+      <div class="input-group">
+        <label class="input-group-text" for="id_amount">
+          Amount To Invest
+        </label>
+        <input type="number" id="id_amount" class="form-control" placeholder="Add Amount" name="amount" required>
+        <button class="btn btn-outline-dark">
+          Invest
+        </button>
+      </div>
+    </form>
+    {% include 'investment/add_investment.html' %}
+  </div>
+{% endblock %}

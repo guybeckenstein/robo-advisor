@@ -6,12 +6,14 @@ from django import forms
 from django.contrib.auth import logout
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import BadRequest
+from django.db.models import QuerySet
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 
+from investment.models import Investment
 from service.util.data_management import get_stocks_from_json_file
 from .forms import UserRegisterForm, AccountMetadataForm, UpdateUserNameAndPhoneNumberForm, UpdateInvestorUserForm, \
     PasswordChangingForm
@@ -129,26 +131,31 @@ def get_styled_stocks_symbols_data(stocks_symbols_data) -> dict[list]:
 
 
 @login_required
-def profile_investor(request):  # TODO (GUY)
+def profile_investor(request):
     stocks_symbols_data: dict[list] = get_stocks_from_json_file()
     styled_stocks_symbols_data: dict[list] = get_styled_stocks_symbols_data(stocks_symbols_data=stocks_symbols_data)
     is_form_filled = True
 
     try:
-        investor_user_instance = get_object_or_404(InvestorUser, user=request.user)
+        investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
         if request.method == 'GET':
             form: forms.ModelForm = UpdateInvestorUserForm(
-                instance=investor_user_instance,
-                investor_user_instance=investor_user_instance,
+                instance=investor_user,
+                investor_user_instance=investor_user,
                 disabled_project=True,
             )
         elif request.method == 'POST':
             form: forms.ModelForm = UpdateInvestorUserForm(
                 request.POST,
-                investor_user_instance=investor_user_instance,
-                instance=investor_user_instance,
+                investor_user_instance=investor_user,
+                instance=investor_user,
             )
             if form.is_valid():
+                investments: QuerySet[Investment] = Investment.objects.filter(investor_user=investor_user)
+                for investment in investments:
+                    if investment.make_investment_inactive() is False:
+                        break  # In this case we should not continue iterating over the new-to-old-sorted investments
+                    investment.save()
                 form.save()
                 messages.success(request, 'Your account details have been updated successfully.')
                 return redirect('capital_market_algorithm_preferences_form')

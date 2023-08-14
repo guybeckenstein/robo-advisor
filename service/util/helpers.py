@@ -133,7 +133,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     forecast_col = 'col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
-    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
+    forecast_out = int(math.ceil(float(record_percent_to_predict) * len(df_final)))
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # Added date
@@ -147,7 +147,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     df.dropna(inplace=True)
     y = np.array(df['label'])
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size_machine_learning)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=float(test_size_machine_learning))
     clf = LinearRegression()
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)

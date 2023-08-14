@@ -252,11 +252,3 @@ def capital_market_investment_preferences_form(request):
             return HttpResponse(form_html)
     else:
         raise Http404
-
-
-def convert_type_list_to_str_list(input_list: list):
-    # Convert all values within stocks_symbols to `str`. Some values are `int`
-    str_list = []
-    for value in input_list:
-        str_list.append(str(value))
-    return str_list
