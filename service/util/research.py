@@ -3,10 +3,8 @@ import pandas as pd
 import ta
 import yfinance as yf
 
-from .data_management import read_csv_file
 from . import plot_functions, helpers
 from ..config import settings
-from .helpers import get_sectors_data_from_file, get_israeli_indexes_list
 
 
 def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
@@ -16,7 +14,7 @@ def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
     plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + stock + operation)
 
 
-def forecast_specific_stock(stock: str, machine_learning_model, models_data, num_of_years_history: int):
+def forecast_specific_stock(stock: str, machine_learning_model, models_data: dict, num_of_years_history: int):
     plt = None
     file_name = str(stock) + '.csv'
     description = helpers.get_description_by_symbol(stock)
@@ -40,6 +38,8 @@ def forecast_specific_stock(stock: str, machine_learning_model, models_data, num
         df, annual_return, excepted_returns, plt = helpers.analyze_with_machine_learning_prophet(
             table, table.index, record_percent_to_predict, closing_prices_mode=True
         )
+    else:
+        raise ValueError('Invalid machine learning model given!')
 
     plt_instance = plot_functions.plot_price_forecast(stock, description, df, annual_return, plt)
     return plt_instance
@@ -80,7 +80,17 @@ def implement_bb_strategy(data, lower_bb, upper_bb):
     return buy_price, sell_price, bb_signal
 
 
-def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"):
+def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"):
+    """
+    stock_name: str
+        A name of a stock that is being plotted
+    start: date
+        A starting date for the plot
+    end: date
+        An ending date for the plot
+    Return value:
+        Returns the plot instance
+    """
     if type(stock_name) == int or stock_name.isnumeric():
         num_of_digits = len(str(stock_name))
         if num_of_digits > 3:
@@ -89,7 +99,7 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
             is_index_type = True
         stock_prices = helpers.get_israeli_symbol_data("get_past_10_years_history",
                                                        start, end, stock_name, is_index_type)
-        # list to dateframe
+        # list to DataFrame
         stock_prices = pd.DataFrame(stock_prices)
         stock_prices["tradeDate"] = pd.to_datetime(stock_prices["tradeDate"])
         stock_prices.set_index("tradeDate", inplace=True)
@@ -110,12 +120,12 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
 
     buy_price, sell_price, bb_signal = implement_bb_strategy(stock_prices['Adj Close'],
                                                              stock_prices['Lower'], stock_prices['Upper'])
-    plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
+    plt_instance = plot_functions.plot_bb_strategy_stock(stock_prices, buy_price, sell_price)
     return plt_instance
 
 
-def plotbb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO USE OR REMOVE
-    plt_instance = plot_functions.plotbb_strategy_portfolio(pct_change_table, new_portfolio)
+def plot_bb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO USE OR REMOVE
+    plt_instance = plot_functions.plot_bb_strategy_portfolio(pct_change_table, new_portfolio)
 
     return plt_instance
 
@@ -129,18 +139,36 @@ def download_data_for_research(num_of_years_history: int) -> None:
         closing_price_table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
                                                              converted_name, stocks_symbols, num_of_years_history,
                                                              saveToCsv=True)
-        print("table of sector::{0} saved ", sector_name)
+        print(f"table of sector::{sector_name} saved ")
         closing_price_all_sectors_table = pd.concat([closing_price_all_sectors_table, closing_price_table], axis=1)
 
     closing_price_all_sectors_table.to_csv(settings.RESEARCH_LOCATION + "all_sectors_closing_price.csv")
-    print("table of all sectors::{0} saved ", sector_name)
+    print(f"table of all sectors::{sector_name} saved ")
 
     # creates
 
 
 def find_good_stocks(sector="US stocks indexes", num_of_best_stocks=10,
-                     minCap=0, maxCap=10000000, minAnnualReturns=0, maxVolatility=0, minSharpe=0):
-    filters = minCap, maxCap, minAnnualReturns, maxVolatility, minSharpe
+                     min_cap=0, max_cap=10000000, min_annual_returns=0, max_volatility=0, min_sharpe=0):
+    """
+    sector: str
+        A single sector name
+    num_of_best_stocks: int
+        Amount of stocks within the sector that are being saved within a CSV file
+    min_cap: int
+        Filters the stocks by a minimal market value (or capacity)
+    max_cap: int
+        Filters the stocks by a maximal market value (or capacity)
+    min_annual_returns: int
+        Filters the stocks by a minimal annual returns (תשואה שנתית מינימלית)
+    max_volatility: int
+        Filters the stocks by a maximal volatility (תנודתיות בעזרת סטיית תקן)
+    min_sharpe: int
+        Filters the stocks by a minimal sharpe (היחס בין התשואה השנתית לבין התנודתיות)
+    Returns: tuple[list]
+        A tuple of three different list. Each list contains four lists
+    """
+    filters = min_cap, max_cap, min_annual_returns, max_volatility, min_sharpe
     # get the relevant data
     data_pct_change = get_stocks_data_for_research_by_group(sector)
 
@@ -166,49 +194,48 @@ def find_good_stocks(sector="US stocks indexes", num_of_best_stocks=10,
         data_pct_change, is_forecast_mode=True, interval="Y", filters=filters)
 
     # sort total
-    total_profit_return_sorted = get_sorted_list_by_parameters(total_return, 0,
+    total_profit_return_sorted: list = get_sorted_list_by_parameters(total_return, 0,
                                                                ascending=False, num_of_best_stocks=num_of_best_stocks)
-    total_volatility_sorted = get_sorted_list_by_parameters(total_volatility, 0,
+    total_volatility_sorted: list = get_sorted_list_by_parameters(total_volatility, 0,
                                                             ascending=True, num_of_best_stocks=num_of_best_stocks)
-    total_sharpe_sorted = get_sorted_list_by_parameters(total_sharpe, 0,
+    total_sharpe_sorted: list = get_sorted_list_by_parameters(total_sharpe, 0,
                                                         ascending=False, num_of_best_stocks=num_of_best_stocks)
 
     # sort last year
-    annual_returns_sorted = get_sorted_list_by_parameters(annual_returns, -1,
+    annual_returns_sorted: list = get_sorted_list_by_parameters(annual_returns, -1,
                                                           ascending=False, num_of_best_stocks=num_of_best_stocks)
-    annual_volatility_sorted = get_sorted_list_by_parameters(annual_volatility, -1,
+    annual_volatility_sorted: list = get_sorted_list_by_parameters(annual_volatility, -1,
                                                              ascending=True, num_of_best_stocks=num_of_best_stocks)
-    annual_sharpe_sorted = get_sorted_list_by_parameters(annual_sharpe, -1,
+    annual_sharpe_sorted: list = get_sorted_list_by_parameters(annual_sharpe, -1,
                                                          ascending=False, num_of_best_stocks=num_of_best_stocks)
 
     # sort last month
-    annual_returns_sorted = get_sorted_list_by_parameters(monthly_returns, -1,
+    annual_returns_sorted: list = get_sorted_list_by_parameters(monthly_returns, -1,
                                                           ascending=False, num_of_best_stocks=num_of_best_stocks)
-    annual_volatility_sorted = get_sorted_list_by_parameters(monthly_volatility, -1,
+    annual_volatility_sorted: list = get_sorted_list_by_parameters(monthly_volatility, -1,
                                                              ascending=True, num_of_best_stocks=num_of_best_stocks)
-    annual_sharpe_sorted = get_sorted_list_by_parameters(monthly_sharpe, -1,
+    annual_sharpe_sorted: list = get_sorted_list_by_parameters(monthly_sharpe, -1,
                                                          ascending=False, num_of_best_stocks=num_of_best_stocks)
 
     # sort forecast
-    returns_annual_forecast_sorted = get_sorted_list_by_parameters(returns_annual_forecast, 0,
+    returns_annual_forecast_sorted: list = get_sorted_list_by_parameters(returns_annual_forecast, 0,
                                                                    ascending=False,
                                                                    num_of_best_stocks=num_of_best_stocks)
-    volatility_annual_forecast_sorted = get_sorted_list_by_parameters(volatility_annual_forecast, 0,
+    volatility_annual_forecast_sorted: list = get_sorted_list_by_parameters(volatility_annual_forecast, 0,
                                                                       ascending=True,
                                                                       num_of_best_stocks=num_of_best_stocks)
-    sharpe_annual_forecast_sorted = get_sorted_list_by_parameters(sharpe_annual_forecast, 0,
+    sharpe_annual_forecast_sorted: list = get_sorted_list_by_parameters(sharpe_annual_forecast, 0,
                                                                   ascending=False,
                                                                   num_of_best_stocks=num_of_best_stocks)
 
-    max_returns_stocks_list = [total_profit_return_sorted, annual_returns_sorted, returns_annual_forecast_sorted]
-    min_volatility_stocks_list = [total_volatility_sorted, annual_volatility_sorted,
-                                  volatility_annual_forecast_sorted]
-    max_sharpest_stocks_list = [total_sharpe_sorted, annual_sharpe_sorted, sharpe_annual_forecast_sorted]
+    max_returns_stocks: list = [total_profit_return_sorted, annual_returns_sorted, returns_annual_forecast_sorted]
+    min_volatility_stocks: list = [total_volatility_sorted, annual_volatility_sorted, volatility_annual_forecast_sorted]
+    max_sharpest_stocks: list = [total_sharpe_sorted, annual_sharpe_sorted, sharpe_annual_forecast_sorted]
 
-    return max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list
+    return max_returns_stocks, min_volatility_stocks, max_sharpest_stocks
 
 
-def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, num_of_best_stocks=10):
+def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, num_of_best_stocks=10) -> list:
     if row_selected == 0:
         return data_frame.sort_values(ascending=ascending).head(num_of_best_stocks)
     else:

@@ -1,10 +1,15 @@
 import csv
 import datetime
 import json
+import math
+
 import numpy as np
 import pandas as pd
 from typing import Tuple, List
 
+from django.db.models import QuerySet
+
+from investment.models import Investment
 from ..impl.portfolio import Portfolio
 from ..impl.stats_models import StatsModels
 from ..impl.sector import Sector
@@ -185,7 +190,7 @@ def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_m
         stocks_symbols=stocks_symbols,
         sectors=sectors,
         risk_level=risk_level,
-        starting_investment_amount=investment_amount,
+        total_investment_amount=investment_amount,
         selected_model=model_option,
         is_machine_learning=is_machine_learning
     )
@@ -211,36 +216,53 @@ def get_investment_format(investment_amount, entered_as_an_automatic_investment)
 
 
 def add_new_investment(user_id, investment_amount, entered_as_an_automatic_investment=False,
-                       db_type="django", investments_list=[]) -> dict:
+                       db_type="django", investments: list = []) -> dict:
     if investment_amount < 0:
         return None
     new_investment = get_investment_format(investment_amount, entered_as_an_automatic_investment)
 
-    if (investments_list == []):
+    if len(investments) > 0:
         try:
             get_investments_from_db(user_id, db_type)
         except:
-            investments_list = []
-    investments_list.append(new_investment)
+            investments = []
+    investments.append(new_investment)
 
     # save the new investment to the db
 
-    save_new_investments_to_db(user_id, investments_list, db_type)
+    save_new_investments_to_db(user_id, investments, db_type)
 
-    return new_investment, investments_list
+    return new_investment, investments
 
 
-def changing_portfolio_investments_treatment(selected_user, investments_list: list) -> None:
+def changing_portfolio_investments_treatment_console(selected_user: User, investments: list) -> None:
     user_portfolio = selected_user.portfolio
-    if investments_list != []:
-        total_profit = user_portfolio.get_total_profit_according_to_dates_dates(investments_list)
-        capital_investments = get_total_capital_investments(investments_list)
-        for i, investment in enumerate(investments_list):
+    if len(investments) > 0:
+        total_profit: float = user_portfolio.calculate_total_profit_according_to_dates_dates(investments)
+        capital_investments = get_total_capital_investments_console(investments=investments)
+        for i, investment in enumerate(investments):
             if investment["status"]:
                 investment["status"] = False
-                investments_list[i] = investment
+                investments[i] = investment
         add_new_investment(selected_user.name, (total_profit + capital_investments),
-                           entered_as_an_automatic_investment=True, db_type="json", investments_list=investments_list)
+                           entered_as_an_automatic_investment=True, db_type="json", investments=investments)
+
+
+
+def changing_portfolio_investments_treatment_web(investor_user: InvestorUser, portfolio: Portfolio,
+                                                 investments: QuerySet[Investment]) -> None:
+    if len(investments) > 0:
+        total_profit: float = portfolio.calculate_total_profit_according_to_dates_dates(investments)
+        capital_investments = get_total_capital_investments_web(investments)  # Sums all prior ACTIVE & USER investments
+        Investment.objects.create(
+            investor_user=investor_user,
+            amount=math.floor(total_profit) + capital_investments,
+            mode=Investment.Mode.ROBOT
+        )
+        investor_user.total_profit += math.floor(total_profit)
+        investor_user.save()
+    else:
+        raise ValueError
 
 
 ############################################################################################################
@@ -352,7 +374,7 @@ def get_user_from_db(user_id: int, user_name: str):
         print("User not found")
         return None
     user_data = json_data['usersList'][user_name][0]
-    starting_investment_amount = user_data['startingInvestmentAmount']
+    total_investment_amount = user_data['startingInvestmentAmount']
     is_machine_learning = user_data['machineLearningOpt']
     selected_model = user_data['selectedModel']
     risk_level = user_data['levelOfRisk']
@@ -374,7 +396,7 @@ def get_user_from_db(user_id: int, user_name: str):
         stocks_symbols=stocks_symbols,
         sectors=sectors,
         risk_level=risk_level,
-        starting_investment_amount=starting_investment_amount,
+        total_investment_amount=total_investment_amount,
         selected_model=selected_model,
         is_machine_learning=is_machine_learning,
     )
@@ -436,11 +458,27 @@ def save_investment_to_json_File(user_id, investments):
         json.dump(json_data, file, indent=4)
 
 
-def get_total_capital_investments(investments):  # Returning the investment amount that the useer invested
+def get_total_capital_investments_console(investments: list) -> float:
+    """
+    Returning the investment amount that the useer invested
+    """
     total_capital = 0
     for investment in investments:
         if not investment["automatic_investment"]:
             total_capital += investment["amount"]
+    return total_capital
+
+
+def get_total_capital_investments_web(investments: QuerySet[Investment]) -> float:
+    """
+    Returning the investment amount that the useer invested
+    """
+    total_capital: int = 0
+    for investment in investments:
+        if investment.mode == Investment.Mode.USER:
+            total_capital += investment.amount
+        else:
+            break
     return total_capital
 
 
@@ -462,11 +500,11 @@ return:
 - The amount of profit in general
 - The sum of all investments including the profit
     """
-    total_capital = get_total_capital_investments(investments)  # capital investments
+    total_capital = get_total_capital_investments_console(investments)  # capital investments
 
     user_portfolio = selected_user.portfolio
 
-    total_portfolio_profit = user_portfolio.get_total_profit_according_to_dates_dates(investments)
+    total_portfolio_profit: float = user_portfolio.calculate_total_profit_according_to_dates_dates(investments)
 
     total_investments_value = get_total_active_investments(investments) + total_portfolio_profit
 

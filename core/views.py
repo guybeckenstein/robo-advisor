@@ -8,9 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from service.util.web_actions import save_three_user_graphs_as_png
+from service.util import web_actions
 from service.util import data_management
-from service.util.data_management import create_new_user_portfolio
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from accounts.models import InvestorUser
@@ -115,15 +114,15 @@ def capital_market_algorithm_preferences_form(request):
 @login_required
 def capital_market_investment_preferences_form(request):
     try:
-        user_preferences_instance = get_object_or_404(QuestionnaireA, user=request.user)
+        questionnaire_a = get_object_or_404(QuestionnaireA, user=request.user)
     except Http404:
         return HttpResponse("You must have an instance of QuestionnaireA to fill this form.", status=404)
 
     # Each user fills this form, and it gets a rating from 3 to 9
     try:
-        questionnaire = QuestionnaireB.objects.get(user=request.user)
+        questionnaire_b = QuestionnaireB.objects.get(user=request.user)
     except QuestionnaireB.DoesNotExist:
-        questionnaire = None
+        questionnaire_b = None
         # Retrieve the UserPreferencesA instance for the current user
     if request.method == 'GET':
         try:
@@ -131,12 +130,12 @@ def capital_market_investment_preferences_form(request):
             collections_number: str = investor_user.stocks_collection_number
         except InvestorUser.DoesNotExist:
             collections_number: str = '1'
-        if questionnaire is None:  # CREATE
+        if questionnaire_b is None:  # CREATE
             context = {
                 'title': 'Fill Form',
                 'form': InvestmentPreferencesForm(
                     form_type='create',
-                    user_preferences_instance=user_preferences_instance,
+                    user_preferences_instance=questionnaire_a,
                     collections_number=collections_number,
                 )
             }
@@ -146,24 +145,24 @@ def capital_market_investment_preferences_form(request):
                 'title': 'Update Filled Form',
                 'form': InvestmentPreferencesForm(
                     form_type='update',
-                    instance=questionnaire,
-                    user_preferences_instance=user_preferences_instance,
+                    instance=questionnaire_b,
+                    user_preferences_instance=questionnaire_a,
                     collections_number=collections_number,
                 )
             }
             return render(request, 'core/form.html', context=context)
 
     elif request.method == 'POST':
-        if questionnaire is None:  # CREATE
+        if questionnaire_b is None:  # CREATE
             form = InvestmentPreferencesForm(
                 request.POST,
-                user_preferences_instance=user_preferences_instance
+                user_preferences_instance=questionnaire_a
             )
         else:  # UPDATE
             form = InvestmentPreferencesForm(
                 request.POST,
-                user_preferences_instance=user_preferences_instance,
-                instance=questionnaire
+                user_preferences_instance=questionnaire_a,
+                instance=questionnaire_b
             )
         if form.is_valid():  # CREATE and UPDATE
             # DEBUGGING, without this the code won't work
@@ -178,30 +177,9 @@ def capital_market_investment_preferences_form(request):
             form.instance.answers_sum = answers_sum
             form.save()
 
-            # Backend
-            stocks_collection_number: str = "1"
-            risk_level = data_management.get_level_of_risk_by_score(answers_sum)
-            stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
-            tables = data_management.get_extended_data_from_db(
-                stocks_symbols=stocks_symbols,
-                is_machine_learning=user_preferences_instance.ml_answer,
-                model_option=user_preferences_instance.model_answer,
-                stocks_collection_number=stocks_collection_number,
-                mode='regular'
-            )
-            investment_amount = 0  # TODO: REMOVE IN ALL PROJECT
-            portfolio = create_new_user_portfolio(
-                stocks_symbols=stocks_symbols,
-                investment_amount=investment_amount,
-                is_machine_learning=user_preferences_instance.ml_answer,
-                model_option=user_preferences_instance.model_answer,
-                risk_level=risk_level,
-                extended_data_from_db=tables,
-            )
-
-            _, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
-                annual_volatility, annual_sharpe, total_change, monthly_change, daily_change, selected_model, \
-                machine_learning_opt = portfolio.get_portfolio_data()
+            (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
+             risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights,
+             total_change, _) = web_actions.create_portfolio_and_get_data(answers_sum, "1", questionnaire_a)
             try:
                 investor_user = InvestorUser.objects.get(user=request.user)
                 # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
@@ -222,7 +200,7 @@ def capital_market_investment_preferences_form(request):
                 InvestorUser.objects.create(
                     user=request.user,
                     risk_level=risk_level,
-                    starting_investment_amount=0,
+                    total_investment_amount=0,
                     stocks_symbols=stocks_symbols,
                     stocks_weights=stocks_weights,
                     sectors_names=sectors_names,
@@ -236,7 +214,7 @@ def capital_market_investment_preferences_form(request):
                     daily_change=daily_change,
                 )
             # Frontend
-            save_three_user_graphs_as_png(request)  # TODO - call when dataset updated
+            web_actions.save_three_user_graphs_as_png(request)  # TODO - call when dataset updated
             return redirect('homepage')
 
         else:  # CREATE and UPDATE

@@ -36,3 +36,16 @@ class Investment(models.Model):
         else:
             return False
 
+    def make_investment_mode_robot(self) -> bool:
+        """
+        Returns true if investment is active, false if inactive
+        """
+        if self.status == self.Mode.USER:
+            self.status = self.Mode.ROBOT
+            return True
+        else:
+            return False
+
+    def formatted_date(self):
+        return self.date.strftime("%Y-%m-%d")
+

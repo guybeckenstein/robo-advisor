@@ -11,53 +11,13 @@ from service.config import settings
 from service.util import helpers
 from service.util.data_management import get_closing_prices_table
 from core.models import QuestionnaireA
-from accounts.models import InvestorUser
+from accounts.models import InvestorUser, CustomUser
 
 
 def save_three_user_graphs_as_png(request) -> None:  # TODO - separate thread
-    # Receive instances from two models - QuestionnaireA, InvestorUser
-    questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
-    investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
-    # Create three plots - starting with metadata
-    is_machine_learning: int = questionnaire_a.ml_answer
-    selected_model: int = questionnaire_a.model_answer
-    starting_investment_amount: int = investor_user.starting_investment_amount
-    risk_level: int = investor_user.risk_level
-
-    stocks_symbols: List[str] = None
-    stocks_weights: List[float] = None
-    if type(investor_user.stocks_symbols) is list:
-        stocks_symbols: List[str] = investor_user.stocks_symbols
-        for idx, symbol in enumerate(stocks_symbols):
-            if symbol.isnumeric():
-                if type(idx) is not int:
-                    raise ValueError("Invalid type for idx")
-                stocks_symbols[idx] = int(stocks_symbols[idx])
-        stocks_weights: List[str] = investor_user.stocks_weights
-        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
-    elif type(investor_user.stocks_symbols) is str:
-        stocks_symbols: List[str] = investor_user.stocks_symbols[1:-1].split(',')
-        for idx, symbol in enumerate(stocks_symbols):
-            if symbol.isnumeric():
-                stocks_symbols[idx] = int(stocks_symbols[idx])
-        stocks_weights: List[str] = investor_user.stocks_weights[1:-1].split(',')
-        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
-    else:
-        ValueError("Invalid type for stocks_symbols of investor_user")
-    sectors = helpers.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
-    portfolio: Portfolio = Portfolio(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        risk_level=risk_level,
-        starting_investment_amount=starting_investment_amount,
-        selected_model=selected_model,
-        is_machine_learning=is_machine_learning
-    )
-    annual_returns = investor_user.annual_returns
-    annual_volatility = investor_user.annual_volatility
-    annual_sharpe = investor_user.annual_sharpe
-    stocks_collection_number: str = '1' #investor_user.stocks_collection_number TODO
-    closing_price_table_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
+    (annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level,
+     stocks_weights) = create_portfolio_instance(request)
+    closing_price_table_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + '1/'
     closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_price_table_path, mode='regular')
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
@@ -85,3 +45,75 @@ def save_three_user_graphs_as_png(request) -> None:  # TODO - separate thread
         name=f'{request.user.first_name} {request.user.last_name}',
         portfolio=portfolio)
     )
+
+
+def create_portfolio_and_get_data(answers_sum: int, stocks_collection_number: str,
+                                  questionnaire_a: QuestionnaireA) -> tuple:
+    # Backend
+    risk_level: int = data_management.get_level_of_risk_by_score(answers_sum)
+    stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
+    tables = data_management.get_extended_data_from_db(
+        stocks_symbols=stocks_symbols,
+        is_machine_learning=questionnaire_a.ml_answer,
+        model_option=questionnaire_a.model_answer,
+        stocks_collection_number=stocks_collection_number,
+        mode='regular'
+    )
+    portfolio = data_management.create_new_user_portfolio(
+        stocks_symbols=stocks_symbols,
+        investment_amount=0,
+        is_machine_learning=questionnaire_a.ml_answer,
+        model_option=questionnaire_a.model_answer,
+        risk_level=risk_level,
+        extended_data_from_db=tables,
+    )
+    _, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
+        annual_volatility, annual_sharpe, total_change, monthly_change, daily_change, selected_model, \
+        machine_learning_opt = portfolio.get_portfolio_data()
+    return (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change, risk_level,
+            sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio)
+
+
+
+def create_portfolio_instance(request):
+    # Receive instances from two models - QuestionnaireA, InvestorUser
+    questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
+    investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
+    # Create three plots - starting with metadata
+    is_machine_learning: int = questionnaire_a.ml_answer
+    selected_model: int = questionnaire_a.model_answer
+    total_investment_amount: int = investor_user.total_investment_amount
+    risk_level: int = investor_user.risk_level
+    stocks_symbols: List[str] = None
+    stocks_weights: List[float] = None
+    if type(investor_user.stocks_symbols) is list:
+        stocks_symbols: List[str] = investor_user.stocks_symbols
+        for idx, symbol in enumerate(stocks_symbols):
+            if symbol.isnumeric():
+                if type(idx) is not int:
+                    raise ValueError("Invalid type for idx")
+                stocks_symbols[idx] = int(stocks_symbols[idx])
+        stocks_weights: List[str] = investor_user.stocks_weights
+        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
+    elif type(investor_user.stocks_symbols) is str:
+        stocks_symbols: List[str] = investor_user.stocks_symbols[1:-1].split(',')
+        for idx, symbol in enumerate(stocks_symbols):
+            if symbol.isnumeric():
+                stocks_symbols[idx] = int(stocks_symbols[idx])
+        stocks_weights: List[str] = investor_user.stocks_weights[1:-1].split(',')
+        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
+    else:
+        ValueError("Invalid type for stocks_symbols of investor_user")
+    sectors = helpers.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
+    portfolio: Portfolio = Portfolio(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        risk_level=risk_level,
+        total_investment_amount=total_investment_amount,
+        selected_model=selected_model,
+        is_machine_learning=is_machine_learning
+    )
+    annual_returns = investor_user.annual_returns
+    annual_volatility = investor_user.annual_volatility
+    annual_sharpe = investor_user.annual_sharpe
+    return annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level, stocks_weights

@@ -2,6 +2,14 @@ from impl.user import User
 from service.util import data_management, research, helpers
 from service.config import settings
 
+
+def get_models_data_and_forecast_specific_stock():
+    models_data: dict = data_management.get_models_data_from_collections_file()
+    plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
+                                                    models_data, num_of_years_history)
+    return plt_instance
+
+
 if __name__ == '__main__':
     data_management.main_menu()
     selection = data_management.selected_menu_option()  # TODO get selection from page in site
@@ -64,18 +72,18 @@ if __name__ == '__main__':
                 extended_data_from_db=tables,
             )
 
-            user_portfolio = User(user_id=login_id,
-                                  name=login_name,
-                                  portfolio=new_portfolio,
-                                  stocks_collection_number=stocks_collection_number)
+            user: User = User(user_id=login_id,
+                        name=login_name,
+                        portfolio=new_portfolio,
+                        stocks_collection_number=stocks_collection_number)
             try:
                 investments_list = data_management.get_user_investments_from_json_file(login_name)
-                data_management.changing_portfolio_investments_treatment(user_portfolio, investments_list)
+                data_management.changing_portfolio_investments_treatment_console(user.portfolio, investments_list)
             except Exception as e:
                 print(e)
             # add user to datasets (json file)
-            user_portfolio.update_json_file(settings.USERS_JSON_NAME)
-            data_management.save_user_portfolio(user_portfolio) # TODO - separate thread
+            user.update_json_file(settings.USERS_JSON_NAME)
+            data_management.save_user_portfolio(user) # TODO - separate thread
 
         elif selection == 2:
             # add new investment to user
@@ -101,14 +109,12 @@ if __name__ == '__main__':
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     machine_learning_model = data_management.get_machine_learning_model()
-                    models_data = data_management.get_models_data_from_collections_file()
-
-                    plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
-                                                                    models_data, num_of_years_history)
+                    plt_instance = get_models_data_and_forecast_specific_stock()
                     operation = '_forecast'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
-                    data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
-                                               + stock_name + operation + '.png')
+                    data_management.plot_image(
+                        settings.RESEARCH_RESULTS_LOCATION + stock_name + operation + '.png'
+                    )
 
                 # plotbb_strategy_stock for specific stock
                 elif selection == 2:  # TODO : add to research page
@@ -116,7 +122,7 @@ if __name__ == '__main__':
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     staring_date, today_date = data_management.get_from_and_to_date(num_of_years_history)
-                    plt_instance = research.plotbb_strategy_stock(str(stock_name), staring_date, today_date)
+                    plt_instance = research.plot_bb_strategy_stock(str(stock_name), staring_date, today_date)
                     operation = '_bb_strategy'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
@@ -179,10 +185,10 @@ if __name__ == '__main__':
                     minSharpe = 0.6
                     data_tuple = research.find_good_stocks(sector=sector,
                                                            num_of_best_stocks=num_of_best_stocks,
-                                                           minCap=minCap,
-                                                           maxCap=maxCap,
-                                                           minAnnualReturns=minAnnualReturns,
-                                                           maxVolatility=maxVolatility, minSharpe=minSharpe
+                                                           min_cap=minCap,
+                                                           max_cap=maxCap,
+                                                           min_annual_returns=minAnnualReturns,
+                                                           max_volatility=maxVolatility, min_sharpe=minSharpe
                                                            )
 
                     # save images TODO

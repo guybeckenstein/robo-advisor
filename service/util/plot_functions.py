@@ -132,7 +132,7 @@ def plot_gini_graph(sectors: list[Sector], three_best_sectors_weights, min_varia
     return plt
 
 
-def plotbb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
+def plot_bb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
     stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=FIG_SIZE2)
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)
@@ -145,7 +145,7 @@ def plotbb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
     return plt
 
 
-def plotbb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio) -> plt:
+def plot_bb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio) -> plt:
     plt.figure()  # Create a new plot instance
     stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=FIG_SIZE2)
     s: int = 200

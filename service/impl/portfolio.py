@@ -1,5 +1,10 @@
 from typing import List, Tuple
+
+import numpy as np
 import pandas as pd
+from django.db.models import QuerySet
+
+from investment.models import Investment
 from .sector import Sector
 import datetime
 
@@ -10,14 +15,14 @@ class Portfolio:
             stocks_symbols: List,
             sectors: List[Sector],
             risk_level: int = 1,
-            starting_investment_amount: int = 0,
+            total_investment_amount: int = 0,
             selected_model=None,
             is_machine_learning=None
     ):
 
         self._sectors: List[Sector] = sectors
         self._risk_level: int = risk_level
-        self._starting_investment_amount: int = starting_investment_amount
+        self._total_investment_amount: int = total_investment_amount
         self._last_date_of_investment: datetime.date = datetime.datetime.now().date()
         self._stocks_symbols: List = stocks_symbols
         self._stocks_weights = []
@@ -40,11 +45,11 @@ class Portfolio:
 
     @property
     def investment_amount(self):
-        return self._starting_investment_amount
+        return self._total_investment_amount
 
     @investment_amount.setter
     def investment_amount(self, value) -> None:
-        self._starting_investment_amount = value
+        self._total_investment_amount = value
 
     @property
     def selected_model(self):
@@ -112,24 +117,33 @@ class Portfolio:
         return names
 
     def get_portfolio_data(self):
-        return self._risk_level, self._starting_investment_amount, self._stocks_symbols, self.get_sectors_names(), \
+        return self._risk_level, self._total_investment_amount, self._stocks_symbols, self.get_sectors_names(), \
             self.get_sectors_weights(), self._stocks_weights, self._annual_returns, self.get_max_loss(), \
             self._annual_volatility, self._annual_sharpe, self.get_total_change(), self.get_monthly_change(), \
             self.get_daily_change(), self.selected_model, self.machine_learning_opt
 
-    def get_total_profit_according_to_dates_dates(self, investments_list: list) -> float:
-        sum = 0.0
+    def calculate_total_profit_according_to_dates_dates(self, investments) -> float:
+        profit: float = 0.0
 
-        for i, investment in enumerate(investments_list):
-            amount = investment["amount"]
-            purchase_date = investment["date"]
-            is_it_active = investment["status"]
-            automatic_investment = investment["automatic_investment"]
-
+        for i, investment in enumerate(investments):
+            if type(investment) == dict:
+                amount = investment["amount"]
+                purchase_date = investment["date"]
+                is_it_active = investment["status"]
+                automatic_investment = investment["automatic_investment"]
+            elif type(investment) == Investment:
+                amount = investment.amount
+                purchase_date = investment.formatted_date()
+                is_it_active = investment.status  # status is `ACTIVE` or `INACTIVE`
+                automatic_investment = investment.mode  # mode is `USER` or `ROBOT`
+            else:
+                raise ValueError('Invalid value for `investments`')
             if is_it_active:
-                sum += amount * self.get_total_value_change(from_date=purchase_date)
+                profit += amount * self.get_total_value_change(from_date=purchase_date)
+            else:  # TODO: check this for the console application version
+                break
 
-        return sum
+        return profit
 
     # get changes
     def get_total_change(self):  # total  change in % (10 years)

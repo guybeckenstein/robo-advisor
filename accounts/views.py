@@ -13,7 +13,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 
+from core.models import QuestionnaireA, QuestionnaireB
 from investment.models import Investment
+from service.util import web_actions, data_management
 from service.util.data_management import get_stocks_from_json_file
 from .forms import UserRegisterForm, AccountMetadataForm, UpdateUserNameAndPhoneNumberForm, UpdateInvestorUserForm, \
     PasswordChangingForm
@@ -152,6 +154,16 @@ def profile_investor(request):
             )
             if form.is_valid():
                 investments: QuerySet[Investment] = Investment.objects.filter(investor_user=investor_user)
+                questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
+                questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
+                (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
+                 risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights,
+                 total_change, portfolio) = web_actions.create_portfolio_and_get_data(
+                    answers_sum=questionnaire_b.answers_sum,
+                    stocks_collection_number=investor_user.stocks_collection_number,
+                    questionnaire_a=questionnaire_a,
+                )
+                data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio, investments)
                 for investment in investments:
                     if investment.make_investment_inactive() is False:
                         break  # In this case we should not continue iterating over the new-to-old-sorted investments

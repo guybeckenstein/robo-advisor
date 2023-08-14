@@ -145,7 +145,8 @@ def get_indexes_tuple(size) -> tuple:
 
 
 class UpdateInvestorUserForm(forms.ModelForm):
-    starting_investment_amount = forms.CharField(required=False)
+    total_investment_amount = forms.CharField(required=False)
+    total_profit = forms.CharField(required=False)
     list_of_indexes_tuple: list[tuple] = get_indexes_tuple(size=4)
     stocks_collection_number = forms.ChoiceField(
         widget=forms.RadioSelect(attrs={'class': 'horizontal-radio'}), choices=list_of_indexes_tuple
@@ -163,7 +164,8 @@ class UpdateInvestorUserForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_id = 'investor-form'
 
-        self.fields['starting_investment_amount'].disabled = disabled_project
+        self.fields['total_investment_amount'].disabled = disabled_project
+        self.fields['total_profit'].disabled = disabled_project
         self.fields['stocks_symbols'].choices = [(symbol.strip(), symbol.strip()) for symbol in symbols_list]
         self.helper.add_input(Submit('update', 'Update', css_class='btn-dark'))
 
@@ -184,4 +186,4 @@ class UpdateInvestorUserForm(forms.ModelForm):
 
     class Meta:
         model = InvestorUser
-        fields = ('starting_investment_amount', 'stocks_collection_number', 'stocks_symbols',)
+        fields = ('total_investment_amount', 'total_profit', 'stocks_collection_number', 'stocks_symbols',)

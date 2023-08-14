@@ -14,7 +14,7 @@ class User:
                 stocks_symbols=[],
                 sectors=[],
                 risk_level=1,
-                starting_investment_amount=0,
+                total_investment_amount=0,
                 selected_model=1,
                 is_machine_learning=0
             ),
@@ -47,13 +47,13 @@ class User:
     def update_json_file(self, json_name: str):
         json_data = self.get_json_data(json_name)
 
-        (level_of_risk, starting_investment_amount, stocks_symbols, sectors_names, sectors_weights, stocks_weights,
+        (level_of_risk, total_investment_amount, stocks_symbols, sectors_names, sectors_weights, stocks_weights,
          annual_returns, annual_max_loss, annual_volatility, annual_sharpe, total_change, monthly_change,
          daily_change, selected_model, machine_learning_opt) = self._myPortfolio.get_portfolio_data()
 
         # Create a new dictionary
         json_data['usersList'][self._name][0]["levelOfRisk"] = level_of_risk
-        json_data['usersList'][self._name][0]["startingInvestmentAmount"] = starting_investment_amount
+        json_data['usersList'][self._name][0]["startingInvestmentAmount"] = total_investment_amount
         json_data['usersList'][self._name][0]["stocksSymbols"] = stocks_symbols
         json_data['usersList'][self._name][0]["sectorsNames"] = sectors_names
         json_data['usersList'][self._name][0]["sectorsWeights"] = sectors_weights
