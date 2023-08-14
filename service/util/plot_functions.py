@@ -397,13 +397,11 @@ def plot_price_forecast(stocks_symbols, description, df: pd.DataFrame, annual_re
         return plt_instance
     df[df.columns[0]].plot()
     df['Forecast'].plot()
-    plt.title(f"{stocks_symbols} Stock Price Forecast\n{description}")
-    # sub titile
-    plt.suptitle("Annual Return With Prediction: " + str(round(annual_returns, 2)) + " %")
+    plt.title(f"{description} Stock Price Forecast", pad=10)
     # add text box with annual returns value
     plt.figtext(
-        x=0.2,
-        y=0.8,
+        x=0.15,
+        y=0.7,
         s=f"Annual Return, Including Prediction: {str(round(annual_returns, 2))}%\n"
     )
 
@@ -428,37 +426,33 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
     return plt
 
 
-def plot_research_graphs(data_tuple):
-    max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list = data_tuple
+def plot_research_graphs(data_stats_tuples):
+    # Define metric names for the x-axis
+    metrics = [
+        'Total Return'
+    ]
 
-    plt.figure()
-    plt.title("Stocks with Max Returns")
-    plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    for stock in max_returns_stocks_list:
-        stock.plot()
-    plt.legend(max_returns_stocks_list)
-    plt.grid(True)
+    # Extract stock symbols from the first series
+    stock_symbols = data_stats_tuples[0].index.tolist()
 
-    plt.figure()
-    plt.title("Stocks with Min Volatility")
-    plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    for stock in min_volatility_stocks_list:
-        stock.plot()
-    plt.legend(min_volatility_stocks_list)
-    plt.grid(True)
+    # Convert data_stats_tuples to a NumPy array for easier manipulation
+    values = np.array([series.values for series in data_stats_tuples])
 
-    plt.figure()
-    plt.title("Stocks with Max Sharpe Ratio")
-    plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    for stock in max_sharpest_stocks_list:
-        stock.plot()
-    plt.legend(max_sharpest_stocks_list)
-    plt.grid(True)
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(12, 6))
 
-    return plt
+    # Create a horizontal bar plot for each metric
+    for i, metric in enumerate(metrics):
+        ax.barh(stock_symbols, values[:, i], label=metric)
+
+    # Set labels, title, and legend
+    ax.set_xlabel('Values')
+    ax.set_ylabel('Stock Symbols')
+    ax.set_title('Values for Different Metrics by Stock Symbols')
+    ax.legend()
+
+    plt.tight_layout()
+    plt.show()
 
 
 def save_graphs(plt_instance, file_name) -> None:

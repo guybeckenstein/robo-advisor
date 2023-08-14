@@ -113,7 +113,7 @@ if __name__ == '__main__':
                     operation = '_forecast'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
-                        settings.RESEARCH_RESULTS_LOCATION + stock_name + operation + '.png'
+                        settings.RESEARCH_IMAGES + stock_name + operation + '.png'
                     )
 
                 # plotbb_strategy_stock for specific stock
@@ -126,7 +126,7 @@ if __name__ == '__main__':
                     operation = '_bb_strategy'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
-                        settings.RESEARCH_RESULTS_LOCATION +
+                        settings.settings.RESEARCH_IMAGES +
                         stock_name + operation + '.png')
 
                 elif selection == 3:
@@ -177,23 +177,18 @@ if __name__ == '__main__':
                     # helpers.save_all_stocks()
 
                     sector = "US stocks"
-                    num_of_best_stocks = 100  # how many best stocks to show
-                    minCap = 0
-                    maxCap = 1000000000000
-                    minAnnualReturns = 5
-                    maxVolatility = 15
-                    minSharpe = 0.6
-                    data_tuple = research.find_good_stocks(sector=sector,
-                                                           num_of_best_stocks=num_of_best_stocks,
-                                                           min_cap=minCap,
-                                                           max_cap=maxCap,
-                                                           min_annual_returns=minAnnualReturns,
-                                                           max_volatility=maxVolatility, min_sharpe=minSharpe
-                                                           )
+                    filters = [0, 1000000000000, 5, 15, 0.6, 10]
+
+                    data_tuple = research.find_good_stocks(sector=sector)
+                    #research.save_stocks_stats_to_csv(data_tuple)
+                   # sort
+                    sorted_data_tuple = research.sort_good_stocks(data_tuple, filters)
+                    # save csv TODO
+
 
                     # save images TODO
-                    path = settings.RESEARCH_RESULTS_TOP_STOCKS
-                    data_management.plot_research_graphs(data_tuple)
+                    path = settings.RESEARCH_RESULTS_LOCATION
+                    data_management.plot_research_graphs(path, sorted_data_tuple)
 
                     pass
 

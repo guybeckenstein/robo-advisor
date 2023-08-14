@@ -754,41 +754,9 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
     plot_functions.save_graphs(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO plot at site
 
 
-def plot_research_graphs(data_tuple: Tuple):
-    returns = data_tuple[0]
-    volatility = data_tuple[1]
-    sharpe_ratio = data_tuple[2]
-    max_returns_descriptions = []
-    for i, collection in enumerate(returns):
-        descriptions = []
-        print("top returns" + str(i) + ":\n")
-        for j, stock in enumerate(collection.values):
-            description = helpers.get_description_by_symbol(collection.index[j])
-            descriptions.append(description)
-            print(collection.index[i] + '-' + str(stock) + '-' + description + '\n')
-        max_returns_descriptions.append(descriptions)
-
-        volatility_descriptions = []
-        for i, collection in enumerate(volatility):
-            descriptions = []
-            print("min volatility" + str(i) + ":\n")
-            for j, stock in enumerate(collection.values):
-                description = helpers.get_description_by_symbol(collection.index[j])
-                volatility_descriptions.append(description)
-                print(collection.index[i] + '-' + str(stock) + '-' + description + '\n')
-            max_returns_descriptions.append(descriptions)
-
-    sharpe_ratio_descriptions = []
-    for i, collection in enumerate(sharpe_ratio):
-        descriptions = []
-        print("max sharpe ratio" + str(i) + ":\n")
-        for j, stock in enumerate(collection.values):
-            description = helpers.get_description_by_symbol(collection.index[j])
-            descriptions.append(description)
-            print(collection.index[i] + '-' + str(stock) + '-' + description + '\n')
-        sharpe_ratio_descriptions.append(descriptions)
-    # plot_instance = plot_functions.plot_research_graphs(data_tuple)
-    # TODO save
+def plot_research_graphs(path, data_tuple: Tuple):
+    research_plt = plot_functions.plot_research_graphs(data_tuple)
+    plot_functions.save_graphs(research_plt, path)
 
 def save_user_portfolio(user: User) -> None:
     # Creating directories

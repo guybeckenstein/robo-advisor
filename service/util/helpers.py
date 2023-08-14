@@ -23,6 +23,7 @@ from ..config import aws_settings, settings
 from ..impl.sector import Sector
 from . import tase_interaction
 
+
 def get_best_portfolios(df, model_name: str):
     if model_name == 'Markowitz':
         optional_portfolios = [build_return_markowitz_portfolios_dic(df[0]),
@@ -386,27 +387,35 @@ def update_daily_change_with_machine_learning(returns_stock, table_index, models
 
 def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_years_history, save_to_csv,
                            start_date: str = None, end_date: str = None):
+    min_date = "2013-08-01"
     frame = {}
     yf.pdr_override()
     if start_date is None or end_date is None:
         start_date, end_date = get_from_and_to_dates(num_of_years_history)
+    else:
+        # for israel stocks
+        today = datetime.datetime.now()
+        min_start_year = today.year
+        min_start_month = today.month
+        min_start_day = today.day
+        end_year = today.year
+        end_month = today.month
+        end_day = today.day
+        min_date = str(min_start_year) + "-" + str(min_start_month) + "-" + str(min_start_day)
     file_url = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocks_names):
         if type(stock) == float:
             continue
         if type(stock) == int or stock.isnumeric():
-            # TODO: add code that uses start_date and end_date that are passed as parameters to the function (num_of_years == None)
-            # if num_of_years_history and num_of_years_history > 10:
-            #     num_of_years_history = 10
-            # else:
-            #     num_of_years_history
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
             else:
                 is_index_type = True
             try:
+                if start_date < min_date:
+                    start_date = min_date
                 df = get_israeli_symbol_data('get_past_10_years_history', start_date, end_date, stock, is_index_type)
             except:
                 print("Error in stock: " + stock)
@@ -533,6 +542,7 @@ def setStockSectors(stocksSymbols, sectorList) -> list:
 
     return stock_sectors
 
+
 def makes_yield_column(_yield, weighted_sum_column):
     _yield.iloc[0] = 1
     for i in range(1, weighted_sum_column.size):
@@ -561,12 +571,14 @@ def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):
     usa_stocks_table = get_usa_stocks_table()
     usa_indexes_table = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
-        if type(stock) == int:
+        if stock.isnumeric():
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
             else:  # israeli index name always has maximum of 3 digits
                 is_index_type = True
+            if type(stock) == str:
+                stock = int(stock)
             stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
                                                                              is_reverse_mode=is_reverse_mode))
         else:
@@ -761,4 +773,3 @@ def get_symbols_names_list() -> list[str]:
     all_stocks_Data: pd.DataFrame = get_all_stocks_table()
     symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
     return symbols_list
-
