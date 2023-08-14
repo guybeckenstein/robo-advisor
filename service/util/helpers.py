@@ -23,7 +23,6 @@ from ..config import aws_settings, settings
 from ..impl.sector import Sector
 from . import tase_interaction
 
-
 def get_best_portfolios(df, model_name: str):
     if model_name == 'Markowitz':
         optional_portfolios = [build_return_markowitz_portfolios_dic(df[0]),
@@ -338,16 +337,25 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, record_per
 
 
 def update_daily_change_with_machine_learning(returns_stock, table_index, models_data, closing_prices_mode=False):
-    record_percent_to_predict = models_data["models_data"]["record_percent_to_predict"]
-    selected_ml_model_for_build = models_data["models_data"]["selected_ml_model_for_build"]
-    test_size_machine_learning = models_data["models_data"]["test_size_machine_learning"]
+    record_percent_to_predict = float(models_data["models_data"]["record_percent_to_predict"])
+    selected_ml_model_for_build = int(models_data["models_data"]["selected_ml_model_for_build"])
+    test_size_machine_learning = float(models_data["models_data"]["test_size_machine_learning"])
     selected_ml_model_for_build = settings.MACHINE_LEARNING_MODEL[selected_ml_model_for_build]
-
+    is_ndarray_mode = False
     num_of_rows = len(table_index)
     prefix_row = int(math.ceil(record_percent_to_predict * num_of_rows))
-    for i, stock in enumerate(returns_stock.columns):
+    try:
+        columns = returns_stock.columns
+    except AttributeError:
+        columns = returns_stock
+        is_ndarray_mode = True
+    for i, stock in enumerate(columns):
         df = None
-        stock_name = str(stock)
+        if is_ndarray_mode:
+            stock_name = 0
+        else:
+            stock_name = str(stock)
+
         if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:
             df, annual_return, excepted_returns = analyze_with_machine_learning_linear_regression(
                 returns_stock[stock_name], table_index, record_percent_to_predict, test_size_machine_learning,
@@ -520,7 +528,6 @@ def setStockSectors(stocksSymbols, sectorList) -> list:
 
     return stock_sectors
 
-
 def makes_yield_column(_yield, weighted_sum_column):
     _yield.iloc[0] = 1
     for i in range(1, weighted_sum_column.size):
@@ -637,6 +644,10 @@ def get_sectors_names_list():
     all_stocks_Data = get_all_stocks_table()
     sectors_list = all_stocks_Data['sector'].unique().tolist()
     return sectors_list
+
+
+def get_collection_json_data():
+    return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
 
 def convert_israeli_security_number_to_company_name(israeli_security_number: str) -> str:

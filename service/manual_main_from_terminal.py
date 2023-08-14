@@ -11,9 +11,10 @@ if __name__ == '__main__':
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
-            is_machine_learning: int = 0  # data_management.get_machine_learning_option()
-            model_option: int = 0  # data_management.get_model_option()
+            is_machine_learning: int = 1  # data_management.get_machine_learning_option()
+            model_option: int = 1  # data_management.get_model_option()
             investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
+            stocks_collection_number = 1  # default
             # TODO in site(GUY)
             # 1 default collection, Option for the customer to choose (recommended)
             stocks_collection_number: str = data_management.get_collection_number()  # TODO: user investor
@@ -43,7 +44,8 @@ if __name__ == '__main__':
             string_to_show = "Which graph do you prefer?\nsafest - 1, sharpest - 2, max return - 3 ?\n"
             # display 3 best portfolios graph (matplotlib)
             data_management.plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights,
-                                                    sectors, pct_change_table, mode='regular', sub_folder=sub_folder)
+                                                        sectors, pct_change_table, mode='regular',
+                                                        sub_folder=sub_folder)
             # data_management.plot_functions.plot(plt_instance)
             data_management.plot_image(settings.GRAPH_IMAGES + sub_folder + 'three_portfolios.png')
             third_question_score = data_management.get_score_by_answer_from_user(string_to_show)
@@ -62,41 +64,54 @@ if __name__ == '__main__':
                 extended_data_from_db=tables,
             )
 
-            user_portfolio = User(login_name, new_portfolio, stocks_collection_number)
+            user_portfolio = User(user_id=login_id,
+                                  name=login_name,
+                                  portfolio=new_portfolio,
+                                  stocks_collection_number=stocks_collection_number)
+            try:
+                investments_list = data_management.get_user_investments_from_json_file(login_name)
+                data_management.changing_portfolio_investments_treatment(user_portfolio, investments_list)
+            except Exception as e:
+                print(e)
             # add user to datasets (json file)
             user_portfolio.update_json_file(settings.USERS_JSON_NAME)
+            data_management.save_user_portfolio(user_portfolio) # TODO - separate thread
 
         elif selection == 2:
-            helpers.collect_all_stocks()
-            print("yarden")
+            # add new investment to user
+            investment_amount: int = data_management.get_investment_amount()  # get from terminal
+            if investment_amount is not None:
+                data_management.add_new_investment(login_name, investment_amount, db_type="json") # TODO
 
         elif selection == 3:
-            # plot user portfolio's data
-            selected_user = data_management.get_user_from_db(login_id, login_name)
-            if selected_user is not None:
-                data_management.save_user_portfolio(selected_user)
-                data_management.plot_image(f'{settings.USER_IMAGES}{login_name}/sectors_component.png')
-                data_management.plot_image(f'{settings.USER_IMAGES}{login_name}/stocks_component.png')
-                data_management.plot_image(f'{settings.USER_IMAGES}{login_name}/yield_graph.png')
+
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/sectors_component.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/stocks_component.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/yield_graph.png')
 
         elif selection == 4:
 
             data_management.expert_menu()
             selection = data_management.selected_menu_option()
             while selection != exit_loop_operation:
-                if selection == 1: # TODO: add to research page
+
+                # Forecast specific stock using machine learning
+                if selection == 1:  # TODO : add to research page
                     # forecast specific stock using machine learning
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     machine_learning_model = data_management.get_machine_learning_model()
                     models_data = data_management.get_models_data_from_collections_file()
+
                     plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
-                                                                       models_data, num_of_years_history)
+                                                                    models_data, num_of_years_history)
                     operation = '_forecast'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(settings.RESEARCH_RESULTS_LOCATION
                                                + stock_name + operation + '.png')
-                elif selection == 2: # TODO: add to research page
+
+                # plotbb_strategy_stock for specific stock
+                elif selection == 2:  # TODO : add to research page
                     # plotbb_strategy_stock for specific stock
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
@@ -107,21 +122,17 @@ if __name__ == '__main__':
                     data_management.plot_image(
                         settings.RESEARCH_RESULTS_LOCATION +
                         stock_name + operation + '.png')
-                elif selection == 3:
-                    pass
 
-                elif selection == 4:
-                    # TODO - get group of stocks
-                    selected_option = data_management.get_group_of_stocks_option()
-                    models_data = data_management.get_models_data_from_collections_file()
-                    (max_returns_stocks_list,
-                     min_volatility_stocks_list,
-                     max_sharpest_stocks_list) = research.find_good_stocks(
-                        settings.GROUP_OF_STOCKS[selected_option - 1])
+                elif selection == 3:
+                    # research good stocks
+                    sector = "US stocks"  # TODO, in site select sector or "ALL"
                     # TODO - SHOW IMAGES
 
+
+
+
                 # plot 3 best portfolios graph
-                elif selection == 5: # TODO: maybe show in the site
+                elif selection == 4:  # TODO : maybe show in the site
                     # plot Markowitz graph
                     num_of_years_history = data_management.get_num_of_years_history()
                     is_machine_learning = data_management.get_machine_learning_option()
@@ -136,7 +147,7 @@ if __name__ == '__main__':
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[0] + '_all_option' + '.png')
 
-                elif selection == 6:  # TODO: maybe show in the site
+                elif selection == 5:  # TODO : maybe show in the site
                     # plot Gini graph
                     num_of_years_history = data_management.get_num_of_years_history()
                     is_machine_learning = data_management.get_machine_learning_option()
@@ -151,6 +162,34 @@ if __name__ == '__main__':
                                                           )
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[1] + '_all_option' + '.png')
+
+
+                elif selection == 6:
+                    # dynamic commands
+                    # save tables
+                    # helpers.save_usa_indexes_table()
+                    # helpers.save_all_stocks()
+
+                    sector = "US stocks"
+                    num_of_best_stocks = 100  # how many best stocks to show
+                    minCap = 0
+                    maxCap = 1000000000000
+                    minAnnualReturns = 5
+                    maxVolatility = 15
+                    minSharpe = 0.6
+                    data_tuple = research.find_good_stocks(sector=sector,
+                                                           num_of_best_stocks=num_of_best_stocks,
+                                                           minCap=minCap,
+                                                           maxCap=maxCap,
+                                                           minAnnualReturns=minAnnualReturns,
+                                                           maxVolatility=maxVolatility, minSharpe=minSharpe
+                                                           )
+
+                    # save images TODO
+                    path = settings.RESEARCH_RESULTS_TOP_STOCKS
+                    data_management.plot_research_graphs(data_tuple)
+
+                    pass
 
                 else:
                     break

@@ -14,7 +14,7 @@ from core.models import QuestionnaireA
 from accounts.models import InvestorUser
 
 
-def save_three_user_graphs_as_png(request) -> None:
+def save_three_user_graphs_as_png(request) -> None:  # TODO - separate thread
     # Receive instances from two models - QuestionnaireA, InvestorUser
     questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
     investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
@@ -61,8 +61,13 @@ def save_three_user_graphs_as_png(request) -> None:
     closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_price_table_path, mode='regular')
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
+    models_data = helpers.get_collection_json_data()
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
+    if is_machine_learning:
+        weighted_sum = helpers.update_daily_change_with_machine_learning([weighted_sum],
+                                                                         pct_change_table.index,
+                                                                         models_data)[0][0]
     yield_column: str = "yield_" + str(risk_level)
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = helpers.makes_yield_column(pct_change_table[yield_column], weighted_sum)

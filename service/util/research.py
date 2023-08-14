@@ -13,12 +13,13 @@ def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
     # Creating directories
     curr_user_directory = settings.RESEARCH_RESULTS_LOCATION
     # Saving files
-    plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + stock  + operation)
+    plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + stock + operation)
 
 
 def forecast_specific_stock(stock: str, machine_learning_model, models_data, num_of_years_history: int):
     plt = None
     file_name = str(stock) + '.csv'
+    description = helpers.get_description_by_symbol(stock)
     table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
                                            [stock], num_of_years_history, saveToCsv=False)
     record_percent_to_predict = models_data["record_percent_to_predict"]
@@ -40,7 +41,7 @@ def forecast_specific_stock(stock: str, machine_learning_model, models_data, num
             table, table.index, record_percent_to_predict, closing_prices_mode=True
         )
 
-    plt_instance = plot_functions.plot_price_forecast(stock, df, annual_return, plt)
+    plt_instance = plot_functions.plot_price_forecast(stock, description, df, annual_return, plt)
     return plt_instance
 
 
@@ -87,7 +88,7 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
         else:
             is_index_type = True
         stock_prices = helpers.get_israeli_symbol_data("get_past_10_years_history",
-                                     start, end, stock_name, is_index_type)
+                                                       start, end, stock_name, is_index_type)
         # list to dateframe
         stock_prices = pd.DataFrame(stock_prices)
         stock_prices["tradeDate"] = pd.to_datetime(stock_prices["tradeDate"])
@@ -99,7 +100,6 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
     else:
         stock_prices = yf.download(stock_name, start, end)
 
-
     stock_prices['MA50'] = stock_prices['Adj Close'].rolling(window=50).mean()
     stock_prices['50dSTD'] = stock_prices['Adj Close'].rolling(window=50).std()
     stock_prices['Upper'] = stock_prices['MA50'] + (stock_prices['50dSTD'] * 2)
@@ -109,218 +109,190 @@ def plotbb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01")
     stock_prices = stock_prices.iloc[51:]
 
     buy_price, sell_price, bb_signal = implement_bb_strategy(stock_prices['Adj Close'],
-                                                                      stock_prices['Lower'], stock_prices['Upper'])
+                                                             stock_prices['Lower'], stock_prices['Upper'])
     plt_instance = plot_functions.plotbb_strategy_stock(stock_prices, buy_price, sell_price)
     return plt_instance
 
 
-def plotbb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO
+def plotbb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO USE OR REMOVE
     plt_instance = plot_functions.plotbb_strategy_portfolio(pct_change_table, new_portfolio)
 
     return plt_instance
 
-def download_data_for_research(num_of_years_history: int) -> None: # TODO
-    stocks_symbols = []
 
-    sectors_data = get_sectors_data_from_file()
-    israel_indexes_list = get_israeli_indexes_list()  # get from here data
-    usa_indexes_list = sectors_data[3:5]["stocks"]
-    israel_stocks_list = sectors_data[6]["stocks"]
-    usa_stocks_list = sectors_data[7]["stocks"]
+def download_data_for_research(num_of_years_history: int) -> None:
+    sectors_names_list = helpers.get_sectors_names_list()[7:]
+    closing_price_all_sectors_table = pd.DataFrame()
+    for i, sector_name in enumerate(sectors_names_list):
+        stocks_symbols = helpers.get_stocks_symbols_list_by_sector(sector_name)
+        converted_name = sector_name.replace(" ", "_") + "_closing_price"
+        closing_price_table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
+                                                             converted_name, stocks_symbols, num_of_years_history,
+                                                             saveToCsv=True)
+        print("table of sector::{0} saved ", sector_name)
+        closing_price_all_sectors_table = pd.concat([closing_price_all_sectors_table, closing_price_table], axis=1)
 
-    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
-                                   'usa_stocks_closing_prices', usa_stocks_list, num_of_years_history, saveToCsv=True)
+    closing_price_all_sectors_table.to_csv(settings.RESEARCH_LOCATION + "all_sectors_closing_price.csv")
+    print("table of all sectors::{0} saved ", sector_name)
 
-    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
-                                   'israel_indexes_closing_prices', israel_indexes_list, num_of_years_history,
-                                   saveToCsv=True)
-
-    stocks_symbols.extend(usa_stocks_list)
-    stocks_symbols.extend(israel_indexes_list)
-    helpers.convert_data_to_tables(settings.RESEARCH_LOCATION,
-                                   'all_closing_prices', stocks_symbols, num_of_years_history, saveToCsv=True)
+    # creates
 
 
-def find_good_stocks(group_of_stocks="usa_stocks", filter_option=False):  # TODO - fix
-    max_returns_stocks_list = None
-    min_volatility_stocks_list = None
-    max_sharpest_stocks_list = None
+def find_good_stocks(sector="US stocks indexes", num_of_best_stocks=10,
+                     minCap=0, maxCap=10000000, minAnnualReturns=0, maxVolatility=0, minSharpe=0):
+    filters = minCap, maxCap, minAnnualReturns, maxVolatility, minSharpe
+    # get the relevant data
+    data_pct_change = get_stocks_data_for_research_by_group(sector)
 
-    tickers_table = get_stocks_data_for_research_by_group(group_of_stocks)
-    tickers_df = pd.DataFrame(tickers_table)
-    tickers_df.iloc[2:3] = np.nan
-    tickers_df.dropna(inplace=True)
-    tickers_df.index.name = "Date"
-    data = tickers_df.set_index(0)
-    data.columns = data.iloc[0]
-    data = data.iloc[1:]
-    data = pd.DataFrame(data, columns=data.columns)
-    data = data.rename_axis('Date')
-    data = data.apply(pd.to_numeric, errors='coerce')
+    # calculate total returns, volatility and sharpe ratio
+    total_return, total_volatility, total_sharpe = calculate_stats_of_stocks(data_pct_change,
+                                                                             is_forecast_mode=False,
+                                                                             interval="TOTAL",
+                                                                             filters=filters)
+    # calculate annual returns, volatility and sharpe ratio
+    annual_returns, annual_volatility, annual_sharpe = calculate_stats_of_stocks(data_pct_change,
+                                                                                 is_forecast_mode=False,
+                                                                                 interval="Y"
+                                                                                 , filters=filters)
 
-    data_pct_change = data.pct_change()
-    data_pct_change.fillna(value=-0.0, inplace=True)
+    # calculate monthly returns, volatility and sharpe ratio
+    monthly_returns, monthly_volatility, monthly_sharpe = calculate_stats_of_stocks(data_pct_change,
+                                                                                    is_forecast_mode=False,
+                                                                                    interval="M"
+                                                                                    , filters=filters)
 
-    # Convert the index to datetime
-    data_pct_change.index = pd.to_datetime(data_pct_change.index)
-    annual_returns = ((data_pct_change + 1).resample('Y').prod() - 1) * 100
-    total_profit_return = ((data_pct_change + 1).prod() - 1) * 100
-    total_volatility = data_pct_change.std() * np.sqrt(254)
-    annual_volatility = data_pct_change.groupby(pd.Grouper(freq='Y')).std()
-    sharpe = annual_returns / annual_volatility
-
-    # forcast from total:
-    returns_annual_forcecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
-    cov_daily = data_pct_change.cov()
-    cov_annual = cov_daily * 254
-    volatility_forecast = (data_pct_change.std() * np.sqrt(254)) * 100
-    sharpe_forecast = returns_annual_forcecast / volatility_forecast
-
-    total_sharpe = total_profit_return / total_volatility
+    # calculate forecast returns, volatility and sharpe ratio
+    returns_annual_forecast, volatility_annual_forecast, sharpe_annual_forecast = calculate_stats_of_stocks(
+        data_pct_change, is_forecast_mode=True, interval="Y", filters=filters)
 
     # sort total
-    total_profit_return_sorted = total_profit_return.sort_values(ascending=False).head(10)
-    total_volatility_sorted = total_volatility.sort_values(ascending=True).head(10)
-    total_sharpe_sorted = total_sharpe.sort_values(ascending=False).head(10)
-
-    print("total_profit_return_sorted")
-    print(total_profit_return_sorted)
-    print("total_volatility_sorted")
-    print(total_volatility_sorted)
-    print("total_sharpe_sorted")
-    print(total_sharpe_sorted)
+    total_profit_return_sorted = get_sorted_list_by_parameters(total_return, 0,
+                                                               ascending=False, num_of_best_stocks=num_of_best_stocks)
+    total_volatility_sorted = get_sorted_list_by_parameters(total_volatility, 0,
+                                                            ascending=True, num_of_best_stocks=num_of_best_stocks)
+    total_sharpe_sorted = get_sorted_list_by_parameters(total_sharpe, 0,
+                                                        ascending=False, num_of_best_stocks=num_of_best_stocks)
 
     # sort last year
-    annual_sharpe_sorted = sharpe[-1].sort_values().head(10)
-    annual_returns_sorted = annual_returns[-1].sort_values().head(10)
-    annual_volatility_sorted = annual_volatility[-1].sort_values().head(10)
-    annual_sharpe_sorted = annual_sharpe_sorted[-1].sort_values().head(10)
-    print("annual_returns_sorted")
-    print(annual_returns_sorted)
-    print("annual_volatility_sorted")
-    print(annual_volatility_sorted)
-    print("annual_sharpe_sorted")
-    print(annual_sharpe_sorted)
+    annual_returns_sorted = get_sorted_list_by_parameters(annual_returns, -1,
+                                                          ascending=False, num_of_best_stocks=num_of_best_stocks)
+    annual_volatility_sorted = get_sorted_list_by_parameters(annual_volatility, -1,
+                                                             ascending=True, num_of_best_stocks=num_of_best_stocks)
+    annual_sharpe_sorted = get_sorted_list_by_parameters(annual_sharpe, -1,
+                                                         ascending=False, num_of_best_stocks=num_of_best_stocks)
+
+    # sort last month
+    annual_returns_sorted = get_sorted_list_by_parameters(monthly_returns, -1,
+                                                          ascending=False, num_of_best_stocks=num_of_best_stocks)
+    annual_volatility_sorted = get_sorted_list_by_parameters(monthly_volatility, -1,
+                                                             ascending=True, num_of_best_stocks=num_of_best_stocks)
+    annual_sharpe_sorted = get_sorted_list_by_parameters(monthly_sharpe, -1,
+                                                         ascending=False, num_of_best_stocks=num_of_best_stocks)
 
     # sort forecast
-    returns_annual_forcecast_sorted = returns_annual_forcecast.sort_values().head(10)
-    volatility_forecast_sorted = volatility_forecast.sort_values().head(10)
-    sharpe_forecast_sorted = sharpe_forecast.sort_values().head(10)
+    returns_annual_forecast_sorted = get_sorted_list_by_parameters(returns_annual_forecast, 0,
+                                                                   ascending=False,
+                                                                   num_of_best_stocks=num_of_best_stocks)
+    volatility_annual_forecast_sorted = get_sorted_list_by_parameters(volatility_annual_forecast, 0,
+                                                                      ascending=True,
+                                                                      num_of_best_stocks=num_of_best_stocks)
+    sharpe_annual_forecast_sorted = get_sorted_list_by_parameters(sharpe_annual_forecast, 0,
+                                                                  ascending=False,
+                                                                  num_of_best_stocks=num_of_best_stocks)
 
-    """max_sharpest_stocks_list = sharpe_sorted.head(10)
-    max_returns_stocks_list = returns_sorted.head(10)
-    min_volatility_stocks_list = min_volatility_sorted.tail(10)"""
-
-    # plot_functions.plot_top_stocks(helpers.scan_good_stocks())
-    # plot_functions.plot(plt_instance)  # TODO plot at site
-    # plot_functions.plot(plt_instance)  # TODO plot at site
+    max_returns_stocks_list = [total_profit_return_sorted, annual_returns_sorted, returns_annual_forecast_sorted]
+    min_volatility_stocks_list = [total_volatility_sorted, annual_volatility_sorted,
+                                  volatility_annual_forecast_sorted]
+    max_sharpest_stocks_list = [total_sharpe_sorted, annual_sharpe_sorted, sharpe_annual_forecast_sorted]
 
     return max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list
 
 
-def get_stocks_data_for_research_by_group(group_of_stocks: str):
-    if group_of_stocks == "nasdaq":  # TODO -fix
-        nasdaq_tickers = yf.Tickers('^IXIC').tickers
-        # Convert the dictionary of Ticker objects to a list of Ticker objects
-        ticker_list = list(nasdaq_tickers.values())
-        tickers = [ticker.ticker for ticker in ticker_list]
-        filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9)  # &  # Stocks with a market capitalization of at least $1 billion
-            # (tickers['ipoyear'] <= 2020)  # Stocks that went public before or in 2020
-        ]
-        # Get the ticker symbols for the filtered stocks
-        tickers = filtered_stocks['symbol'].to_list()
-    elif group_of_stocks == "sp500":  # TODO -fix
-        sp500_tickers = yf.Tickers('^GSPC').tickers
-        # Convert the dictionary of Ticker objects to a list of Ticker objects
-        ticker_list = list(sp500_tickers.values())
-        tickers = [ticker.ticker for ticker in ticker_list]
-        filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9)  # &  # Stocks with a market capitalization of at least $1 billion
-        ]
-        # Get the ticker symbols for the filtered stocks
-        tickers = filtered_stocks['symbol'].to_list()
-    elif group_of_stocks == "dowjones":  # TODO -fix
-        dowjones_tickers = yf.Tickers('^DJI').tickers
-        # Convert the dictionary of Ticker objects to a list of Ticker objects
-        ticker_list = list(dowjones_tickers.values())
-        tickers = [ticker.ticker for ticker in ticker_list]
-        filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9)  # &  # Stocks with a market capitalization of at least $1 billion
-        ]
-        # Get the ticker symbols for the filtered stocks
-        tickers = filtered_stocks['symbol'].to_list()
-    elif group_of_stocks == "TA35":  # TODO -fix
-        TA35_tickers = yf.Tickers('^TA35.TA').tickers
-        # Convert the dictionary of Ticker objects to a list of Ticker objects
-        ticker_list = list(TA35_tickers.values())
-        tickers = [ticker.ticker for ticker in ticker_list]
-        """filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9) # &  # Stocks with a market capitalization of at least $1 billion
-        ]"""
-        # Get the ticker symbols for the filtered stocks
-        tickers = tickers['symbol'].to_list()
-    elif group_of_stocks == "TA90":  # TODO -fix
-        TA90_tickers = yf.Tickers('^TA90.TA').tickers
-        # Convert the dictionary of Ticker objects to a list of Ticker objects
-        ticker_list = list(TA90_tickers.values())
-        tickers = [ticker.ticker for ticker in ticker_list]
-        """filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9) # &  # Stocks with a market capitalization of at least $1 billion
-        ]"""
-        # Get the ticker symbols for the filtered stocks
-        tickers = tickers['symbol'].to_list()
-    elif group_of_stocks == "TA125":  # TODO -fix
-        TA125_tickers = yf.Tickers('^TA125.TA').tickers
-        # Convert the dictionary of Ticker objects to a list of Ticker objects
-        ticker_list = list(TA125_tickers.values())
-        tickers = [ticker.ticker for ticker in ticker_list]
-        """filtered_stocks = tickers[
-            (tickers['marketCap'] >= 1e9) # &  # Stocks with a market capitalization of at least $1 billion
-        ]"""
-        # Get the ticker symbols for the filtered stocks
-        tickers = tickers['symbol'].to_list()
-
-    elif group_of_stocks == "usa_bonds":
-        tickers = read_csv_file(settings.RESEARCH_LOCATION + 'usa_stocks_closing_prices.csv')
-
-    elif group_of_stocks == "usa_stocks":
-        tickers = read_csv_file(settings.RESEARCH_LOCATION + 'usa_stocks_closing_prices.csv')
-
-    elif group_of_stocks == "israel_indexes":
-        tickers = read_csv_file(settings.RESEARCH_LOCATION + 'israel_indexes_closing_prices.csv')
-
-    elif group_of_stocks == "all":
-        tickers = read_csv_file(settings.RESEARCH_LOCATION + 'all_closing_prices.csv')
-
-
+def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, num_of_best_stocks=10):
+    if row_selected == 0:
+        return data_frame.sort_values(ascending=ascending).head(num_of_best_stocks)
     else:
-        pass
-
-    return tickers
-
-
+        # Get the last row (latest date)
+        last_row = data_frame.iloc[-1]
+        return data_frame.iloc[row_selected].sort_values(ascending=ascending).head(num_of_best_stocks)
 
 
-def scan_good_stocks_with_filters():  # todo - make it work
-    # Define the parameters for the scanner
-    min_avg_volume = 1000000  # minimum average daily volume
-    min_rsi = 50  # minimum RSI value
-    min_price = 0  # minimum price (in dollars)
-    max_price = 1000  # maximum price (in dollars)
+def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval="Y", filters=None):
+    if filters is not None:
+        pass # TODO
 
-    # Download the list of all tickers from Yahoo Finance
-    yf.Tickers("")
-    # Fetch the list of top 2000 stocks listed on NASDAQ
-    nasdaq_2000 = pd.read_csv('https://www.nasdaq.com/api/v1/screener?page=1&pageSize=2000')
-    # Get the ticker symbols for the top 2000 stocks
-    tickers = nasdaq_2000['symbol'].to_list()
+    if is_forecast_mode:
+        # TODO , MAYBE ADD MACHINE LEARNING OPTION
+        returns_annual_forecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
+        volatility_annual_forecast = (data_pct_change.std() * np.sqrt(254)) * 100
+        sharpe_annual_forecast = returns_annual_forecast / volatility_annual_forecast
 
+        return returns_annual_forecast, volatility_annual_forecast, sharpe_annual_forecast
+    else:
+
+        if interval == "TOTAL":
+            profit_return = ((data_pct_change + 1).prod() - 1) * 100
+            volatility = data_pct_change.std() * np.sqrt(254) * 100
+            sharpe = profit_return / volatility
+        else:
+            profit_return = ((data_pct_change + 1).resample(interval).prod() - 1) * 100
+            volatility = data_pct_change.groupby(pd.Grouper(freq=interval)).std() * 100
+            sharpe = profit_return / volatility
+
+    return profit_return, volatility, sharpe
+
+
+def get_stocks_data_for_research_by_group(group_of_stocks: str):
+    if group_of_stocks == "US stocks":  # TODO -fix
+        tickers_table = get_US_stocks_closing_price()
+    elif group_of_stocks == "Israel stocks":  # TODO -fix
+        tickers_table = get_Israel_stocks_closing_price()
+    elif group_of_stocks == "US commodity indexes":
+        tickers_table = get_US_commodity_indexes_closing_price()
+    elif group_of_stocks == "US bonds indexes":
+        tickers_table = get_US_bonds_indexes_closing_price()
+        tickers_table = get_US_bonds_indexes_closing_price()
+    elif group_of_stocks == "US stocks indexes":
+        tickers_table = get_US_stocks_indexes_closing_price()
+    elif group_of_stocks == "Israel government bonds indexes":
+        tickers_table = get_Israel_government_bonds_indexes_closing_price()
+    elif group_of_stocks == "Israel general bonds indexes":
+        tickers_table = get_Israel_general_bonds_indexes_closing_price()
+    elif group_of_stocks == "Israel stocks indexes":
+        tickers_table = get_Israel_stocks_indexes_closing_price()
+    else:
+        tickers_table = get_all_sectors_closing_price()
+
+    tickers_df = pd.DataFrame(tickers_table)
+    tickers_df.iloc[2:3] = np.nan
+    # drop columns with almost all naN values
+    tickers_df.dropna(axis=1, thresh=0.9 * len(tickers_df), inplace=True)
+    tickers_df.dropna(inplace=True)
+    # Set the first column as the index
+    tickers_df.set_index(tickers_df.columns[0], inplace=True)
+    data = tickers_df
+    # data.columns = data.iloc[0]
+    # data = data.iloc[1:]
+    # data = pd.DataFrame(data, columns=data.columns)
+    # data = data.rename_axis('Date')
+    data = data.apply(pd.to_numeric, errors='coerce')
+    data_pct_change = data.pct_change()
+    data_pct_change.fillna(value=-0.0, inplace=True)
+    # Convert the index to datetime
+    data_pct_change.index = pd.to_datetime(data_pct_change.index)
+
+    return data_pct_change
+
+
+def scan_good_stocks_with_filters(min_avg_volume=1000000, min_rsi=50, min_price=0,
+                                  max_price=1000):  # todo - make it work
+
+    stocks_symbols = helpers.get_stocks_symbols_list_by_sector("US stocks indexes")
     # Create an empty DataFrame to store the results
     results = pd.DataFrame(columns=["Ticker", "Price", "50-Day MA", "200-Day MA", "52-Week High", "RSI", "Avg Volume"])
 
     # Loop through the tickers and scan for the best stocks
-    for ticker in tickers.tickers:
+    for ticker in stocks_symbols:
         try:
             # Download the historical prices for the stock
             history = ticker.history(period="max")
@@ -362,19 +334,37 @@ def scan_good_stocks_with_filters():  # todo - make it work
     return results.head(10)
 
 
-def find_best_stocks(stocks_data):
-    # Calculate the annual returns and volatility for each stock
-    """returns = data['Adj Close'].pct_change().groupby(pd.Grouper(freq='Y')).apply(
-        lambda x: (1 + x).prod() - 1).reset_index(level=0, drop=True)
-    volatility = data['Adj Close'].pct_change().groupby(pd.Grouper(freq='Y')).std().reset_index(level=0, drop=True)
+def get_US_stocks_indexes_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "US_stocks_indexes_closing_price.csv")
 
-    # Calculate the Sharpe ratio for each stock
-    sharpe = returns / volatility
 
-    # Sort the stocks based on their Sharpe ratio
-    sharpe_sorted = sharpe.sort_values()
+def get_US_stocks_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "US_stocks_closing_price.csv")
 
-    # Select the top 5 stocks with the highest Sharpe ratio
-    top_5_stocks = sharpe_sorted.head(5)
 
-    return top_5_stocks"""
+def get_US_commodity_indexes_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "US_commodity_indexes_closing_price.csv")
+
+
+def get_US_bonds_indexes_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "US_bonds_indexes_closing_price.csv")
+
+
+def get_Israel_stocks_indexes_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "Israel_stocks_indexes_closing_price.csv")
+
+
+def get_Israel_stocks_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "Israel_stocks_closing_price.csv")
+
+
+def get_Israel_government_bonds_indexes_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "Israel_government_bonds_indexes_closing_price.csv")
+
+
+def get_Israel_general_bonds_indexes_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "Israel_general_bonds_indexes_closing_price.csv")
+
+
+def get_all_sectors_closing_price():
+    return pd.read_csv(settings.RESEARCH_LOCATION + "all_closing_prices.csv")
