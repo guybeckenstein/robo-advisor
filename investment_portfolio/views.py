@@ -33,11 +33,3 @@ def discover_stocks(request):
         'title': 'Discover Stocks'
     }
     return render(request, 'investment_portfolio/discover_stocks.html', context=context)
-
-
-@login_required
-def sell_stocks(request):
-    context = {
-        'title': 'Sell Stocks'
-    }
-    return render(request, 'investment_portfolio/sell_stocks.html', context=context)
