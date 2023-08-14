@@ -179,14 +179,14 @@ def capital_market_investment_preferences_form(request):
             form.save()
 
             # Backend
-            stocks_collection_number = "1" # TODO: take from user investor profile, default is 1
+            stocks_collection_number: str = "1"
             risk_level = data_management.get_level_of_risk_by_score(answers_sum)
             stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
             tables = data_management.get_extended_data_from_db(
                 stocks_symbols=stocks_symbols,
                 is_machine_learning=user_preferences_instance.ml_answer,
                 model_option=user_preferences_instance.model_answer,
-                stocks_collection_number = stocks_collection_number,
+                stocks_collection_number=stocks_collection_number,
                 mode='regular'
             )
             investment_amount = 0  # TODO: THINK ABOUT THIS (YARDEN AND GUY)
@@ -235,7 +235,6 @@ def capital_market_investment_preferences_form(request):
                     total_change=total_change,
                     monthly_change=monthly_change,
                     daily_change=daily_change,
-
                     # TODO - maybe add more fields later
                 )
             # Frontend
