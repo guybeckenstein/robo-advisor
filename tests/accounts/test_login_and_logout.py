@@ -3,6 +3,8 @@ from typing import Callable
 import pytest
 from django.urls import reverse
 
+from accounts.models import CustomUser
+
 
 @pytest.mark.django_db
 class TestLoginAndLogout:
@@ -16,13 +18,13 @@ class TestLoginAndLogout:
             assert attribute in response.content.decode()
 
     def test_login_get_request_as_logged_user(self, client, user_factory: Callable):
-        user = user_factory()
+        user: CustomUser = user_factory()
         client.force_login(user)
         response = client.get(reverse('account_login'))
         assert response.status_code == 302
 
     def test_login_invalid_credentials(self, client, user_factory: Callable):
-        user = user_factory()
+        user: CustomUser = user_factory()
 
         response = client.post(reverse('account_login'), data={
             'login': user.email,
@@ -34,7 +36,7 @@ class TestLoginAndLogout:
 
     def test_user_successful_login_and_logout(self, client, user_factory: Callable):
         # Create a test user
-        user = user_factory()
+        user: CustomUser = user_factory()
         print(user.email)
 
         # Test user login
@@ -48,5 +50,7 @@ class TestLoginAndLogout:
 
         # Test user logout
         response = client.post(reverse('account_logout'))
+        for attribute in ['Logout', 'You have been logged out.', 'Login again']:
+            assert attribute in response.content.decode()
 
         assert response.status_code == 200

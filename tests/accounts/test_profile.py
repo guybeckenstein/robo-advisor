@@ -4,7 +4,7 @@ from typing import Callable
 import pytest
 from django.urls import reverse
 
-from accounts.models import CustomUser
+from accounts.models import CustomUser, InvestorUser
 from accounts import views as accounts_views
 
 # Global constant variables
@@ -130,6 +130,24 @@ class TestProfileInvestor:
             else:
                 for symbol in value:
                     assert symbol in response.content.decode()
+
+    def test_post_request(
+            self, client, user_factory: Callable, investor_user_factory: Callable, questionnaire_a_factory: Callable,
+            questionnaire_b_factory: Callable
+    ):
+        user: CustomUser = user_factory()
+        client.force_login(user)
+        investor_user: InvestorUser = investor_user_factory(user=user)
+        questionnaire_a_factory(user=user)
+        questionnaire_b_factory(user=user)
+
+        assert investor_user.stocks_collection_number == '1'
+        response = client.post(reverse('profile_investor'), data={
+            'stocks_collection_number': '2',
+            'investor_user_instance': investor_user,
+            'instance': investor_user,
+        })
+        assert response.status_code == 302
 
     def test_get_request_as_guest(self, client):
         response = client.get(reverse('profile_investor'))

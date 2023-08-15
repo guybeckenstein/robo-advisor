@@ -251,18 +251,21 @@ def changing_portfolio_investments_treatment_console(selected_user: User, invest
 
 def changing_portfolio_investments_treatment_web(investor_user: InvestorUser, portfolio: Portfolio,
                                                  investments: QuerySet[Investment]) -> None:
-    if len(investments) > 0:
-        total_profit: float = portfolio.calculate_total_profit_according_to_dates_dates(investments)
-        capital_investments = get_total_capital_investments_web(investments)  # Sums all prior ACTIVE & USER investments
-        Investment.objects.create(
-            investor_user=investor_user,
-            amount=math.floor(total_profit) + capital_investments,
-            mode=Investment.Mode.ROBOT
-        )
-        investor_user.total_profit += math.floor(total_profit)
-        investor_user.save()
-    else:
-        raise ValueError
+    try:
+        if len(investments) > 0:
+            total_profit: float = portfolio.calculate_total_profit_according_to_dates_dates(investments)
+            capital_investments = get_total_capital_investments_web(investments)  # Sums all prior ACTIVE & USER investments
+            Investment.objects.create(
+                investor_user=investor_user,
+                amount=math.floor(total_profit) + capital_investments,
+                mode=Investment.Mode.ROBOT
+            )
+            investor_user.total_profit += math.floor(total_profit)
+            investor_user.save()
+        else:
+            raise ValueError('User does not have prior investments, therefore this action won\'t affect it')
+    except ValueError:
+        pass
 
 
 ############################################################################################################

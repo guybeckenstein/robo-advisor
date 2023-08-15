@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Basic user
+    # Basic user API
     path('sign-up/', views.SignUpView.as_view(), name='signup'),
     path("check_email/", views.check_email, name='check_email'),                        # Validation for `Sign Up` form
     path("check_phone_number/", views.check_phone_number, name='check_phone_number'),   # Validation for `Sign Up` form
@@ -14,4 +14,5 @@ urlpatterns = [
     path('profile/accounts/change/details/', views.profile_account_details, name='profile_account_details'),
     path('profile/accounts/change/password/', views.MyPasswordChangeForm.as_view(), name='profile_account_password'),
     path('profile/investor/', views.profile_investor, name='profile_investor'),
+    # django-allauth API
 ]

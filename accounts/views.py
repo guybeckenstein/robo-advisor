@@ -168,6 +168,7 @@ def profile_investor(request):
                         break  # In this case we should not continue iterating over the new-to-old-sorted investments
                     investment.save()
                 form.save()
+                investor_user.save()
                 messages.success(request, 'Your account details have been updated successfully.')
                 return redirect('capital_market_algorithm_preferences_form')
         else:

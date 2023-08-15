@@ -4,6 +4,7 @@ import pytest
 
 from accounts.models import CustomUser, InvestorUser
 from core.models import QuestionnaireA, QuestionnaireB
+from investment.models import Investment
 
 
 @pytest.fixture(scope='function')
@@ -64,6 +65,8 @@ def questionnaire_b_factory() -> Callable[[CustomUser, int, int, int, int], Ques
         )
         return questionnaire_b
 
+    return _create_questionnaire_b
+
 
 @pytest.fixture(scope='function')
 def investor_user_factory() -> Callable[[CustomUser, int, int, int, str, list[str], list[float], list[str], list[float],
@@ -90,3 +93,15 @@ def investor_user_factory() -> Callable[[CustomUser, int, int, int, str, list[st
         return investor_user
 
     return _create_investor_user
+
+
+@pytest.fixture(scope='function')
+def investment_factory() -> Callable[[InvestorUser, int], Investment]:
+    def _create_investment(**kwargs) -> Investment:
+        investment: Investment = Investment.objects.create(
+            investor_user=kwargs.get('investor_user', AttributeError),
+            amount=kwargs.get('amount', 1),
+        )
+        return investment
+
+    return _create_investment
