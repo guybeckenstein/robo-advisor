@@ -8,30 +8,41 @@ from accounts.models import CustomUser
 
 @pytest.mark.django_db
 class TestBase:
-    def test_base_logged_user(self, client, user_factory: Callable):
+    def test_base_get_request_as_logged_user(self, client, user_factory: Callable):
         user: CustomUser = user_factory()
         client.force_login(user)
         response = client.get(reverse('homepage'))
         assert response.status_code == 200
         assert 'core/homepage.html' in response.templates[0].name
         # Navigation Bar
-        assert 'Home' in response.content.decode()
-        assert 'About' in response.content.decode()
-        assert 'Profile' in response.content.decode()
-        assert 'Investments' in response.content.decode()
-        assert 'Capital Market Form' in response.content.decode()
-        assert 'Logout' in response.content.decode()
+        for link in ['Home', 'About', 'Profile', 'Investments', 'Capital Market Form', 'Logout']:
+            assert link in response.content.decode()
         # Hello message
-        assert 'Test User' in response.content.decode()
+        for value in ['Hello', 'Test User']:
+            assert value in response.content.decode()
 
-    def test_base_guest(self, client):
+    def test_base_get_request_as_admin(self, client, superuser_factory: Callable):
+        user: CustomUser = superuser_factory()
+        client.force_login(user)
         response = client.get(reverse('homepage'))
         assert response.status_code == 200
         assert 'core/homepage.html' in response.templates[0].name
         # Navigation Bar
-        assert 'Home' in response.content.decode()
-        assert 'About' in response.content.decode()
-        assert 'Sign Up' in response.content.decode()
-        assert 'Login' in response.content.decode()
+        for link in [
+            'Home', 'About', 'Profile', 'Investments', 'Capital Market Form', 'Admin', 'Administrative Tools', 'Logout'
+        ]:
+            assert link in response.content.decode()
         # Hello message
-        assert 'guest' in response.content.decode()
+        for value in ['Hello', 'Test User']:
+            assert value in response.content.decode()
+
+    def test_base_get_request_as_guest(self, client):
+        response = client.get(reverse('homepage'))
+        assert response.status_code == 200
+        assert 'core/homepage.html' in response.templates[0].name
+        # Navigation Bar
+        for link in ['Home', 'About', 'Sign Up', 'Login']:
+            assert link in response.content.decode()
+        # Hello message
+        for value in ['Hello', 'guest']:
+            assert value in response.content.decode()

@@ -8,9 +8,22 @@ from accounts.models import CustomUser
 
 @pytest.mark.django_db
 class TestUserPasswordReset:
+    def test_get_request_as_guest(self, client):
+        response = client.get(reverse('account_reset_password'))
+        assert response.status_code == 200
+        assert 'account/password_reset.html' in response.templates[0].name
+        for attribute in [
+            'Password Reset', 'Forgotten your password?', 'E-mail', 'E-mail address', 'Reset My Password', "contact us"
+        ]:
+            assert attribute in response.content.decode()
+
+    def test_get_request_as_logged_user(self, client, user_factory: Callable):
+        user = user_factory()
+        client.force_login(user)
+        response = client.get(reverse('account_reset_password'))
+        assert response.status_code == 302
     def test_user_successful_password_reset(self, client, user_factory: Callable):
         user: CustomUser = user_factory()
-
         response = client.post(reverse('account_reset_password'), data={
             'email': user.email,
         })

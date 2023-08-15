@@ -10,12 +10,27 @@ class TestLoginAndLogout:
         response = client.get(reverse('account_login'))
         assert response.status_code == 200
         assert 'account/login.html' in response.templates[0].name
+        for attribute in [
+            'E-mail', 'Password', 'Remember Me', 'Login', 'Forgot Password?', "Don't have an account?", 'Sign up here'
+        ]:
+            assert attribute in response.content.decode()
 
     def test_login_get_request_as_logged_user(self, client, user_factory: Callable):
         user = user_factory()
         client.force_login(user)
         response = client.get(reverse('account_login'))
         assert response.status_code == 302
+
+    def test_login_invalid_credentials(self, client, user_factory: Callable):
+        user = user_factory()
+
+        response = client.post(reverse('account_login'), data={
+            'login': user.email,
+            'password': 'wrongpassword',
+        })
+
+        assert response.status_code == 200
+        assert '_auth_user_id' not in client.session
 
     def test_user_successful_login_and_logout(self, client, user_factory: Callable):
         # Create a test user
@@ -35,14 +50,3 @@ class TestLoginAndLogout:
         response = client.post(reverse('account_logout'))
 
         assert response.status_code == 200
-
-    def test_login_invalid_credentials(self, client, user_factory: Callable):
-        user = user_factory()
-
-        response = client.post(reverse('account_login'), data={
-            'login': user.email,
-            'password': 'wrongpassword',
-        })
-
-        assert response.status_code == 200
-        assert '_auth_user_id' not in client.session
