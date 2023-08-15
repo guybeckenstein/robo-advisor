@@ -413,9 +413,10 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
                 if start_date < min_date:
                     start_date = min_date
                 df = get_israeli_symbol_data('get_past_10_years_history', start_date, end_date, stock, is_index_type)
+            except ValueError:
+                print('Invalid start_date or end_date format, should be %Y-%m-%d')
             except:
                 print("Error in stock: " + stock)
-                continue
             # list to DateFrame
             df = pd.DataFrame(df)
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
@@ -428,6 +429,8 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
         else:
             try:
                 df = yf.download(stock, start=start_date, end=end_date)
+            except ValueError:
+                print('Invalid start_date or end_date format, should be %Y-%m-%d')
             except:
                 print("Error in stock: " + stock)
                 continue

@@ -17,8 +17,7 @@ from core.models import QuestionnaireA, QuestionnaireB
 from investment.models import Investment
 from service.util import web_actions, data_management
 from service.util.data_management import get_stocks_from_json_file
-from .forms import UserRegisterForm, AccountMetadataForm, UpdateUserNameAndPhoneNumberForm, UpdateInvestorUserForm, \
-    PasswordChangingForm
+from accounts import forms
 from .models import InvestorUser
 
 
@@ -27,7 +26,7 @@ class SignUpView(SignupView):
     Creates new employee
     """
     template_name = 'account/registration.html'
-    form_class = UserRegisterForm
+    form_class = forms.UserRegisterForm
 
     def get(self, request, *args, **kwargs):
         # Use RequestContext instead of render_to_response from 3.0
@@ -74,7 +73,7 @@ def logout_view(request):
 @login_required
 def profile_main(request):
     if request.method == 'GET':
-        form: forms.ModelForm = AccountMetadataForm(instance=request.user, disabled_project=True)
+        form: forms.ModelForm = forms.AccountMetadataForm(instance=request.user, disabled_project=True)
     else:
         raise BadRequest
     context = {
@@ -95,9 +94,9 @@ def profile_account(request):
 @login_required
 def profile_account_details(request):
     if request.method == 'GET':
-        form: forms.ModelForm = UpdateUserNameAndPhoneNumberForm(instance=request.user)
+        form: forms.ModelForm = forms.UpdateUserNameAndPhoneNumberForm(instance=request.user)
     elif request.method == 'POST':
-        form: forms.ModelForm = UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
+        form: forms.ModelForm = forms.UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your account details have been updated successfully.')
@@ -112,7 +111,7 @@ def profile_account_details(request):
 
 
 class MyPasswordChangeForm(PasswordChangeView):
-    form_class = PasswordChangingForm
+    form_class = forms.PasswordChangingForm
     template_name = 'account/profile_account_password.html'
     success_url = reverse_lazy('profile_account')
 
@@ -141,13 +140,13 @@ def profile_investor(request):
     try:
         investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
         if request.method == 'GET':
-            form: forms.ModelForm = UpdateInvestorUserForm(
+            form: forms.ModelForm = forms.UpdateInvestorUserForm(
                 instance=investor_user,
                 investor_user_instance=investor_user,
                 disabled_project=True,
             )
         elif request.method == 'POST':
-            form: forms.ModelForm = UpdateInvestorUserForm(
+            form: forms.ModelForm = forms.UpdateInvestorUserForm(
                 request.POST,
                 investor_user_instance=investor_user,
                 instance=investor_user,
@@ -169,6 +168,7 @@ def profile_investor(request):
                         break  # In this case we should not continue iterating over the new-to-old-sorted investments
                     investment.save()
                 form.save()
+                investor_user.save()
                 messages.success(request, 'Your account details have been updated successfully.')
                 return redirect('capital_market_algorithm_preferences_form')
         else:
@@ -188,7 +188,7 @@ def profile_investor(request):
 # Checks
 def check_email(request):
     if request.method == 'POST':
-        form: forms.ModelForm = UserRegisterForm(request.POST)
+        form: forms.ModelForm = forms.UserRegisterForm(request.POST)
         print(form)
         context = {
             'field': as_crispy_field(form['email']),
@@ -197,7 +197,7 @@ def check_email(request):
         return render(request, 'partials/field.html', context)
     else:
         # If it's a GET request, return an empty form
-        form: forms.ModelForm = UserRegisterForm()
+        form: forms.ModelForm = forms.UserRegisterForm()
         context = {
             'field': as_crispy_field(form['email']),
             'valid': True
@@ -207,7 +207,7 @@ def check_email(request):
 
 def check_phone_number(request):
     if request.method == 'POST':
-        form: forms.ModelForm = UserRegisterForm(request.POST)
+        form: forms.ModelForm = forms.UserRegisterForm(request.POST)
         context = {
             'field': as_crispy_field(form['phone_number']),
             'valid': not form['phone_number'].errors
@@ -215,7 +215,7 @@ def check_phone_number(request):
         return render(request, 'partials/field.html', context)
     else:
 
-        form: forms.ModelForm = UserRegisterForm()
+        form: forms.ModelForm = forms.UserRegisterForm()
         context = {
             'field': as_crispy_field(form['phone_number']),
             'valid': True
