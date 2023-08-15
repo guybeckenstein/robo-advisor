@@ -6,7 +6,7 @@ import ta
 import yfinance as yf
 
 from watchlist.models import TopStock
-from . import plot_functions, helpers
+from . import plot_functions, helpers, data_management
 from ..config import settings
 
 
@@ -237,11 +237,13 @@ def save_stocks_stats_to_csv(data_stats_tuples):
 
 
 def save_top_stocks_img_to_db(top_stocks: list, sector_name: str):
+    #data_management.plot_research_graphs(path, sorted_data_tuple) TODO
     # Correct way to change value of a stock and its instance
-    top_stock: TopStock = TopStock.objects.filter(sector_name='').first()  # Gets a stock from a certain sector
-    saved_image_name: str = None  # TODO
-    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{saved_image_name}.png'
-    top_stock.save()
+    #top_stock: TopStock = TopStock.objects.filter(sector_name='').first()  # Gets a stock from a certain sector
+    #saved_image_name: str = None  # TODO
+    #top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{saved_image_name}.png'
+    #top_stock.save()
+    pass
 
 
 def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, filters=None,
@@ -267,11 +269,11 @@ def sort_good_stocks(all_data_tuples, filters):
     minCap, maxCap, minAnnualReturns, maxAnnualVolatility, minAnnualSharpe, top_stocks_numbers = filters
     minFiltersList = [0, 0, 1,
                       minAnnualReturns, 0, minAnnualSharpe,
-                      minAnnualReturns/12, 0, minAnnualSharpe/12,
+                      minAnnualReturns / 12, 0, minAnnualSharpe / 12,
                       minAnnualReturns, 0, minAnnualSharpe]
     maxFiltersList = [12000, 50, 500,
                       12000, maxAnnualVolatility, 500,
-                      12000, maxAnnualVolatility/12, 500,
+                      12000, maxAnnualVolatility / 12, 500,
                       12000, maxAnnualVolatility, 500]
     # TODO - add more filters later
     count = 0
@@ -311,6 +313,19 @@ def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval=
             sharpe = profit_return / volatility
 
     return profit_return, volatility, sharpe
+
+
+def get_all_best_stocks(filters):
+    path = settings.RESEARCH_RESULTS_LOCATION
+    sectors_list = helpers.get_sectors_names_list()
+    all_data_tuple = []
+    for sector_name in sectors_list:
+        data_tuple = find_good_stocks(sector_name)
+        sorted_data_tuple = sort_good_stocks(data_tuple, filters)
+        save_top_stocks_img_to_db(sorted_data_tuple, sector_name)
+        all_data_tuple.append(sorted_data_tuple)
+
+    return  all_data_tuple
 
 
 def get_stocks_data_for_research_by_group(group_of_stocks: str):

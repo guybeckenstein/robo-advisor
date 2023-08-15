@@ -1,9 +1,13 @@
+import os
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+
+
 
 RISK_MIN = 1
 RISK_MAX = 3

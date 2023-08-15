@@ -1,5 +1,8 @@
 import json
+from datetime import timezone
+from django.utils import timezone
 
+import pandas as pd
 from allauth.account.views import SignupView, LoginView
 from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
 from django import forms
@@ -98,6 +101,15 @@ def profile_account_details(request):
     elif request.method == 'POST':
         form: forms.ModelForm = forms.UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
         if form.is_valid():
+            try:
+                investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
+                current_datetime = timezone.now()
+                last_login = investor_user.user.last_login
+                if current_datetime.date() >= last_login.date():
+                    web_actions.save_three_user_graphs_as_png(request)
+            except Http404:
+                pass
+
             form.save()
             messages.success(request, 'Your account details have been updated successfully.')
             return redirect('profile_account')

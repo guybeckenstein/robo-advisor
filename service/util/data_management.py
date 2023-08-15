@@ -9,10 +9,10 @@ from typing import Tuple, List
 
 from django.db.models import QuerySet
 
+from accounts.models import InvestorUser
 from investment.models import Investment
 from ..impl.portfolio import Portfolio
 from ..impl.stats_models import StatsModels
-from ..impl.sector import Sector
 from ..impl.user import User
 from ..config import settings
 from . import helpers, console_handler, plot_functions
@@ -24,8 +24,7 @@ from django.conf import settings as django_settings
 # Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
-from django.db import models
-from accounts.models import InvestorUser
+
 
 
 ######################################################################################
@@ -759,7 +758,7 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
 
 def plot_research_graphs(path, data_tuple: Tuple):
     research_plt = plot_functions.plot_research_graphs(data_tuple)
-    plot_functions.save_graphs(research_plt, path)
+    #plot_functions.save_graphs(research_plt, path)
 
 
 def save_user_portfolio(user: User) -> None:
@@ -873,9 +872,22 @@ def get_collection_number() -> str:
     stocks = get_stocks_from_json_file()
     return console_handler.get_collection_number(stocks)
 
+
 def get_stocks_symbols_from_json_file(collection_number: int) -> list[str]:
     collection: dict = helpers.get_collection_json_data()[str(collection_number)][0]
     stocks_symbols: list[str] = collection['stocksSymbols']
     return stocks_symbols
+
+
+def is_today_date_change_from_last_updated_df(collection_number: int) -> bool:
+    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + collection_number + '/'
+    today = datetime.date.today()
+    formatted_date = today.strftime("%Y-%m-%d")
+    with open(__path + "lastUpdatedClosingPrice.txt", "r") as file:
+        lastUpdatedDateClosingPrices = file.read().strip()
+
+    if lastUpdatedDateClosingPrices != formatted_date:
+        return True
+
 
 

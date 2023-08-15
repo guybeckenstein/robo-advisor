@@ -85,9 +85,13 @@ if __name__ == '__main__':
             investment_amount: int = data_management.get_investment_amount()  # get from terminal
             if investment_amount is not None:
                 data_management.add_new_investment(login_name, investment_amount, db_type="json") # TODO
-
         elif selection == 3:
-
+            json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
+            collection_number = json_data['usersList'][login_name][0]['stocksCollectionNumber']
+            if data_management.is_today_date_change_from_last_updated_df(collection_number):
+                # update data
+                #data_management.get_user_from_db(login_id, login_name) # TODO
+                pass
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/sectors_component.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/stocks_component.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/yield_graph.png')
@@ -175,21 +179,9 @@ if __name__ == '__main__':
 
 
                     sector = "US stocks indexes"
-
-                    filters = [0, 1000000000000, 5, 30, 0.6, 8]
-
-                    data_tuple = research.find_good_stocks(sector=sector)
-                    #research.save_stocks_stats_to_csv(data_tuple)
-                   # sort
-                    sorted_data_tuple = research.sort_good_stocks(data_tuple, filters)
-
-
-                    # save csv TODO
-
-
-                    # save images TODO
-                    path = settings.RESEARCH_RESULTS_LOCATION
-                    data_management.plot_research_graphs(path, sorted_data_tuple)
+                    research.find_good_stocks()
+                    filters = [0, 1000000000000, 5, 30, 0.6, 20] # TODO
+                    all_data_tuple = research.get_all_best_stocks(filters)
 
                     pass
 

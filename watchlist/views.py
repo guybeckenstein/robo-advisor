@@ -5,7 +5,7 @@ from django.db.models import QuerySet
 from django.shortcuts import render
 
 from service.config import settings
-from service.util import data_management, research
+from service.util import data_management, research, helpers
 from watchlist.forms import DiscoverStocksForm
 from watchlist.models import TopStock
 
@@ -35,9 +35,11 @@ def chosen_stock(request):
             ml_model = int(data.get('ml_model', None)) - 1
             ml_model = settings.MACHINE_LEARNING_MODEL[ml_model]
         symbol = data.get('symbol', None)
+        description = data.get('symbol', None)
+        symbol = helpers.get_symbol_by_description(description)
         start_date = data.get('start_date', None)
         end_date = data.get('end_date', None)
-        # Run backend-service methods - it creates two differnt images (using Matplotlib)
+        # Run backend-service methods - it creates two different images (using Matplotlib)
         models_data: dict = data_management.get_models_data_from_collections_file()
         forecast_plt = research.forecast_specific_stock(
             stock=symbol,

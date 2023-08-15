@@ -1,8 +1,7 @@
 from service.util import data_management
 from service.config import settings
-
 if __name__ == '__main__':
-
+    pass
     # TODO update stocks.json file according to the stocks in research_data
     # keep collection 1 as it is
 

@@ -650,6 +650,15 @@ def get_description_by_symbol(symbol):
     return description
 
 
+def get_symbol_by_description(description):
+    all_stocks_Data = get_all_stocks_table()
+    try:
+        symbol = all_stocks_Data.loc[all_stocks_Data['description'] == str(description), 'Symbol'].item()
+    except:
+        symbol = None
+    return symbol
+
+
 def get_stocks_symbols_list_by_sector(sector):
     all_stocks_Data = get_all_stocks_table()
     stocks_list = all_stocks_Data.loc[all_stocks_Data['sector'] == sector, 'Symbol'].tolist()
@@ -772,3 +781,12 @@ def get_symbols_names_list() -> list[str]:
     all_stocks_Data: pd.DataFrame = get_all_stocks_table()
     symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
     return symbols_list
+
+
+def get_descriptions_list() -> list[str]:
+    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
+    descriptions_list: list[str] = all_stocks_Data['description'].unique().tolist()
+    return descriptions_list
+
+
+

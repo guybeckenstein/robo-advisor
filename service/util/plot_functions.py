@@ -396,15 +396,15 @@ def plot_price_forecast(stocks_symbols, description, df: pd.DataFrame, annual_re
     if plt_instance is not None:
         return plt_instance
     df[df.columns[0]].plot()
-    forecast_short_time = (((df['label'][-300:].pct_change().mean() +1) ** 252) - 1) * 100
+    forecast_short_time = (((df['label'][-500:].pct_change().mean() +1) ** 252) - 1) * 100
     df['Forecast'].plot()
     plt.title(f"{description} Stock Price Forecast", pad=10)
     # add text box with annual returns value
     plt.figtext(
         x=0.15,
         y=0.75,
-        s=f"Annual Return: {str(round(annual_returns, 2))}%\n"
-        f"Annual forecast: {str(round(forecast_short_time, 2))}%\n"
+        s=f"average annual Return: {str(round(annual_returns, 2))}%\n"
+        f"forecast Annual return: {str(round(forecast_short_time, 2))}%\n"
     )
 
     plt.legend(loc=4)
