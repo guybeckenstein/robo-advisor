@@ -1,13 +1,7 @@
 from impl.user import User
-from service.util import data_management, research, helpers
+from service.util import data_management, research
 from service.config import settings
 
-
-def get_models_data_and_forecast_specific_stock():
-    models_data: dict = data_management.get_models_data_from_collections_file()
-    plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
-                                                    models_data, num_of_years_history)
-    return plt_instance
 
 
 if __name__ == '__main__':
@@ -16,6 +10,7 @@ if __name__ == '__main__':
     exit_loop_operation = 8
     login_id: int = 1
     login_name: str = 'yarden'  # data_management.get_name()
+
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
@@ -109,7 +104,9 @@ if __name__ == '__main__':
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     machine_learning_model = data_management.get_machine_learning_model()
-                    plt_instance = get_models_data_and_forecast_specific_stock()
+                    models_data: dict = data_management.get_models_data_from_collections_file()
+                    plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
+                                                                    models_data, num_of_years_history)
                     operation = '_forecast'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
@@ -176,13 +173,17 @@ if __name__ == '__main__':
                     # helpers.save_usa_indexes_table()
                     # helpers.save_all_stocks()
 
-                    sector = "US stocks"
-                    filters = [0, 1000000000000, 5, 15, 0.6, 10]
+
+                    sector = "US stocks indexes"
+
+                    filters = [0, 1000000000000, 5, 30, 0.6, 8]
 
                     data_tuple = research.find_good_stocks(sector=sector)
                     #research.save_stocks_stats_to_csv(data_tuple)
                    # sort
                     sorted_data_tuple = research.sort_good_stocks(data_tuple, filters)
+
+
                     # save csv TODO
 
 
@@ -200,3 +201,5 @@ if __name__ == '__main__':
                 break
         data_management.main_menu()
         selection = data_management.selected_menu_option()
+
+

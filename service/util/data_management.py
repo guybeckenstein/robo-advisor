@@ -758,6 +758,7 @@ def plot_research_graphs(path, data_tuple: Tuple):
     research_plt = plot_functions.plot_research_graphs(data_tuple)
     plot_functions.save_graphs(research_plt, path)
 
+
 def save_user_portfolio(user: User) -> None:
     # Creating directories
     curr_user_directory = settings.USER_IMAGES + user.id

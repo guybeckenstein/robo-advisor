@@ -387,21 +387,17 @@ def update_daily_change_with_machine_learning(returns_stock, table_index, models
 
 def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_years_history, save_to_csv,
                            start_date: str = None, end_date: str = None):
-    min_date = "2013-08-01"
+    # for israeli stocks
+    today = datetime.datetime.now()
+    min_start_year = today.year - 10
+    min_start_month = today.month
+    min_start_day = today.day
+    min_date = str(min_start_year) + "-" + str(min_start_month) + "-" + str(min_start_day)
+
     frame = {}
     yf.pdr_override()
     if start_date is None or end_date is None:
         start_date, end_date = get_from_and_to_dates(num_of_years_history)
-    else:
-        # for israel stocks
-        today = datetime.datetime.now()
-        min_start_year = today.year
-        min_start_month = today.month
-        min_start_day = today.day
-        end_year = today.year
-        end_month = today.month
-        end_day = today.day
-        min_date = str(min_start_year) + "-" + str(min_start_month) + "-" + str(min_start_day)
     file_url = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocks_names):
@@ -571,7 +567,7 @@ def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):
     usa_stocks_table = get_usa_stocks_table()
     usa_indexes_table = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
-        if stock.isnumeric():
+        if type(stock) == int or stock.isnumeric():
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False

@@ -3,13 +3,16 @@ from crispy_forms.layout import Layout, HTML, Field, Submit
 from django import forms
 from django.urls import reverse_lazy
 
+from service.config import settings
 from service.util import helpers
 
 
+
 def get_indexes_tuple(size: int) -> list[tuple]:
+    ml_models_str = settings.MACHINE_LEARNING_MODEL
     res: list = []
     for i in range(1, size + 1):
-        str_i = str(i)
+        str_i = ml_models_str[i - 1]
         curr_tuple = (str_i, str_i)
         res.append(curr_tuple)
     return res

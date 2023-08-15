@@ -30,7 +30,10 @@ def chosen_stock(request):
         form: forms.ModelForm = DiscoverStocksForm()
         # Form data
         data = request.GET
-        ml_model = int(data.get('ml_model', None)) - 1
+        ml_model = data.get('ml_model', None)
+        if type(ml_model) == int or ml_model.isnumeric():
+            ml_model = int(data.get('ml_model', None)) - 1
+            ml_model = settings.MACHINE_LEARNING_MODEL[ml_model]
         symbol = data.get('symbol', None)
         start_date = data.get('start_date', None)
         end_date = data.get('end_date', None)
@@ -38,7 +41,7 @@ def chosen_stock(request):
         models_data: dict = data_management.get_models_data_from_collections_file()
         forecast_plt = research.forecast_specific_stock(
             stock=symbol,
-            machine_learning_model=settings.MACHINE_LEARNING_MODEL[ml_model],
+            machine_learning_model=str(ml_model),
             models_data=models_data,
             num_of_years_history=None,
             start_date=start_date,

@@ -196,6 +196,7 @@ def find_good_stocks(sector="US stocks indexes"):
 
     return all_data_tuples
 
+
 def save_stocks_stats_to_csv(data_stats_tuples):
     # Define the list of stock symbols you want to update
     symbols_to_update = data_stats_tuples[0][0].index.tolist()
@@ -226,55 +227,71 @@ def save_stocks_stats_to_csv(data_stats_tuples):
             updated_data.append(row)
 
     # Write the updated data back to the CSV file
-    with open(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data2.csv", "w", newline="", encoding="utf-8") as outfile:
+    with open(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data2.csv", "w", newline="",
+              encoding="utf-8") as outfile:
         writer = csv.DictWriter(outfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(updated_data)
 
     print("CSV file updated successfully.")
 
+
 def save_top_stocks_img_to_db(top_stocks: list, sector_name: str):
-    # TODO
     # Correct way to change value of a stock and its instance
     top_stock: TopStock = TopStock.objects.filter(sector_name="").first()  # Gets a stock from a certain sector
     saved_image_name: str = None  # TODO
     top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{saved_image_name}.png'
     top_stock.save()
 
-def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, filters=None) -> list:
-    minCap , maxCap , minAnnualReturns , maxVolatility , minSharpe, top_stocks_numbers = filters
+
+def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, filters=None,
+                                  top_stocks_numbers=10) -> list:
     if filters is not None:
-        """data_frame = data_frame[(data_frame["MarketCap"] >= minCap) & (data_frame["MarketCap"] <= maxCap)]
-        data_frame = data_frame[(data_frame["AnnualReturns"] >= minAnnualReturns)]
-        data_frame = data_frame[(data_frame["Volatility"] <= maxVolatility)]
-        data_frame = data_frame[(data_frame["Sharpe"] >= minSharpe)]"""
+        min_value = filters[0]
+        max_value = filters[1]
 
     if row_selected == 0:
+        # filters
+        data_frame = data_frame[(data_frame >= min_value) & (data_frame <= max_value)]
         return data_frame.sort_values(ascending=ascending).head(top_stocks_numbers)
     else:
         # Get the last row (latest date)
         last_row = data_frame.iloc[-1]
-        return data_frame.iloc[row_selected].sort_values(ascending=ascending).head(top_stocks_numbers)
+        data_frame = data_frame.iloc[row_selected]
+        # filters
+        data_frame = data_frame[(data_frame >= min_value) & (data_frame <= max_value)]
+        return data_frame.sort_values(ascending=ascending).head(top_stocks_numbers)
 
 
 def sort_good_stocks(all_data_tuples, filters):
+    minCap, maxCap, minAnnualReturns, maxAnnualVolatility, minAnnualSharpe, top_stocks_numbers = filters
+    minFiltersList = [0, 0, 1,
+                      minAnnualReturns, 0, minAnnualSharpe,
+                      minAnnualReturns/12, 0, minAnnualSharpe/12,
+                      minAnnualReturns, 0, minAnnualSharpe]
+    maxFiltersList = [12000, 50, 500,
+                      12000, maxAnnualVolatility, 500,
+                      12000, maxAnnualVolatility/12, 500,
+                      12000, maxAnnualVolatility, 500]
+    # TODO - add more filters later
+    count = 0
     # sort values and filters
     ascending_list = [False, True, False]
+    row_selected = [0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, 0]
+
     all_data_sorted = []
     for i in range(len(all_data_tuples)):
         for j in range(len(all_data_tuples[i])):
-            if i ==1 or i==2:
-                row_selected = -1
-            else:
-                row_selected = 0
             all_data_sorted.append(get_sorted_list_by_parameters(all_data_tuples[i][j],
-                                                                 row_selected=row_selected,
+                                                                 row_selected=row_selected[count],
                                                                  ascending=ascending_list[j],
-                                                                 filters=filters))
+                                                                 filters=[minFiltersList[count], maxFiltersList[count]],
+                                                                 top_stocks_numbers=top_stocks_numbers))
+            count += 1
     return all_data_sorted
 
-def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval="Y"):
 
+def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval="Y"):
     if is_forecast_mode:
         # TODO , MAYBE ADD MACHINE LEARNING OPTION
         returns_annual_forecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
