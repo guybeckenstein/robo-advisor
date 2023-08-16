@@ -27,116 +27,116 @@ from accounts.models import InvestorUser
 
 ######################################################################################
 # update DB tables
-def update_all_tables(numOfYearsHistory, is_daily_running=True):  # build DB for withdraw
+def update_all_tables(num_of_years_history, is_daily_running=True):  # build DB for withdraw
     today = datetime.date.today()
     formatted_date = today.strftime("%Y-%m-%d")
     collections_json_data = helpers.get_collection_json_data()
     for i in range(1, len(collections_json_data)):
         curr_collection = collections_json_data[str(i)][0]
-        stocksSymbols = curr_collection['stocksSymbols']
-        __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i)) + '/'  # where to save the datasets
-        update_closing_prices_tables(formatted_date, stocksSymbols, numOfYearsHistory, __path, is_daily_running)
-        update_data_frame_tables(formatted_date, curr_collection, __path, collections_json_data, str(i),
+        stocks_symbols = curr_collection['stocksSymbols']
+        path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i)) + '/'  # where to save the datasets
+        update_closing_prices_tables(formatted_date, stocks_symbols, num_of_years_history, path, is_daily_running)
+        update_data_frame_tables(formatted_date, curr_collection, path, collections_json_data, str(i),
                                  is_daily_running)
 
 
-def update_closing_prices_tables(formatted_date_today, stocksSymbols, numOfYearsHistory, __path, is_daily_running):
-    with open(__path + "lastUpdatedClosingPrice.txt", "r") as file:
-        lastUpdatedDateClosingPrices = file.read().strip()
+def update_closing_prices_tables(formatted_date_today, stocks_symbols, num_of_years_history, path, is_daily_running):
+    with open(path + "lastUpdatedClosingPrice.txt", "r") as file:
+        last_updated_date_closing_prices = file.read().strip()
 
-    if lastUpdatedDateClosingPrices != formatted_date_today or not is_daily_running:
-        helpers.convert_data_to_tables(__path, settings.CLOSING_PRICES_FILE_NAME,
-                                       stocksSymbols,
-                                       numOfYearsHistory, save_to_csv=True)
+    if last_updated_date_closing_prices != formatted_date_today or not is_daily_running:
+        helpers.convert_data_to_tables(path, settings.CLOSING_PRICES_FILE_NAME,
+                                       stocks_symbols,
+                                       num_of_years_history, save_to_csv=True)
 
-        with open(__path + "lastUpdatedClosingPrice.txt", "w") as file:
+        with open(path + "lastUpdatedClosingPrice.txt", "w") as file:
             file.write(formatted_date_today)
 
 
-def update_data_frame_tables(formatted_date_today, collection_json_data, __path, models_data, collection_num,
+def update_data_frame_tables(formatted_date_today, collection_json_data, path, models_data, collection_num,
                              is_daily_running=True):
     stocksSymbols = collection_json_data['stocksSymbols']
 
-    with open(__path + "lastUpdatedDftables.txt", "r") as file:
+    with open(path + "lastUpdatedDftables.txt", "r") as file:
         lastUpdatedDftables = file.read().strip()
     if lastUpdatedDftables != formatted_date_today or not is_daily_running:
         sectorsList = helpers.set_sectors(stocksSymbols, mode='regular')
-        closingPricesTable = get_closing_prices_table(__path, mode='regular')
+        closingPricesTable = get_closing_prices_table(path, mode='regular')
         pct_change_table = closingPricesTable.pct_change()
 
         # without maching learning
         # Markowitz
-        update_three_level_data_frame_tables(machingLearningOpt=0, modelName="Markowitz",
-                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table,
-                                             __path=__path, models_data=models_data, collection_num=collection_num)
+        update_three_level_data_frame_tables(machine_learning_opt=0, model_name="Markowitz",
+                                             stocks_symbols=stocksSymbols, sectors_list=sectorsList,
+                                             closing_prices_table=closingPricesTable, pct_change_table=pct_change_table,
+                                             path=path, models_data=models_data, collection_num=collection_num)
         # Gini
-        update_three_level_data_frame_tables(machingLearningOpt=0, modelName="Gini",
-                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table,
-                                             __path=__path, models_data=models_data, collection_num=collection_num)
+        update_three_level_data_frame_tables(machine_learning_opt=0, model_name="Gini",
+                                             stocks_symbols=stocksSymbols, sectors_list=sectorsList,
+                                             closing_prices_table=closingPricesTable, pct_change_table=pct_change_table,
+                                             path=path, models_data=models_data, collection_num=collection_num)
 
         # Including maching learning
         pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
             pct_change_table, closingPricesTable.index, models_data)
         # Markowitz
-        update_three_level_data_frame_tables(machingLearningOpt=1, modelName="Markowitz",
-                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table,
-                                             __path=__path, models_data=models_data, collection_num=collection_num)
+        update_three_level_data_frame_tables(machine_learning_opt=1, model_name="Markowitz",
+                                             stocks_symbols=stocksSymbols, sectors_list=sectorsList,
+                                             closing_prices_table=closingPricesTable, pct_change_table=pct_change_table,
+                                             path=path, models_data=models_data, collection_num=collection_num)
         # Gini
-        update_three_level_data_frame_tables(machingLearningOpt=1, modelName="Gini",
-                                             stocksSymbols=stocksSymbols, sectorsList=sectorsList,
-                                             closingPricesTable=closingPricesTable, pct_change_table=pct_change_table,
-                                             __path=__path, models_data=models_data, collection_num=collection_num)
+        update_three_level_data_frame_tables(machine_learning_opt=1, model_name="Gini",
+                                             stocks_symbols=stocksSymbols, sectors_list=sectorsList,
+                                             closing_prices_table=closingPricesTable, pct_change_table=pct_change_table,
+                                             path=path, models_data=models_data, collection_num=collection_num)
 
-        with open(__path + "lastUpdatedDftables.txt", "w") as file:
+        with open(path + "lastUpdatedDftables.txt", "w") as file:
             file.write(formatted_date_today)
 
 
-def update_three_level_data_frame_tables(machingLearningOpt, modelName, stocksSymbols, sectorsList,
-                                         closingPricesTable, pct_change_table, __path, models_data, collection_num):
+def update_three_level_data_frame_tables(machine_learning_opt, model_name, stocks_symbols, sectors_list,
+                                         closing_prices_table, pct_change_table, path, models_data, collection_num):
     collection_data = models_data[collection_num][0]
-    LIMIT_PERCENT_MEDIUM_RISK_STOCKS = collection_data['LIMIT_PERCENT_MEDIUM_RISK_STOCKS']
-    LIMIT_PERCENT_MEDIUM_RISK_COMMODITY = collection_data['LIMIT_PERCENT_MEDIUM_RISK_COMMODITY']
-    LIMIT_PERCENT_LOW_RISK_STOCKS = collection_data['LIMIT_PERCENT_LOW_RISK_STOCKS']
-    LIMIT_PERCENT_LOW_RISK_COMMODITY = collection_data['LIMIT_PERCENT_LOW_RISK_COMMODITY']
+    limit_percent_medium_risk_stocks = collection_data['LIMIT_PERCENT_MEDIUM_RISK_STOCKS']
+    limit_percent_medium_risk_commodity = collection_data['LIMIT_PERCENT_MEDIUM_RISK_COMMODITY']
+    limit_percent_low_risk_stocks = collection_data['LIMIT_PERCENT_LOW_RISK_STOCKS']
+    limit_percent_low_risk_commodity = collection_data['LIMIT_PERCENT_LOW_RISK_COMMODITY']
     # high risk
-    update_specific_data_frame_table(is_machine_learning=machingLearningOpt, model_name=modelName,
-                                     stocks_symbols=stocksSymbols,
-                                     sectors=sectorsList, levelOfRisk="high", max_percent_commodity=1,
-                                     max_percent_stocks=1, closing_prices_table=closingPricesTable,
+    update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
+                                     stocks_symbols=stocks_symbols,
+                                     sectors=sectors_list, levelOfRisk="high", max_percent_commodity=1,
+                                     max_percent_stocks=1, closing_prices_table=closing_prices_table,
                                      pct_change_table=pct_change_table,
-                                     __path=__path, models_data=models_data)
+                                     path=path, models_data=models_data)
     # medium risk
-    update_specific_data_frame_table(is_machine_learning=machingLearningOpt, model_name=modelName,
-                                     stocks_symbols=stocksSymbols,
-                                     sectors=sectorsList, levelOfRisk="medium",
-                                     max_percent_commodity=LIMIT_PERCENT_MEDIUM_RISK_COMMODITY,
-                                     max_percent_stocks=LIMIT_PERCENT_MEDIUM_RISK_STOCKS,
-                                     closing_prices_table=closingPricesTable, pct_change_table=pct_change_table,
-                                     __path=__path, models_data=models_data)
+    update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
+                                     stocks_symbols=stocks_symbols,
+                                     sectors=sectors_list, levelOfRisk="medium",
+                                     max_percent_commodity=limit_percent_medium_risk_commodity,
+                                     max_percent_stocks=limit_percent_medium_risk_stocks,
+                                     closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
+                                     path=path, models_data=models_data)
     # low risk
-    update_specific_data_frame_table(is_machine_learning=machingLearningOpt, model_name=modelName,
-                                     stocks_symbols=stocksSymbols,
-                                     sectors=sectorsList, levelOfRisk="low",
-                                     max_percent_commodity=LIMIT_PERCENT_LOW_RISK_COMMODITY,
-                                     max_percent_stocks=LIMIT_PERCENT_LOW_RISK_STOCKS,
-                                     closing_prices_table=closingPricesTable, pct_change_table=pct_change_table,
-                                     __path=__path, models_data=models_data)
+    update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
+                                     stocks_symbols=stocks_symbols,
+                                     sectors=sectors_list, levelOfRisk="low",
+                                     max_percent_commodity=limit_percent_low_risk_commodity,
+                                     max_percent_stocks=limit_percent_low_risk_stocks,
+                                     closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
+                                     path=path, models_data=models_data)
 
 
 def update_specific_data_frame_table(is_machine_learning, model_name, stocks_symbols, sectors, levelOfRisk,
                                      max_percent_commodity, max_percent_stocks, closing_prices_table, pct_change_table,
-                                     __path, models_data):
+                                     path, models_data):
     num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
-    min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
-    gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
+    min_num_por_simulation: int = (models_data["models_data"]['min_num_por_simulation'])
+    gini_v_value: float = float(models_data["models_data"]['GINI_V_VALUE'])
 
     if is_machine_learning:
-        locationForSaving = __path + settings.MACHINE_LEARNING_LOCATION
+        locationForSaving = path + settings.MACHINE_LEARNING_LOCATION
     else:
-        locationForSaving = __path + settings.NON_MACHINE_LEARNING_LOCATION
+        locationForSaving = path + settings.NON_MACHINE_LEARNING_LOCATION
 
     if max_percent_commodity <= 0:
         stock_sectors = helpers.setStockSectors(stocks_symbols, sectors)
@@ -245,6 +245,7 @@ def changing_portfolio_investments_treatment_console(selected_user: User, invest
                            entered_as_an_automatic_investment=True, db_type="json", investments=investments)
 
 
+
 def changing_portfolio_investments_treatment_web(investor_user: InvestorUser, portfolio: Portfolio,
                                                  investments: QuerySet[Investment]) -> None:
     try:
@@ -275,14 +276,14 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     Get extended data information from DB (CSV tables)
     """
 
-    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
+    path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
     if mode == 'regular':
         sectors_data = get_json_data(settings.SECTORS_JSON_NAME)
     else:
         sectors_data = get_json_data('../../' + settings.SECTORS_JSON_NAME)
     sectors: list = helpers.set_sectors(stocks_symbols, mode)
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(__path, mode=mode)
-    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option], __path, mode=mode)
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(path, mode=mode)
+    df = get_three_levels_df_tables(is_machine_learning, settings.MODEL_NAME[model_option], path, mode=mode)
     three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option])
     best_stocks_weights_column = helpers.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
                                                                  closing_prices_table.pct_change())
@@ -297,15 +298,11 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
 
 
 # Tables according to stocks symbols
-def get_closing_prices_table(__path, mode: str) -> pd.DataFrame:
+def get_closing_prices_table(path, mode: str) -> pd.DataFrame:
     if mode == 'regular':
-        closing_prices_table = pd.read_csv(
-            __path + 'closing_prices.csv', index_col=0
-        )
+        closing_prices_table = pd.read_csv(filepath_or_buffer=f'{path}closing_prices.csv', index_col=0)
     else:
-        closing_prices_table = pd.read_csv(
-            '../../' + __path + 'closing_prices.csv', index_col=0
-        )
+        closing_prices_table = pd.read_csv(filepath_or_buffer=f'../../{path}closing_prices.csv', index_col=0)
         # Check if there's a key with a numeric value in the table
     numeric_keys = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
     if len(numeric_keys) > 0:
@@ -317,15 +314,17 @@ def get_closing_prices_table(__path, mode: str) -> pd.DataFrame:
     return closing_prices_table
 
 
-def get_three_level_df_tables(is_machine_learning: int, model_name, collection_path: str, mode: str) -> list:
+def get_three_levels_df_tables(is_machine_learning: int, model_name, collection_path: str, mode: str) -> list[pd.DataFrame]:
     """
     Get the three level df tables according to machine learning option and model name
     """
-    low_risk_df_table = get_df_table(is_machine_learning, model_name, "low", collection_path, mode=mode)
-    medium_risk_df_table = get_df_table(is_machine_learning, model_name, "medium", collection_path, mode=mode)
-    high_risk_df_table = get_df_table(is_machine_learning, model_name, "high", collection_path, mode=mode)
+    three_levels_df_tables: list[pd.DataFrame] = [
+        get_df_table(is_machine_learning, model_name, risk, collection_path, mode=mode) for risk in [
+            'low', 'medium', 'high'
+        ]
+    ]
 
-    return [low_risk_df_table, medium_risk_df_table, high_risk_df_table]
+    return three_levels_df_tables
 
 
 def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, collection_path: str,
@@ -333,21 +332,17 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, colle
     """
     get specific df table from csv file according to machine learning option, model name and level of risk
     """
-    basic_path = collection_path
     if is_machine_learning:
-        basic_path += settings.MACHINE_LEARNING_LOCATION
+        collection_path += settings.MACHINE_LEARNING_LOCATION
     else:
-        basic_path += settings.NON_MACHINE_LEARNING_LOCATION
+        collection_path += settings.NON_MACHINE_LEARNING_LOCATION
     if mode == 'regular':
-        df_table = pd.read_csv(basic_path + model_name + '_df_' + level_of_risk + '.csv'
-                               )
+        df: pd.DataFrame = pd.read_csv(f'{collection_path}{model_name}_df_{level_of_risk}.csv')
     else:
-        df_table = pd.read_csv(
-            '../../' + basic_path + model_name + '_df_' + level_of_risk + '.csv'
-        )
-    df_table = df_table.iloc[:, 1:]
-    df_table = df_table.apply(pd.to_numeric, errors='coerce')
-    return df_table
+        df: pd.DataFrame = pd.read_csv(f'../../{collection_path}{model_name}_df_{level_of_risk}.csv')
+    df = df.iloc[:, 1:]
+    df = df.apply(pd.to_numeric, errors='coerce')
+    return df
 
 
 def get_all_users() -> List:
@@ -389,9 +384,9 @@ def get_user_from_db(user_id: int, user_name: str):
         stocks_collection_number = "1"
     sectors = helpers.set_sectors(stocks_symbols)
 
-    __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
+    path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{stocks_collection_number}/'
 
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(__path=__path, mode='regular')
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path, mode='regular')
     portfolio: Portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
         sectors=sectors,
@@ -809,9 +804,9 @@ def save_user_portfolio(user: User) -> None:
     df['yield__selected_percent'] = df['col']
     df['yield__selected_percent_forecast'] = df["Forecast"]
 
-    stats_details_tuple = portfolio.get_portfolio_stats()
+    stats_details_tuple: tuple[float] = portfolio.get_portfolio_stats()
     plt_yield_graph = plot_functions.plot_investment_portfolio_yield(
-        user_name=user.name, table=df, stats_details_tuple=stats_details_tuple, sectors=portfolio.sectors
+        user_name=user.name, df=df, stats_details_tuple=stats_details_tuple, sectors=portfolio.sectors
     )
     plot_functions.save_graphs(plt_yield_graph, file_name=f'{curr_user_directory}/yield_graph')
 

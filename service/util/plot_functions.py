@@ -248,9 +248,9 @@ def plot_distribution_of_portfolio(yields) -> plt:
     plt.subplots(figsize=FIG_SIZE1)
     plt.subplots_adjust(bottom=BOTTOM)
 
-    monthly_yields: list[pd.core.series.Series] = [None] * len(yields)  # monthly yield change
-    monthly_changes: list[pd.core.series.Series] = [None] * len(yields)  # yield changes
-    df_describes: list[pd.core.series.Series] = [None] * len(yields)  # describe of yield changes
+    monthly_yields: list[pd.Series] = [None] * len(yields)  # monthly yield change
+    monthly_changes: list[pd.Series] = [None] * len(yields)  # yield changes
+    df_describes: list[pd.Series] = [None] * len(yields)  # describe of yield changes
 
     for i in range(len(yields)):
         # Convert the index to datetime if it's not already in the datetime format
@@ -258,10 +258,10 @@ def plot_distribution_of_portfolio(yields) -> plt:
         if not pd.api.types.is_datetime64_any_dtype(curr_yield.index):
             yields[i].index = pd.to_datetime(curr_yield.index)
 
-        monthly_yields[i]: pd.core.series.Series = curr_yield.resample('M').first()
-        monthly_changes[i]: pd.core.series.Series = monthly_yields[i].pct_change().dropna() * 100
-        df_describes[i]: pd.core.series.Series = monthly_changes[i].describe().drop(["count"], axis=0)
-        df_describes[i]: pd.core.series.Series = df_describes[i].rename(index={'std': 'Std. Deviation'})
+        monthly_yields[i]: pd.Series = curr_yield.resample('M').first()
+        monthly_changes[i]: pd.Series = monthly_yields[i].pct_change().dropna() * 100
+        df_describes[i]: pd.Series = monthly_changes[i].describe().drop(["count"], axis=0)
+        df_describes[i]: pd.Series = df_describes[i].rename(index={'std': 'Std. Deviation'})
         df_describes[i].index = df_describes[i].index.str.capitalize()
         sns.distplot(
             a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False, label=labels[i],
@@ -305,7 +305,8 @@ def plot_distribution_of_portfolio(yields) -> plt:
     return plt
 
 
-def plot_investment_portfolio_yield(user_name, table, stats_details_tuple: tuple, sectors: list[Sector]):
+def plot_investment_portfolio_yield(user_name: str, df: pd.DataFrame, stats_details_tuple: tuple[float],
+                                    sectors: list[Sector]):
     plt.figure()
     annual_returns, volatility, sharpe, max_loss, total_change = stats_details_tuple
     plt.style.use("seaborn-dark")
@@ -318,7 +319,7 @@ def plot_investment_portfolio_yield(user_name, table, stats_details_tuple: tuple
     labels: list[str] = ['Returns', 'Forecast']
 
     for i in range(len(tables)):
-        table[f'yield__{tables[i]}'].plot(
+        df[f'yield__{tables[i]}'].plot(
             figsize=FIG_SIZE1, grid=GRID, color=colors[i], linewidth=2, label=labels[i], legend=True,
             linestyle=LINE_STYLE
         )

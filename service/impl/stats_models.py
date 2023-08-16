@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from ..util import helpers
+from service.util import helpers
 
 
 class StatsModels:
@@ -39,8 +39,9 @@ class StatsModels:
                 max_percent_commodity, max_percent_stocks
             )
 
-    def get_optimal_portfolio_by_markowitz(self, num_por_simulation, min_num_por_simulation,
-                                           pct_change_table, stocks_symbols, max_percent_commodity, max_percent_stocks):
+    def get_optimal_portfolio_by_markowitz(self, num_por_simulation: int, min_num_por_simulation: int,
+                                           pct_change_table: pd.DataFrame, stocks_symbols: list[str],
+                                           max_percent_commodity, max_percent_stocks):
 
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
@@ -55,9 +56,9 @@ class StatsModels:
         cov_annual = cov_daily * 254
 
         # empty lists to store returns, volatility and weights of imaginary portfolios
-        port_returns: list = []
-        port_volatility: list = []
-        sharpe_ratio: list = []
+        port_returns: list[np.ndarray] = []
+        port_volatility: list[np.ndarray] = []
+        sharpe_ratio: list[np.ndarray] = []
         stock_weights: list = []
 
         # set the number of combinations for imaginary portfolios
@@ -96,9 +97,9 @@ class StatsModels:
                 single_portfolio += 1
                 continue  # Skip this portfolio and generate a new one
 
-            returns = np.dot(weights, returns_annual)
-            volatility = np.sqrt(np.dot(weights.T, np.dot(cov_annual, weights)))
-            sharpe = returns / volatility
+            returns: np.ndarray = np.dot(weights, returns_annual)
+            volatility: np.ndarray = np.sqrt(np.dot(weights.T, np.dot(cov_annual, weights)))
+            sharpe: np.ndarray = returns / volatility
             sharpe_ratio.append(sharpe)
             port_returns.append(returns * 100)
             port_volatility.append(volatility * 100)
