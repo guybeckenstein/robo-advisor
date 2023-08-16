@@ -1,3 +1,4 @@
+from service.config import settings
 from service.util import helpers
 from watchlist.models import TopStock
 
@@ -16,7 +17,7 @@ class Migration(migrations.Migration):
                 team_member = TopStock(
                     id=i + 1,
                     sector_name=sector_name,
-                    img_src='',
+                    img_src=f'{settings.RESEARCH_TOP_STOCKS_IMAGES}top_stocks_{sector_name}.png',
                     img_alt=f'{sector_name} Sector Image',
                 )
                 team_member.save()

@@ -130,8 +130,8 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
                                      max_percent_commodity, max_percent_stocks, closing_prices_table, pct_change_table,
                                      path, models_data):
     num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
-    min_num_por_simulation: int = (models_data["models_data"]['min_num_por_simulation'])
-    gini_v_value: float = float(models_data["models_data"]['GINI_V_VALUE'])
+    min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
+    gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
 
     if is_machine_learning:
         locationForSaving = path + settings.MACHINE_LEARNING_LOCATION
@@ -750,11 +750,10 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
     plot_functions.save_graphs(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO plot at site
 
 
-def plot_research_graphs(data_tuple_list: list, intersection_data_list: list):
+def plot_research_graphs(data_tuple_list: list, intersection_data_list: list, sector_name: int):
     path = settings.RESEARCH_IMAGES
     research_plt = plot_functions.plot_research_graphs(path, data_tuple_list, intersection_data_list)
-    # plot_functions.save_graphs(research_plt, path)
-
+    plot_functions.save_graphs(research_plt, path + "top_stocks_"f'{sector_name}')
 
 def save_user_portfolio(user: User) -> None:
     # Creating directories

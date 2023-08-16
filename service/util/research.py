@@ -237,13 +237,12 @@ def save_stocks_stats_to_csv(data_stats_tuples):
 
 
 def save_top_stocks_img_to_db(top_stocks: list, intersection_data_list: list, sector_name: str):
-    data_management.plot_research_graphs(top_stocks, intersection_data_list)
+    data_management.plot_research_graphs(top_stocks, intersection_data_list, sector_name)
     # Correct way to change value of a stock and its instance
-    #top_stock: TopStock = TopStock.objects.filter(sector_name='').first()  # Gets a stock from a certain sector
-    #saved_image_name: str = None  # TODO
-    #top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{saved_image_name}.png'
-    #top_stock.save()
-    pass
+    """top_stock: TopStock = TopStock.objects.filter(sector_name=sector_name).first()  # Gets a stock from a certain sector
+    prefix_str = "top_stocks_f"
+    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str}{sector_name}.png'
+    top_stock.save()"""
 
 
 def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, filters=None,

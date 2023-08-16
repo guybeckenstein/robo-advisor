@@ -2,8 +2,6 @@ from impl.user import User
 from service.util import data_management, research
 from service.config import settings
 
-
-
 if __name__ == '__main__':
     data_management.main_menu()
     selection = data_management.selected_menu_option()  # TODO get selection from page in site
@@ -11,7 +9,6 @@ if __name__ == '__main__':
     login_id: int = 1
     login_name: str = 'yarden'  # data_management.get_name()
     data_changed = False  # TODO - check if data changed in db
-
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
@@ -69,9 +66,9 @@ if __name__ == '__main__':
             )
 
             user: User = User(user_id=login_id,
-                        name=login_name,
-                        portfolio=new_portfolio,
-                        stocks_collection_number=stocks_collection_number)
+                              name=login_name,
+                              portfolio=new_portfolio,
+                              stocks_collection_number=stocks_collection_number)
             try:
                 investments_list = data_management.get_user_investments_from_json_file(login_name)
                 data_management.changing_portfolio_investments_treatment_console(user.portfolio, investments_list)
@@ -79,13 +76,13 @@ if __name__ == '__main__':
                 print(e)
             # add user to datasets (json file)
             user.update_json_file(settings.USERS_JSON_NAME)
-            data_management.save_user_portfolio(user) # TODO - separate thread
+            data_management.save_user_portfolio(user)  # TODO - separate thread
 
         elif selection == 2:
             # add new investment to user
             investment_amount: int = data_management.get_investment_amount()  # get from terminal
             if investment_amount is not None:
-                data_management.add_new_investment(login_name, investment_amount, db_type="json") # TODO
+                data_management.add_new_investment(login_name, investment_amount, db_type="json")  # TODO
         elif selection == 3:
             json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
             collection_number = json_data['usersList'][login_name][0]['stocksCollectionNumber']
@@ -176,10 +173,9 @@ if __name__ == '__main__':
                     # helpers.save_usa_indexes_table()
                     # helpers.save_all_stocks()
 
-
                     sector = "US stocks indexes"
                     research.find_good_stocks()
-                    filters = [0, 1000000000000, 5, 30, 0.6, 1500] # TODO
+                    filters = [0, 1000000000000, 4, 30, 0.5, 1500]  # TODO
                     all_data_tuple = research.get_all_best_stocks(filters)
 
                     pass
@@ -192,5 +188,3 @@ if __name__ == '__main__':
                 break
         data_management.main_menu()
         selection = data_management.selected_menu_option()
-
-

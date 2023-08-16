@@ -138,7 +138,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
         # User preferences
         ml_answer = user_preferences_instance.ml_answer
         model_answer = user_preferences_instance.model_answer
-        stocks_collection_number = "1"
+        stocks_collection_number = "1"  # TODO immediate fix!!!!, get from user
         stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
         db_tuple = data_management.get_extended_data_from_db(
             stocks_symbols, ml_answer, model_answer, stocks_collection_number, mode=mode
