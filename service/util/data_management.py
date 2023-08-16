@@ -24,6 +24,7 @@ from django.conf import settings as django_settings
 # Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
+from accounts.models import InvestorUser
 
 
 
