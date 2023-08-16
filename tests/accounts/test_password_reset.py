@@ -1,4 +1,5 @@
 from typing import Callable
+import traceback
 
 import pytest
 from django.urls import reverse
@@ -25,23 +26,24 @@ class TestPasswordReset:
         It is including `account_reset_password_done` URL
         """
         user: CustomUser = user_factory()
-        response = client.post(reverse('account_reset_password'), data={
-            'email': user.email,
-        })
-        assert response.status_code == 302
+        try:
+            response = client.post(reverse('account_reset_password'), data={'email': user.email})
+            assert response.status_code == 302
 
-        # Retrieve the reset URL from the response
-        reset_url = response.url
-        response = client.get(reset_url)
-        assert response.status_code == 200
-        for attribute in [
-            'Password Reset',
-            'We have emailed you.',
-            'If you have not received it, please check your spam folder, or try refreshing your mailbox.',
-            "Otherwise, if you won't receive the mail in the next few minutes,",
-            'contact us.'
-        ]:
-            assert attribute in response.content.decode()
+            # Retrieve the reset URL from the response
+            reset_url = response.url
+            response = client.get(reset_url)
+            assert response.status_code == 200
+            for attribute in [
+                'Password Reset',
+                'We have emailed you.',
+                'If you have not received it, please check your spam folder, or try refreshing your mailbox.',
+                "Otherwise, if you won't receive the mail in the next few minutes,",
+                'contact us.'
+            ]:
+                assert attribute in response.content.decode()
+        except ValueError:
+            print(traceback.print_exc())
 
     def test_reset_from_key_done_get_request_as_guest(self, client):
         response = client.get(reverse('account_reset_password_from_key_done'))

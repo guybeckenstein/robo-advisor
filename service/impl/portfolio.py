@@ -28,15 +28,15 @@ class Portfolio:
         self._stocks_weights = []
         self._closing_prices_table = []
         self._pct_change_table: pd.DataFrame = pd.DataFrame
-        self._selected_model = selected_model
-        self._is_machine_learning = is_machine_learning
-        self._annual_returns = 0.0
-        self._annual_volatility = 0.0
-        self._annual_sharpe = 0.0
+        self._selected_model: int = selected_model
+        self._is_machine_learning: int = is_machine_learning
+        self._annual_returns: float = 0.0
+        self._annual_volatility: float = 0.0
+        self._annual_sharpe: float = 0.0
 
     # Getters and setters
     @property
-    def risk_level(self):
+    def risk_level(self) -> int:
         return self._risk_level
 
     @risk_level.setter
@@ -44,7 +44,7 @@ class Portfolio:
         self._risk_level = value
 
     @property
-    def investment_amount(self):
+    def investment_amount(self) -> int:
         return self._total_investment_amount
 
     @investment_amount.setter
@@ -52,23 +52,23 @@ class Portfolio:
         self._total_investment_amount = value
 
     @property
-    def selected_model(self):
+    def selected_model(self) -> int:
         return self._selected_model
 
     @property
-    def machine_learning_opt(self):
+    def machine_learning_opt(self) -> int:
         return self._is_machine_learning
 
     @property
-    def stocks_symbols(self):
+    def stocks_symbols(self) -> list:
         return self._stocks_symbols
 
     @property
-    def stocks_weights(self):
+    def stocks_weights(self) -> list:
         return self._stocks_weights
 
     @property
-    def closing_prices_table(self):
+    def closing_prices_table(self) -> list:
         return self._closing_prices_table
 
     @property
@@ -88,7 +88,7 @@ class Portfolio:
         return self._annual_sharpe
 
     @property
-    def sectors(self):
+    def sectors(self)-> list[Sector]:
         return self._sectors
 
     # More methods
@@ -116,7 +116,8 @@ class Portfolio:
 
         return names
 
-    def get_portfolio_data(self):
+    def get_portfolio_data(self) -> tuple[int, int, list[str], list[str], list[float], list[float], float, float, float,
+    float, object, object, object, int, int]:
         return self._risk_level, self._total_investment_amount, self._stocks_symbols, self.get_sectors_names(), \
             self.get_sectors_weights(), self._stocks_weights, self._annual_returns, self.get_max_loss(), \
             self._annual_volatility, self._annual_sharpe, self.get_total_change(), self.get_monthly_change(), \

@@ -11,6 +11,7 @@ from investment.models import Investment
 def user_factory() -> Callable[[str, str, str, str, str], CustomUser]:
     def _create_user(**kwargs):
         user: CustomUser = CustomUser.objects.create(
+            id=kwargs.get('id', -1),
             first_name=kwargs.get('first_name', 'test'),
             last_name=kwargs.get('last_name', 'user'),
             phone_number=kwargs.get('phone_number', '+97221234567'),

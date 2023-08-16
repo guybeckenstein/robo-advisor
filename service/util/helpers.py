@@ -5,6 +5,7 @@ import json
 import math
 
 import boto3
+import sklearn.linear_model._base
 from bidi import algorithm as bidi_algorithm
 
 import numpy as np
@@ -136,46 +137,49 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
     df_final['label'] = df_final[forecast_col].shift(-forecast_out)
 
     # Added date
-    df = df_final
-    df['Date'] = table_index
+    df: pd.DataFrame = df_final
+    df['Date']: pd.Series = table_index
     # print(df)
-    X = np.array(df.drop(labels=['label', 'Date'], axis=1))
-    X = preprocessing.scale(X)
-    X_lately = X[-forecast_out:]
-    X = X[:-forecast_out]
+    X: np.ndarray = np.array(df.drop(labels=['label', 'Date'], axis=1))
+    X: np.ndarray = preprocessing.scale(X)
+    X_lately: np.ndarray = X[-forecast_out:]
+    X: np.ndarray = X[:-forecast_out]
     df.dropna(inplace=True)
-    y = np.array(df['label'])
+    y: np.ndarray = np.array(df['label'])
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=float(test_size_machine_learning))
-    clf = LinearRegression()
+    tpl: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] = train_test_split(
+        X, y, test_size=float(test_size_machine_learning)
+    )
+    X_train, X_test, y_train, y_test = tpl
+    clf: LinearRegression = LinearRegression()
     clf.fit(X_train, y_train)
-    confidence = clf.score(X_test, y_test)
+    confidence: np.float64 = clf.score(X_test, y_test)
     # print(confidence)
-    forecast_set = clf.predict(X_lately)
+    forecast_set: np.ndarray = clf.predict(X_lately)
     df['Forecast'] = np.nan
 
-    last_date = df.iloc[-1]['Date']
+    last_date: str = df.iloc[-1]['Date']
     last_date_datetime = pd.to_datetime(last_date)
-    last_unix = last_date_datetime.timestamp()
-    one_day = 86400
-    next_unix = last_unix + one_day
+    last_unix: pd.Timestamp = last_date_datetime.timestamp()
+    one_day: int = 86400
+    next_unix: float = last_unix + one_day
 
     for i in forecast_set:
-        next_date = datetime.datetime.fromtimestamp(next_unix)
+        next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
         next_unix += 86400
         df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-    col = df["Forecast"]
-    col = col.dropna()
+    col: pd.Series = df["Forecast"]
+    col = col.dropna()  # TODO: adding `inplace=True` may make the same effect
     df["label"] = df['col']
     df["label"].fillna(df["Forecast"], inplace=True)
 
-    forecast_returns_annual = (((1 + df['label'].mean()) ** 254) - 1) * 100
-    excepted_returns = (((1 + df['Forecast'].mean()) ** 254) - 1) * 100
+    forecast_returns_annual: np.float64 = (((1 + df['label'].mean()) ** 254) - 1) * 100
+    expected_returns: np.float64 = (((1 + df['Forecast'].mean()) ** 254) - 1) * 100
     if closing_prices_mode:
         forecast_returns_annual = (((1 + df['label'].pct_change().mean()) ** 254) - 1) * 100
-        excepted_returns = (((1 + df['Forecast'].pct_change().mean()) ** 254) - 1) * 100
-    return df, forecast_returns_annual, excepted_returns
+        expected_returns = (((1 + df['Forecast'].pct_change().mean()) ** 254) - 1) * 100
+    return df, forecast_returns_annual, expected_returns
 
 
 def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index,

@@ -173,8 +173,10 @@ def capital_market_investment_preferences_form(request):
             answer_3_value = int(form.cleaned_data['answer_3'])
             answers_sum = answer_1_value + answer_2_value + answer_3_value
             # Form instance
-            form.instance.user = request.user
-            form.instance.answers_sum = answers_sum
+            questionnaire_b: QuestionnaireB = form.instance
+            questionnaire_b.user = request.user
+            questionnaire_b.answers_sum = answers_sum
+            questionnaire_b.save()
             form.save()
 
             (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
