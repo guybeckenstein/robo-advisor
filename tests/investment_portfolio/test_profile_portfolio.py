@@ -1,9 +1,11 @@
 from typing import Callable
 
 import pytest
+from django.test import Client
 from django.urls import reverse
 
 from accounts.models import CustomUser
+from tests import helper_methods
 
 # Global constant variables
 DASHBOARD: str = "'s Dashboard"
@@ -12,42 +14,40 @@ ATTRIBUTES: list[str] = ['Account', 'Investor', 'Portfolio', 'Capital Market Pre
 
 @pytest.mark.django_db
 class TestProfilePortfolio:
-    def test_get_request_as_logged_user_without_investor_user(self, client, user_factory: Callable):
-        user: CustomUser = user_factory()
-        client.force_login(user)
-        response = client.get(reverse('profile_portfolio'))
-        assert response.status_code == 200
-        assert 'investment_portfolio/profile_portfolio.html' in response.templates[0].name
-        self.generic_assertions(response, user, 'Portfolio')
-        assert 'Please fill the form for more information' in response.content.decode()
+    def test_successful_get_request_as_logged_user_without_investor_user(self, client: Client, user_factory: Callable):
+        response, user = helper_methods.successful_get_request_as_logged_user(
+            client,
+            user_factory,
+            url_name='profile_portfolio',
+            template_src='investment_portfolio/profile_portfolio.html'
+        )
+        self.generic_assertions(response, user, 'Portfolio', ['Please fill the form for more information'])
 
-    def test_get_request_as_logged_user_with_investor_user(self, client, user_factory: Callable,
-                                                           investor_user_factory: Callable):
-        user: CustomUser = user_factory()
-        client.force_login(user)
+    def test_successful_get_request_as_logged_user_with_investor_user(self, client: Client, user_factory: Callable,
+                                                                      investor_user_factory: Callable):
+        user: CustomUser = helper_methods.login_user(client, user_factory)
         investor_user_factory(user=user)
         response = client.get(reverse('profile_portfolio'))
-        assert response.status_code == 200
-        assert 'investment_portfolio/profile_portfolio.html' in response.templates[0].name
-        self.generic_assertions(response, user, 'Portfolio')
-        for attribute in [
-            'Graph', 'Image', 'Sectors Component', 'Stocks Component', 'Yield',
-            f'/static/img/user/{user.id}/sectors_component.png',
-            f'/static/img/user/{user.id}/stocks_component.png',
-            f'/static/img/user/{user.id}/yield_graph.png',
-        ]:
-            assert attribute in response.content.decode()
+        helper_methods.assert_successful_status_code_for_get_request(
+            response, template_src='investment_portfolio/profile_portfolio.html'
+        )
+        self.generic_assertions(
+            response, user, 'Portfolio', more_attributes=[
+                'Graph', 'Image', 'Sectors Component', 'Stocks Component', 'Yield',
+                f'/static/img/user/{user.id}/sectors_component.png',
+                f'/static/img/user/{user.id}/stocks_component.png',
+                f'/static/img/user/{user.id}/yield_graph.png',
+            ]
+        )
 
 
-    def test_get_request_as_guest(self, client):
-        response = client.get(reverse('profile_portfolio'))
-        assert response.status_code == 302
+    def test_redirection_get_request_as_guest(self, client: Client):
+        helper_methods.redirection_get_request_as_guest(client, url_name='profile_portfolio')
 
     @staticmethod
-    def generic_assertions(response, user: CustomUser, webpage_title: str):
-        # Title
-        assert webpage_title in response.content.decode()
-        # Sidebar
-        assert f"{user.first_name}{DASHBOARD}" in response.content.decode()
-        for attribute in ATTRIBUTES:
-            assert attribute in response.content.decode()
+    def generic_assertions(response, user: CustomUser, webpage_title: str, more_attributes: list[str]):
+        # Title, Sidebar & More attributes
+        helper_methods.assert_attributes(
+            response,
+            attributes=more_attributes + [webpage_title, f"{user.first_name}{DASHBOARD}"] + ATTRIBUTES
+        )

@@ -2,71 +2,64 @@ from typing import Callable
 
 import pytest
 import pytz
+from django.template.response import TemplateResponse
+from django.test import Client
 from django.urls import reverse
 
 from accounts.models import CustomUser, InvestorUser
 from investment.models import Investment
+from tests import helper_methods
 
 # Global constant variables
 DASHBOARD: str = "'s Investments Page"
 ATTRIBUTES: list[str] = ['Investments History', 'Discover Stocks', 'Top Stocks']
 
+
 @pytest.mark.django_db
 class TestInvestmentsMyInvestmentsHistory:
-    def test_get_request_as_logged_user_without_investor_user(self, client, user_factory: Callable):
-        user: CustomUser = user_factory()
-        client.force_login(user)
-        response = client.get(reverse('my_investments_history'))
-        assert response.status_code == 200
-        assert 'investment/my_investments_history.html' in response.templates[0].name
-        generic_assertions(response, user, 'My Investments History')
-        assert 'Please fill the form for more information' in response.content.decode()
+    def test_successful_get_request_as_logged_user_without_investor_user(self, client: Client, user_factory: Callable):
+        response, user = helper_methods.successful_get_request_as_logged_user(
+            client,
+            user_factory,
+            url_name='my_investments_history',
+            template_src='investment/my_investments_history.html'
+        )
+        helper_methods.assert_attributes(response, attributes=ATTRIBUTES + [
+            'My Investments History', f'{user.first_name}{DASHBOARD}', 'Please fill the form for more information'
+        ])
 
-    def test_get_request_as_logged_user_with_investor_user(
-            self, client, user_factory: Callable, investor_user_factory: Callable, investment_factory: Callable
+    def test_successful_get_request_as_logged_user_with_investor_user(
+            self, client: Client, user_factory: Callable, investor_user_factory: Callable, investment_factory: Callable
     ):
-        user: CustomUser = user_factory()
-        client.force_login(user)
+        user: CustomUser = helper_methods.login_user(client, user_factory)
         investor_user: InvestorUser = investor_user_factory(user=user)
-        response = client.get(reverse('my_investments_history'))
-        assert response.status_code == 200
-        assert 'investment/my_investments_history.html' in response.templates[0].name
-        generic_assertions(response, user, 'My Investments History')
-        for value in ['Amount To Invest', 'Add Amount', 'Invest', 'No results!']:
-            assert value in response.content.decode()
+        response: TemplateResponse = client.get(reverse('my_investments_history'))
+        helper_methods.assert_successful_status_code_for_get_request(
+            response, template_src='investment/my_investments_history.html'
+        )
+        helper_methods.assert_attributes(response, attributes=ATTRIBUTES + [
+            'My Investments History', f'{user.first_name}{DASHBOARD}',
+            'Amount To Invest', 'Add Amount', 'Invest', 'No results!'
+        ])
         # Adding investment to database
-        amount = 10
+        amount: int = 10
         investment: Investment = investment_factory(investor_user=investor_user, amount=amount)
-        response = client.get(reverse('my_investments_history'))
-        assert response.status_code == 200
-        assert 'investment/my_investments_history.html' in response.templates[0].name
-        generic_assertions(response, user, 'My Investments History')
-        for value in [
-            str(amount),
-            investment.date.astimezone(pytz.timezone('Asia/Jerusalem')).strftime("%B %d, %Y"),
-            'Active'.upper()
-        ]:
-            assert value in response.content.decode()
+        response: TemplateResponse = client.get(reverse('my_investments_history'))
+        helper_methods.assert_successful_status_code_for_get_request(
+            response, template_src='investment/my_investments_history.html'
+        )
+        helper_methods.assert_attributes(response, attributes=ATTRIBUTES + [
+            'My Investments History', f'{user.first_name}{DASHBOARD}', str(amount),
+            investment.date.astimezone(pytz.timezone('Asia/Jerusalem')).strftime("%B %d, %Y"), 'Active'.upper()
+        ])
 
-    def test_post_request(self, client, user_factory: Callable, investor_user_factory: Callable):
-        user: CustomUser = user_factory()
-        client.force_login(user)
+    def test_post_request(self, client: Client, user_factory: Callable, investor_user_factory: Callable):
+        user: CustomUser = helper_methods.login_user(client, user_factory)
         investor_user: InvestorUser = investor_user_factory(user=user)
-        response = client.post(reverse('add_investment'), data={
-            'investor_user': investor_user,
-            'amount': 10,
-        })
-        assert response.status_code == 302
-        assert len(Investment.objects.all()) > 0
+        data: dict = {'investor_user': investor_user, 'amount': 10}
+        helper_methods.post_request(
+            client, url_name='add_investment', data=data, status_code=302
+        )
 
-    def test_get_request_as_guest(self, client):
-        response = client.get(reverse('my_investments_history'))
-        assert response.status_code == 302
-
-def generic_assertions(response, user: CustomUser, webpage_title: str):
-    # Title
-    assert webpage_title in response.content.decode()
-    # Sidebar
-    assert f"{user.first_name}{DASHBOARD}" in response.content.decode()
-    for attribute in ATTRIBUTES:
-        assert attribute in response.content.decode()
+    def test_redirection_get_request_as_guest(self, client):
+        helper_methods.redirection_get_request_as_guest(client, url_name='my_investments_history')

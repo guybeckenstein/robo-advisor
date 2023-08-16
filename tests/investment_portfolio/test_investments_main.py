@@ -1,9 +1,9 @@
 from typing import Callable
 
 import pytest
-from django.urls import reverse
+from django.test import Client
 
-from accounts.models import CustomUser
+from tests import helper_methods
 
 # Global constant variables
 DASHBOARD: str = "'s Investments Page"
@@ -12,22 +12,11 @@ ATTRIBUTES: list[str] = ['Investments History', 'Discover Stocks', 'Top Stocks']
 
 @pytest.mark.django_db
 class TestInvestmentsMain:
-    def test_get_request_as_logged_user(self, client, user_factory: Callable):
-        user: CustomUser = user_factory()
-        client.force_login(user)
-        response = client.get(reverse('investments_main'))
-        assert response.status_code == 200
-        assert 'investment_portfolio/investments_main.html' in response.templates[0].name
-        generic_assertions(response, user, '')
+    def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
+        response, user = helper_methods.successful_get_request_as_logged_user(
+            client, user_factory, url_name='investments_main', template_src='investment_portfolio/investments_main.html'
+        )
+        helper_methods.assert_attributes(response, attributes=[f'{user.first_name}{DASHBOARD}'] + ATTRIBUTES)
 
-    def test_get_request_as_guest(self, client):
-        response = client.get(reverse('investments_main'))
-        assert response.status_code == 302
-
-def generic_assertions(response, user: CustomUser, webpage_title: str):
-    # Title
-    assert webpage_title in response.content.decode()
-    # Sidebar
-    assert f"{user.first_name}{DASHBOARD}" in response.content.decode()
-    for attribute in ATTRIBUTES:
-        assert attribute in response.content.decode()
+    def test_redirection_get_request_as_guest(self, client: Client):
+        helper_methods.redirection_get_request_as_guest(client, url_name='investments_main')

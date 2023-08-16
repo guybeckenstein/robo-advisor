@@ -1,26 +1,21 @@
 from typing import Callable
 
 import pytest
-from django.urls import reverse
+from django.test import Client
 
-from accounts.models import CustomUser
+from tests import helper_methods
 
 
 @pytest.mark.django_db
 class TestAbout:
-    def test_get_request_as_logged_user(self, client, user_factory: Callable):
-        user: CustomUser = user_factory()
-        client.force_login(user)
-        response = client.get(reverse('about'))
-        self.assert_attributes(response)
+    def test_get_request_as_logged_user(self, client: Client, user_factory: Callable):
+        response, _ = helper_methods.successful_get_request_as_logged_user(
+            client, user_factory, url_name='about', template_src='core/about.html',
+        )
+        helper_methods.assert_attributes(response, attributes=['Our Idea?', 'Who Are We?'])
 
-    def test_get_request_as_guest(self, client):
-        response = client.get(reverse('about'))
-        self.assert_attributes(response)
-
-    @staticmethod
-    def assert_attributes(response):
-        assert response.status_code == 200
-        assert 'core/about.html' in response.templates[0].name
-        for accordion_header in ['Our Idea?', 'Who Are We?']:
-            assert accordion_header in response.content.decode()
+    def test_get_request_as_guest(self, client: Client):
+        response = helper_methods.successful_get_request_as_guest(
+            client, url_name='about', template_src='core/about.html',
+        )
+        helper_methods.assert_attributes(response, attributes=['Our Idea?', 'Who Are We?'])
