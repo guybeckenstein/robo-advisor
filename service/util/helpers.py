@@ -44,7 +44,7 @@ def get_best_weights_column(stocks_symbols, sectors_list, optional_portfolios, p
     medium = np.dot(optional_portfolios[1].iloc[0][3:], pct_change_table.T)
     pct_change_table_low = pct_change_table.copy()
     for i in range(len(stock_sectors)):
-        if stock_sectors[i] == "US commodity":
+        if stock_sectors[i] == "US commodity indexes":
             pct_change_table_low = pct_change_table_low.drop(stocks_symbols[i], axis=1)
     low = np.dot(optional_portfolios[0].iloc[0][3:], pct_change_table_low.T)
     return [low, medium, high]
@@ -71,12 +71,12 @@ def build_return_gini_portfolios_dic(df: pd.DataFrame):
     return_dic = {'Max Risk Portfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
     min_gini = df['Gini'].min()
     max_sharpe = df['Sharpe Ratio'].max()
-    max_portfolio_annual = df['Portfolio_annual'].max()
+    max_portfolio_annual = df['Portfolio Annual'].max()
 
     # use the min, max values to locate and create the two special portfolios
     sharpe_portfolio = df.loc[df['Sharpe Ratio'] == max_sharpe]
     safe_portfolio = df.loc[df['Gini'] == min_gini]
-    max_portfolio = df.loc[df['Portfolio_annual'] == max_portfolio_annual]
+    max_portfolio = df.loc[df['Portfolio Annual'] == max_portfolio_annual]
 
     return_dic['Max Risk Portfolio'] = max_portfolio
     return_dic['Safest Portfolio'] = safe_portfolio

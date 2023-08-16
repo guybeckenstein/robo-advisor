@@ -236,8 +236,8 @@ def save_stocks_stats_to_csv(data_stats_tuples):
     print("CSV file updated successfully.")
 
 
-def save_top_stocks_img_to_db(top_stocks: list, sector_name: str):
-    #data_management.plot_research_graphs(path, sorted_data_tuple) TODO
+def save_top_stocks_img_to_db(top_stocks: list, intersection_data_list: list, sector_name: str):
+    data_management.plot_research_graphs(top_stocks, intersection_data_list)
     # Correct way to change value of a stock and its instance
     #top_stock: TopStock = TopStock.objects.filter(sector_name='').first()  # Gets a stock from a certain sector
     #saved_image_name: str = None  # TODO
@@ -290,7 +290,11 @@ def sort_good_stocks(all_data_tuples, filters):
                                                                  filters=[minFiltersList[count], maxFiltersList[count]],
                                                                  top_stocks_numbers=top_stocks_numbers))
             count += 1
-    return all_data_sorted
+
+
+    # find the intersection of all the lists
+    intersection = pd.concat(all_data_sorted, axis=1, join='inner')
+    return all_data_sorted, intersection
 
 
 def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval="Y"):
@@ -319,13 +323,15 @@ def get_all_best_stocks(filters):
     path = settings.RESEARCH_RESULTS_LOCATION
     sectors_list = helpers.get_sectors_names_list()
     all_data_tuple = []
+    intersection_data = []
     for sector_name in sectors_list:
         data_tuple = find_good_stocks(sector_name)
-        sorted_data_tuple = sort_good_stocks(data_tuple, filters)
-        save_top_stocks_img_to_db(sorted_data_tuple, sector_name)
+        sorted_data_tuple, intersection = sort_good_stocks(data_tuple, filters)
+        save_top_stocks_img_to_db(sorted_data_tuple, intersection, sector_name)
         all_data_tuple.append(sorted_data_tuple)
+        intersection_data.append(intersection)
 
-    return  all_data_tuple
+    return  all_data_tuple, intersection_data
 
 
 def get_stocks_data_for_research_by_group(group_of_stocks: str):

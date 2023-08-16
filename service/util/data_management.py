@@ -6,9 +6,6 @@ import math
 import numpy as np
 import pandas as pd
 from typing import Tuple, List
-
-from django.db.models import QuerySet
-
 from accounts.models import InvestorUser
 from investment.models import Investment
 from ..impl.portfolio import Portfolio
@@ -17,15 +14,15 @@ from ..impl.user import User
 from ..config import settings
 from . import helpers, console_handler, plot_functions
 import os
-
 # django imports
 import django
+from django.db.models import QuerySet
 from django.conf import settings as django_settings
+
 # Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
 from accounts.models import InvestorUser
-
 
 
 ######################################################################################
@@ -34,12 +31,12 @@ def update_all_tables(numOfYearsHistory, is_daily_running=True):  # build DB for
     today = datetime.date.today()
     formatted_date = today.strftime("%Y-%m-%d")
     collections_json_data = helpers.get_collection_json_data()
-    for i, collection in enumerate(collections_json_data):
-        curr_collection = collections_json_data[str(i + 1)][0]
+    for i in range(1, len(collections_json_data)):
+        curr_collection = collections_json_data[str(i)][0]
         stocksSymbols = curr_collection['stocksSymbols']
-        __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i + 1)) + '/'  # where to save the datasets
+        __path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i)) + '/'  # where to save the datasets
         update_closing_prices_tables(formatted_date, stocksSymbols, numOfYearsHistory, __path, is_daily_running)
-        update_data_frame_tables(formatted_date, curr_collection, __path, collections_json_data, str(i + 1),
+        update_data_frame_tables(formatted_date, curr_collection, __path, collections_json_data, str(i),
                                  is_daily_running)
 
 
@@ -132,9 +129,9 @@ def update_three_level_data_frame_tables(machingLearningOpt, modelName, stocksSy
 def update_specific_data_frame_table(is_machine_learning, model_name, stocks_symbols, sectors, levelOfRisk,
                                      max_percent_commodity, max_percent_stocks, closing_prices_table, pct_change_table,
                                      __path, models_data):
-    num_por_simulation: int = models_data["models_data"]['num_por_simulation']
-    min_num_por_simulation: int = models_data["models_data"]['min_num_por_simulation']
-    gini_v_value: int = models_data["models_data"]['GINI_V_VALUE']
+    num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
+    min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
+    gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
 
     if is_machine_learning:
         locationForSaving = __path + settings.MACHINE_LEARNING_LOCATION
@@ -145,7 +142,7 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
         stock_sectors = helpers.setStockSectors(stocks_symbols, sectors)
         filtered_stocks = []
         for i in range(len(stock_sectors)):
-            if stock_sectors[i] != "US commodity":
+            if stock_sectors[i] != "US commodity indexes":
                 filtered_stocks.append(stocks_symbols[i])
             else:
                 closing_prices_table = closing_prices_table.drop(stocks_symbols[i], axis=1)
@@ -248,13 +245,13 @@ def changing_portfolio_investments_treatment_console(selected_user: User, invest
                            entered_as_an_automatic_investment=True, db_type="json", investments=investments)
 
 
-
 def changing_portfolio_investments_treatment_web(investor_user: InvestorUser, portfolio: Portfolio,
                                                  investments: QuerySet[Investment]) -> None:
     try:
         if len(investments) > 0:
             total_profit: float = portfolio.calculate_total_profit_according_to_dates_dates(investments)
-            capital_investments = get_total_capital_investments_web(investments)  # Sums all prior ACTIVE & USER investments
+            capital_investments = get_total_capital_investments_web(
+                investments)  # Sums all prior ACTIVE & USER investments
             Investment.objects.create(
                 investor_user=investor_user,
                 amount=math.floor(total_profit) + capital_investments,
@@ -285,8 +282,8 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
         sectors_data = get_json_data('../../' + settings.SECTORS_JSON_NAME)
     sectors: list = helpers.set_sectors(stocks_symbols, mode)
     closing_prices_table: pd.DataFrame = get_closing_prices_table(__path, mode=mode)
-    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option - 1], __path, mode=mode)
-    three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option - 1])
+    df = get_three_level_df_tables(is_machine_learning, settings.MODEL_NAME[model_option], __path, mode=mode)
+    three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option])
     best_stocks_weights_column = helpers.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
                                                                  closing_prices_table.pct_change())
     three_best_stocks_weights = helpers.get_three_best_weights(three_best_portfolios)
@@ -418,6 +415,7 @@ def get_user_from_db(user_id: int, user_name: str):
     portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
                                  annual_volatility, annual_sharpe)
     curr_user = User(user_id=user_id, name=user_name, portfolio=portfolio)
+    save_user_portfolio(curr_user)
 
     return curr_user
 
@@ -532,16 +530,16 @@ def get_investments_from_db(user_id, db_type):
     if db_type == "django":  # TODO
         pass
         investment_id = 1  # Replace with the actual Investment ID
-        #investments_list = Investment.objects.get(pk=investment_id)
+        # investments_list = Investment.objects.get(pk=investment_id)
 
-        #try:
-            # Try to get the existing InvestorUser instance
-            #investor_user = InvestorUser.objects.get(pk=1)
-        #except InvestorUser.DoesNotExist:
-            # If the user doesn't exist, create a new instance
-            #investor_user = InvestorUser.objects.create()
+        # try:
+        # Try to get the existing InvestorUser instance
+        # investor_user = InvestorUser.objects.get(pk=1)
+        # except InvestorUser.DoesNotExist:
+        # If the user doesn't exist, create a new instance
+        # investor_user = InvestorUser.objects.create()
 
-        #investments = investor_user.investments if investor_user.investments else []
+        # investments = investor_user.investments if investor_user.investments else []
 
 
     else:
@@ -757,9 +755,10 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
     plot_functions.save_graphs(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO plot at site
 
 
-def plot_research_graphs(path, data_tuple: Tuple):
-    research_plt = plot_functions.plot_research_graphs(data_tuple)
-    #plot_functions.save_graphs(research_plt, path)
+def plot_research_graphs(data_tuple_list: list, intersection_data_list: list):
+    path = settings.RESEARCH_IMAGES
+    research_plt = plot_functions.plot_research_graphs(path, data_tuple_list, intersection_data_list)
+    # plot_functions.save_graphs(research_plt, path)
 
 
 def save_user_portfolio(user: User) -> None:
@@ -864,7 +863,7 @@ def get_stocks_from_json_file():
     stocks = {}
     for i in range(1, len(collections_data)):
         stocks_symbols_list = collections_data[str(i)][0]['stocksSymbols']
-        stocks_description_list = helpers.get_stocks_descriptions(stocks_symbols_list, is_reverse_mode=False)
+        stocks_description_list = helpers.get_stocks_descriptions(stocks_symbols_list, is_reverse_mode=False)[1:]
         stocks[str(i)] = [stocks_symbols_list, stocks_description_list]
     return stocks
 
@@ -889,6 +888,3 @@ def is_today_date_change_from_last_updated_df(collection_number: int) -> bool:
 
     if lastUpdatedDateClosingPrices != formatted_date:
         return True
-
-
-

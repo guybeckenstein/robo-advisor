@@ -10,12 +10,13 @@ if __name__ == '__main__':
     exit_loop_operation = 8
     login_id: int = 1
     login_name: str = 'yarden'  # data_management.get_name()
+    data_changed = False  # TODO - check if data changed in db
 
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
-            is_machine_learning: int = 1  # data_management.get_machine_learning_option()
-            model_option: int = 1  # data_management.get_model_option()
+            is_machine_learning: int = data_management.get_machine_learning_option()
+            model_option: int = data_management.get_model_option()
             investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
             stocks_collection_number = 1  # default
             # TODO in site(GUY)
@@ -88,10 +89,8 @@ if __name__ == '__main__':
         elif selection == 3:
             json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
             collection_number = json_data['usersList'][login_name][0]['stocksCollectionNumber']
-            if data_management.is_today_date_change_from_last_updated_df(collection_number):
-                # update data
-                #data_management.get_user_from_db(login_id, login_name) # TODO
-                pass
+            if data_management.is_today_date_change_from_last_updated_df(collection_number) or data_changed:
+                data_management.get_user_from_db(login_id, login_name)
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/sectors_component.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/stocks_component.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/yield_graph.png')
@@ -180,7 +179,7 @@ if __name__ == '__main__':
 
                     sector = "US stocks indexes"
                     research.find_good_stocks()
-                    filters = [0, 1000000000000, 5, 30, 0.6, 20] # TODO
+                    filters = [0, 1000000000000, 5, 30, 0.6, 1500] # TODO
                     all_data_tuple = research.get_all_best_stocks(filters)
 
                     pass

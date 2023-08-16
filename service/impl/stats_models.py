@@ -76,7 +76,7 @@ class StatsModels:
                 num_portfolios *= 2
             # Calculate the percentage of stocks in the "Commodity" sector
             commodity_percentage = np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity indexes"]
             )
             israeli_stocks_percentage = np.sum(
                 [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks indexes"]
@@ -136,10 +136,10 @@ class StatsModels:
                 stocks_names.append(symbol)
         v_value = self.gini_v_value
         returns_daily = pct_change_table
-        portfolio_annual = []
-        portfolio_gini_annual = []
-        sharpe_ratio = []
-        stock_weights = []
+        port_portfolio_annual: list = []
+        portfolio_gini_annual: list = []
+        sharpe_ratio: list = []
+        stock_weights: list = []
 
         # set the number of combinations for imaginary portfolios
         num_assets = len(stocks_names)
@@ -148,61 +148,61 @@ class StatsModels:
         # set random seed for reproduction's sake
         np.random.seed(101)
 
-        # Mathematical calculations, creation of 5000 portfolios,
-        for _ in returns_daily.keys():
-            # populate the empty lists with each portfolios returns,risk and weights
-            single_portfolio = 0
-            while single_portfolio < num_portfolios:
-                weights = np.random.random(num_assets)
-                weights /= np.sum(weights)
-                if (single_portfolio >= (num_portfolios - 1)) and (len(stock_weights) < min_num_por_simulation):
-                    num_portfolios *= 2
-                # Calculate the percentage of stocks in the "Commodity" sector
-                commodity_percentage = np.sum(
-                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity"])
-                israeli_stocks_percentage = np.sum(
-                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks indexes"]
-                ) + np.sum(
-                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks"]
-                )
-                us_stocks_percentage = np.sum(
-                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks indexes"]
-                ) + np.sum(
-                    [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks"]
-                )
+        # Mathematical calculations ,
+        #for _ in returns_daily.keys():
+        # populate the empty lists with each portfolios returns,risk and weights
+        single_portfolio = 0
+        while single_portfolio < num_portfolios:
+            weights = np.random.random(num_assets)
+            weights /= np.sum(weights)
+            if (single_portfolio >= (num_portfolios - 1)) and (len(stock_weights) < min_num_por_simulation):
+                num_portfolios *= 2
+            # Calculate the percentage of stocks in the "Commodity" sector
+            commodity_percentage = np.sum(
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity indexes"])
+            israeli_stocks_percentage = np.sum(
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks indexes"]
+            ) + np.sum(
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks"]
+            )
+            us_stocks_percentage = np.sum(
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks indexes"]
+            ) + np.sum(
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks"]
+            )
 
-                if commodity_percentage > max_percent_commodity:
-                    single_portfolio += 1
-                    continue  # Skip this portfolio and generate a new one
-                if (israeli_stocks_percentage + us_stocks_percentage) > max_percent_stocks:
-                    single_portfolio += 1
-                    continue  # # Skip this portfolio and generate a new one
-
-                portfolio = np.dot(returns_daily, weights)
-                portfolio_return = pd.DataFrame(portfolio)
-                rank = portfolio_return.rank()
-                rank_divided_n = rank / len(rank)  # Rank/N
-                one_sub_rank_divided_n = 1 - rank_divided_n  # 1-Rank/N
-                one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (v_value - 1)  # (1-Rank/N)^(V-1)
-                mue = portfolio_return.mean().tolist()[0]
-                x_avg = one_sub_rank_divided_n_power_v_sub_one.mean().tolist()[0]
-                portfolio_mue = portfolio_return - mue
-                rank_sub_x_avg = one_sub_rank_divided_n_power_v_sub_one - x_avg
-                portfolio_mue_mult_rank_x_avg = portfolio_mue * rank_sub_x_avg
-                summary = portfolio_mue_mult_rank_x_avg.sum().tolist()[0] / (len(rank) - 1)
-                gini_daily = summary * (-v_value)
-                gini_annual = gini_daily * (254 ** 0.5)
-                portfolio_annual = ((1 + mue) ** 254) - 1
-                sharpe = portfolio_annual / gini_annual
-                sharpe_ratio.append(sharpe)
-                portfolio_annual.append(portfolio_annual * 100)
-                portfolio_gini_annual.append(gini_annual * 100)
-                stock_weights.append(weights)
-
+            if commodity_percentage > max_percent_commodity:
                 single_portfolio += 1
+                continue  # Skip this portfolio and generate a new one
+            if (israeli_stocks_percentage + us_stocks_percentage) > max_percent_stocks:
+                single_portfolio += 1
+                continue  # # Skip this portfolio and generate a new one
+
+            portfolio = np.dot(returns_daily, weights)
+            portfolio_return = pd.DataFrame(portfolio)
+            rank = portfolio_return.rank()
+            rank_divided_n = rank / len(rank)  # Rank/N
+            one_sub_rank_divided_n = 1 - rank_divided_n  # 1-Rank/N
+            one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (v_value - 1)  # (1-Rank/N)^(V-1)
+            mue = portfolio_return.mean().tolist()[0]
+            x_avg = one_sub_rank_divided_n_power_v_sub_one.mean().tolist()[0]
+            portfolio_mue = portfolio_return - mue
+            rank_sub_x_avg = one_sub_rank_divided_n_power_v_sub_one - x_avg
+            portfolio_mue_mult_rank_x_avg = portfolio_mue * rank_sub_x_avg
+            summary = portfolio_mue_mult_rank_x_avg.sum().tolist()[0] / (len(rank) - 1)
+            gini_daily = summary * (-v_value)
+            gini_annual = gini_daily * (254 ** 0.5)
+            portfolio_annual = ((1 + mue) ** 254) - 1
+            sharpe = portfolio_annual / gini_annual
+            sharpe_ratio.append(sharpe)
+            port_portfolio_annual.append(portfolio_annual * 100)
+            portfolio_gini_annual.append(gini_annual * 100)
+            stock_weights.append(weights)
+
+            single_portfolio += 1
 
             # a dictionary for Returns and Risk values of each portfolio
-            portfolio = {'Portfolio Annual': portfolio_annual,
+            portfolio = {'Portfolio Annual': port_portfolio_annual,
                          'Gini': portfolio_gini_annual,
                          'Sharpe Ratio': sharpe_ratio}
 

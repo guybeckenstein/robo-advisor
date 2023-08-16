@@ -1,7 +1,8 @@
-from service.util import data_management
+from impl.user import User
+from service.util import data_management, research
 from service.config import settings
+
 if __name__ == '__main__':
-    pass
     # TODO update stocks.json file according to the stocks in research_data
     # keep collection 1 as it is
 
@@ -17,6 +18,7 @@ if __name__ == '__main__':
     # call save graphs or save directly or add txt file with last updated images
 
     # TODO update users graphs in db according to users.json file
+
 
 
 

@@ -428,8 +428,9 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
     return plt
 
 
-def plot_research_graphs(data_stats_tuples):
+def plot_research_graphs(data_stats_tuples, intersection_data_list):
     # Define metric names for the x-axis
+    intersection_data_list_labels = ["top stocks"]
     labels = [
         'top Total Return',
         'Total min Volatility',

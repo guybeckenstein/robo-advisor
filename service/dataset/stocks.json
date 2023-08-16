@@ -6,7 +6,7 @@
             "record_percent_to_predict": "0.05",
             "test_size_machine_learning": "0.1",
             "selected_ml_model_for_build": "1",
-            "gini_v_value": "4"
+            "gini_v_value": "1.5"
         },
         "1": [
             {
@@ -29,7 +29,7 @@
                 ],
                 "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.3,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.05,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.10,
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.1,
                 "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
             }
         ],
@@ -40,23 +40,24 @@
                     161,
                     162,
                     13,
+                    143,
                     601,
                     603,
                     701,
-                    714,
+                    712,
                     702,
-                    143,
                     "SPY",
                     "QQQ",
                     "XLK",
                     "SHV",
+                    "SHY",
                     "IEI",
                     "LQD",
                     "GLD"
                 ],
-                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.7,
+                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.6,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.5,
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.4,
                 "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
             }
         ],
@@ -64,49 +65,58 @@
             {
                 "stocksSymbols": [
                     169,
+                    170,
                     603,
+                    601,
                     701,
+                    714,
                     "XLK",
+                    "XLV",
+                    "XOP",
+                    "QQQ",
                     "SHV",
-                    756015,
-                    393017,
-                    "APTO",
+                    "BIL",
+                    273011,
+                    695437,
+                    593038,
                     "LMB",
-                    "META",
                     "AGM",
                     "TDS",
                     "MCD",
-                    "FMY"
+                    "FMY",
+                    "EOI"
                 ],
-                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 1,
+                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.8,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 1,
-                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.6,
+                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0.02
             }
         ],
         "4": [
             {
                 "stocksSymbols": [
                     "TSLA",
+                    "ADBE",
+                    "JNJ",
+                    "EOI",
                     "AAPL",
                     "AMZN",
                     "MSFT",
                     "GOOG",
                     "META",
                     "NVDA",
-                    "APTO",
-                    "NUV",
-                    "SMMF",
-                    "LMB",
-                    720011,
-                    1105907,
-                    1133131,
-                    462010
+                    "AJG",
+                    "BRO",
+                    "CSL",
+                    593038,
+                    273011,
+                    442012,
+                    1081124
                 ],
                 "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 1,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.3,
                 "LIMIT_PERCENT_LOW_RISK_STOCKS": 1,
-                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
+                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0.05
             }
         ]
     }
