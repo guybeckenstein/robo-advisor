@@ -1,9 +1,16 @@
+import os
 from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
 from django.db.models import QuerySet
-
+# django imports
+import django
+from django.conf import settings as django_settings
+# Set up Django settings
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
+django.setup()
+from django.db import models
 from investment.models import Investment
 from .sector import Sector
 import datetime

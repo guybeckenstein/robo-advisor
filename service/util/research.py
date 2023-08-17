@@ -1,10 +1,12 @@
+import csv
+
 import numpy as np
 import pandas as pd
 import ta
 import yfinance as yf
 
 from watchlist.models import TopStock
-from . import plot_functions, helpers
+from . import plot_functions, helpers, data_management
 from ..config import settings
 
 
@@ -20,7 +22,7 @@ def forecast_specific_stock(stock: str, machine_learning_model: str, models_data
                             start_date: str = None, end_date: str = None):
     plt = None
     file_name = str(stock) + '.csv'
-    description = helpers.get_description_by_symbol(stock)
+    description = helpers.get_stocks_descriptions([stock])[1]
     if start_date is None or end_date is None:
         table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
                                                [stock], num_of_years_history, save_to_csv=False)
@@ -167,13 +169,10 @@ def download_data_for_research(num_of_years_history: int) -> None:
     # creates
 
 
-def find_good_stocks(sector="US stocks indexes", num_of_best_stocks=10,
-                     min_cap=0, max_cap=10000000, min_annual_returns=0, max_volatility=0, min_sharpe=0):
+def find_good_stocks(sector="US stocks indexes"):
     """
     sector: str
         A single sector name
-    num_of_best_stocks: int
-        Amount of stocks within the sector that are being saved within a CSV file
     min_cap: int
         Filters the stocks by a minimal market value (or capacity)
     max_cap: int
@@ -187,92 +186,117 @@ def find_good_stocks(sector="US stocks indexes", num_of_best_stocks=10,
     Returns: tuple[list]
         A tuple of three different list. Each list contains four lists
     """
-    filters = min_cap, max_cap, min_annual_returns, max_volatility, min_sharpe
     # get the relevant data
     data_pct_change = get_stocks_data_for_research_by_group(sector)
-    # TODO
+    interval_list = ["TOTAL", "Y", "M", "Y"]
+    is_forecast_mode_list = [False, False, False, True]
+    all_data_tuples = []
+    for i in range(len(interval_list)):
+        all_data_tuples.append(calculate_stats_of_stocks(data_pct_change, is_forecast_mode_list[i], interval_list[i]))
+
+    return all_data_tuples
+
+
+def save_stocks_stats_to_csv(data_stats_tuples):
+    # Define the list of stock symbols you want to update
+    symbols_to_update = data_stats_tuples[0][0].index.tolist()
+    # Create a temporary list to store the updated data
+    updated_data = []
+
+    # Read the CSV file, update the data, and store in updated_data
+    with open(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv", "r", newline="",
+              encoding="utf-8") as infile:
+        reader = csv.DictReader(infile)
+        fieldnames = reader.fieldnames
+        for row in reader:
+            symbol = row["Symbol"]
+            if symbol in symbols_to_update:
+                # Update the relevant columns based on data_stats_tuples
+                row["total_return"] = data_stats_tuples[0][0]
+                row["Total_volatility"] = data_stats_tuples[0][1]
+                row["Total_sharpe"] = data_stats_tuples[0][2]
+                row["Annual_return"] = data_stats_tuples[1][0].iloc[-1]
+                row["Annual_volatility"] = data_stats_tuples[1][1].iloc[-1]
+                row["Annual_sharpe"] = data_stats_tuples[1][2].iloc[-1]
+                row["monthly_return"] = data_stats_tuples[2][0].iloc[-1]
+                row["monthly_volatility"] = data_stats_tuples[2][1].iloc[-1]
+                row["monthly_sharpe"] = data_stats_tuples[2][2].iloc[-1]
+                row["forecast_return"] = data_stats_tuples[3][0]
+                row["forecast_volatility"] = data_stats_tuples[3][1]
+                row["forecast_sharpe"] = data_stats_tuples[3][2]
+            updated_data.append(row)
+
+    # Write the updated data back to the CSV file
+    with open(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data2.csv", "w", newline="",
+              encoding="utf-8") as outfile:
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(updated_data)
+
+    print("CSV file updated successfully.")
+
+
+def save_top_stocks_img_to_db(top_stocks: list, intersection_data_list: list, sector_name: str):
+    data_management.plot_research_graphs(top_stocks, intersection_data_list, sector_name)
     # Correct way to change value of a stock and its instance
-    top_stock: TopStock = TopStock.objects.filter(sector_name='').first()  # Gets a stock from a certain sector
-    saved_image_name: str = None  # TODO
-    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{saved_image_name}.png'
-    top_stock.save()
-
-    # calculate total returns, volatility and sharpe ratio
-    total_return, total_volatility, total_sharpe = calculate_stats_of_stocks(data_pct_change,
-                                                                             is_forecast_mode=False,
-                                                                             interval="TOTAL",
-                                                                             filters=filters)
-    # calculate annual returns, volatility and sharpe ratio
-    annual_returns, annual_volatility, annual_sharpe = calculate_stats_of_stocks(data_pct_change,
-                                                                                 is_forecast_mode=False,
-                                                                                 interval="Y"
-                                                                                 , filters=filters)
-
-    # calculate monthly returns, volatility and sharpe ratio
-    monthly_returns, monthly_volatility, monthly_sharpe = calculate_stats_of_stocks(data_pct_change,
-                                                                                    is_forecast_mode=False,
-                                                                                    interval="M"
-                                                                                    , filters=filters)
-
-    # calculate forecast returns, volatility and sharpe ratio
-    returns_annual_forecast, volatility_annual_forecast, sharpe_annual_forecast = calculate_stats_of_stocks(
-        data_pct_change, is_forecast_mode=True, interval="Y", filters=filters)
-
-    # sort total
-    total_profit_return_sorted: list = get_sorted_list_by_parameters(total_return, 0,
-                                                               ascending=False, num_of_best_stocks=num_of_best_stocks)
-    total_volatility_sorted: list = get_sorted_list_by_parameters(total_volatility, 0,
-                                                            ascending=True, num_of_best_stocks=num_of_best_stocks)
-    total_sharpe_sorted: list = get_sorted_list_by_parameters(total_sharpe, 0,
-                                                        ascending=False, num_of_best_stocks=num_of_best_stocks)
-
-    # sort last year
-    annual_returns_sorted: list = get_sorted_list_by_parameters(annual_returns, -1,
-                                                          ascending=False, num_of_best_stocks=num_of_best_stocks)
-    annual_volatility_sorted: list = get_sorted_list_by_parameters(annual_volatility, -1,
-                                                             ascending=True, num_of_best_stocks=num_of_best_stocks)
-    annual_sharpe_sorted: list = get_sorted_list_by_parameters(annual_sharpe, -1,
-                                                         ascending=False, num_of_best_stocks=num_of_best_stocks)
-
-    # sort last month
-    annual_returns_sorted: list = get_sorted_list_by_parameters(monthly_returns, -1,
-                                                          ascending=False, num_of_best_stocks=num_of_best_stocks)
-    annual_volatility_sorted: list = get_sorted_list_by_parameters(monthly_volatility, -1,
-                                                             ascending=True, num_of_best_stocks=num_of_best_stocks)
-    annual_sharpe_sorted: list = get_sorted_list_by_parameters(monthly_sharpe, -1,
-                                                         ascending=False, num_of_best_stocks=num_of_best_stocks)
-
-    # sort forecast
-    returns_annual_forecast_sorted: list = get_sorted_list_by_parameters(returns_annual_forecast, 0,
-                                                                   ascending=False,
-                                                                   num_of_best_stocks=num_of_best_stocks)
-    volatility_annual_forecast_sorted: list = get_sorted_list_by_parameters(volatility_annual_forecast, 0,
-                                                                      ascending=True,
-                                                                      num_of_best_stocks=num_of_best_stocks)
-    sharpe_annual_forecast_sorted: list = get_sorted_list_by_parameters(sharpe_annual_forecast, 0,
-                                                                  ascending=False,
-                                                                  num_of_best_stocks=num_of_best_stocks)
-
-    max_returns_stocks: list = [total_profit_return_sorted, annual_returns_sorted, returns_annual_forecast_sorted]
-    min_volatility_stocks: list = [total_volatility_sorted, annual_volatility_sorted, volatility_annual_forecast_sorted]
-    max_sharpest_stocks: list = [total_sharpe_sorted, annual_sharpe_sorted, sharpe_annual_forecast_sorted]
-
-    return max_returns_stocks, min_volatility_stocks, max_sharpest_stocks
+    """top_stock: TopStock = TopStock.objects.filter(sector_name=sector_name).first()  # Gets a stock from a certain sector
+    prefix_str = "top_stocks_f"
+    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str}{sector_name}.png'
+    top_stock.save()"""
 
 
-def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, num_of_best_stocks=10) -> list:
+def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, filters=None,
+                                  top_stocks_numbers=10) -> list:
+    if filters is not None:
+        min_value = filters[0]
+        max_value = filters[1]
+
     if row_selected == 0:
-        return data_frame.sort_values(ascending=ascending).head(num_of_best_stocks)
+        # filters
+        data_frame = data_frame[(data_frame >= min_value) & (data_frame <= max_value)]
+        return data_frame.sort_values(ascending=ascending).head(top_stocks_numbers)
     else:
         # Get the last row (latest date)
         last_row = data_frame.iloc[-1]
-        return data_frame.iloc[row_selected].sort_values(ascending=ascending).head(num_of_best_stocks)
+        data_frame = data_frame.iloc[row_selected]
+        # filters
+        data_frame = data_frame[(data_frame >= min_value) & (data_frame <= max_value)]
+        return data_frame.sort_values(ascending=ascending).head(top_stocks_numbers)
 
 
-def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval="Y", filters=None):
-    if filters is not None:
-        pass # TODO
+def sort_good_stocks(all_data_tuples, filters):
+    minCap, maxCap, minAnnualReturns, maxAnnualVolatility, minAnnualSharpe, top_stocks_numbers = filters
+    minFiltersList = [0, 0, 1,
+                      minAnnualReturns, 0, minAnnualSharpe,
+                      minAnnualReturns / 12, 0, minAnnualSharpe / 12,
+                      minAnnualReturns, 0, minAnnualSharpe]
+    maxFiltersList = [12000, 50, 500,
+                      12000, maxAnnualVolatility, 500,
+                      12000, maxAnnualVolatility / 12, 500,
+                      12000, maxAnnualVolatility, 500]
+    # TODO - add more filters later
+    count = 0
+    # sort values and filters
+    ascending_list = [False, True, False]
+    row_selected = [0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, 0]
 
+    all_data_sorted = []
+    for i in range(len(all_data_tuples)):
+        for j in range(len(all_data_tuples[i])):
+            all_data_sorted.append(get_sorted_list_by_parameters(all_data_tuples[i][j],
+                                                                 row_selected=row_selected[count],
+                                                                 ascending=ascending_list[j],
+                                                                 filters=[minFiltersList[count], maxFiltersList[count]],
+                                                                 top_stocks_numbers=top_stocks_numbers))
+            count += 1
+
+
+    # find the intersection of all the lists
+    intersection = pd.concat(all_data_sorted, axis=1, join='inner')
+    return all_data_sorted, intersection
+
+
+def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval="Y"):
     if is_forecast_mode:
         # TODO , MAYBE ADD MACHINE LEARNING OPTION
         returns_annual_forecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
@@ -292,6 +316,21 @@ def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval=
             sharpe = profit_return / volatility
 
     return profit_return, volatility, sharpe
+
+
+def get_all_best_stocks(filters):
+    path = settings.RESEARCH_RESULTS_LOCATION
+    sectors_list = helpers.get_sectors_names_list()
+    all_data_tuple = []
+    intersection_data = []
+    for sector_name in sectors_list:
+        data_tuple = find_good_stocks(sector_name)
+        sorted_data_tuple, intersection = sort_good_stocks(data_tuple, filters)
+        save_top_stocks_img_to_db(sorted_data_tuple, intersection, sector_name)
+        all_data_tuple.append(sorted_data_tuple)
+        intersection_data.append(intersection)
+
+    return  all_data_tuple, intersection_data
 
 
 def get_stocks_data_for_research_by_group(group_of_stocks: str):

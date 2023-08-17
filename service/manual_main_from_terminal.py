@@ -1,14 +1,6 @@
 from impl.user import User
-from service.util import data_management, research, helpers
+from service.util import data_management, research
 from service.config import settings
-
-
-def get_models_data_and_forecast_specific_stock():
-    models_data: dict = data_management.get_models_data_from_collections_file()
-    plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
-                                                    models_data, num_of_years_history)
-    return plt_instance
-
 
 if __name__ == '__main__':
     data_management.main_menu()
@@ -16,11 +8,12 @@ if __name__ == '__main__':
     exit_loop_operation = 8
     login_id: int = 1
     login_name: str = 'yarden'  # data_management.get_name()
+    data_changed = False  # TODO - check if data changed in db
 
     while selection != exit_loop_operation:
         if selection == 1:  # Basic data from user
-            is_machine_learning: int = 1  # data_management.get_machine_learning_option()
-            model_option: int = 1  # data_management.get_model_option()
+            is_machine_learning: int = data_management.get_machine_learning_option()
+            model_option: int = data_management.get_model_option()
             investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
             stocks_collection_number = 1  # default
             # TODO in site(GUY)
@@ -73,9 +66,9 @@ if __name__ == '__main__':
             )
 
             user: User = User(user_id=login_id,
-                        name=login_name,
-                        portfolio=new_portfolio,
-                        stocks_collection_number=stocks_collection_number)
+                              name=login_name,
+                              portfolio=new_portfolio,
+                              stocks_collection_number=stocks_collection_number)
             try:
                 investments_list = data_management.get_user_investments_from_json_file(login_name)
                 data_management.changing_portfolio_investments_treatment_console(user.portfolio, investments_list)
@@ -83,16 +76,18 @@ if __name__ == '__main__':
                 print(e)
             # add user to datasets (json file)
             user.update_json_file(settings.USERS_JSON_NAME)
-            data_management.save_user_portfolio(user) # TODO - separate thread
+            data_management.save_user_portfolio(user)  # TODO - separate thread
 
         elif selection == 2:
             # add new investment to user
             investment_amount: int = data_management.get_investment_amount()  # get from terminal
             if investment_amount is not None:
-                data_management.add_new_investment(login_name, investment_amount, db_type="json") # TODO
-
+                data_management.add_new_investment(login_name, investment_amount, db_type="json")  # TODO
         elif selection == 3:
-
+            json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
+            collection_number = json_data['usersList'][login_name][0]['stocksCollectionNumber']
+            if data_management.is_today_date_change_from_last_updated_df(collection_number) or data_changed:
+                data_management.get_user_from_db(login_id, login_name)
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/sectors_component.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/stocks_component.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/yield_graph.png')
@@ -109,11 +104,13 @@ if __name__ == '__main__':
                     stock_name = data_management.get_name()
                     num_of_years_history = data_management.get_num_of_years_history()
                     machine_learning_model = data_management.get_machine_learning_model()
-                    plt_instance = get_models_data_and_forecast_specific_stock()
+                    models_data: dict = data_management.get_models_data_from_collections_file()
+                    plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
+                                                                    models_data, num_of_years_history)
                     operation = '_forecast'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
-                        settings.RESEARCH_RESULTS_LOCATION + stock_name + operation + '.png'
+                        settings.RESEARCH_IMAGES + stock_name + operation + '.png'
                     )
 
                 # plotbb_strategy_stock for specific stock
@@ -126,7 +123,7 @@ if __name__ == '__main__':
                     operation = '_bb_strategy'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
-                        settings.RESEARCH_RESULTS_LOCATION +
+                        settings.settings.RESEARCH_IMAGES +
                         stock_name + operation + '.png')
 
                 elif selection == 3:
@@ -176,24 +173,10 @@ if __name__ == '__main__':
                     # helpers.save_usa_indexes_table()
                     # helpers.save_all_stocks()
 
-                    sector = "US stocks"
-                    num_of_best_stocks = 100  # how many best stocks to show
-                    minCap = 0
-                    maxCap = 1000000000000
-                    minAnnualReturns = 5
-                    maxVolatility = 15
-                    minSharpe = 0.6
-                    data_tuple = research.find_good_stocks(sector=sector,
-                                                           num_of_best_stocks=num_of_best_stocks,
-                                                           min_cap=minCap,
-                                                           max_cap=maxCap,
-                                                           min_annual_returns=minAnnualReturns,
-                                                           max_volatility=maxVolatility, min_sharpe=minSharpe
-                                                           )
-
-                    # save images TODO
-                    path = settings.RESEARCH_RESULTS_TOP_STOCKS
-                    data_management.plot_research_graphs(data_tuple)
+                    sector = "US stocks indexes"
+                    research.find_good_stocks()
+                    filters = [0, 1000000000000, 4, 30, 0.5, 1500]  # TODO
+                    all_data_tuple = research.get_all_best_stocks(filters)
 
                     pass
 

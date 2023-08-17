@@ -50,18 +50,18 @@ def get_num_of_years_history() -> int:
 
 
 def get_model_option() -> int:
-    print("choose model: 1 - Markowitz, 2 - Gini\n")
+    print("choose model: 0 - Markowitz, 1 - Gini\n")
     model_option = int(input())
-    while model_option != 1 and model_option != 2:
-        print("Please enter 1 or 2")
+    while model_option != 0 and model_option != 1:
+        print("Please enter 0 or 1")
         model_option = int(input())
 
     return model_option
 
 
 def get_collection_number(stocks: List) -> str: # TODO -display in site
-    collection_description = ["indexes(recommended)", "indexes and stocks", "top returns",
-                          "top sharpe"]
+    collection_description = ["indexes(recommended)", "top indexes", "indexes and stocks",
+                          "top stocks"]
     print("Choose a collection of stocks:")
     for i, collection in enumerate(stocks):
         print(f"{i + 1} - {collection_description[i]}")

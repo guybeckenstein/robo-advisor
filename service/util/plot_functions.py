@@ -2,6 +2,9 @@ import matplotlib
 
 from service.impl.sector import Sector
 import scipy.stats as stats
+
+from service.util import helpers
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -397,15 +400,15 @@ def plot_price_forecast(stocks_symbols, description, df: pd.DataFrame, annual_re
     if plt_instance is not None:
         return plt_instance
     df[df.columns[0]].plot()
+    forecast_short_time = (((df['label'][-500:].pct_change().mean() + 1) ** 252) - 1) * 100
     df['Forecast'].plot()
-    plt.title(f"{stocks_symbols} Stock Price Forecast\n{description}")
-    # sub titile
-    plt.suptitle("Annual Return With Prediction: " + str(round(annual_returns, 2)) + " %")
+    plt.title(f"{description} Stock Price Forecast", pad=10)
     # add text box with annual returns value
     plt.figtext(
-        x=0.2,
-        y=0.8,
-        s=f"Annual Return, Including Prediction: {str(round(annual_returns, 2))}%\n"
+        x=0.15,
+        y=0.75,
+        s=f"average annual Return: {str(round(annual_returns, 2))}%\n"
+          f"forecast Annual return: {str(round(forecast_short_time, 2))}%\n"
     )
 
     plt.legend(loc=4)
@@ -429,35 +432,34 @@ def plot_distribution_of_stocks(stock_names, pct_change_table) -> plt:
     return plt
 
 
-def plot_research_graphs(data_tuple):
-    max_returns_stocks_list, min_volatility_stocks_list, max_sharpest_stocks_list = data_tuple
-
-    plt.figure()
-    plt.title("Stocks with Max Returns")
-    plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    for stock in max_returns_stocks_list:
-        stock.plot()
-    plt.legend(max_returns_stocks_list)
-    plt.grid(True)
-
-    plt.figure()
-    plt.title("Stocks with Min Volatility")
-    plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    for stock in min_volatility_stocks_list:
-        stock.plot()
-    plt.legend(min_volatility_stocks_list)
-    plt.grid(True)
-
-    plt.figure()
-    plt.title("Stocks with Max Sharpe Ratio")
-    plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    for stock in max_sharpest_stocks_list:
-        stock.plot()
-    plt.legend(max_sharpest_stocks_list)
-    plt.grid(True)
+def plot_research_graphs(path, data_stats_tuples, intersection_data_list):
+    # Define metric names for the x-axis
+    intersection_data_list_labels = ["top stocks"]
+    labels = [
+        'Total Return %',
+        'Total min Volatility %',
+        'Total Sharpe',
+        'Annual Return %',
+        'Annual top min Volatility %',
+        'Annual Sharpe',
+        'Monthly Return %',
+        'Monthly Volatility %',
+        'Monthly Sharpe',
+        'Forecast Return %',
+        'Forecast Volatility %',
+        'Forecast Sharpe'
+    ]
+    plt.figure(figsize=FIG_SIZE4)
+    for i in range(len(data_stats_tuples)):
+        plt.subplot(4, 3, i + 1)
+        plt.subplots_adjust(bottom=BOTTOM)
+        plt.title(labels[i], fontsize=12, pad=10)
+        # plt.xlabel('Stocks', fontsize=8)
+        # plt.ylabel('Values', fontsize=8)
+        # plt.xticks(rotation=90)
+        plt.grid(True)
+        plt.bar(data_stats_tuples[i].index[0:5], data_stats_tuples[i][0:5].values)
+        plt.tight_layout()
 
     return plt
 

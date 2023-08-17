@@ -3,13 +3,16 @@ from crispy_forms.layout import Layout, HTML, Field, Submit
 from django import forms
 from django.urls import reverse_lazy
 
+from service.config import settings
 from service.util import helpers
 
 
-def get_indexes_tuple(size: int) -> list[tuple]:
+
+def get_ml_options_tuple(size: int) -> list[tuple]:
+    ml_models_str = settings.MACHINE_LEARNING_MODEL
     res: list = []
     for i in range(1, size + 1):
-        str_i = str(i)
+        str_i = ml_models_str[i - 1]
         curr_tuple = (str_i, str_i)
         res.append(curr_tuple)
     return res
@@ -23,12 +26,13 @@ def get_symbols_tuple(symbols: list[str]) -> list[tuple[str, str]]:
 
 
 class DiscoverStocksForm(forms.Form):
-    list_of_indexes_tuple: list[tuple] = get_indexes_tuple(size=4)
+    list_of_ml_options_tuple: list[tuple] = get_ml_options_tuple(size=4)
     ml_model = forms.ChoiceField(
-        widget=forms.RadioSelect(attrs={'class': 'horizontal-radio'}), choices=list_of_indexes_tuple
+        widget=forms.RadioSelect(attrs={'class': 'horizontal-radio'}), choices=list_of_ml_options_tuple
     )
-    symbols_names: list[tuple[str, str]] = get_symbols_tuple(symbols=helpers.get_symbols_names_list())
-    symbol = forms.ChoiceField(choices=symbols_names)
+    #symbols_names: list[tuple[str, str]] = get_symbols_tuple(symbols=helpers.get_symbols_names_list())
+    symbols_descriptions: list[tuple[str, str]] = get_symbols_tuple(symbols=helpers.get_descriptions_list())
+    symbol = forms.ChoiceField(choices=symbols_descriptions)
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 

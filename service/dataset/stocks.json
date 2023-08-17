@@ -28,88 +28,95 @@
                     "OIL"
                 ],
                 "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.3,
-                "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.15,
+                "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.05,
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.1,
                 "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
             }
         ],
         "2": [
             {
                 "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    142,
+                    169,
+                    161,
+                    162,
+                    13,
                     143,
+                    601,
+                    603,
+                    701,
+                    712,
+                    702,
                     "SPY",
                     "QQQ",
-                    "^RUT",
+                    "XLK",
+                    "SHV",
+                    "SHY",
                     "IEI",
                     "LQD",
-                    "GSG",
-                    "GLD",
-                    "OIL",
-                    "TSLA",
-                    "AAPL",
-                    "AMZN",
-                    "MSFT",
-                    "GOOGL",
-                    "META",
-                    "NVDA"
+                    "GLD"
                 ],
-                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.8,
+                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.6,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.3,
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.4,
                 "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
             }
         ],
         "3": [
             {
                 "stocksSymbols": [
-                    "NVDA",
-                    "MRNA",
-                    "TSLA",
-                    "TEVA",
-                    1090943,
-                    1106376,
-                    168013
+                    169,
+                    170,
+                    603,
+                    601,
+                    701,
+                    714,
+                    "XLK",
+                    "XLV",
+                    "XOP",
+                    "QQQ",
+                    "SHV",
+                    "BIL",
+                    273011,
+                    695437,
+                    593038,
+                    "LMB",
+                    "AGM",
+                    "TDS",
+                    "MCD",
+                    "FMY",
+                    "EOI"
                 ],
-                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 1,
+                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.8,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 1,
-                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.6,
+                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0.02
             }
         ],
         "4": [
             {
                 "stocksSymbols": [
-                    "HPQ",
-                    "QQQ",
-                    "SPY",
-                    "GOOGL",
-                    "CAKE",
-                    "VTRS",
-                    "NVDA",
-                    "CCL",
-                    "TEVA",
-                    "BA",
-                    "BAC",
                     "TSLA",
-                    "META",
-                    "PFE",
-                    "MSFT",
+                    "ADBE",
+                    "JNJ",
+                    "EOI",
                     "AAPL",
                     "AMZN",
-                    "AAL",
-                    "NCLH",
-                    "ASML"
+                    "MSFT",
+                    "GOOG",
+                    "META",
+                    "NVDA",
+                    "AJG",
+                    "BRO",
+                    "CSL",
+                    593038,
+                    273011,
+                    442012,
+                    1081124
                 ],
                 "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 1,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.3,
                 "LIMIT_PERCENT_LOW_RISK_STOCKS": 1,
-                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
+                "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0.05
             }
         ]
     }
