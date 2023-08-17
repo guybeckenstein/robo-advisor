@@ -36,8 +36,9 @@ def save_three_user_graphs_as_png(user: CustomUser) -> None:
     offset_row, record_percent_to_predict = helpers.get_daily_change_sub_table_offset(
         models_data, pct_change_table.index
     )
+    if is_machine_learning:
+        pct_change_table = pct_change_table[offset_row:]  # Update length
     # Update the new sub-table's length (should be at most equal to the old one), then update the table itself
-    pct_change_table = pct_change_table[offset_row:]  # Update length
     yield_column: str = f"yield_{str(risk_level)}"
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = helpers.makes_yield_column(pct_change_table[yield_column], weighted_sum)

@@ -82,8 +82,10 @@ def get_collection_number(stocks: List) -> str: # TODO -display in site
     while invalid:
         try:
             collection_number = int(input("Enter the collection number: "))
+            invalid = False
         except ValueError:
             print('Invalid input! Please choose only numbers')
+            invalid = True
             collection_number = int(input("Enter the collection number: "))
 
     while collection_number < 1 or collection_number > len(stocks):
