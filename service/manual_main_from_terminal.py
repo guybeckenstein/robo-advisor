@@ -15,7 +15,6 @@ if __name__ == '__main__':
             is_machine_learning: int = data_management.get_machine_learning_option()
             model_option: int = data_management.get_model_option()
             investment_amount: int = 1000  # data_management.get_investment_amount() # TODO
-            stocks_collection_number = 1  # default
             # TODO in site(GUY)
             # 1 default collection, Option for the customer to choose (recommended)
             stocks_collection_number: str = data_management.get_collection_number()  # TODO: user investor
@@ -24,7 +23,6 @@ if __name__ == '__main__':
             # Extended data from datasets (CSV Tables)
             tables = data_management.get_extended_data_from_db(
                 stocks_symbols, is_machine_learning, model_option, stocks_collection_number,
-                mode='regular'
             )
             sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
                 pct_change_table, yield_list = tables
@@ -37,16 +35,16 @@ if __name__ == '__main__':
             # question #2
             string_to_show = "Which distribution do you prefer?\nlow risk - 1, medium risk - 2, high risk - 3 ?\n"
             # display distribution of portfolio graph(matplotlib)
-            data_management.plot_distribution_of_portfolio(yield_list, mode='regular', sub_folder=sub_folder)
+            data_management.plot_distribution_of_portfolio(yield_list, sub_folder=sub_folder)
             data_management.plot_image(settings.GRAPH_IMAGES + sub_folder + 'distribution_graph.png')
             second_question_score = data_management.get_score_by_answer_from_user(string_to_show)
 
             # question #3
             string_to_show = "Which graph do you prefer?\nsafest - 1, sharpest - 2, max return - 3 ?\n"
             # display 3 best portfolios graph (matplotlib)
-            data_management.plot_three_portfolios_graph(three_best_portfolios, three_best_sectors_weights,
-                                                        sectors, pct_change_table, mode='regular',
-                                                        sub_folder=sub_folder)
+            data_management.plot_three_portfolios_graph(
+                three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
+            )
             # data_management.plot_functions.plot(plt_instance)
             data_management.plot_image(settings.GRAPH_IMAGES + sub_folder + 'three_portfolios.png')
             third_question_score = data_management.get_score_by_answer_from_user(string_to_show)

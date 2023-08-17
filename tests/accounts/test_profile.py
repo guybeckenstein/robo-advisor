@@ -115,6 +115,7 @@ class TestProfile:
 
         def test_post_request(self, client: Client, user_factory: Callable, investor_user_factory: Callable,
                               questionnaire_a_factory: Callable, questionnaire_b_factory: Callable):
+            # TODO: not working now
             user: CustomUser = user_factory()
             client.force_login(user)
             investor_user: InvestorUser = investor_user_factory(user=user)

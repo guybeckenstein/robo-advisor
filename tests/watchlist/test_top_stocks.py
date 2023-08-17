@@ -24,7 +24,7 @@ class TestTopStocks:
         top_stocks: QuerySet[TopStock] = TopStock.objects.all()
         for top_stock in top_stocks:
             assert top_stock.sector_name in response.content.decode()
-            assert top_stock.img_src in response.content.decode()
+            assert f"static{top_stock.img_src.split('static')[1].replace(' ', '%20')}" in response.content.decode()
 
     def test_redirection_get_request_as_guest(self, client: Client):
         helper_methods.redirection_get_request_as_guest(client, url_name='top_stocks')

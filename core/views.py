@@ -217,7 +217,7 @@ def capital_market_investment_preferences_form(request):
                     daily_change=daily_change,
                 )
             # Frontend
-            web_actions.save_three_user_graphs_as_png(request)  # TODO - call when dataset updated
+            web_actions.save_three_user_graphs_as_png(user=request.user)
             return redirect('homepage')
 
         else:  # CREATE and UPDATE

@@ -9,5 +9,6 @@ class TopStock(models.Model):
 
     class Meta:
         db_table = 'TopStock'
+        ordering = ['sector_name']
         verbose_name = 'Top Stock'
         verbose_name_plural = 'Top Stock'

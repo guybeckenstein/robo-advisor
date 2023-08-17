@@ -81,7 +81,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         questionnaire_a: QuestionnaireA = kwargs.pop('user_preferences_instance', None)
-        self.get_questionnaire_graphs(questionnaire_a, mode=kwargs.get('mode', 'regular'))
+        self.get_questionnaire_graphs(questionnaire_a)
 
         # Form
         form_type = kwargs.pop('form_type', 'create')
@@ -135,7 +135,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
             self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     @staticmethod
-    def get_questionnaire_graphs(questionnaire_a: QuestionnaireA, mode: str):
+    def get_questionnaire_graphs(questionnaire_a: QuestionnaireA):
         # User preferences
         ml_answer = questionnaire_a.ml_answer
         model_answer = questionnaire_a.model_answer
@@ -146,15 +146,15 @@ class InvestmentPreferencesForm(forms.ModelForm):
             stocks_collection_number: str = '1'
         stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
         db_tuple = data_management.get_extended_data_from_db(
-            stocks_symbols, ml_answer, model_answer, stocks_collection_number, mode=mode
+            stocks_symbols, ml_answer, model_answer, stocks_collection_number
         )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yield_list = db_tuple
         # Saves two graphs
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
-        data_management.plot_distribution_of_portfolio(yield_list, mode=mode, sub_folder=sub_folder)
+        data_management.plot_distribution_of_portfolio(yield_list, sub_folder=sub_folder)
         data_management.plot_three_portfolios_graph(
-            three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode, sub_folder=sub_folder
+            three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )
 
     class Meta:

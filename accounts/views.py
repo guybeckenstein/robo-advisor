@@ -1,5 +1,8 @@
+import datetime
 import json
 from datetime import timezone
+
+import pytz
 from django.utils import timezone
 
 import pandas as pd
@@ -21,7 +24,7 @@ from investment.models import Investment
 from service.util import web_actions, data_management
 from service.util.data_management import get_stocks_from_json_file
 from accounts import forms
-from .models import InvestorUser
+from .models import InvestorUser, CustomUser
 
 
 class SignUpView(SignupView):
@@ -65,15 +68,15 @@ class HtmxLoginView(LoginView):
         return context
 
     def form_valid(self, form):
-        # try:
-        #     user = self.request.user
-        #     investor_user = InvestorUser.objects.get(user=user)
-        #     current_datetime = timezone.now()
-        #     last_login = investor_user.user.last_login
-        #     if current_datetime.date() >= last_login.date():
-        #         web_actions.save_three_user_graphs_as_png(self.request)
-        # except InvestorUser.DoesNotExist:
-        #     pass
+        try:
+            email = form.cleaned_data['login']
+            user = CustomUser.objects.get(email=email)
+            last_login = user.last_login.astimezone(pytz.timezone('Asia/Jerusalem'))
+            current = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
+            if (current - last_login).days > 0:
+                web_actions.save_three_user_graphs_as_png(user=user)
+        except InvestorUser.DoesNotExist:
+            pass
         return super().form_valid(form)
 
 
@@ -183,6 +186,7 @@ def profile_investor(request):
                         break  # In this case we should not continue iterating over the new-to-old-sorted investments
                     investment.save()
                 form.save()
+                investor_user.stocks_weights = stocks_weights
                 investor_user.save()
                 messages.success(request, 'Your account details have been updated successfully.')
                 return redirect('capital_market_algorithm_preferences_form')

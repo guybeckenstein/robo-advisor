@@ -159,8 +159,8 @@ class TestPreferencesForm:
         def test_form_successful_post_request(self, client: Client, user_factory: Callable,
                                               questionnaire_a_factory: Callable):
             user, _ = TestPreferencesForm.sign_in(client, user_factory, questionnaire_a_factory)
-            self.test_user_form_is_not_within_the_database(user)
-
+            with pytest.raises(ObjectDoesNotExist):
+                QuestionnaireB.objects.get(user=user)
             data = {f'answer_{i}': '3' for i in range(1, 4)}
             # Testing we are redirected
             helper_methods.post_request(
@@ -172,7 +172,8 @@ class TestPreferencesForm:
         def test_form_failure_post_request(self, client: Client, user_factory: Callable,
                                            questionnaire_a_factory: Callable):
             user, _ = TestPreferencesForm.sign_in(client, user_factory, questionnaire_a_factory)
-            self.test_user_form_is_not_within_the_database(user)
+            with pytest.raises(ObjectDoesNotExist):
+                QuestionnaireB.objects.get(user=user)
             response: TemplateResponse = helper_methods.post_request(
                 client, url_name='capital_market_investment_preferences_form', data={}, status_code=200
             )
@@ -185,10 +186,36 @@ class TestPreferencesForm:
             for i in range(1, 4):
                 assert f'div_id_answer_{i}' in rendered_template
 
-        @staticmethod
-        def test_user_form_is_not_within_the_database(user: CustomUser) -> None:
+    class TestBothForms:
+        def test_forms_successful_post_requests(self, client: Client, user_factory: Callable,
+                                                questionnaire_a_factory: Callable):
+            user: CustomUser = helper_methods.login_user(client, user_factory)
+            # Testing the user form is not within the DB
+            with pytest.raises(ObjectDoesNotExist):
+                QuestionnaireA.objects.get(user=user)
+            data = {
+                'ml_answer': '1',
+                'model_answer': '1',
+            }
+            # Testing we are redirected and the new user form is within the DB
+            helper_methods.post_request(
+                client, url_name='capital_market_algorithm_preferences_form', data=data, status_code=302
+            )
+            assert QuestionnaireA.objects.get(user=user) is not None
+            # GET request to Investment Preferences form
+            response: TemplateResponse = helper_methods.successful_get_request_as_guest(
+                client, url_name='capital_market_investment_preferences_form', template_src='core/form.html'
+            )
             with pytest.raises(ObjectDoesNotExist):
                 QuestionnaireB.objects.get(user=user)
+            data = {f'answer_{i}': '3' for i in range(1, 4)}
+            # Testing we are redirected
+            helper_methods.post_request(
+                client, url_name='capital_market_investment_preferences_form', data=data, status_code=302
+            )
+            # Testing the new user form is within the DB
+            assert QuestionnaireB.objects.get(user=user) is not None
+
 
 
     @staticmethod

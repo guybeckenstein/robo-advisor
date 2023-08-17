@@ -10,7 +10,7 @@ from tests import helper_methods
 
 @pytest.mark.django_db
 class TestLoginAndLogout:
-    def test_login_get_request_as_guest(self, client: Client):
+    def test_login_successful_get_request_as_guest(self, client: Client):
         response: TemplateResponse = helper_methods.successful_get_request_as_guest(
             client,
             url_name='account_login',

@@ -14,21 +14,31 @@ from core.models import QuestionnaireA
 from accounts.models import InvestorUser, CustomUser
 
 
-def save_three_user_graphs_as_png(request) -> None:  # TODO - separate thread
+def save_three_user_graphs_as_png(user: CustomUser) -> None:
+    try:
+        investor_user: InvestorUser = InvestorUser.objects.get(user=user)
+    except InvestorUser.DoesNotExist:
+        raise ValueError('Invalid behavior! Couldn\'t find investor_user within `web_actions`')
     (annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level,
-     stocks_weights) = create_portfolio_instance(request)
-    closing_price_table_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + '1/'
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_price_table_path, mode='regular')
-    pct_change_table: pd = closing_prices_table.pct_change()
+     stocks_weights) = create_portfolio_instance(user, investor_user)
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(
+        path=f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{investor_user.stocks_collection_number}/'
+    )
+    pct_change_table: pd.DataFrame = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     models_data = helpers.get_collection_json_data()
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
-    pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
+    pct_change_table[f"weighted_sum_{str(risk_level)}"] = weighted_sum
     if is_machine_learning:
-        weighted_sum = helpers.update_daily_change_with_machine_learning([weighted_sum],
-                                                                         pct_change_table.index,
-                                                                         models_data)[0][0]
-    yield_column: str = "yield_" + str(risk_level)
+        weighted_sum: pd.DataFrame = helpers.update_daily_change_with_machine_learning(
+            [weighted_sum], pct_change_table.index, models_data
+        )[0][0]
+    offset_row, record_percent_to_predict = helpers.get_daily_change_sub_table_offset(
+        models_data, pct_change_table.index
+    )
+    # Update the new sub-table's length (should be at most equal to the old one), then update the table itself
+    pct_change_table = pct_change_table[offset_row:]  # Update length
+    yield_column: str = f"yield_{str(risk_level)}"
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = helpers.makes_yield_column(pct_change_table[yield_column], weighted_sum)
     portfolio.update_stocks_data(
@@ -41,9 +51,7 @@ def save_three_user_graphs_as_png(request) -> None:  # TODO - separate thread
     )
     # Save plots
     data_management.save_user_portfolio(User(
-        user_id=request.user.id,
-        name=f'{request.user.first_name} {request.user.last_name}',
-        portfolio=portfolio)
+        user_id=user.id, name=f'{user.first_name} {user.last_name}', portfolio=portfolio)
     )
 
 
@@ -57,7 +65,6 @@ def create_portfolio_and_get_data(answers_sum: int, stocks_collection_number: st
         is_machine_learning=questionnaire_a.ml_answer,
         model_option=questionnaire_a.model_answer,
         stocks_collection_number=stocks_collection_number,
-        mode='regular'
     )
     portfolio = data_management.create_new_user_portfolio(
         stocks_symbols=stocks_symbols,
@@ -75,10 +82,9 @@ def create_portfolio_and_get_data(answers_sum: int, stocks_collection_number: st
 
 
 
-def create_portfolio_instance(request):
+def create_portfolio_instance(user: CustomUser, investor_user: InvestorUser):
     # Receive instances from two models - QuestionnaireA, InvestorUser
-    questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
-    investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
+    questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=user)
     # Create three plots - starting with metadata
     is_machine_learning: int = questionnaire_a.ml_answer
     selected_model: int = questionnaire_a.model_answer
@@ -104,7 +110,7 @@ def create_portfolio_instance(request):
         stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
     else:
         ValueError("Invalid type for stocks_symbols of investor_user")
-    sectors = helpers.set_sectors(stocks_symbols=stocks_symbols, mode='regular')
+    sectors = helpers.set_sectors(stocks_symbols=stocks_symbols)
     portfolio: Portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
         sectors=sectors,

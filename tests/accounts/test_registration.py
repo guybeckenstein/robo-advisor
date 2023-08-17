@@ -10,7 +10,7 @@ from tests import helper_methods
 
 @pytest.mark.django_db
 class TestRegistration:
-    def test_user_successful_registration(self, client: Client, user_factory: Callable):
+    def test_successful_post_request_as_guest(self, client: Client, user_factory: Callable):
         # Test user registration
         data = {
             'first_name': 'test',
@@ -27,10 +27,9 @@ class TestRegistration:
         assert user.last_name == 'user'
         assert len(CustomUser.objects.all()) > 0
         assert CustomUser.objects.filter(email='test@example.ac.il').exists()
-
         helper_methods.post_request(client, url_name='signup', data=data, status_code=200)
 
-    def test_user_registration_invalid_input(self, client: Client):
+    def test_invalid_input_post_request(self, client: Client):
         # Test user registration with invalid phone number format
         data1 = {
             'first_name': 'test',

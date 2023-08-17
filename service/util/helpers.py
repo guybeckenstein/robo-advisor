@@ -173,7 +173,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock: pd.DataFrame,
 
     col: pd.Series = df["Forecast"]
     col = col.dropna()  # TODO: adding `inplace=True` may make the same effect
-    df["label"] = df['col']
+    df["label"] = df['Col']
     df["label"].fillna(df["Forecast"], inplace=True)
 
     forecast_returns_annual: np.float64 = (((1 + df['label'].mean()) ** 254) - 1) * 100
@@ -184,7 +184,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock: pd.DataFrame,
     return df, forecast_returns_annual, expected_returns
 
 
-def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index,
+def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index: pd.Index,
                                         record_percent_to_predict: float = 0.05, closing_prices_mode: bool = False):
     df_final: pd.DataFrame = pd.DataFrame({})
     forecast_col: str = 'Col'
@@ -199,7 +199,7 @@ def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index
     df_final.index = pd.to_datetime(table_index, format='%Y-%m-%d')
 
     # Perform ARIMA forecasting
-    model = pm.auto_arima(df_final[forecast_col], seasonal=False, suppress_warnings=True)
+    model: pm.ARIMA = pm.auto_arima(df_final[forecast_col], seasonal=False, suppress_warnings=True)
     forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
 
     df_final['Forecast'] = np.nan
@@ -219,7 +219,7 @@ def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index
         df_final.loc[next_date] = [np.nan for _ in range(len(df_final.columns) - 1)] + [i]
     col = df_final["Forecast"]
     col = col.dropna()
-    df_final["label"] = df_final["col"]
+    df_final["label"] = df_final['Col']
     df_final["label"].fillna(df_final["Forecast"], inplace=True)
 
     forecast_returns_annual = (((1 + df_final['label'].mean()) ** 254) - 1) * 100
@@ -265,7 +265,7 @@ def analyze_with_machine_learning_gbm(returns_stock, table_index, record_percent
     df_final["Forecast"] = df_final["Forecast"].shift(forecast_out)
     col = df_final["Forecast"]
     col = col.dropna()
-    df_final["label"] = df_final["col"]
+    df_final["label"] = df_final["Col"]
     df_final["label"].fillna(df_final["Forecast"], inplace=True)
 
     # forecast_returns_annual = (forecast[-1] / df_final[forecast_col].iloc[-forecast_out - 1]) ** 254 - 1
@@ -343,51 +343,62 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, record_per
     return df_final, forecast_returns_annual, excepted_returns, plt
 
 
-def update_daily_change_with_machine_learning(returns_stock, table_index, models_data, closing_prices_mode=False):
-    record_percent_to_predict = float(models_data["models_data"]["record_percent_to_predict"])
-    selected_ml_model_for_build = int(models_data["models_data"]["selected_ml_model_for_build"])
-    test_size_machine_learning = float(models_data["models_data"]["test_size_machine_learning"])
-    selected_ml_model_for_build = settings.MACHINE_LEARNING_MODEL[selected_ml_model_for_build]
+def update_daily_change_with_machine_learning(
+        returns_stock, table_index: pd.Index, models_data: dict, closing_prices_mode: bool = False
+):
+    # Calculate offset of the table (get sub-table)
+    offset_row, record_percent_to_predict = get_daily_change_sub_table_offset(models_data, table_index)
+
+    selected_ml_model_for_build: int = int(models_data["models_data"]["selected_ml_model_for_build"])
+    test_size_machine_learning: float = float(models_data["models_data"]["test_size_machine_learning"])
+    selected_ml_model_for_build: str = settings.MACHINE_LEARNING_MODEL[selected_ml_model_for_build]
     is_ndarray_mode = False
-    num_of_rows = len(table_index)
-    prefix_row = int(math.ceil(record_percent_to_predict * num_of_rows))
     try:
         columns = returns_stock.columns
     except AttributeError:
         columns = returns_stock
         is_ndarray_mode = True
-    for i, stock in enumerate(columns):
-        df = None
-        if is_ndarray_mode:
-            stock_name = 0
-        else:
-            stock_name = str(stock)
+    if len(columns) == 0:
+        raise AttributeError('columns length is invalid - 0. Should be at least 1')
+    else:
+        annual_return = None
+        excepted_returns = None
+        for i, stock in enumerate(columns):
+            if is_ndarray_mode:
+                stock_name = 0
+            else:
+                stock_name = str(stock)
+            if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:  # Linear Regression
+                df, annual_return, excepted_returns = analyze_with_machine_learning_linear_regression(
+                    returns_stock[stock_name], table_index, record_percent_to_predict, test_size_machine_learning,
+                    closing_prices_mode
+                )
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
+                df, annual_return, excepted_returns = analyze_with_machine_learning_arima(
+                    returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
+                )
 
-        if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:
-            df, annual_return, excepted_returns = analyze_with_machine_learning_linear_regression(
-                returns_stock[stock_name], table_index, record_percent_to_predict, test_size_machine_learning,
-                closing_prices_mode
-            )
-        elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:
-            df, annual_return, excepted_returns = analyze_with_machine_learning_arima(
-                returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
-            )
-
-        elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:
-            df, annual_return, excepted_returns = analyze_with_machine_learning_gbm(
-                returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
-            )
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
+                df, annual_return, excepted_returns = analyze_with_machine_learning_gbm(
+                    returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
+                )
 
 
-        elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:
-            df, annual_return, excepted_returns, plt = analyze_with_machine_learning_prophet(
-                returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
-            )
-        else:
-            raise ValueError('Invalid machine model')
-        returns_stock[stock_name] = df['label'][prefix_row:].values
-    # TODO: (annual_return, excepted_returns) not initialized
-    return returns_stock, annual_return, excepted_returns
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
+                df, annual_return, excepted_returns, plt = analyze_with_machine_learning_prophet(
+                    returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
+                )
+            else:
+                raise ValueError('Invalid machine model')
+            returns_stock[stock_name] = df['label'][offset_row:].values
+        return returns_stock, annual_return, excepted_returns
+
+
+def get_daily_change_sub_table_offset(models_data, table_index):
+    record_percent_to_predict: float = float(models_data["models_data"]["record_percent_to_predict"])
+    num_of_rows = len(table_index)
+    offset_row = int(math.ceil(record_percent_to_predict * num_of_rows))
+    return offset_row, record_percent_to_predict
 
 
 def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_years_history, save_to_csv,
@@ -471,21 +482,18 @@ def get_json_data(name: str):
     return json_data
 
 
-def get_sectors_data_from_file(mode: str = "regular"):
-    if mode == 'regular':
-        sectors_data = get_json_data(settings.SECTORS_JSON_NAME)
-    else:
-        sectors_data = get_json_data('../../' + settings.SECTORS_JSON_NAME)
+def get_sectors_data_from_file():
+    sectors_data = get_json_data(settings.SECTORS_JSON_NAME)
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols: list, mode: str = 'regular') -> list:  # TODO - make more efficient
+def set_sectors(stocks_symbols: list) -> list:  # TODO - make more efficient
     """
     For each stock symbol, it checks for which sector does it belong.
     :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol
     """
     sectors: list = []
-    sectors_data = get_sectors_data_from_file(mode)
+    sectors_data = get_sectors_data_from_file()
 
     for i in range(len(sectors_data)):
         curr_sector = Sector(sectors_data[i]['name'])
@@ -677,9 +685,9 @@ def get_stocks_symbols_list_by_sector(sector):
     return stocks_list
 
 
-def get_sectors_names_list() -> list:
-    all_stocks_Data = get_all_stocks_table()
-    sectors_list = all_stocks_Data['sector'].unique().tolist()
+def get_sectors_names_list() -> list[str]:
+    all_stocks_data: pd.DataFrame = get_all_stocks_table()
+    sectors_list: list[str] = all_stocks_data['sector'].unique().tolist()
     return sectors_list
 
 
@@ -705,7 +713,7 @@ def convert_company_name_to_israeli_security_number(companyName: str) -> str:
 
 def save_all_stocks():
     path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
-    sectors_data = get_sectors_data_from_file(mode="regular")
+    sectors_data = get_sectors_data_from_file()
     # Assuming you have lists named list_symbol, list_sector, and list_description
     list_symbol = []
     list_sector = []
@@ -737,7 +745,7 @@ def save_all_stocks():
 
 
 def save_usa_indexes_table():  # dont delete it
-    sectors_data = get_sectors_data_from_file(mode="regular")
+    sectors_data = get_sectors_data_from_file()
     stock_data_list = []
     # create table
     for i in range(3, 6):

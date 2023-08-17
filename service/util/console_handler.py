@@ -20,7 +20,15 @@ def get_investment_amount() -> int:
 
 def get_machine_learning_option() -> int:
     print("Interested in using machine learning? 0-no, 1-yes")
-    is_machine_learning = int(input())
+    is_machine_learning: int = None
+    invalid: bool = True
+    while invalid:
+        try:
+            is_machine_learning = int(input())
+            invalid = False
+        except ValueError:
+            print('You can only choose numbers! Try again')
+            invalid = True
     while is_machine_learning != 0 and is_machine_learning != 1:
         print("Please enter 0 or 1")
         is_machine_learning = int(input())
@@ -68,7 +76,15 @@ def get_collection_number(stocks: List) -> str: # TODO -display in site
         print_collection_table(stocks[collection][0],
                                stocks[collection][1])
         print()
-    collection_number = int(input("Enter the collection number: "))
+
+    collection_number: int = None
+    invalid: bool = True
+    while invalid:
+        try:
+            collection_number = int(input("Enter the collection number: "))
+        except ValueError:
+            print('Invalid input! Please choose only numbers')
+            collection_number = int(input("Enter the collection number: "))
 
     while collection_number < 1 or collection_number > len(stocks):
         print("Please enter a valid option.")
