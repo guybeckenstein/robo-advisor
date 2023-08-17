@@ -21,7 +21,7 @@ def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
 def forecast_specific_stock(stock: str, machine_learning_model: str, models_data: dict, num_of_years_history: int,
                             start_date: str = None, end_date: str = None):
     plt = None
-    file_name = str(stock) + '.csv'
+    file_name: str = f'{str(stock)}.csv'
     description = helpers.get_stocks_descriptions([stock])[1]
     if start_date is None or end_date is None:
         table = helpers.convert_data_to_tables(settings.RESEARCH_LOCATION, file_name,
@@ -239,10 +239,10 @@ def save_stocks_stats_to_csv(data_stats_tuples):
 def save_top_stocks_img_to_db(top_stocks: list, intersection_data_list: list, sector_name: str):
     data_management.plot_research_graphs(top_stocks, intersection_data_list, sector_name)
     # Correct way to change value of a stock and its instance
-    """top_stock: TopStock = TopStock.objects.filter(sector_name=sector_name).first()  # Gets a stock from a certain sector
-    prefix_str = "top_stocks_f"
+    top_stock: TopStock = TopStock.objects.filter(sector_name=sector_name).first()  # Gets a stock from a certain sector
+    prefix_str = "Top Stocks"
     top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str}{sector_name}.png'
-    top_stock.save()"""
+    top_stock.save()
 
 
 def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, filters=None,

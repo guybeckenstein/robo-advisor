@@ -3,8 +3,8 @@
 # Global constants for Stats Models
 import os
 
-MODEL_NAME = ['Markowitz', 'Gini']
-MACHINE_LEARNING_MODEL = ['LinearRegression', 'ARIMA', 'GradientBoostingRegressor', 'Prophet']
+MODEL_NAME: list = ['Markowitz', 'Gini']
+MACHINE_LEARNING_MODEL: list = ['LinearRegression', 'ARIMA', 'GradientBoostingRegressor', 'Prophet']
 NUM_OF_YEARS_HISTORY = 10  # the number of history years data
 LIMIT_PERCENT_MEDIUM_RISK_STOCKS = 0.3
 LIMIT_PERCENT_MEDIUM_RISK_COMMODITY = 0.1

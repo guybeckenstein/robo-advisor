@@ -8,7 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from service.util import web_actions
+from service.config import settings
+from service.util import web_actions, helpers
 from service.util import data_management
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB

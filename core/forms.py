@@ -4,6 +4,7 @@ from crispy_forms.layout import Submit, Layout, Div, HTML, Field
 from django import forms
 from django.utils.html import format_html
 
+from accounts.models import InvestorUser
 from service.util import data_management
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
@@ -79,8 +80,8 @@ class InvestmentPreferencesForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
-        user_preferences_instance: QuestionnaireA = kwargs.pop('user_preferences_instance', None)
-        self.get_questionnaire_graphs(user_preferences_instance, mode=kwargs.get('mode', 'regular'))
+        questionnaire_a: QuestionnaireA = kwargs.pop('user_preferences_instance', None)
+        self.get_questionnaire_graphs(questionnaire_a, mode=kwargs.get('mode', 'regular'))
 
         # Form
         form_type = kwargs.pop('form_type', 'create')
@@ -91,8 +92,8 @@ class InvestmentPreferencesForm(forms.ModelForm):
         self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #1: For how many years do you want to invest?'
                                                     '</span>')
-        ml_answer: int = user_preferences_instance.ml_answer
-        model_answer: int = user_preferences_instance.model_answer
+        ml_answer: int = questionnaire_a.ml_answer
+        model_answer: int = questionnaire_a.model_answer
         sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'  # Sub folder for current user to fetch its relevant graphs
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
@@ -134,11 +135,15 @@ class InvestmentPreferencesForm(forms.ModelForm):
             self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     @staticmethod
-    def get_questionnaire_graphs(user_preferences_instance, mode: str):
+    def get_questionnaire_graphs(questionnaire_a: QuestionnaireA, mode: str):
         # User preferences
-        ml_answer = user_preferences_instance.ml_answer
-        model_answer = user_preferences_instance.model_answer
-        stocks_collection_number = "1"  # TODO immediate fix!!!!, get from user
+        ml_answer = questionnaire_a.ml_answer
+        model_answer = questionnaire_a.model_answer
+        try:
+            investor_user: InvestorUser = InvestorUser.objects.get(user=questionnaire_a.user)
+            stocks_collection_number: str = investor_user.stocks_collection_number
+        except InvestorUser.DoesNotExist:
+            stocks_collection_number: str = '1'
         stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
         db_tuple = data_management.get_extended_data_from_db(
             stocks_symbols, ml_answer, model_answer, stocks_collection_number, mode=mode
@@ -146,7 +151,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yield_list = db_tuple
         # Saves two graphs
-        sub_folder = str(stocks_collection_number) + '/' + str(ml_answer) + str(model_answer) + "/"
+        sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
         data_management.plot_distribution_of_portfolio(yield_list, mode=mode, sub_folder=sub_folder)
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, mode, sub_folder=sub_folder

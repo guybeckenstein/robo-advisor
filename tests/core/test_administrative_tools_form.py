@@ -10,11 +10,6 @@ from tests import helper_methods
 
 @pytest.mark.django_db
 class TestAdministrativeToolsForm:
-    def test_page_not_found_get_request_as_logged_user(self, client: Client, user_factory: Callable):
-        helper_methods.page_not_found_get_request_as_logged_user(
-            client, user_factory, url_name='administrative_tools_form'
-        )
-
     def test_successful_get_request_as_admin(self, client: Client, superuser_factory: Callable):
         response, _ = helper_methods.successful_get_request_as_admin(
             client, superuser_factory, url_name='administrative_tools_form', template_src='core/form.html'
@@ -33,5 +28,14 @@ class TestAdministrativeToolsForm:
             'Submit',
         ])
 
+    def test_page_not_found_get_request_as_logged_user(self, client: Client, user_factory: Callable):
+        helper_methods.page_not_found_get_request_as_logged_user(
+            client, user_factory, url_name='administrative_tools_form'
+        )
+
     def test_redirection_get_request_as_guest(self, client: Client):
         helper_methods.redirection_get_request_as_guest(client, url_name='administrative_tools_form')
+
+    def post_request(self, client: Client, superuser_factory: Callable):
+        # TODO: add successful POST request and test
+        pass

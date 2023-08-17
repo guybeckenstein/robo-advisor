@@ -1,3 +1,4 @@
+import pandas as pd
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import BadRequest
@@ -34,9 +35,8 @@ def chosen_stock(request):
         if type(ml_model) == int or ml_model.isnumeric():
             ml_model = int(data.get('ml_model', None)) - 1
             ml_model = settings.MACHINE_LEARNING_MODEL[ml_model]
-        symbol = data.get('symbol', None)
         description = data.get('symbol', None)
-        symbol = helpers.get_symbol_by_description(description)
+        symbol: str = helpers.get_symbol_by_description(description)
         start_date = data.get('start_date', None)
         end_date = data.get('end_date', None)
         # Run backend-service methods - it creates two different images (using Matplotlib)

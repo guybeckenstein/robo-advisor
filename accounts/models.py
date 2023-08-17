@@ -1,5 +1,3 @@
-import os
-
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator, MaxValueValidator

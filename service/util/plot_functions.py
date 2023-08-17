@@ -1,5 +1,8 @@
+import os
+
 import matplotlib
 
+from service.config import settings
 from service.impl.sector import Sector
 import scipy.stats as stats
 
@@ -407,8 +410,8 @@ def plot_price_forecast(stocks_symbols, description, df: pd.DataFrame, annual_re
     plt.figtext(
         x=0.15,
         y=0.75,
-        s=f"average annual Return: {str(round(annual_returns, 2))}%\n"
-          f"forecast Annual return: {str(round(forecast_short_time, 2))}%\n"
+        s=f"Average Annual Return: {str(round(annual_returns, 2))}%\n"
+          f"Forecast Annual Yield: {str(round(forecast_short_time, 2))}%\n"
     )
 
     plt.legend(loc=4)
@@ -436,17 +439,17 @@ def plot_research_graphs(path, data_stats_tuples, intersection_data_list):
     # Define metric names for the x-axis
     intersection_data_list_labels = ["top stocks"]
     labels = [
-        'Total Return %',
-        'Total min Volatility %',
+        'Total Return Percentage',
+        'Total Min Volatility Percentage',
         'Total Sharpe',
-        'Annual Return %',
-        'Annual top min Volatility %',
+        'Annual Return Percentage',
+        'Annual Top Min Volatility Percentage',
         'Annual Sharpe',
-        'Monthly Return %',
-        'Monthly Volatility %',
+        'Monthly Return Percentage',
+        'Monthly Volatility Percentage',
         'Monthly Sharpe',
-        'Forecast Return %',
-        'Forecast Volatility %',
+        'Forecast Return Percentage',
+        'Forecast Volatility Percentage',
         'Forecast Sharpe'
     ]
     plt.figure(figsize=FIG_SIZE4)
@@ -465,9 +468,38 @@ def plot_research_graphs(path, data_stats_tuples, intersection_data_list):
 
 
 def save_graphs(plt_instance, file_name) -> None:
+    create_graphs_folders()
     # Adjust font size of the table cells
     plt_instance.savefig(f'{file_name}.png', format='png', dpi=300)
     plt_instance.clf()  # Clear the figure after saving
+
+
+def create_graphs_folders() -> None:
+    try:
+        os.mkdir(f'{settings.GRAPH_IMAGES}')
+    except FileExistsError:
+        pass
+    for i in range(1, 4 + 1):
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/00/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/01/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/10/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/11/')
+        except FileExistsError:
+            pass
 
 
 def plot_image(file_name):

@@ -128,10 +128,11 @@ def return_sectors_weights_according_to_stocks_weights(sectors: list, stocks_wei
     return sectors_weights
 
 
-def analyze_with_machine_learning_linear_regression(returns_stock, table_index, record_percent_to_predict,
-                                                    test_size_machine_learning, closing_prices_mode=False):
-    df_final = pd.DataFrame({})
-    forecast_col = 'col'
+def analyze_with_machine_learning_linear_regression(returns_stock: pd.DataFrame, table_index: pd.Index,
+                                                    record_percent_to_predict: float,
+                                                    test_size_machine_learning: str, closing_prices_mode: bool = False):
+    df_final: pd.DataFrame = pd.DataFrame({})
+    forecast_col: str = 'Col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
     forecast_out = int(math.ceil(float(record_percent_to_predict) * len(df_final)))
@@ -186,7 +187,7 @@ def analyze_with_machine_learning_linear_regression(returns_stock, table_index, 
 def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index,
                                         record_percent_to_predict: float = 0.05, closing_prices_mode: bool = False):
     df_final: pd.DataFrame = pd.DataFrame({})
-    forecast_col: str = 'col'
+    forecast_col: str = 'Col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
     multiplication = record_percent_to_predict * len(df_final)
@@ -233,7 +234,7 @@ def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index
 
 def analyze_with_machine_learning_gbm(returns_stock, table_index, record_percent_to_predict, closing_prices_mode=False):
     df_final = pd.DataFrame({})
-    forecast_col = 'col'
+    forecast_col: str = 'Col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
@@ -282,7 +283,7 @@ def analyze_with_machine_learning_prophet(returns_stock, table_index, record_per
                                           closing_prices_mode=False,
                                           ):
     df_final = pd.DataFrame({})
-    forecast_col = 'col'
+    forecast_col: str = 'Col'
     df_final[forecast_col] = returns_stock
     df_final.fillna(value=-0, inplace=True)
 
@@ -407,7 +408,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     for i, stock in enumerate(stocks_names):
         if type(stock) == float:
             continue
-        if type(stock) == int or stock.isnumeric():
+        if type(stock) == int or stock.isnumeric():  # Israeli stock
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
@@ -416,7 +417,9 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
             try:
                 if start_date < min_date:
                     start_date = min_date
-                df = get_israeli_symbol_data('get_past_10_years_history', start_date, end_date, stock, is_index_type)
+                df: pd.DataFrame = get_israeli_symbol_data(
+                    'get_past_10_years_history', start_date, end_date, stock, is_index_type
+                )
             except ValueError:
                 print('Invalid start_date or end_date format, should be %Y-%m-%d')
             except:
@@ -430,13 +433,14 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
             else:
                 price = df[["closingPrice"]]
             frame[stocks_names[i]] = price
-        else:
+        else:  # US stock
             try:
-                df = yf.download(stock, start=start_date, end=end_date)
+                df: pd.DataFrame = yf.download(stock, start=start_date, end=end_date)
             except ValueError:
                 print('Invalid start_date or end_date format, should be %Y-%m-%d')
+                continue
             except:
-                print("Error in stock: " + stock)
+                print(f"Error in stock: {stock}")
                 continue
             price = df[["Adj Close"]]
             frame[stock] = price
@@ -569,33 +573,36 @@ def get_israeli_symbol_data(command, start_date, end_date, israeli_symbol_name, 
     return data
 
 
-def get_stocks_descriptions(stocks_symbols, is_reverse_mode=True):
+def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
     stocks_descriptions = [len(stocks_symbols)]
-    usa_stocks_table = get_usa_stocks_table()
-    usa_indexes_table = get_usa_indexes_table()
+    usa_stocks_table: pd.DataFrame = get_usa_stocks_table()
+    usa_indexes_table: pd.DataFrame = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
-        if type(stock) == int or stock.isnumeric():
-            num_of_digits = len(str(stock))
-            if num_of_digits > 3:
-                is_index_type = False
-            else:  # israeli index name always has maximum of 3 digits
-                is_index_type = True
-            if type(stock) == str:
-                stock = int(stock)
-            stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
-                                                                             is_reverse_mode=is_reverse_mode))
-        else:
+        try:
+            if type(stock) == int or stock.isnumeric():
+                num_of_digits = len(str(stock))
+                if num_of_digits > 3:
+                    is_index_type = False
+                else:  # israeli index name always has maximum of 3 digits
+                    is_index_type = True
+                if type(stock) == str:
+                    stock = int(stock)
+                stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
+                                                                                 is_reverse_mode=is_reverse_mode))
+            else:
 
-            try:
-                description = usa_indexes_table.loc[usa_indexes_table['symbol'] == stock, 'shortName'].item()
-                stocks_descriptions.append(description)
-            except:
                 try:
-                    description = usa_stocks_table.loc[usa_stocks_table['Symbol'] == stock, 'Name'].item()
+                    description = usa_indexes_table.loc[usa_indexes_table['symbol'] == stock, 'shortName'].item()
                     stocks_descriptions.append(description)
                 except:
-                    description = yf.Ticker(stock).info['shortName']
-                    stocks_descriptions.append(description)
+                    try:
+                        description = usa_stocks_table.loc[usa_stocks_table['Symbol'] == stock, 'Name'].item()
+                        stocks_descriptions.append(description)
+                    except:
+                        description = yf.Ticker(stock).info['shortName']
+                        stocks_descriptions.append(description)
+        except AttributeError:
+            raise AttributeError('Invalid `stocks_symbols`')
 
     return stocks_descriptions
 
@@ -627,11 +634,11 @@ def get_israeli_indexes_list():
     return indexes_list
 
 
-def get_usa_stocks_table():
+def get_usa_stocks_table() -> pd.DataFrame:
     return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "nasdaq_all_stocks.csv")
 
 
-def get_usa_indexes_table():
+def get_usa_indexes_table() -> pd.DataFrame:
     return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "usa_indexes.csv")
 
 
@@ -654,12 +661,13 @@ def get_description_by_symbol(symbol):
     return description
 
 
-def get_symbol_by_description(description):
-    all_stocks_Data = get_all_stocks_table()
+def get_symbol_by_description(description: str) -> pd.Series:
+    all_stocks_data = get_all_stocks_table()
     try:
-        symbol = all_stocks_Data.loc[all_stocks_Data['description'] == str(description), 'Symbol'].item()
-    except:
-        symbol = None
+        symbol = all_stocks_data.loc[all_stocks_data['description'] == str(description), 'Symbol'].item()
+    except ValueError:
+        description: str = get_description_by_symbol(description)
+        symbol = all_stocks_data.loc[all_stocks_data['description'] == str(description), 'Symbol'].item()
     return symbol
 
 

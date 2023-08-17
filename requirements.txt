@@ -63,7 +63,7 @@ threadpoolctl==3.2.0
 tzdata==2023.3
 urllib3==2.0.4
 webencodings==0.5.1
-yfinance==0.2.26
+yfinance==0.2.28
 pmdarima~=2.0.3
 prophet~=1.1.4
 pip~=23.2.1

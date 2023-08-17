@@ -83,7 +83,7 @@ def assert_successful_status_code_for_get_request(response: TemplateResponse, te
 
 
 def assert_redirection_status_code_for_get_request(response: TemplateResponse, url: str) -> None:
-    _assert_successful_status_code_for_get_request(response, template_src)
+    _assert_redirection_status_code_for_get_request(response, url)
 
 
 # Private methods

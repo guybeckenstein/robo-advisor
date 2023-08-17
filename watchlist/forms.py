@@ -30,7 +30,6 @@ class DiscoverStocksForm(forms.Form):
     ml_model = forms.ChoiceField(
         widget=forms.RadioSelect(attrs={'class': 'horizontal-radio'}), choices=list_of_ml_options_tuple
     )
-    #symbols_names: list[tuple[str, str]] = get_symbols_tuple(symbols=helpers.get_symbols_names_list())
     symbols_descriptions: list[tuple[str, str]] = get_symbols_tuple(symbols=helpers.get_descriptions_list())
     symbol = forms.ChoiceField(choices=symbols_descriptions)
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))

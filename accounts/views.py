@@ -6,7 +6,7 @@ import pandas as pd
 from allauth.account.views import SignupView, LoginView
 from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
 from django import forms
-from django.contrib.auth import logout
+from django.contrib.auth import logout, get_user
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import BadRequest
 from django.db.models import QuerySet
@@ -64,6 +64,18 @@ class HtmxLoginView(LoginView):
         context['title'] = 'Login'
         return context
 
+    def form_valid(self, form):
+        # try:
+        #     user = self.request.user
+        #     investor_user = InvestorUser.objects.get(user=user)
+        #     current_datetime = timezone.now()
+        #     last_login = investor_user.user.last_login
+        #     if current_datetime.date() >= last_login.date():
+        #         web_actions.save_three_user_graphs_as_png(self.request)
+        # except InvestorUser.DoesNotExist:
+        #     pass
+        return super().form_valid(form)
+
 
 def logout_view(request):
     logout(request)
@@ -101,15 +113,6 @@ def profile_account_details(request):
     elif request.method == 'POST':
         form: forms.ModelForm = forms.UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
         if form.is_valid():
-            try:
-                investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
-                current_datetime = timezone.now()
-                last_login = investor_user.user.last_login
-                if current_datetime.date() >= last_login.date():
-                    web_actions.save_three_user_graphs_as_png(request)
-            except Http404:
-                pass
-
             form.save()
             messages.success(request, 'Your account details have been updated successfully.')
             return redirect('profile_account')
