@@ -161,7 +161,7 @@ def plot_bb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfoli
     sectors: List[Sector] = new_portfolio.sectors()
 
     stocks_str: str = get_stocks_as_str(sectors)
-
+    plt.title("Bollinger Bands Squeeze Strategy", pad=10)
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         plt.figtext(
             x=0.45,

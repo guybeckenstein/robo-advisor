@@ -231,7 +231,6 @@ def changing_portfolio_investments_treatment_console(selected_user: User, invest
                            entered_as_an_automatic_investment=True, db_type="json", investments=investments)
 
 
-
 def changing_portfolio_investments_treatment_web(investor_user: InvestorUser, portfolio: Portfolio,
                                                  investments: QuerySet[Investment]) -> None:
     try:
@@ -723,6 +722,7 @@ def plot_research_graphs(data_tuple_list: list, intersection_data_list: list, se
     path = settings.RESEARCH_IMAGES
     research_plt = plot_functions.plot_research_graphs(path, data_tuple_list, intersection_data_list)
     plot_functions.save_graphs(research_plt, path + "top_stocks_"f'{sector_name}')
+
 
 def save_user_portfolio(user: User) -> None:
     # Creating directories

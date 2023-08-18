@@ -55,9 +55,9 @@
                     "LQD",
                     "GLD"
                 ],
-                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.6,
+                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.4,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.4,
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.15,
                 "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0
             }
         ],
@@ -86,9 +86,9 @@
                     "FMY",
                     "EOI"
                 ],
-                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.8,
+                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.5,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.6,
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.3,
                 "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0.02
             }
         ],
