@@ -75,15 +75,19 @@ def create_portfolio_and_get_data(answers_sum: int, stocks_collection_number: st
         risk_level=risk_level,
         extended_data_from_db=tables,
     )
-    _, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
+    risk_level, _, stocks_symbols, sectors_names, sectors_weights, stocks_weights, annual_returns, annual_max_loss, \
         annual_volatility, annual_sharpe, total_change, monthly_change, daily_change, selected_model, \
         machine_learning_opt = portfolio.get_portfolio_data()
     return (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change, risk_level,
             sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio)
 
 
-
 def create_portfolio_instance(user: CustomUser, investor_user: InvestorUser):
+    try:
+        investor_user: InvestorUser = InvestorUser.objects.get(user=user)
+    except InvestorUser.DoesNotExist:
+        raise ValueError('Invalid behavior! Couldn\'t find investor_user within `web_actions`')
+
     # Receive instances from two models - QuestionnaireA, InvestorUser
     questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=user)
     # Create three plots - starting with metadata
@@ -96,7 +100,7 @@ def create_portfolio_instance(user: CustomUser, investor_user: InvestorUser):
     if type(investor_user.stocks_symbols) is list:
         stocks_symbols: List[str] = investor_user.stocks_symbols
         for idx, symbol in enumerate(stocks_symbols):
-            if symbol.isnumeric():
+            if type(symbol) == int or symbol.isnumeric():
                 if type(idx) is not int:
                     raise ValueError("Invalid type for idx")
                 stocks_symbols[idx] = int(stocks_symbols[idx])

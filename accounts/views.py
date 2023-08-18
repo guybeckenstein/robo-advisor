@@ -174,8 +174,8 @@ def profile_investor(request):
                 questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
                 questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
                 (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-                 risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights,
-                 total_change, portfolio) = web_actions.create_portfolio_and_get_data(
+                 risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio)\
+                    = web_actions.create_portfolio_and_get_data(
                     answers_sum=questionnaire_b.answers_sum,
                     stocks_collection_number=investor_user.stocks_collection_number,
                     questionnaire_a=questionnaire_a,

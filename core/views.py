@@ -114,6 +114,8 @@ def capital_market_algorithm_preferences_form(request):
 
 @login_required
 def capital_market_investment_preferences_form(request):
+    collections_number: str = '1'
+
     try:
         questionnaire_a = get_object_or_404(QuestionnaireA, user=request.user)
     except Http404:
@@ -180,9 +182,11 @@ def capital_market_investment_preferences_form(request):
             questionnaire_b.save()
             form.save()
 
-            (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-             risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights,
-             total_change, _) = web_actions.create_portfolio_and_get_data(answers_sum, "1", questionnaire_a)
+            (
+                annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
+                risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio) \
+                = web_actions.create_portfolio_and_get_data(answers_sum, collections_number,
+                                                            questionnaire_a)
             try:
                 investor_user = InvestorUser.objects.get(user=request.user)
                 # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
