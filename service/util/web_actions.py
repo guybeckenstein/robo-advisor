@@ -15,12 +15,9 @@ from accounts.models import InvestorUser, CustomUser
 
 
 def save_three_user_graphs_as_png(user: CustomUser) -> None:
-    try:
-        investor_user: InvestorUser = InvestorUser.objects.get(user=user)
-    except InvestorUser.DoesNotExist:
-        raise ValueError('Invalid behavior! Couldn\'t find investor_user within `web_actions`')
+    investor_user: InvestorUser = get_investor_user(user)
     (annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level,
-     stocks_weights) = create_portfolio_instance(user, investor_user)
+     stocks_weights) = create_portfolio_instance(user)
     closing_prices_table: pd.DataFrame = get_closing_prices_table(
         path=f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{investor_user.stocks_collection_number}/'
     )
@@ -56,6 +53,14 @@ def save_three_user_graphs_as_png(user: CustomUser) -> None:
     )
 
 
+def get_investor_user(user: CustomUser) -> InvestorUser:
+    try:
+        investor_user: InvestorUser = InvestorUser.objects.get(user=user)
+    except InvestorUser.DoesNotExist:
+        raise ValueError('Invalid behavior! Couldn\'t find investor_user within `web_actions`')
+    return investor_user
+
+
 def create_portfolio_and_get_data(answers_sum: int, stocks_collection_number: str,
                                   questionnaire_a: QuestionnaireA) -> tuple:
     # Backend
@@ -82,7 +87,7 @@ def create_portfolio_and_get_data(answers_sum: int, stocks_collection_number: st
             sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio)
 
 
-def create_portfolio_instance(user: CustomUser, investor_user: InvestorUser):
+def create_portfolio_instance(user: CustomUser):
     try:
         investor_user: InvestorUser = InvestorUser.objects.get(user=user)
     except InvestorUser.DoesNotExist:
@@ -124,7 +129,9 @@ def create_portfolio_instance(user: CustomUser, investor_user: InvestorUser):
         selected_model=selected_model,
         is_machine_learning=is_machine_learning
     )
-    annual_returns = investor_user.annual_returns
-    annual_volatility = investor_user.annual_volatility
-    annual_sharpe = investor_user.annual_sharpe
+    annual_returns, annual_volatility, annual_sharpe = portfolio.get_annual_data()  # New code
+    # investor_user: InvestorUser = get_investor_user(user)   # Previous Code
+    # annual_returns = investor_user.annual_returns           # Previous Code
+    # annual_volatility = investor_user.annual_volatility     # Previous Code
+    # annual_sharpe = investor_user.annual_sharpe             # Previous Code
     return annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level, stocks_weights

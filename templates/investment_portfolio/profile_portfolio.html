@@ -16,28 +16,38 @@
     </h1>
     <hr>
     {% if is_form_filled %}
-      <table>
+      <table class="table table-hover">
         <thead>
           <tr>
-            <th scope="col">Graph</th>
-            <th scope="col">Image</th>
+            <th scope="col">
+              Graph
+            </th>
+            <th scope="col">
+              Image
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <th scope="row">Sectors Component</th>
+            <th scope="row">
+              Sectors Component
+            </th>
             <td>
               <img src="{% static 'img/user/' %}{{ user.id }}/sectors_component.png" alt="Sectors Component" width="100%">
             </td>
           </tr>
           <tr>
-            <th scope="row">Stocks Component</th>
+            <th scope="row">
+              Stocks Component
+            </th>
             <td>
               <img src="{% static 'img/user/' %}{{ user.id }}/stocks_component.png" alt="Stocks Component" width="100%">
             </td>
           </tr>
           <tr>
-            <th scope="row">Yield</th>
+            <th scope="row">
+              Yield
+            </th>
             <td>
               <img src="{% static 'img/user/' %}{{ user.id }}/yield_graph.png" alt="Yield" width="100%">
             </td>

@@ -115,15 +115,13 @@ class TestProfile:
 
         def test_post_request(self, client: Client, user_factory: Callable, investor_user_factory: Callable,
                               questionnaire_a_factory: Callable, questionnaire_b_factory: Callable):
-            # TODO: not working now
-            user: CustomUser = user_factory()
-            client.force_login(user)
+            user: CustomUser = helper_methods.login_user(client, user_factory)
             investor_user: InvestorUser = investor_user_factory(user=user)
             questionnaire_a_factory(user=user)
             questionnaire_b_factory(user=user)
 
             assert investor_user.stocks_collection_number == '1'
-            data: dict = {
+            data: dict[str, InvestorUser, InvestorUser] = {
                 'stocks_collection_number': '2',
                 'investor_user_instance': investor_user,
                 'instance': investor_user,

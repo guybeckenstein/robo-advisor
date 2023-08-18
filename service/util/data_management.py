@@ -772,9 +772,11 @@ def save_user_portfolio(user: User) -> None:
     df['yield__selected_percent'] = df['Col']
     df['yield__selected_percent_forecast'] = df["Forecast"]
 
-    stats_details_tuple: tuple[float] = portfolio.get_portfolio_stats()
+    stats_details_tuple: tuple[float, float, float, float, float] = portfolio.get_portfolio_stats()
+    annual_returns, volatility, sharpe, max_loss, total_change = stats_details_tuple
     plt_yield_graph = plot_functions.plot_investment_portfolio_yield(
-        user_name=user.name, df=df, stats_details_tuple=stats_details_tuple, sectors=portfolio.sectors
+        user_name=user.name, df=df, annual_returns=annual_returns, volatility=volatility, sharpe=sharpe,
+        max_loss=max_loss, total_change=total_change, sectors=portfolio.sectors
     )
     plot_functions.save_graphs(plt_yield_graph, file_name=f'{curr_user_directory}/yield_graph')
 

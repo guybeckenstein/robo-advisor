@@ -89,8 +89,8 @@ def create_scatter_plot(
     for i in range(3):
         plt.scatter(x=portfolios[i][x], y=portfolios[i][y], c=colors[i], marker="D", s=200)
     plt.style.use("seaborn-dark")
-    plt.xlabel(f"{x} (Std. Deviation) Percentage %")
-    plt.ylabel(f"Expected {y} Percentage %")
+    plt.xlabel(f"{x} (Std. Deviation) Percentage")
+    plt.ylabel(f"Expected {y} Percentage")
     plt.title("Efficient Frontier")
     plt.subplots_adjust(bottom=BOTTOM)
 
@@ -187,38 +187,48 @@ def plot_bb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfoli
 
 
 def plot_three_portfolios_graph(min_variance_portfolio, sharpe_portfolio, max_returns, three_best_sectors_weights,
-                                sectors: list[Sector], pct_change_table):
+                                sectors: list[Sector], pct_change_table: pd.DataFrame):
     plt.figure()  # Create a new plot instance
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     plt.style.use("seaborn-dark")
-    plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    plt.title("Three Best Portfolios")
-
-    for i in range(1, 3 + 1):
-        pct_change_table[f'yield_{i}_percent'] = (pct_change_table[f'yield_{i}'] - 1) * 100
-
-    labels: list[str] = ['Max Returns', 'Sharpe', 'Safest']
-    colors = ['red', 'green', 'yellow']
-
-    for i in range(1, 3 + 1):
-        j = i - 1
-        pct_change_table[f'yield_{str(4 - i)}_percent'].plot(
-            figsize=FIG_SIZE1, grid=GRID, color=colors[j], linewidth=2, label=labels[j], legend=True,
-            linestyle=LINE_STYLE
-        )
-
-    plt.subplots_adjust(bottom=BOTTOM)
+    labels, colors = main_plot_three_portfolios_graph(pct_change_table)
 
     # ------------------ Printing 3 optimal Portfolios -----------------------
     # Setting max_X, max_Y to act as relative border for window size
-    stocks_y: list[str] = ['', '', '']
+    sub_plot_three_portfolios_graph(
+        colors, labels, max_returns, min_variance_portfolio, sectors, sharpe_portfolio, three_best_sectors_weights
+    )
+    return plt
 
+
+def main_plot_three_portfolios_graph(pct_change_table) -> tuple[list[str, str, str], list[str, str, str]]:
+    plt.xlabel("Date")
+    plt.ylabel("Returns Percentage")
+    plt.title("Three Best Portfolios")
+    labels: list[str, str, str] = ['Max Returns', 'Sharpe', 'Safest']
+    colors: list[str, str, str] = ['red', 'green', 'yellow']
+    labels_len: int = len(labels)
+    # Creates yield values for each portfolio
+    for i in range(labels_len):
+        pct_change_table[f'yield_{str(i + 1)}_percent'] = (pct_change_table[f'yield_{str(i + 1)}'] - 1) * 100
+    # Plot yield for each portfolio
+    for i in range(labels_len):
+        pct_change_table[f'yield_{str(labels_len - i)}_percent'].plot(
+            figsize=FIG_SIZE1, grid=GRID, color=colors[i], linewidth=2, label=labels[i], legend=True,
+            linestyle=LINE_STYLE
+        )
+    plt.legend(frameon=True, facecolor='white')  # Adjust legend background color
+    return labels, colors
+
+
+def sub_plot_three_portfolios_graph(colors, labels, max_returns, min_variance_portfolio, sectors, sharpe_portfolio,
+                                    three_best_sectors_weights):
+    plt.subplots_adjust(bottom=BOTTOM)
+    stocks_y: list[str, str, str] = ['', '', '']
     for i in range(len(sectors)):
         for j in range(3):
             weight = three_best_sectors_weights[2 - j][i] * 100
             stocks_y[j] += sectors[i].name + "(" + str("{:.2f}".format(weight)) + "%),\n "
-
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         fig_text_data: dict = {
             'name': labels,
@@ -245,12 +255,10 @@ def plot_three_portfolios_graph(min_variance_portfolio, sharpe_portfolio, max_re
                 x=0.2 + 0.3 * i, y=0.27, s=f"{fig_text_data['name'][i]} Portfolio:", fontsize=12,
                 fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
             )
-    return plt
 
 
 def plot_distribution_of_portfolio(yields) -> plt:
     plt.figure()  # Create a new plot instance
-    labels: list[str] = ['Low Risk', 'Medium Risk', 'High Risk']
     plt.subplots(figsize=FIG_SIZE1)
     plt.subplots_adjust(bottom=BOTTOM)
 
@@ -258,6 +266,7 @@ def plot_distribution_of_portfolio(yields) -> plt:
     monthly_changes: list[pd.Series] = [None] * len(yields)  # yield changes
     df_describes: list[pd.Series] = [None] * len(yields)  # describe of yield changes
 
+    labels: list[str, str, str] = ['Low Risk', 'Medium Risk', 'High Risk']
     for i in range(len(yields)):
         # Convert the index to datetime if it's not already in the datetime format
         curr_yield = yields[i]
@@ -277,13 +286,13 @@ def plot_distribution_of_portfolio(yields) -> plt:
         #     data=monthly_changes[i], kde=True, label=labels[i],
         # )
 
-    plt.xlabel('Monthly Return %', fontsize=12)
+    plt.legend(frameon=True, facecolor='white')  # Adjust legend background color
+    plt.xlabel('Monthly Return Percentage', fontsize=12)
     plt.ylabel('Distribution', fontsize=12)
     plt.grid(True)
-    plt.legend()
     plt.title("Distribution of Portfolios - By Monthly Returns")
 
-    # Creates figtext under the main graph
+    # Creates subplots under the main graph
     with pd.option_context("display.float_format", "%{:,.2f}".format):
         y_header: float = 0.23
         y_content: float = 0.15
@@ -311,14 +320,13 @@ def plot_distribution_of_portfolio(yields) -> plt:
     return plt
 
 
-def plot_investment_portfolio_yield(user_name: str, df: pd.DataFrame, stats_details_tuple: tuple[float],
-                                    sectors: list[Sector]):
+def plot_investment_portfolio_yield(user_name: str, df: pd.DataFrame, annual_returns: float, volatility: float,
+                                    sharpe: float, max_loss: float, total_change: float, sectors: list[Sector]):
     plt.figure()
-    annual_returns, volatility, sharpe, max_loss, total_change = stats_details_tuple
     plt.style.use("seaborn-dark")
     plt.xlabel("Date")
-    plt.ylabel("Returns %")
-    plt.title(f"Hello {user_name}! This is your yield portfolio")
+    plt.ylabel("Returns Percentage")
+    plt.title(f"{user_name}'s Portfolio")
 
     tables: list[str] = ['selected_percent', 'selected_percent_forecast']
     colors: list[str] = ['green', 'blue']
@@ -329,6 +337,7 @@ def plot_investment_portfolio_yield(user_name: str, df: pd.DataFrame, stats_deta
             figsize=FIG_SIZE1, grid=GRID, color=colors[i], linewidth=2, label=labels[i], legend=True,
             linestyle=LINE_STYLE
         )
+    plt.legend(frameon=True, facecolor='white')  # Adjust legend background color
     plt.subplots_adjust(bottom=BOTTOM)
     stocks_str: str = get_stocks_as_str(sectors)
 
@@ -342,7 +351,7 @@ def plot_investment_portfolio_yield(user_name: str, df: pd.DataFrame, stats_deta
               f"Annual Volatility: {str(round(volatility, 2))}%\n"
               f"Max Loss: {str(round(max_loss, 2))}%\n"
               f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
-              f"{stocks_str}",
+              f"{stocks_str.strip()}",
             bbox=dict(facecolor="green", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME,
             wrap=WRAP,
         )
@@ -470,7 +479,7 @@ def plot_research_graphs(path, data_stats_tuples, intersection_data_list):
 def save_graphs(plt_instance, file_name) -> None:
     create_graphs_folders()
     # Adjust font size of the table cells
-    plt_instance.savefig(f'{file_name}.png', format='png', dpi=300)
+    plt_instance.savefig(f'{file_name}.png', format='png', dpi=300, transparent=True)
     plt_instance.clf()  # Clear the figure after saving
 
 

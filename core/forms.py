@@ -149,10 +149,10 @@ class InvestmentPreferencesForm(forms.ModelForm):
             stocks_symbols, ml_answer, model_answer, stocks_collection_number
         )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
-            pct_change_table, yield_list = db_tuple
+            pct_change_table, yields = db_tuple
         # Saves two graphs
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
-        data_management.plot_distribution_of_portfolio(yield_list, sub_folder=sub_folder)
+        data_management.plot_distribution_of_portfolio(yields, sub_folder=sub_folder)
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )

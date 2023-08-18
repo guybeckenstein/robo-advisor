@@ -130,6 +130,9 @@ class Portfolio:
             self._annual_volatility, self._annual_sharpe, self.get_total_change(), self.get_monthly_change(), \
             self.get_daily_change(), self.selected_model, self.machine_learning_opt
 
+    def get_annual_data(self) -> tuple[float, float, float]:
+        return self._annual_returns, self._annual_volatility, self._annual_sharpe
+
     def calculate_total_profit_according_to_dates_dates(self, investments) -> float:
         profit: float = 0.0
 

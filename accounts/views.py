@@ -181,13 +181,18 @@ def profile_investor(request):
                     questionnaire_a=questionnaire_a,
                 )
                 data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio, investments)
+                # Update Investments' Data
                 for investment in investments:
                     if investment.make_investment_inactive() is False:
                         break  # In this case we should not continue iterating over the new-to-old-sorted investments
                     investment.save()
+                # Update Form Data
                 form.save()
+                # Update InvestorUser data
                 investor_user.stocks_weights = stocks_weights
+                investor_user.stocks_collection_number = form.cleaned_data['stocks_collection_number']
                 investor_user.save()
+                # Continue
                 messages.success(request, 'Your account details have been updated successfully.')
                 return redirect('capital_market_algorithm_preferences_form')
         else:
