@@ -1,3 +1,4 @@
+
 from typing import List
 
 import numpy as np
@@ -14,10 +15,16 @@ from core.models import QuestionnaireA
 from accounts.models import InvestorUser, CustomUser
 
 
-def save_three_user_graphs_as_png(user: CustomUser) -> None:
+def save_three_user_graphs_as_png(user: CustomUser, portfolio=None) -> None:
     investor_user: InvestorUser = get_investor_user(user)
-    (annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level,
-     stocks_weights) = create_portfolio_instance(user)
+    if portfolio is None:
+        (annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level,
+         stocks_weights) = create_portfolio_instance(user)
+    else:
+        risk_level, total_investment_amount, stocks_symbols, sectors_names, \
+            stocks_weights, stocks_weights, annual_returns, max_loss, \
+            annual_volatility, annual_sharpe, total_change, monthly_change, \
+            daily_change, selected_model, is_machine_learning = portfolio.get_portfolio_data()
     closing_prices_table: pd.DataFrame = get_closing_prices_table(
         path=f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{investor_user.stocks_collection_number}/'
     )
@@ -129,9 +136,9 @@ def create_portfolio_instance(user: CustomUser):
         selected_model=selected_model,
         is_machine_learning=is_machine_learning
     )
-    annual_returns, annual_volatility, annual_sharpe = portfolio.get_annual_data()  # New code
-    # investor_user: InvestorUser = get_investor_user(user)   # Previous Code
-    # annual_returns = investor_user.annual_returns           # Previous Code
-    # annual_volatility = investor_user.annual_volatility     # Previous Code
-    # annual_sharpe = investor_user.annual_sharpe             # Previous Code
+    # annual_returns, annual_volatility, annual_sharpe = portfolio.get_annual_data()  # New code
+    investor_user: InvestorUser = get_investor_user(user)   # Previous Code
+    annual_returns = investor_user.annual_returns           # Previous Code
+    annual_volatility = investor_user.annual_volatility     # Previous Code
+    annual_sharpe = investor_user.annual_sharpe             # Previous Code
     return annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level, stocks_weights

@@ -66,13 +66,13 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path, m
 
         # Without machine learning - Markowitz, Gini, With machine learning - Markowitz, Gini
         options_list: list[tuple[int, str]] = [(0, 'Markowitz'), (0, 'Gini'), (1, 'Markowitz'), (1, 'Gini')]
-        for i, machine_learning_option, model in enumerate(options_list):
+        for i, machine_model_tuple in enumerate(options_list):
             if i == 2:
                 pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
                     pct_change_table, closing_prices_table.index, models_data
                 )
             update_three_level_data_frame_tables(
-                machine_learning_opt=machine_learning_option, model_name=model, stocks_symbols=stocks_symbols,
+                machine_learning_opt=machine_model_tuple[0], model_name=machine_model_tuple[1], stocks_symbols=stocks_symbols,
                 sectors_list=sectors_list, closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
                 path=path, models_data=models_data, collection_num=collection_num
             )

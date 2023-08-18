@@ -73,8 +73,8 @@ class HtmxLoginView(LoginView):
             user = CustomUser.objects.get(email=email)
             last_login = user.last_login.astimezone(pytz.timezone('Asia/Jerusalem'))
             current = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
-            if (current - last_login).days > 0:
-                web_actions.save_three_user_graphs_as_png(user=user)
+            #if (current - last_login).days > 0:
+                #web_actions.save_three_user_graphs_as_png(user=user)
         except InvestorUser.DoesNotExist:
             pass
         return super().form_valid(form)
@@ -191,6 +191,10 @@ def profile_investor(request):
                 # Update InvestorUser data
                 investor_user.stocks_weights = stocks_weights
                 investor_user.stocks_collection_number = form.cleaned_data['stocks_collection_number']
+                investor_user.annual_returns = annual_returns
+                investor_user.annual_max_loss = annual_max_loss
+                investor_user.annual_volatility = annual_volatility
+                investor_user.annual_sharpe = annual_sharpe
                 investor_user.save()
                 # Continue
                 messages.success(request, 'Your account details have been updated successfully.')

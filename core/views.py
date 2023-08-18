@@ -223,7 +223,7 @@ def capital_market_investment_preferences_form(request):
                     daily_change=daily_change,
                 )
             # Frontend
-            web_actions.save_three_user_graphs_as_png(user=request.user)
+            web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
             return redirect('homepage')
 
         else:  # CREATE and UPDATE
