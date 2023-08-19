@@ -1,18 +1,14 @@
 import csv
-
 import numpy as np
 import pandas as pd
 import ta
 import yfinance as yf
-
 from watchlist.models import TopStock
 from . import plot_functions, helpers, data_management
 from ..config import settings
 
 
 def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
-    # Creating directories
-    # curr_user_directory = settings.RESEARCH_RESULTS_LOCATION
     curr_user_directory = settings.RESEARCH_IMAGES
     # Saving files
     plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + stock + operation)
@@ -62,7 +58,7 @@ def forecast_specific_stock(stock: str, machine_learning_model: str, models_data
                          f'{settings.MACHINE_LEARNING_MODEL[2]}\n'
                          f'{settings.MACHINE_LEARNING_MODEL[3]}\n')
 
-    plt_instance = plot_functions.plot_price_forecast(stock, description, df, annual_return, plt)
+    plt_instance = plot_functions.plot_price_forecast(description, df, annual_return, plt, machine_learning_model)
     return plt_instance
 
 
@@ -144,11 +140,6 @@ def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"
     plt_instance = plot_functions.plot_bb_strategy_stock(stock_prices, buy_price, sell_price)
     return plt_instance
 
-
-def plot_bb_strategy_portfolio(pct_change_table, new_portfolio):  # TODO USE OR REMOVE
-    plt_instance = plot_functions.plot_bb_strategy_portfolio(pct_change_table, new_portfolio)
-
-    return plt_instance
 
 
 def download_data_for_research(num_of_years_history: int) -> None:

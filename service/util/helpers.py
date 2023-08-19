@@ -3,11 +3,8 @@ import csv
 import datetime
 import json
 import math
-
 import boto3
-import sklearn.linear_model._base
 from bidi import algorithm as bidi_algorithm
-
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -19,7 +16,6 @@ from typing import Tuple
 import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
-
 from ..config import aws_settings, settings
 from ..impl.sector import Sector
 from . import tase_interaction
@@ -390,7 +386,11 @@ def update_daily_change_with_machine_learning(
                 )
             else:
                 raise ValueError('Invalid machine model')
-            returns_stock[stock_name] = df['label'][offset_row:].values
+            if df['label'][offset_row:].values.size == returns_stock[stock_name].size:
+                returns_stock[stock_name] = df['label'][offset_row:].values
+            else:
+                returns_stock[stock_name] = df['label'].values
+
         return returns_stock, annual_return, excepted_returns
 
 

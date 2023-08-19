@@ -1,19 +1,13 @@
 import os
 from typing import List, Tuple
-
 import numpy as np
 import pandas as pd
-from django.db.models import QuerySet
-# django imports
+import datetime
 import django
-from django.conf import settings as django_settings
-# Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
-from django.db import models
 from investment.models import Investment
 from .sector import Sector
-import datetime
 
 
 class Portfolio:
@@ -130,9 +124,6 @@ class Portfolio:
             self._annual_volatility, self._annual_sharpe, self.get_total_change(), self.get_monthly_change(), \
             self.get_daily_change(), self.selected_model, self.machine_learning_opt
 
-    def get_annual_data(self) -> tuple[float, float, float]:
-        return self._annual_returns, self._annual_volatility, self._annual_sharpe
-
     def calculate_total_profit_according_to_dates_dates(self, investments) -> float:
         profit: float = 0.0
 
@@ -162,13 +153,7 @@ class Portfolio:
         total_change = total_change * 100 - 100
         return total_change
 
-    def get_yearly_change(self):  # TODO FIX
-        self._pct_change_table['yield_selected'].index = pd.to_datetime(self._pct_change_table['yield_selected'].index)
-        yearly_yields = self._pct_change_table['yield_selected'].resample('Y').first()
-        yearly_changes = yearly_yields.pct_change().dropna() * 100
-        return yearly_changes[-1]
-
-    def get_monthly_change(self):  # TODO FIX
+    def get_monthly_change(self):
         self._pct_change_table['yield_selected'].index = pd.to_datetime(self._pct_change_table['yield_selected'].index)
         monthly_yields = self._pct_change_table['yield_selected'].resample('M').first()
         monthly_changes = monthly_yields.pct_change().dropna() * 100
@@ -196,26 +181,7 @@ class Portfolio:
 
         return result
 
-    def get_yearly_value_change(self):
-        data = self.get_yearly_pct_change_table()["yield_selected"]
-        return data.iloc[-1] - data.iloc[-2]
-
-    def get_monthly_value_change(self):
-        data = self.get_monthly_pct_change_table()["yield_selected"]
-        return data.iloc[-1] - data.iloc[-2]
-
-    def get_daily_value_change(self):
-        data = self._pct_change_table()["yield_selected"]
-        return data.iloc[-1] - data.iloc[-2]
-
     # Get tables
-    def get_monthly_pct_change_table(self):
-        table = self._pct_change_table.resample('M').apply(lambda x: (x[-1] / x[0] - 1) * 100)
-        return table
-
-    def get_yearly_pct_change_table(self):
-        return self._pct_change_table.resample('Y').apply(lambda x: (x[-1] / x[0] - 1) * 100)
-
     # Setters and updaters
     def update_stocks_data(self, closing_prices_table, pct_change_table: pd.DataFrame, stocks_weights, annual_returns,
                            annual_volatility, annual_sharpe):

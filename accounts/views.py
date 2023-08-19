@@ -73,8 +73,16 @@ class HtmxLoginView(LoginView):
             user = CustomUser.objects.get(email=email)
             last_login = user.last_login.astimezone(pytz.timezone('Asia/Jerusalem'))
             current = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
-            #if (current - last_login).days > 0:
-                #web_actions.save_three_user_graphs_as_png(user=user)
+            if (current - last_login).days > 0:
+                """web_actions.create_portfolio_and_get_data(
+                  answers_sum = InvestorUser.questionnaire_b.answers_sum,
+                  stocks_collection_number = InvestorUser.stocks_collection_number,
+                  questionnaire_a = InvestorUser.questionnaire_a)  
+                  (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
+                   risk_level,
+                   sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio)"""
+                # web_actions.save_three_user_graphs_as_png(user=user)
+                pass
         except InvestorUser.DoesNotExist:
             pass
         return super().form_valid(form)
@@ -174,7 +182,7 @@ def profile_investor(request):
                 questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
                 questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
                 (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-                 risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio)\
+                 risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio) \
                     = web_actions.create_portfolio_and_get_data(
                     answers_sum=questionnaire_b.answers_sum,
                     stocks_collection_number=investor_user.stocks_collection_number,

@@ -1,12 +1,7 @@
 import os
-
 import matplotlib
-
 from service.config import settings
 from service.impl.sector import Sector
-import scipy.stats as stats
-
-from service.util import helpers
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -139,49 +134,30 @@ def plot_gini_graph(sectors: list[Sector], three_best_sectors_weights, min_varia
 
 
 def plot_bb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
+
     stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=FIG_SIZE2)
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)
-
-    print("Number of green:")
-    print(np.count_nonzero(~np.isnan(buy_price)))
-    print("Number of red:")
-    print(np.count_nonzero(~np.isnan(sell_price)))
-
-    return plt
-
-
-def plot_bb_strategy_portfolio(stock_prices, buy_price, sell_price, new_portfolio) -> plt:
-    plt.figure()  # Create a new plot instance
-    stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=FIG_SIZE2)
-    s: int = 200
-    plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=s)
-    plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=s)
-
-    sectors: List[Sector] = new_portfolio.sectors()
-
-    stocks_str: str = get_stocks_as_str(sectors)
     plt.title("Bollinger Bands Squeeze Strategy", pad=10)
-    with pd.option_context("display.float_format", "%{:,.2f}".format):
-        plt.figtext(
-            x=0.45,
-            y=0.15,
-            s=f"Your Portfolio:\n"
-              f"Returns: {str(round(new_portfolio.annual_returns(), 2))}%\n"
-              f"Volatility: {str(round(new_portfolio.annual_volatility(), 2))}%\n"
-              f"Max Loss: {str(round(new_portfolio.get_max_loss(), 2))}%\n"
-              f"Sharpe Ratio: {str(round(new_portfolio.annual_sharpe(), 2))}\n"
-              f"{stocks_str}",
-            bbox=dict(facecolor="green", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME,
-            wrap=WRAP,
-        )
+    # Count non-NaN values in buy and sell price arrays
+    num_buy_signals = np.count_nonzero(~np.isnan(buy_price))
+    num_sell_signals = np.count_nonzero(~np.isnan(sell_price))
 
-    plt.subplots_adjust(bottom=BOTTOM)
+    # Add text annotations for the counts of buy and sell signals
+    plt.annotate(f'Buy Signals: {num_buy_signals}',
+                 xy=(0.25, 0.95),
+                 xycoords='axes fraction',
+                 fontsize=12,
+                 color='green')
 
-    print("Number of green:")
-    print(np.count_nonzero(~np.isnan(buy_price)))
-    print("Number of red:")
-    print(np.count_nonzero(~np.isnan(sell_price)))
+    plt.annotate(f'Sell Signals: {num_sell_signals}',
+                 xy=(0.25, 0.88),
+                 xycoords='axes fraction',
+                 fontsize=12,
+                 color='red')
+
+    # Show legend
+    plt.legend()
 
     return plt
 
@@ -408,11 +384,18 @@ def plot_portfolio_component_stocks(user_name: str, stocks_weights: List[float],
     return plt_instance
 
 
-def plot_price_forecast(stocks_symbols, description, df: pd.DataFrame, annual_returns, plt_instance=None) -> plt:
+def plot_price_forecast(description, df: pd.DataFrame, annual_returns, plt_instance=None, machine_learning_model=None) -> plt:
+    forecast_short_time = (((df['label'][-400:].pct_change().mean() + 1) ** 252) - 1) * 100
     if plt_instance is not None:
+        plt_instance.figtext(
+            x=0.15,
+            y=0.75,
+            s=f"Average Annual Return: {str(round(annual_returns, 2))}%\n"
+              f"Forecast Annual Yield: {str(round(forecast_short_time, 2))}%\n"
+        )
         return plt_instance
-    df[df.columns[0]].plot()
-    forecast_short_time = (((df['label'][-500:].pct_change().mean() + 1) ** 252) - 1) * 100
+
+    df[df.columns[0]].plot(label="history")
     df['Forecast'].plot()
     plt.title(f"{description} Stock Price Forecast", pad=10)
     # add text box with annual returns value

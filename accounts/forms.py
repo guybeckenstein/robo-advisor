@@ -176,7 +176,6 @@ class UpdateInvestorUserForm(forms.ModelForm):
         stocks_symbols: list[str] = get_stocks_symbols_from_json_file(collection_number=collection_number)
 
         # Convert the list to a formatted string
-
         instance.stocks_symbols = stocks_symbols
 
         if commit:

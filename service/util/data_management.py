@@ -6,7 +6,6 @@ import math
 import numpy as np
 import pandas as pd
 from typing import Tuple, List
-from accounts.models import InvestorUser
 from investment.models import Investment
 from ..impl.portfolio import Portfolio
 from ..impl.stats_models import StatsModels
@@ -17,7 +16,6 @@ import os
 # django imports
 import django
 from django.db.models import QuerySet
-from django.conf import settings as django_settings
 
 # Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
@@ -550,22 +548,6 @@ def update_pct_change_table(best_stocks_weights_column, pct_change_table):
     return [yield_low, yield_medium, yield_high]
 
 
-def read_csv_file(file_path):
-    rows_list = []
-    with open(file_path, newline='') as csvfile:
-        csvreader = csv.reader(csvfile)
-        for row in csvreader:
-            if type(row) == list:
-                if row[0] == 'Symbol':
-                    continue
-                rows_list.append(row)
-            else:
-                if row == 'Symbol':
-                    continue
-                rows_list.append(row)
-    return rows_list
-
-
 def get_level_of_risk_by_score(count: int) -> int:
     if count <= 4:
         return 1
@@ -575,14 +557,6 @@ def get_level_of_risk_by_score(count: int) -> int:
         return 3
     else:
         raise ValueError
-
-
-def creates_json_file(json_obj, name_product: str) -> None:
-    # Open a file in write mode
-    parts: list = name_product.split("/")
-    last_element: str = parts[-1]
-    with open(settings.CONFIG + last_element + ".json", "w") as f:
-        json.dump(json_obj, f)  # Use the `dump()` function to write the JSON data to the file
 
 
 # impl utility functions
@@ -642,12 +616,6 @@ def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_
     plot_functions.save_graphs(plt_instance_three_graph, fully_qualified_name)
 
     return plt_instance_three_graph
-
-
-def plot_distribution_of_stocks(stock_names, pct_change_table):
-    plt_instance = plot_functions.plot_distribution_of_stocks(stock_names, pct_change_table)
-
-    return plt_instance
 
 
 def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/'):

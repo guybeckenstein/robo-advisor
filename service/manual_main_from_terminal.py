@@ -121,15 +121,18 @@ if __name__ == '__main__':
                     operation = '_bb_strategy'
                     research.save_user_specific_stock(stock_name, operation, plt_instance)
                     data_management.plot_image(
-                        settings.settings.RESEARCH_IMAGES +
+                        settings.RESEARCH_IMAGES +
                         stock_name + operation + '.png')
 
                 elif selection == 3:
                     # research good stocks
-                    sector = "US stocks"  # TODO, in site select sector or "ALL"
-                    # TODO - SHOW IMAGES
-
-
+                    filters = [0, 1000000000000, 4, 30, 0.5, 1500]
+                    sector_name = "US stocks"  # TODO - get from user
+                    data_tuple = research.find_good_stocks(sector_name)
+                    sorted_data_tuple, intersection = research.sort_good_stocks(data_tuple, filters)
+                    data_management.plot_research_graphs(sorted_data_tuple, intersection, sector_name)
+                    prefix_str = 'top_stocks_'
+                    data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}.png')
 
 
                 # plot 3 best portfolios graph
@@ -173,7 +176,7 @@ if __name__ == '__main__':
 
                     sector = "US stocks indexes"
                     research.find_good_stocks()
-                    filters = [0, 1000000000000, 4, 30, 0.5, 1500]  # TODO
+                    filters = [0, 1000000000000, 4, 30, 0.5, 1500]
                     all_data_tuple = research.get_all_best_stocks(filters)
 
                     pass

@@ -223,28 +223,6 @@ class StatsModels:
     def get_df(self):
         return self._df
 
-    def get_three_best_portfolios(self):
-        return self._three_best_portfolios
-
-    def get_three_best_weights(self):
-        return self._three_best_stocks_weights
-
-    def get_three_best_sectors_weights(self):
-        return self._three_best_sectors_weights
-
-    def get_best_stocks_weights_column(self):
-        return self._best_stocks_weights_column
-
-    def get_final_portfolio(self, risk_score):
-        return helpers.choose_portfolio_by_risk_score(self._three_best_portfolios, risk_score)
-
-    def get_closing_prices_table(self):
-        return self._closing_prices_table
-
-    def get_pct_change_table(self):
-        table = self._closing_prices_table
-        return table.pct_change()
-
     def get_max_vols(self):
         if self._model_name == "Markowitz":
             max_vol = self._df["Volatility"].max()
@@ -254,7 +232,4 @@ class StatsModels:
             max_vol_portfolio = self._df.loc[self._df['Gini'] == max_vol]
         return max_vol_portfolio
 
-    # def get(self):
-    # pass
-    # response = ResponseApi("Markowitz", final_invest_portfolio, amountToInvest, datetime.datetime.now())
-    # return jsonify(response.__str__())
+

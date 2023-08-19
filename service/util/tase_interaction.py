@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 import http.client
 import json
-import codecs
 import requests
 import base64
 import datetime
-from ..config import settings, israeli_tase_settings
+from ..config import israeli_tase_settings
 
 
 def get_israeli_symbol_data(command, start_date, end_date, israeli_stock_symbol, used_app_url):
@@ -77,29 +76,6 @@ def get_json_data_of_symbol(app_url):
     return json_obj
 
 
-def get_indexes_data_manually_from_json(symbol_indexes):  # FOR ISRAELI STOCKS
-    folder_prefix = f'{settings.CONFIG}/history'
-    if type(symbol_indexes) == int:
-        return get_json_data(folder_prefix + str(symbol_indexes))
-    else:
-        portfolio = [0] * len(symbol_indexes)
-        for i in range(len(symbol_indexes)):
-            portfolio[i] = get_json_data(folder_prefix + str(symbol_indexes[i]))
-        return portfolio
-
-
-def get_json_data(name):
-    with codecs.open(name + '.json', 'r', encoding='utf-8') as file:
-        json_data = json.load(file)
-    return json_data
-
-
-def get_json_data_from_tase(index_id, file_name):  # INDEX
-    appUrl = get_index_history(israeli_tase_settings.INDEX_END_OF_DAY_HISTORY_FIVE_YEARS_UP_TO_TODAY, index_id, 10)
-    jsonData = get_json_data_of_symbol(appUrl)
-    return jsonData
-
-
 # Auth
 def get_base_64_token():
     # key = '7e247414e7047349d83b7b8a427c529c'
@@ -123,27 +99,6 @@ def get_tase_access_token():
 
 
 # BUILD URL FOR REQUEST
-def get_index_history(app_name, index_id, num_of_years):
-    today = datetime.datetime.now()
-    start_year = today.year - num_of_years
-    start_month = today.month
-    start_day = today.day
-    end_year = today.year
-    end_month = today.month
-    end_day = today.day
-
-    return get_app_url_with_date_and_index(
-        app_name,
-        start_year,
-        start_month,
-        start_day,
-        end_year,
-        end_month,
-        end_day,
-        index_id,
-    )
-
-
 def get_app_url_without_date(app_name):  # /tase/prod/impl/v1/short-sales/weekly-balance
     return israeli_tase_settings.PREFIX_URL + '/' + app_name
 

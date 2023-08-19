@@ -67,9 +67,9 @@ def get_model_option() -> int:
     return model_option
 
 
-def get_collection_number(stocks: List) -> str: # TODO -display in site
+def get_collection_number(stocks: List) -> str:
     collection_description = ["indexes(recommended)", "top indexes", "indexes and stocks",
-                          "top stocks"]
+                              "top stocks"]
     print("Choose a collection of stocks:")
     for i, collection in enumerate(stocks):
         print(f"{i + 1} - {collection_description[i]}")
@@ -99,6 +99,7 @@ def print_collection_table(stocks_symbols_list: List, stocks_description_list: L
     table_data = []
     for symbol, description in zip(stocks_symbols_list, stocks_description_list):
         print(f"{symbol} - {description}")
+
 
 def get_score_by_answer_from_user(string_to_show) -> int:
     count = 0

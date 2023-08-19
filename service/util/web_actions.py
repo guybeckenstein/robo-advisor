@@ -1,10 +1,7 @@
-
 from typing import List
-
 import numpy as np
 import pandas as pd
 from django.shortcuts import get_object_or_404
-
 from service.impl.user import User
 from service.impl.portfolio import Portfolio
 from service.util import data_management
@@ -40,8 +37,8 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio=None) -> None:
     offset_row, record_percent_to_predict = helpers.get_daily_change_sub_table_offset(
         models_data, pct_change_table.index
     )
-    if is_machine_learning:
-        pct_change_table = pct_change_table[offset_row:]  # Update length
+    #if is_machine_learning:
+     #   pct_change_table = pct_change_table[offset_row:]  # Update length
     # Update the new sub-table's length (should be at most equal to the old one), then update the table itself
     yield_column: str = f"yield_{str(risk_level)}"
     pct_change_table[yield_column] = weighted_sum
