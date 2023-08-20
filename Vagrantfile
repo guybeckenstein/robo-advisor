@@ -16,12 +16,14 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "1024"
+	vb.customize ["modifyvm", :id, "--natpf1", "env-var,tcp,,12345,,12345"]
+  config.vm.provision "shell", path: "load_env.sh", privileged: false
   end
   config.vm.network(
     "forwarded_port", guest: 8000, host: 1234, host_ip: "127.0.0.1"
   )
-  config.vm.provision "shell", path: "setup.sh", privileged: false
-
+  config.vm.provision "shell", path: "setup.sh", privileged: false,
+    env: {"POSTGRESQL_DATABASE" => "RoboAdvisor", "POSTGRESQL_USER" => "postgres", "POSTGRESQL_PASSWORD" => "!@$#%KLa@#T@#AQ51azgr"}
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.

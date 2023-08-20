@@ -6,9 +6,9 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 
+from service.util import data_management
 from service.util.data_management import get_stocks_symbols_from_json_file
-from . import views
-from .models import InvestorUser, CustomUser
+from accounts.models import InvestorUser, CustomUser
 
 
 def ac_il_email_validator(value):
@@ -27,6 +27,10 @@ class UserRegisterForm(UserCreationForm):
         self.helper.form_id = 'signup-form'
         self.helper.add_input(Submit('submit', 'Submit'))
 
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'first_name', 'last_name', 'phone_number',)
+
     def clean_email(self):
         email = self.cleaned_data.get('email')
         try:
@@ -35,24 +39,6 @@ class UserRegisterForm(UserCreationForm):
             raise forms.ValidationError(str(e))
         return email
 
-    class Meta:
-        model = CustomUser
-        fields = ('email', 'first_name', 'last_name', 'phone_number',)
-
-        widgets = {
-            'password': forms.PasswordInput(),
-
-            'email': forms.TextInput(attrs={
-                'hx-post': reverse_lazy('check_email'),
-                'hx-target': '#div_id_email',
-                'hx-trigger': 'keyup changed delay:1s'
-            }),
-            'phone_number': forms.TextInput(attrs={
-                'hx-post': reverse_lazy('check_phone_number'),
-                'hx-target': '#div_id_phone_number',
-                'hx-trigger': 'keyup changed delay:1s'
-            })
-        }
 
 
 class AccountMetadataForm(forms.ModelForm):
@@ -130,9 +116,28 @@ class PasswordChangingForm(PasswordChangeForm):
     new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'type': 'password'}))
     new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'type': 'password'}))
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'profile-account-password'
+        self.helper.attrs = {
+            'hx-post': reverse_lazy('profile_account_password'),
+            'hx-target': 'body',
+            'hx-swap': 'outerHTML',
+            # 'hx-trigger': 'change delay:1s',
+        }
+        self.helper.add_input(Submit('submit', 'Change Password', css_class='btn-dark margin-bottom'))
+
     class Meta:
         model = CustomUser
         fields = ('old_password', 'new_password1', 'new_password2',)
+
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data['old_password']
+        if len(old_password) == 0:
+            raise forms.ValidationError("Old password is empty")
+        return old_password
 
 
 def get_indexes_tuple(size) -> list[tuple]:
@@ -156,8 +161,10 @@ class UpdateInvestorUserForm(forms.ModelForm):
     def __init__(self, *args, disabled_project=True, **kwargs):
         investor_user_instance: InvestorUser = kwargs.pop('investor_user_instance', None)
         collection_number: str = str(investor_user_instance.stocks_collection_number)
-        stocks_symbols_data: dict[list] = views.get_stocks_from_json_file()
-        symbols_list: list[str] = sorted(views.get_styled_stocks_symbols_data(stocks_symbols_data)[collection_number])
+        stocks_symbols_data: dict[list] = data_management.get_stocks_from_json_file()
+        symbols_list: list[str] = sorted(
+            data_management.get_styled_stocks_symbols_data(stocks_symbols_data)[collection_number]
+        )
 
         # Form
         super(UpdateInvestorUserForm, self).__init__(*args, **kwargs)

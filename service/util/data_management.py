@@ -1,17 +1,21 @@
-import csv
 import datetime
 import json
 import math
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from typing import Tuple, List
 from investment.models import Investment
-from ..impl.portfolio import Portfolio
-from ..impl.stats_models import StatsModels
-from ..impl.user import User
-from ..config import settings
-from . import helpers, console_handler, plot_functions
+from service.config import settings
+from service.impl.portfolio import Portfolio
+from service.impl.sector import Sector
+from service.impl.stats_models import StatsModels
+from service.impl.user import User
+from service.util import helpers, console_handler, stocks_weights_table
+from service.util.helpers import Analyze
+from service.util.graph import image_methods as graph_image_methods
+from service.util.graph import plot_methods as graph_plot_methods
+from service.util.pillow import plot_methods as pillow_plot_methods
 import os
 # django imports
 import django
@@ -28,13 +32,13 @@ from accounts.models import InvestorUser
 def update_all_tables(num_of_years_history, is_daily_running=True):  # build DB for withdraw
     today = datetime.date.today()
     formatted_date = today.strftime("%Y-%m-%d")
-    collections_json_data = helpers.get_collection_json_data()
-    for i in range(1, len(collections_json_data)):
-        curr_collection = collections_json_data[str(i)][0]
+    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
+    for i in range(1, len(models_data)):
+        curr_collection = models_data[str(i)][0]
         stocks_symbols = curr_collection['stocksSymbols']
         path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i)) + '/'  # where to save the datasets
         update_closing_prices_tables(formatted_date, stocks_symbols, num_of_years_history, path, is_daily_running)
-        update_data_frame_tables(formatted_date, curr_collection, path, collections_json_data, str(i),
+        update_data_frame_tables(formatted_date, curr_collection, path, models_data, str(i),
                                  is_daily_running)
 
 
@@ -51,14 +55,15 @@ def update_closing_prices_tables(formatted_date_today, stocks_symbols, num_of_ye
             file.write(formatted_date_today)
 
 
-def update_data_frame_tables(formatted_date_today, collection_json_data, path, models_data, collection_num,
-                             is_daily_running=True):
+def update_data_frame_tables(formatted_date_today, collection_json_data, path,
+                             models_data: dict[dict, list, list, list, list], collection_num,
+                             is_daily_running: bool = True):
     stocks_symbols = collection_json_data['stocksSymbols']
 
     with open(path + "lastUpdatedDftables.txt", "r") as file:
-        lastUpdatedDftables = file.read().strip()
-    if lastUpdatedDftables != formatted_date_today or not is_daily_running:
-        sectors_list = helpers.set_sectors(stocks_symbols)
+        last_updated_df_tables = file.read().strip()
+    if last_updated_df_tables != formatted_date_today or not is_daily_running:
+        sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
         closing_prices_table = get_closing_prices_table(path)
         pct_change_table = closing_prices_table.pct_change()
 
@@ -71,7 +76,7 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path, m
                 )
             update_three_level_data_frame_tables(
                 machine_learning_opt=machine_model_tuple[0], model_name=machine_model_tuple[1], stocks_symbols=stocks_symbols,
-                sectors_list=sectors_list, closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
+                sectors_list=sectors, closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
                 path=path, models_data=models_data, collection_num=collection_num
             )
 
@@ -147,7 +152,7 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
         gini_value=gini_v_value
 
     )
-    df = stats_models.get_df()
+    df: pd.DataFrame = stats_models.df
     df.to_csv(locationForSaving + model_name + '_df_' + levelOfRisk + '.csv')
     print('updated data frame Table(machine learning:' + str(is_machine_learning) +
           ', model name:' + model_name +
@@ -156,8 +161,8 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
 
 ##################################################################
 # operations
-def create_new_user_portfolio(stocks_symbols: List, investment_amount: int, is_machine_learning: int,
-                              model_option: int, risk_level: int, extended_data_from_db: Tuple) -> Portfolio:
+def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
+                              model_option: int, risk_level: int, extended_data_from_db: tuple) -> Portfolio:
     sectors, sectors, closing_prices_table, three_best_portfolios, _, pct_change_table, _ = extended_data_from_db
 
     final_portfolio = three_best_portfolios[risk_level - 1]
@@ -261,7 +266,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
 
     path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
     sectors_data = get_json_data(settings.SECTORS_JSON_NAME)
-    sectors: list = helpers.set_sectors(stocks_symbols)
+    sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
     closing_prices_table: pd.DataFrame = get_closing_prices_table(path)
     df = get_three_levels_df_tables(is_machine_learning, settings.MODEL_NAME[model_option], path)
     three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option])
@@ -279,9 +284,9 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
 
 # Tables according to stocks symbols
 def get_closing_prices_table(path) -> pd.DataFrame:
-    closing_prices_table = pd.read_csv(filepath_or_buffer=f'{path}closing_prices.csv', index_col=0)
+    closing_prices_table: pd.DataFrame = pd.read_csv(filepath_or_buffer=f'{path}closing_prices.csv', index_col=0)
     # Check if there's a key with a numeric value in the table
-    numeric_keys = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
+    numeric_keys: list[str] = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
     if len(numeric_keys) > 0:
         closing_prices_table = closing_prices_table.iloc[1:]
     else:
@@ -318,14 +323,14 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, colle
     return df
 
 
-def get_all_users() -> List:
+def get_all_users() -> list:
     """
     Get all users with their portfolios details from json file
     """
     json_data = get_json_data(settings.USERS_JSON_NAME)
     num_of_user = len(json_data['usersList'])
     users_data = json_data['usersList']
-    users: List = [] * num_of_user
+    users: list = [] * num_of_user
     for user_name in users_data.items():
         user_id: int = user_name['id']
         users.append(get_user_from_db(user_id=user_id, user_name=user_name))
@@ -355,7 +360,7 @@ def get_user_from_db(user_id: int, user_name: str):
         stocks_collection_number = user_data['stocksCollectionNumber']
     except KeyError:  # Default value
         stocks_collection_number = "1"
-    sectors = helpers.set_sectors(stocks_symbols)
+    sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
 
     path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{stocks_collection_number}/'
 
@@ -388,18 +393,18 @@ def get_user_from_db(user_id: int, user_name: str):
     return curr_user
 
 
-def get_stocks_symbols_from_collection(stocks_collection_number) -> List:
+def get_stocks_symbols_from_collection(stocks_collection_number) -> list:
     """
     Get all stocks symbols from json file
     """
-    json_data = helpers.get_collection_json_data()
-    stocks_symbols = json_data[str(stocks_collection_number)][0]['stocksSymbols']
+    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
+    stocks_symbols = models_data[str(stocks_collection_number)][0]['stocksSymbols']
     return stocks_symbols
 
 
 def get_models_data_from_collections_file():  # TODO - maybe use from admin
-    json_data = helpers.get_collection_json_data()
-    return json_data["models_data"]
+    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
+    return models_data["models_data"]
 
 
 def find_user_in_list(user_name: str, users: list):
@@ -461,7 +466,7 @@ def get_total_active_investments(investments):
     return total_amount
 
 
-def get_total_investments_details(selected_user, investments) -> Tuple:
+def get_total_investments_details(selected_user, investments) -> tuple:
     """
 return:
 - The amount of capital investments
@@ -560,7 +565,7 @@ def get_level_of_risk_by_score(count: int) -> int:
 
 
 # impl utility functions
-def set_sectors(stocks_symbols):
+def set_sectors(stocks_symbols: list[object]) -> list[Sector]:
     return helpers.set_sectors(stocks_symbols)
 
 
@@ -602,33 +607,33 @@ def get_score_by_answer_from_user(string_to_show: str) -> int:
     return console_handler.get_score_by_answer_from_user(string_to_show)
 
 
-# plot functions
+# graph_plot_methods functions
 def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_weights, sectors: list,
                                 pct_change_table, sub_folder: str = '00/'):
-    min_variance_port = three_best_portfolios[0]
-    sharpe_portfolio = three_best_portfolios[1]
-    max_returns = three_best_portfolios[2]
-    plt_instance_three_graph = plot_functions.plot_three_portfolios_graph(min_variance_port, sharpe_portfolio,
-                                                                          max_returns,
-                                                                          three_best_sectors_weights, sectors,
-                                                                          pct_change_table)
+    plt_instance_three_graph = graph_plot_methods.three_portfolios_graph(
+        max_returns_portfolio=three_best_portfolios[2],
+        sharpe_portfolio=three_best_portfolios[1],
+        min_variance_portfolio=three_best_portfolios[0],
+        three_best_sectors_weights=three_best_sectors_weights,
+        sectors=sectors,
+        pct_change_table=pct_change_table
+    )
     fully_qualified_name = settings.GRAPH_IMAGES + sub_folder + 'three_portfolios'
-    plot_functions.save_graphs(plt_instance_three_graph, fully_qualified_name)
+    graph_image_methods.save_graph(plt_instance_three_graph, fully_qualified_name)
 
     return plt_instance_three_graph
 
 
-def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/'):
-    plt_instance = plot_functions.plot_distribution_of_portfolio(distribution_graph)
+def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') -> plt:
+    plt_instance = graph_plot_methods.portfolio_distribution(distribution_graph)
     fully_qualified_name = settings.GRAPH_IMAGES + sub_folder + 'distribution_graph'
-    plot_functions.save_graphs(plt_instance, fully_qualified_name)
+    graph_image_methods.save_graph(plt_instance, fully_qualified_name)
 
     return plt_instance
 
 
-def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_option: int,
-                          num_of_years_history=settings.NUM_OF_YEARS_HISTORY, models_data: dict = None,
-                          closing_prices_table_path: str = "") -> None:
+def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_option: int,
+                          num_of_years_history, models_data: dict, closing_prices_table_path: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
     num_por_simulation: int = models_data["models_data"]['num_por_simulation']
     min_num_por_simulation: int = models_data["models_data"]['min_num_por_simulation']
@@ -660,36 +665,33 @@ def plot_stat_model_graph(stocks_symbols: list, is_machine_learning: int, model_
         model_name=model_name,
         gini_value=gini_v_value,
     )
-    df = stats_models.get_df()
+    df: pd.DataFrame = stats_models.df
     three_best_portfolios = helpers.get_best_portfolios(df=[df, df, df], model_name=model_option)
     three_best_stocks_weights = helpers.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = helpers.get_three_best_sectors_weights(sectors, three_best_stocks_weights)
-    min_variance_portfolio = three_best_portfolios[0]
-    sharpe_portfolio = three_best_portfolios[1]
-    max_returns = three_best_portfolios[2]
-    max_vols_portfolio = stats_models.get_max_vols()
-    df = stats_models.get_df()
 
     if model_option == "Markowitz":
-        plt_instance = plot_functions.plot_markowitz_graph(
+        plt_instance = graph_plot_methods.markowitz_graph(
             sectors=sectors, three_best_sectors_weights=three_best_sectors_weights,
-            min_variance_portfolio=min_variance_portfolio, sharpe_portfolio=sharpe_portfolio,
-            max_returns=max_returns, max_vols_portfolio=max_vols_portfolio, df=df
+            min_variance_portfolio=three_best_portfolios[0], sharpe_portfolio=three_best_portfolios[1],
+            max_returns_portfolio=three_best_portfolios[2], max_vols_portfolio=stats_models.get_max_vols(),
+            df=stats_models.df
         )
     else:
-        plt_instance = plot_functions.plot_gini_graph(
+        plt_instance = graph_plot_methods.gini_graph(
             sectors=sectors, three_best_sectors_weights=three_best_sectors_weights,
-            min_variance_portfolio=min_variance_portfolio, sharpe_portfolio=sharpe_portfolio,
-            max_portfolios_annual=max_returns, max_ginis=max_vols_portfolio, df=df
+            min_variance_portfolio=three_best_portfolios[0], sharpe_portfolio=three_best_portfolios[1],
+            max_portfolios_annual_portfolio=three_best_portfolios[2], df=stats_models.df
         )
 
-    plot_functions.save_graphs(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO plot at site
+    graph_image_methods.save_graph(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO graph_plot_methods at site
 
 
 def plot_research_graphs(data_tuple_list: list, intersection_data_list: list, sector_name: int):
     path = settings.RESEARCH_IMAGES
-    research_plt = plot_functions.plot_research_graphs(path, data_tuple_list, intersection_data_list)
-    plot_functions.save_graphs(research_plt, path + "top_stocks_"f'{sector_name}')
+    research_plt = graph_plot_methods.research_graphs(path, data_tuple_list, intersection_data_list)
+    graph_image_methods.save_graph(research_plt, path + "top_stocks_"f'{sector_name}')
+    plt.close()
 
 
 def save_user_portfolio(user: User) -> None:
@@ -711,46 +713,49 @@ def save_user_portfolio(user: User) -> None:
 
     # get data from user
     portfolio: Portfolio = user.portfolio
-    stocks_symbols: List[str] = portfolio.stocks_symbols
+    stocks_symbols: list[str] = portfolio.stocks_symbols
 
     # pie chart of sectors & sectors weights
-    plt_sectors_component = plot_functions.plot_sectors_component(
-        user_name=user.name, weights=portfolio.get_sectors_weights(), names=portfolio.get_sectors_names()
+    plt_sectors_component = graph_plot_methods.sectors_component(
+        weights=portfolio.get_sectors_weights(), names=portfolio.get_sectors_names()
     )
 
-    plot_functions.save_graphs(plt_sectors_component, file_name=f'{curr_user_directory}/sectors_component')
+    graph_image_methods.save_graph(plt_sectors_component, file_name=f'{curr_user_directory}/sectors_weights_graph')
+    plt.close()
 
-    # pie chart of stocks & stocks weights , TODO: show as tables instead of pie chart
-    plt_stocks_component = plot_functions.plot_portfolio_component_stocks(
-        user_name=user.name, stocks_weights=portfolio.stocks_weights, stocks_symbols=stocks_symbols,
+    # Table of stocks weights
+    stocks_weights_table.draw_all_and_save_as_png(
+        file_name=f'{curr_user_directory}/stocks_weights_graph',
+        symbols=stocks_symbols,
+        weights=portfolio.stocks_weights,
         descriptions=helpers.get_stocks_descriptions(stocks_symbols)[1:]
     )
-    plot_functions.save_graphs(plt_stocks_component, file_name=f'{curr_user_directory}/stocks_component')
 
     # Total yield graph with sectors weights
     table: pd.DataFrame = portfolio.pct_change_table
     table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
-    df, _, _ = helpers.analyze_with_machine_learning_linear_regression(
+    analyze: Analyze = Analyze(
         returns_stock=table['yield__selected_percent'],
         table_index=table.index,
-        record_percent_to_predict=record_percent_to_predict,
-        test_size_machine_learning=test_size_machine_learning,
-        closing_prices_mode=True
+        record_percent_to_predict=float(record_percent_to_predict),
+        is_closing_prices_mode=True
     )
+    df, _, _ = analyze.linear_regression_model(test_size_machine_learning)
     df['yield__selected_percent'] = df['Col']
     df['yield__selected_percent_forecast'] = df["Forecast"]
 
     stats_details_tuple: tuple[float, float, float, float, float] = portfolio.get_portfolio_stats()
     annual_returns, volatility, sharpe, max_loss, total_change = stats_details_tuple
-    plt_yield_graph = plot_functions.plot_investment_portfolio_yield(
-        user_name=user.name, df=df, annual_returns=annual_returns, volatility=volatility, sharpe=sharpe,
-        max_loss=max_loss, total_change=total_change, sectors=portfolio.sectors
+    plt_yield_graph = graph_plot_methods.investment_portfolio_estimated_yield(
+        df=df, annual_returns=annual_returns, volatility=volatility, sharpe=sharpe, max_loss=max_loss,
+        total_change=total_change, sectors=portfolio.sectors
     )
-    plot_functions.save_graphs(plt_yield_graph, file_name=f'{curr_user_directory}/yield_graph')
+    graph_image_methods.save_graph(plt_yield_graph, file_name=f'{curr_user_directory}/estimated_yield_graph')
+    plt.close()
 
 
 def plot_image(file_name) -> None:
-    plot_functions.plot_image(file_name)
+    pillow_plot_methods.plot_image(file_name)
 
 
 # console functions
@@ -791,14 +796,24 @@ def get_investment_amount() -> int:
     return console_handler.get_investment_amount()
 
 
-def get_stocks_from_json_file():
-    collections_data = helpers.get_collection_json_data()
-    stocks = {}
-    for i in range(1, len(collections_data)):
-        stocks_symbols_list = collections_data[str(i)][0]['stocksSymbols']
+def get_stocks_from_json_file() -> dict[list]:
+    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
+    stocks: dict[list] = {}
+    for i in range(1, len(models_data)):
+        stocks_symbols_list = models_data[str(i)][0]['stocksSymbols']
         stocks_description_list = helpers.get_stocks_descriptions(stocks_symbols_list, is_reverse_mode=False)[1:]
         stocks[str(i)] = [stocks_symbols_list, stocks_description_list]
     return stocks
+
+
+def get_styled_stocks_symbols_data(stocks_symbols_data) -> dict[list]:
+    styled_stocks_symbols_data: dict[list] = dict()
+    for key, value in stocks_symbols_data.items():
+        styled_value: list[str] = list()
+        for symbol, description in zip(value[0], value[1]):
+            styled_value.append(f'{symbol} -> {description}')
+        styled_stocks_symbols_data[key] = styled_value
+    return styled_stocks_symbols_data
 
 
 def get_collection_number() -> str:
@@ -807,7 +822,8 @@ def get_collection_number() -> str:
 
 
 def get_stocks_symbols_from_json_file(collection_number: int) -> list[str]:
-    collection: dict = helpers.get_collection_json_data()[str(collection_number)][0]
+    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
+    collection: dict = models_data[str(collection_number)][0]
     stocks_symbols: list[str] = collection['stocksSymbols']
     return stocks_symbols
 

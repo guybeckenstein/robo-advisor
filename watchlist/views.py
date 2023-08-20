@@ -50,8 +50,10 @@ def chosen_stock(request):
             end_date=end_date,
         )
         research.save_user_specific_stock(stock=symbol, operation='_forecast', plt_instance=forecast_plt)
+        plt.close()
         bb_strategy_plt = research.plot_bb_strategy_stock(stock_name=symbol, start=start_date, end=end_date)
         research.save_user_specific_stock(stock=symbol, operation='_bb_strategy', plt_instance=bb_strategy_plt)
+        plt.close()
     else:
         raise BadRequest
     context = {

@@ -3,6 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, HTML, Field
 from django import forms
 from django.utils.html import format_html
+from matplotlib import pyplot as plt
 
 from accounts.models import InvestorUser
 from service.util import data_management
@@ -75,7 +76,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
         widget=forms.RadioSelect(),
     )
     answer_3 = forms.ChoiceField(
-        choices=((1, 'Safest'), (2, 'Sharpest'), (3, 'Maximum return')),
+        choices=((1, 'Safest'), (2, 'Sharpe'), (3, 'Maximum return')),
         widget=forms.RadioSelect(),
     )
 
@@ -153,9 +154,12 @@ class InvestmentPreferencesForm(forms.ModelForm):
         # Saves two graphs
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
         data_management.plot_distribution_of_portfolio(yields, sub_folder=sub_folder)
+        plt.close()
+
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )
+        plt.close()
 
     class Meta:
         model = QuestionnaireB
@@ -181,7 +185,7 @@ class AdministrativeToolsForm(forms.Form):
         self.helper.form_id = 'administrative-tools-form'
         self.helper.attrs = {
             'hx-post': reverse_lazy('administrative_tools_form'),
-            'hx-target': '#administrative-tools-form',
+            'hx-target': 'body',
             'hx-swap': 'outerHTML'
         }
         self.helper.layout = Layout(

@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from accounts.models import CustomUser, InvestorUser
 from accounts import views as accounts_views
+from service.util import data_management
 from tests import helper_methods
 
 # Global constant variables
@@ -22,7 +23,7 @@ class TestProfile:
     class TestProfileMain:
         def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
             response, user = helper_methods.successful_get_request_as_logged_user(
-                client, user_factory, url_name='profile_main', template_src='account/profile_main.html',
+                client, user_factory, url_name='profile_main', template_src='account/authenticated/profile_main.html',
             )
             TestProfile.generic_assertions(response, user, 'Account Details')
             phone_number: str = user.phone_number.raw_input
@@ -41,7 +42,8 @@ class TestProfile:
     class TestProfileAccount:
         def test_main_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
             response, user = helper_methods.successful_get_request_as_logged_user(
-                client, user_factory, url_name='profile_account', template_src='account/profile_account.html',
+                client, user_factory, url_name='profile_account',
+                template_src='account/authenticated/profile_account.html',
             )
             TestProfile.generic_assertions(response, user, 'Account')
             helper_methods.assert_attributes(response, attributes=['Details', 'Password'])
@@ -54,7 +56,7 @@ class TestProfile:
                 client,
                 user_factory,
                 url_name='profile_account_details',
-                template_src='account/profile_account_details.html',
+                template_src='account/authenticated/profile_account_details.html',
             )
             TestProfile.generic_assertions(response, user, 'Account Details')
             helper_methods.assert_attributes(response, attributes=['<<', 'Password'])
@@ -74,7 +76,7 @@ class TestProfile:
                 client,
                 user_factory,
                 url_name='profile_account_password',
-                template_src='account/profile_account_password.html',
+                template_src='account/authenticated/profile_account_password.html',
             )
             TestProfile.generic_assertions(response, user, 'Account Password')
             helper_methods.assert_attributes(response, attributes=['Details', '<<', 'Old password', 'New password1',
@@ -87,7 +89,8 @@ class TestProfile:
         def test_successful_get_request_as_logged_user_without_investor_user(self, client: Client,
                                                                              user_factory: Callable):
             response, user = helper_methods.successful_get_request_as_logged_user(
-                client, user_factory, url_name='profile_investor', template_src='account/profile_investor.html',
+                client, user_factory, url_name='profile_investor',
+                template_src='account/authenticated/profile_investor.html',
             )
             TestProfile.generic_assertions(response, user, 'Investor')
             assert 'Please fill the form for more information' in response.content.decode()
@@ -99,7 +102,7 @@ class TestProfile:
             investor_user_factory(user=user)
             response = client.get(reverse('profile_investor'))
             assert response.status_code == 200
-            assert 'account/profile_investor.html' in response.templates[0].name
+            assert 'account/authenticated/profile_investor.html' in response.templates[0].name
             TestProfile.generic_assertions(response, user, 'Investor')
             assert ('After updating the investor details, '
                     'you are required to fill the Capital Market Preferences Form, again.') in response.content.decode()
@@ -133,7 +136,7 @@ class TestProfile:
 
         @staticmethod
         def get_stocks_symbols() -> list[str]:
-            stocks_symbols_data: dict[list] = accounts_views.get_stocks_from_json_file()
+            stocks_symbols_data: dict[list] = data_management.get_stocks_from_json_file()
             styled_stocks_symbols_data: dict[list] = dict()
             for key, value in stocks_symbols_data.items():
                 styled_value: list[str] = list()

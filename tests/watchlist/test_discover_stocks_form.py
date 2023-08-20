@@ -22,7 +22,7 @@ class TestDiscoverStocksForm:
         )
         helper_methods.assert_attributes(response, attributes=[
             'Discover stocks', 'Ml model', 'Symbol', 'Start Date to End Date', 'submit-id-submit', 'Submit',
-            f"{user.first_name}{DASHBOARD}", 'LinearRegression', 'ARIMA', 'GradientBoostingRegressor', 'Prophet'
+            f"{user.first_name}{DASHBOARD}", 'Linear Regression', 'ARIMA', 'Gradient Boosting Regressor', 'Prophet'
         ])
 
     def test_redirection_get_request_as_guest(self, client: Client):

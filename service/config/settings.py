@@ -4,7 +4,7 @@
 import os
 
 MODEL_NAME: list = ['Markowitz', 'Gini']
-MACHINE_LEARNING_MODEL: list = ['LinearRegression', 'ARIMA', 'GradientBoostingRegressor', 'Prophet']
+MACHINE_LEARNING_MODEL: list = ['Linear Regression', 'ARIMA', 'Gradient Boosting Regressor', 'Prophet']
 NUM_OF_YEARS_HISTORY = 10  # the number of history years data
 LIMIT_PERCENT_MEDIUM_RISK_STOCKS = 0.3
 LIMIT_PERCENT_MEDIUM_RISK_COMMODITY = 0.1

@@ -19,7 +19,7 @@ class TestProfilePortfolio:
             client,
             user_factory,
             url_name='profile_portfolio',
-            template_src='investment_portfolio/profile_portfolio.html'
+            template_src='investment/profile_portfolio.html'
         )
         self.generic_assertions(response, user, 'Portfolio', ['Please fill the form for more information'])
 
@@ -29,14 +29,14 @@ class TestProfilePortfolio:
         investor_user_factory(user=user)
         response = client.get(reverse('profile_portfolio'))
         helper_methods.assert_successful_status_code_for_get_request(
-            response, template_src='investment_portfolio/profile_portfolio.html'
+            response, template_src='investment/profile_portfolio.html'
         )
         self.generic_assertions(
             response, user, 'Portfolio', more_attributes=[
-                'Graph', 'Image', 'Sectors Component', 'Stocks Component', 'Yield',
-                f'/static/img/user/{user.id}/sectors_component.png',
-                f'/static/img/user/{user.id}/stocks_component.png',
-                f'/static/img/user/{user.id}/yield_graph.png',
+                'Graph', 'Image', 'Sectors Representation', 'Stocks Representation', 'Estimated Yield',
+                f'/static/img/user/{user.id}/sectors_weights_graph.png',
+                f'/static/img/user/{user.id}/stocks_weights_graph.png',
+                f'/static/img/user/{user.id}/estimated_yield_graph.png',
             ]
         )
 

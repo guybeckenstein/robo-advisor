@@ -40,12 +40,12 @@ if __name__ == '__main__':
             second_question_score = data_management.get_score_by_answer_from_user(string_to_show)
 
             # question #3
-            string_to_show = "Which graph do you prefer?\nsafest - 1, sharpest - 2, max return - 3 ?\n"
+            string_to_show = "Which graph do you prefer?\nsafest - 1, sharpe - 2, max return - 3 ?\n"
             # display 3 best portfolios graph (matplotlib)
             data_management.plot_three_portfolios_graph(
                 three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
             )
-            # data_management.plot_functions.plot(plt_instance)
+            # data_management.plot.plot(plt_instance)
             data_management.plot_image(settings.GRAPH_IMAGES + sub_folder + 'three_portfolios.png')
             third_question_score = data_management.get_score_by_answer_from_user(string_to_show)
 
@@ -86,9 +86,9 @@ if __name__ == '__main__':
             collection_number = json_data['usersList'][login_name][0]['stocksCollectionNumber']
             if data_management.is_today_date_change_from_last_updated_df(collection_number) or data_changed:
                 data_management.get_user_from_db(login_id, login_name)
-            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/sectors_component.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/stocks_component.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/yield_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/sectors_weights_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/stocks_weights_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/estimated_yield_graph.png')
 
         elif selection == 4:
 
@@ -145,9 +145,11 @@ if __name__ == '__main__':
                     models_data = data_management.get_models_data_from_collections_file()
                     closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
                                                  + stocks_collection_number + '/')
-                    data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
-                                                          settings.MODEL_NAME[0], num_of_years_history,
-                                                          models_data, closing_prices_table_path)
+                    data_management.plot_stat_model_graph(
+                        stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
+                        model_option=settings.MODEL_NAME[0], num_of_years_history=num_of_years_history,
+                        models_data=models_data, closing_prices_table_path=closing_prices_table_path,
+                    )
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[0] + '_all_option' + '.png')
 
@@ -160,10 +162,11 @@ if __name__ == '__main__':
                     models_data = data_management.get_models_data_from_collections_file()
                     closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
                                                  + stocks_collection_number + '/')
-                    data_management.plot_stat_model_graph(stocks_symbols, is_machine_learning,
-                                                          settings.MODEL_NAME[1], num_of_years_history,
-                                                          models_data, closing_prices_table_path
-                                                          )
+                    data_management.plot_stat_model_graph(
+                        stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
+                        model_option=settings.MODEL_NAME[1], num_of_years_history=num_of_years_history,
+                        models_data=models_data, closing_prices_table_path=closing_prices_table_path,
+                    )
                     data_management.plot_image(
                         settings.GRAPH_IMAGES + settings.MODEL_NAME[1] + '_all_option' + '.png')
 

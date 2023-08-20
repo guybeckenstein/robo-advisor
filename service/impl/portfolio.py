@@ -1,5 +1,4 @@
 import os
-from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import datetime
@@ -7,33 +6,33 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
 from investment.models import Investment
-from .sector import Sector
+from service.impl.sector import Sector
 
 
 class Portfolio:
     def __init__(
             self,
-            stocks_symbols: List,
-            sectors: List[Sector],
+            stocks_symbols: list,
+            sectors: list[Sector],
             risk_level: int = 1,
             total_investment_amount: int = 0,
             selected_model=None,
             is_machine_learning=None
     ):
 
-        self._sectors: List[Sector] = sectors
+        self._sectors: list[Sector] = sectors
         self._risk_level: int = risk_level
         self._total_investment_amount: int = total_investment_amount
         self._last_date_of_investment: datetime.date = datetime.datetime.now().date()
-        self._stocks_symbols: List = stocks_symbols
+        self._stocks_symbols: list = stocks_symbols
         self._stocks_weights = []
         self._closing_prices_table = []
         self._pct_change_table: pd.DataFrame = pd.DataFrame
         self._selected_model: int = selected_model
         self._is_machine_learning: int = is_machine_learning
-        self._annual_returns: float = 0.0
-        self._annual_volatility: float = 0.0
-        self._annual_sharpe: float = 0.0
+        self._annual_returns: np.float64 = 0.0
+        self._annual_volatility: np.float64 = 0.0
+        self._annual_sharpe: np.float64 = 0.0
 
     # Getters and setters
     @property
@@ -97,11 +96,11 @@ class Portfolio:
     def get_max_loss(self) -> float:
         return self._annual_returns - 1.65 * self._annual_volatility
 
-    def get_portfolio_stats(self) -> Tuple[float, float, float, float, float]:
+    def get_portfolio_stats(self) -> tuple[float, float, float, float, float]:
         return (self._annual_returns, self._annual_volatility, self._annual_sharpe, self.get_max_loss(),
                 self.get_total_change())
 
-    def get_sectors_weights(self) -> List[float]:
+    def get_sectors_weights(self) -> list[float]:
         weights = []
 
         for curr_sector in self._sectors:
@@ -183,8 +182,9 @@ class Portfolio:
 
     # Get tables
     # Setters and updaters
-    def update_stocks_data(self, closing_prices_table, pct_change_table: pd.DataFrame, stocks_weights, annual_returns,
-                           annual_volatility, annual_sharpe):
+    def update_stocks_data(self, closing_prices_table: pd.DataFrame, pct_change_table: pd.DataFrame,
+                           stocks_weights: list[np.float64], annual_returns: np.float64,
+                           annual_volatility: np.float64, annual_sharpe: np.float64):
         self.set_tables(closing_prices_table, pct_change_table)
         self.set_stocks_weights(stocks_weights)
         self._annual_returns = annual_returns

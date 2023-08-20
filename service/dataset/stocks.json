@@ -5,7 +5,7 @@
             "min_num_por_simulation": "30",
             "record_percent_to_predict": "0.05",
             "test_size_machine_learning": "0.1",
-            "selected_ml_model_for_build": "1",
+            "selected_ml_model_for_build": "0",
             "gini_v_value": "4"
         },
         "1": [

@@ -14,7 +14,7 @@ ATTRIBUTES: list[str] = ['Investments History', 'Discover Stocks', 'Top Stocks']
 class TestInvestmentsMain:
     def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
         response, user = helper_methods.successful_get_request_as_logged_user(
-            client, user_factory, url_name='investments_main', template_src='investment_portfolio/investments_main.html'
+            client, user_factory, url_name='investments_main', template_src='investment/investments_main.html'
         )
         helper_methods.assert_attributes(response, attributes=[f'{user.first_name}{DASHBOARD}'] + ATTRIBUTES)
 

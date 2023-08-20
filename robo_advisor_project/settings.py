@@ -42,16 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Created apps
-    'accounts.apps.AccountsConfig',
+    'accounts',
+    'core',
+    'investment',
+    'watchlist',
+    # Third party apps
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'analytics.apps.AnalyticsConfig',
-    'core.apps.CoreConfig',
-    'investment.apps.InvestmentConfig',
-    'investment_portfolio.apps.InvestmentPortfolioConfig',
-    'watchlist.apps.WatchlistConfig',
-    # Third party apps
     "crispy_bootstrap5",
     "crispy_forms",
     "phonenumber_field",

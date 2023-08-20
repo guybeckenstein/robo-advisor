@@ -2,6 +2,7 @@ from numbers import Number
 from typing import Callable
 
 import pytest
+from django.template.response import TemplateResponse
 from django.test import Client
 
 from service.util import data_management
@@ -36,6 +37,10 @@ class TestAdministrativeToolsForm:
     def test_redirection_get_request_as_guest(self, client: Client):
         helper_methods.redirection_get_request_as_guest(client, url_name='administrative_tools_form')
 
-    def post_request(self, client: Client, superuser_factory: Callable):
-        # TODO: add successful POST request and test
-        pass
+    def test_form_successful_post_request(self, client: Client, superuser_factory: Callable):
+        helper_methods.login_user(client, user_factory=superuser_factory)
+        models_data: dict[Number] = data_management.get_models_data_from_collections_file()
+        response: TemplateResponse = helper_methods.post_request(
+            client, url_name='administrative_tools_form', data=models_data, status_code=302
+        )
+        # helper_methods.assert_attributes(response, attributes=["Successfully updated models' data."])

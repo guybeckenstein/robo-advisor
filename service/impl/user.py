@@ -18,13 +18,13 @@ class User:
                 selected_model=1,
                 is_machine_learning=0
             ),
-            stocks_collection_number="1",
+            stocks_collection_number: str = "1",
 
     ):
         self._id: int = user_id
         self._name: str = name
-        self._myPortfolio: Portfolio = portfolio
-        self.stocks_collection_number = stocks_collection_number
+        self._portfolio: Portfolio = portfolio
+        self.stocks_collection_number: str = stocks_collection_number
 
     @property
     def id(self) -> str:
@@ -36,7 +36,7 @@ class User:
 
     @property
     def portfolio(self) -> Portfolio:
-        return self._myPortfolio
+        return self._portfolio
 
     @staticmethod
     def get_json_data(name):
@@ -49,7 +49,7 @@ class User:
 
         (level_of_risk, total_investment_amount, stocks_symbols, sectors_names, sectors_weights, stocks_weights,
          annual_returns, annual_max_loss, annual_volatility, annual_sharpe, total_change, monthly_change,
-         daily_change, selected_model, machine_learning_opt) = self._myPortfolio.get_portfolio_data()
+         daily_change, selected_model, machine_learning_opt) = self._portfolio.get_portfolio_data()
 
         # Create a new dictionary
         json_data['usersList'][self._name][0]["levelOfRisk"] = level_of_risk

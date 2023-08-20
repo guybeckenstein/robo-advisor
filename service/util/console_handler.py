@@ -1,6 +1,3 @@
-from typing import List
-
-
 def get_name() -> str:
     print("enter name")
     name = input()
@@ -37,8 +34,8 @@ def get_machine_learning_option() -> int:
 
 
 def get_machine_learning_mdoel() -> int:
-    print("choose machine learning model:\n 1 - LinearRegression\n"
-          " 2 - ARIMA\n 3 - GradientBoostingRegressor\n 4- Prophet\n")
+    print("choose machine learning model:\n 1 - Linear Regression\n"
+          " 2 - ARIMA\n 3 - Gradient Boosting Regressor\n 4- Prophet\n")
     model_option = int(input())
     while model_option <= 0 or model_option >= 5:
         print("Please enter option between 1 to 4")
@@ -67,7 +64,7 @@ def get_model_option() -> int:
     return model_option
 
 
-def get_collection_number(stocks: List) -> str:
+def get_collection_number(stocks: list[object]) -> str:
     collection_description = ["indexes(recommended)", "top indexes", "indexes and stocks",
                               "top stocks"]
     print("Choose a collection of stocks:")
@@ -95,7 +92,7 @@ def get_collection_number(stocks: List) -> str:
     return str(collection_number)
 
 
-def print_collection_table(stocks_symbols_list: List, stocks_description_list: List):
+def print_collection_table(stocks_symbols_list: list, stocks_description_list: list):
     table_data = []
     for symbol, description in zip(stocks_symbols_list, stocks_description_list):
         print(f"{symbol} - {description}")

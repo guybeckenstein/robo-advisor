@@ -8,8 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
 
-from service.config import settings
-from service.util import web_actions, helpers
+from service.util import web_actions
 from service.util import data_management
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
@@ -167,7 +166,7 @@ def capital_market_investment_preferences_form(request):
             )
         if form.is_valid():  # CREATE and UPDATE
             # DEBUGGING, without this the code won't work
-            print("Form errors:", form.errors)
+            print("", form.errors)
             # Sum answers' values
             try:
                 investor_user: InvestorUser = InvestorUser.objects.get(user=request.user)

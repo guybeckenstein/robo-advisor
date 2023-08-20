@@ -3,15 +3,21 @@ import numpy as np
 import pandas as pd
 import ta
 import yfinance as yf
+from matplotlib import pyplot as plt
+
 from watchlist.models import TopStock
-from . import plot_functions, helpers, data_management
-from ..config import settings
+from service.config import settings
+from service.util import helpers, data_management
+from service.util.helpers import Analyze
+from service.util.graph import image_methods as graph_image_methods
+from service.util.graph import plot_methods as graph_plot_methods
 
 
-def save_user_specific_stock(stock: str, operation: str, plt_instance) -> None:
+def save_user_specific_stock(stock: str, operation: str, plt_instance: plt) -> None:
     curr_user_directory = settings.RESEARCH_IMAGES
     # Saving files
-    plot_functions.save_graphs(plt_instance, file_name=curr_user_directory + stock + operation)
+    graph_image_methods.save_graph(plt_instance, file_name=curr_user_directory + stock + operation)
+    plt.close()
 
 
 def forecast_specific_stock(stock: str, machine_learning_model: str, models_data: dict, num_of_years_history: int,
@@ -34,22 +40,20 @@ def forecast_specific_stock(stock: str, machine_learning_model: str, models_data
         )
     record_percent_to_predict: float = models_data["record_percent_to_predict"]
     test_size_machine_learning: float = models_data["test_size_machine_learning"]
-    if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:
-        df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_linear_regression(
-            table, table.index, float(record_percent_to_predict), test_size_machine_learning, closing_prices_mode=True
-        )
-    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:
-        df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_arima(
-            table, table.index, float(record_percent_to_predict), closing_prices_mode=True
-        )
-    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:
-        df, annual_return, excepted_returns = helpers.analyze_with_machine_learning_gbm(
-            table, table.index, float(record_percent_to_predict), closing_prices_mode=True
-        )
-    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:
-        df, annual_return, excepted_returns, plt = helpers.analyze_with_machine_learning_prophet(
-            table, table.index, float(record_percent_to_predict), closing_prices_mode=True
-        )
+    analyze: Analyze = Analyze(
+        returns_stock=table,
+        table_index=table.index,
+        record_percent_to_predict=float(record_percent_to_predict),
+        is_closing_prices_mode=True
+    )
+    if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:    # Linear Regression
+        df, annual_return, excepted_returns = analyze.linear_regression_model(test_size_machine_learning)
+    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
+        df, annual_return, excepted_returns = analyze.arima_model()
+    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
+        df, annual_return, excepted_returns = analyze.gbm_model()
+    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
+        df, annual_return, excepted_returns, plt = analyze.prophet_model()
     else:
         raise ValueError(f'Invalid machine learning model given: {machine_learning_model}!\n'
                          f'Pick one of:\n'
@@ -58,7 +62,7 @@ def forecast_specific_stock(stock: str, machine_learning_model: str, models_data
                          f'{settings.MACHINE_LEARNING_MODEL[2]}\n'
                          f'{settings.MACHINE_LEARNING_MODEL[3]}\n')
 
-    plt_instance = plot_functions.plot_price_forecast(description, df, annual_return, plt, machine_learning_model)
+    plt_instance = graph_plot_methods.price_forecast(description, df, annual_return, plt)  #, machine_learning_model)
     return plt_instance
 
 
@@ -97,16 +101,16 @@ def implement_bb_strategy(data, lower_bb, upper_bb):
     return buy_price, sell_price, bb_signal
 
 
-def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"):
+def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01") -> plt:
     """
     stock_name: str
         A name of a stock that is being plotted
     start: date
-        A starting date for the plot
+        A starting date for the graph_plot_methods
     end: date
-        An ending date for the plot
+        An ending date for the graph_plot_methods
     Return value:
-        Returns the plot instance
+        Returns the graph_plot_methods instance
     """
     if type(stock_name) == int or stock_name.isnumeric():
         num_of_digits = len(str(stock_name))
@@ -119,7 +123,8 @@ def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"
         # list to DataFrame
         stock_prices = pd.DataFrame(stock_prices)
         stock_prices["tradeDate"] = pd.to_datetime(stock_prices["tradeDate"])
-        stock_prices.set_index("tradeDate", inplace=True)
+        stock_prices.rename(columns={'tradeDate': 'Trade Date'}, inplace=True)
+        stock_prices.set_index("Trade Date", inplace=True)
         if is_index_type:
             stock_prices['Adj Close'] = stock_prices[["closingIndexPrice"]]
         else:
@@ -137,7 +142,7 @@ def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"
 
     buy_price, sell_price, bb_signal = implement_bb_strategy(stock_prices['Adj Close'],
                                                              stock_prices['Lower'], stock_prices['Upper'])
-    plt_instance = plot_functions.plot_bb_strategy_stock(stock_prices, buy_price, sell_price)
+    plt_instance = graph_plot_methods.bb_strategy_stock(stock_prices, buy_price, sell_price)
     return plt_instance
 
 
@@ -155,7 +160,7 @@ def download_data_for_research(num_of_years_history: int) -> None:
         closing_price_all_sectors_table = pd.concat([closing_price_all_sectors_table, closing_price_table], axis=1)
 
     closing_price_all_sectors_table.to_csv(settings.RESEARCH_LOCATION + "all_sectors_closing_price.csv")
-    print(f"table of all sectors::{sector_name} saved ")
+    print(f"table of all sectors: {sector_name} saved ")
 
     # creates
 

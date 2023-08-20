@@ -29,19 +29,19 @@ class StatsModels:
         self._closing_prices_table = closing_prices_table
         self.gini_v_value = gini_value
         if model_name == "Markowitz":
-            self.get_optimal_portfolio_by_markowitz(
+            self.get_markowitz_optimal_portfolio_as_dataframe(
                 num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
                 max_percent_commodity, max_percent_stocks
             )
         else:
-            self.get_optimal_portfolio_by_gini(
+            self.get_gini_optimal_portfolio_as_dataframe(
                 num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
                 max_percent_commodity, max_percent_stocks
             )
 
-    def get_optimal_portfolio_by_markowitz(self, num_por_simulation: int, min_num_por_simulation: int,
-                                           pct_change_table: pd.DataFrame, stocks_symbols: list[str],
-                                           max_percent_commodity, max_percent_stocks):
+    def get_markowitz_optimal_portfolio_as_dataframe(self, num_por_simulation: int, min_num_por_simulation: int,
+                                                     pct_change_table: pd.DataFrame, stocks_symbols: list[str],
+                                                     max_percent_commodity, max_percent_stocks) -> None:
 
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
@@ -126,9 +126,8 @@ class StatsModels:
         # reorder dataframe columns
         self._df = df[column_order]
 
-    def get_optimal_portfolio_by_gini(self, num_por_simulation, min_num_por_simulation, pct_change_table,
-                                      stocks_symbols,
-                                      max_percent_commodity, max_percent_stocks):
+    def get_gini_optimal_portfolio_as_dataframe(self, num_por_simulation, min_num_por_simulation, pct_change_table,
+                                                stocks_symbols, max_percent_commodity, max_percent_stocks) -> None:
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
             if type(symbol) == int:
@@ -220,7 +219,8 @@ class StatsModels:
             # reorder dataframe columns
             self._df = df[column_order]
 
-    def get_df(self):
+    @property
+    def df(self) -> pd.DataFrame:
         return self._df
 
     def get_max_vols(self):
@@ -231,5 +231,3 @@ class StatsModels:
             max_vol = self._df["Gini"].max()
             max_vol_portfolio = self._df.loc[self._df['Gini'] == max_vol]
         return max_vol_portfolio
-
-

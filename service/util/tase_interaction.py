@@ -5,7 +5,7 @@ import json
 import requests
 import base64
 import datetime
-from ..config import israeli_tase_settings
+from service.config import israeli_tase
 
 
 def get_israeli_symbol_data(command, start_date, end_date, israeli_stock_symbol, used_app_url):
@@ -37,23 +37,23 @@ def get_israeli_symbol_data(command, start_date, end_date, israeli_stock_symbol,
 
 
 def get_israeli_index_data(command, start_date, end_date, israeli_index_name):  # get israeli indexes data from tase
-    used_app_url = israeli_tase_settings.INDEX_EOD_HISTORY_TEN_YEARS
+    used_app_url = israeli_tase.INDEX_EOD_HISTORY_TEN_YEARS
     return get_israeli_symbol_data(command, start_date, end_date, israeli_index_name, used_app_url)
 
 
 def get_israeli_security_data(command, start_date, end_date, israeli_security_name):
-    used_app_url = israeli_tase_settings.SECURITY_END_OF_DAY_HISTORY_TEN_YEARS
+    used_app_url = israeli_tase.SECURITY_END_OF_DAY_HISTORY_TEN_YEARS
     return get_israeli_symbol_data(command, start_date, end_date, israeli_security_name, used_app_url)
 
 
 def get_israeli_companies_list():
-    app_url = get_app_url_without_date(israeli_tase_settings.BASIC_SECURITIES_LIST_BY_TYPE)
+    app_url = get_app_url_without_date(israeli_tase.BASIC_SECURITIES_LIST_BY_TYPE)
     json_data = get_json_data_of_symbol(app_url)
     return json_data
 
 
 def get_israeli_indexes_list():
-    app_url = get_app_url_without_date(israeli_tase_settings.BASIC_INDEX_LIST)
+    app_url = get_app_url_without_date(israeli_tase.BASIC_INDEX_LIST)
     json_data = get_json_data_of_symbol(app_url)
     return json_data
 
@@ -62,7 +62,7 @@ def get_json_data_of_symbol(app_url):
     conn = http.client.HTTPSConnection('openapigw.tase.co.il')
     payload = ''
     headers = {'Authorization': 'Bearer ' + get_tase_access_token(),
-               'Accept-Language': israeli_tase_settings.LANGUAGE,
+               'Accept-Language': israeli_tase.LANGUAGE,
                'Content-Type': 'application/json'}
     conn.request('GET', app_url, payload, headers)
     res = conn.getresponse()
@@ -81,7 +81,7 @@ def get_base_64_token():
     # key = '7e247414e7047349d83b7b8a427c529c'
     # secret = '7a809c498662c88a0054b767a92f0399'
 
-    token: str = israeli_tase_settings.KEY + ':' + israeli_tase_settings.SECRET
+    token: str = israeli_tase.KEY + ':' + israeli_tase.SECRET
     base_64_token = base64.b64encode(token.encode('ascii')).decode('ascii')
     return base_64_token
 
@@ -93,14 +93,14 @@ def get_tase_access_token():
 
     payload = 'grant_type=client_credentials&scope=tase'
     headers = {'Authorization': 'Basic ' + base_64_token, 'Content-Type': 'application/x-www-form-urlencoded'}
-    response = requests.request('POST', israeli_tase_settings.TOKEN_URL, headers=headers, data=payload)
+    response = requests.request('POST', israeli_tase.TOKEN_URL, headers=headers, data=payload)
 
     return json.loads(response.text)['access_token']
 
 
 # BUILD URL FOR REQUEST
 def get_app_url_without_date(app_name):  # /tase/prod/impl/v1/short-sales/weekly-balance
-    return israeli_tase_settings.PREFIX_URL + '/' + app_name
+    return israeli_tase.PREFIX_URL + '/' + app_name
 
 
 def get_app_url_with_date_and_index(app_name, start_year, start_month, start_day,

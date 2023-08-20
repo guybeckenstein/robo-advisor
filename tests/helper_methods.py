@@ -68,14 +68,16 @@ def login_user(client: Client, user_factory: Callable) -> CustomUser:
 
 
 def assert_attributes(response: TemplateResponse, attributes: list[str]) -> None:
+    content: str = response.content.decode()
     for attribute in attributes:
-        assert attribute in response.content.decode()
+        assert attribute in content
 
 
 def assert_attributes_and_values(response: TemplateResponse, attributes_and_values: list[tuple[str, object]]) -> None:
+    content: str = response.content.decode()
     for attribute, value in attributes_and_values:
-        assert attribute in response.content.decode()
-        assert str(value) in response.content.decode()
+        assert attribute in content
+        assert str(value) in content
 
 
 def assert_successful_status_code_for_get_request(response: TemplateResponse, template_src: str) -> None:

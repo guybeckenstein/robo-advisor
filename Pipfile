@@ -10,6 +10,7 @@ crispy-bootstrap5 = "*"
 pytest-lazy-fixture = "*"
 pytest-django = "*"
 flake8 = "*"
+django-allauth = "*"
 
 [dev-packages]
 flake8 = "*"

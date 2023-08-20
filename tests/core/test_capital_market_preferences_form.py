@@ -235,4 +235,3 @@ class TestPreferencesForm:
         user: CustomUser = helper_methods.login_user(client, user_factory)
         questionnaire_a: QuestionnaireA = questionnaire_a_factory(user=user)
         return user, questionnaire_a
-

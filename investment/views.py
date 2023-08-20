@@ -7,12 +7,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.models import InvestorUser
 from investment.models import Investment
-from investment_portfolio.views import check_if_preferences_form_is_filled
 
 
+# Investment
 @login_required
 def investments_list_view(request):
-    is_form_filled: bool = check_if_preferences_form_is_filled(request)
+    is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     if is_form_filled:
         investments: QuerySet[Investment] = _investments_list_view(request)
         context: dict = {
@@ -28,9 +28,10 @@ def investments_list_view(request):
         }
     return render(request, 'investment/my_investments_history.html', context=context)
 
+
 @login_required
 def add_investment_view(request):
-    is_form_filled: bool = check_if_preferences_form_is_filled(request)
+    is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     if is_form_filled is False:
         raise Http404
     investments: QuerySet[Investment] = _investments_list_view(request)
@@ -54,6 +55,7 @@ def add_investment_view(request):
     else:
         raise BadRequest
 
+
 def _investments_list_view(request) -> QuerySet[Investment]:
     page = request.GET.get("page", None)
     investments = Investment.objects.filter(mode=Investment.Mode.USER)
@@ -67,3 +69,33 @@ def _investments_list_view(request) -> QuerySet[Investment]:
         except EmptyPage:
             investments = paginator.page(paginator.num_pages)
     return investments
+
+
+# Investment Portfolio
+@login_required
+def investment_main(request):
+    context = {
+        'title': 'Investments',
+    }
+    return render(request, 'investment/investments_main.html', context=context)
+
+
+@login_required
+def profile_portfolio(request):
+    is_form_filled: bool = _check_if_preferences_form_is_filled(request)
+    context = {
+        'user': request.user,
+        'is_form_filled': is_form_filled,
+        'title': 'Profile Portfolio',
+    }
+    return render(request, 'investment/profile_portfolio.html', context=context)
+
+
+@login_required
+def _check_if_preferences_form_is_filled(request):
+    is_form_filled = True
+    try:
+        get_object_or_404(InvestorUser, user=request.user)
+    except Http404:
+        is_form_filled = False
+    return is_form_filled

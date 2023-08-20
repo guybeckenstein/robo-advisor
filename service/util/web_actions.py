@@ -1,7 +1,8 @@
-from typing import List
 import numpy as np
 import pandas as pd
 from django.shortcuts import get_object_or_404
+
+from service.impl.sector import Sector
 from service.impl.user import User
 from service.impl.portfolio import Portfolio
 from service.util import data_management
@@ -12,7 +13,7 @@ from core.models import QuestionnaireA
 from accounts.models import InvestorUser, CustomUser
 
 
-def save_three_user_graphs_as_png(user: CustomUser, portfolio=None) -> None:
+def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None) -> None:
     investor_user: InvestorUser = get_investor_user(user)
     if portfolio is None:
         (annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level,
@@ -27,18 +28,13 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio=None) -> None:
     )
     pct_change_table: pd.DataFrame = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
-    models_data = helpers.get_collection_json_data()
+    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table[f"weighted_sum_{str(risk_level)}"] = weighted_sum
     if is_machine_learning:
         weighted_sum: pd.DataFrame = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
         )[0][0]
-    offset_row, record_percent_to_predict = helpers.get_daily_change_sub_table_offset(
-        models_data, pct_change_table.index
-    )
-    #if is_machine_learning:
-     #   pct_change_table = pct_change_table[offset_row:]  # Update length
     # Update the new sub-table's length (should be at most equal to the old one), then update the table itself
     yield_column: str = f"yield_{str(risk_level)}"
     pct_change_table[yield_column] = weighted_sum
@@ -104,27 +100,27 @@ def create_portfolio_instance(user: CustomUser):
     selected_model: int = questionnaire_a.model_answer
     total_investment_amount: int = investor_user.total_investment_amount
     risk_level: int = investor_user.risk_level
-    stocks_symbols: List[str] = None
-    stocks_weights: List[float] = None
+    stocks_symbols: list[str] = None
+    stocks_weights: list[float] = None
     if type(investor_user.stocks_symbols) is list:
-        stocks_symbols: List[str] = investor_user.stocks_symbols
+        stocks_symbols: list[str] = investor_user.stocks_symbols
         for idx, symbol in enumerate(stocks_symbols):
             if type(symbol) == int or symbol.isnumeric():
                 if type(idx) is not int:
                     raise ValueError("Invalid type for idx")
                 stocks_symbols[idx] = int(stocks_symbols[idx])
-        stocks_weights: List[str] = investor_user.stocks_weights
-        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
+        stocks_weights: list[str] = investor_user.stocks_weights
+        stocks_weights: list[float] = [float(weight) for weight in stocks_weights]
     elif type(investor_user.stocks_symbols) is str:
-        stocks_symbols: List[str] = investor_user.stocks_symbols[1:-1].split(',')
+        stocks_symbols: list[str] = investor_user.stocks_symbols[1:-1].split(',')
         for idx, symbol in enumerate(stocks_symbols):
             if symbol.isnumeric():
                 stocks_symbols[idx] = int(stocks_symbols[idx])
-        stocks_weights: List[str] = investor_user.stocks_weights[1:-1].split(',')
-        stocks_weights: List[float] = [float(weight) for weight in stocks_weights]
+        stocks_weights: list[str] = investor_user.stocks_weights[1:-1].split(',')
+        stocks_weights: list[float] = [float(weight) for weight in stocks_weights]
     else:
         ValueError("Invalid type for stocks_symbols of investor_user")
-    sectors = helpers.set_sectors(stocks_symbols=stocks_symbols)
+    sectors: list[Sector] = helpers.set_sectors(stocks_symbols=stocks_symbols)
     portfolio: Portfolio = Portfolio(
         stocks_symbols=stocks_symbols,
         sectors=sectors,
@@ -133,9 +129,8 @@ def create_portfolio_instance(user: CustomUser):
         selected_model=selected_model,
         is_machine_learning=is_machine_learning
     )
-    # annual_returns, annual_volatility, annual_sharpe = portfolio.get_annual_data()  # New code
-    investor_user: InvestorUser = get_investor_user(user)   # Previous Code
-    annual_returns = investor_user.annual_returns           # Previous Code
-    annual_volatility = investor_user.annual_volatility     # Previous Code
-    annual_sharpe = investor_user.annual_sharpe             # Previous Code
+    investor_user: InvestorUser = get_investor_user(user)
+    annual_returns = investor_user.annual_returns
+    annual_volatility = investor_user.annual_volatility
+    annual_sharpe = investor_user.annual_sharpe
     return annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level, stocks_weights

@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
+  // Check if the current URI is '/investment/discover-stocks/'
+  if (window.location.pathname === '/investment/discover-stocks/') {
     // Get the current date
     var currentDate = new Date();
 
@@ -15,4 +17,5 @@ document.addEventListener("DOMContentLoaded", function() {
     // Set the value of the end date input to the current date
     var formattedCurrentDate = currentDate.toISOString().substr(0, 10);
     document.getElementById("id_end_date").value = formattedCurrentDate;
+  }
 });

@@ -1,15 +1,11 @@
 import datetime
 import json
-from datetime import timezone
 
 import pytz
-from django.utils import timezone
 
-import pandas as pd
 from allauth.account.views import SignupView, LoginView
-from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
 from django import forms
-from django.contrib.auth import logout, get_user
+from django.contrib.auth import logout
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import BadRequest
 from django.db.models import QuerySet
@@ -22,8 +18,7 @@ from django.urls import reverse_lazy
 from core.models import QuestionnaireA, QuestionnaireB
 from investment.models import Investment
 from service.util import web_actions, data_management
-from service.util.data_management import get_stocks_from_json_file
-from accounts import forms
+from accounts import forms as account_forms
 from .models import InvestorUser, CustomUser
 
 
@@ -31,8 +26,9 @@ class SignUpView(SignupView):
     """
     Creates new employee
     """
-    template_name = 'account/registration.html'
-    form_class = forms.UserRegisterForm
+    template_name = 'account/guest/registration.html'
+    form_class = account_forms.UserRegisterForm
+    htmx = True
 
     def get(self, request, *args, **kwargs):
         # Use RequestContext instead of render_to_response from 3.0
@@ -45,8 +41,7 @@ class SignUpView(SignupView):
     def post(self, request, *args, **kwargs):
         form: forms.ModelForm = self.form_class(request.POST)
         if form.is_valid():
-            user = form.save()
-            # complete_signup(request, user, app_settings.EMAIL_VERIFICATION, "/")
+            form.save()
             email = form.cleaned_data.get('email')
             messages.success(request, f"Successfully created your account - '{email}'.")
             return redirect('account_login')
@@ -58,8 +53,15 @@ class SignUpView(SignupView):
         return render(request, self.template_name, context=context)
 
 
+    def non_field_errors(self) -> list[str]:
+        errors = super().non_field_errors()
+        if 'email' in self.errors and 'already exists' in self.errors['email'][0]:
+            errors = ["A user is already assigned with this email. Please use a different email address."]
+            return errors
+
+
 class HtmxLoginView(LoginView):
-    template_name = 'account/login.html'
+    template_name = 'account/guest/login.html'
     htmx = True
 
     def get_context_data(self, **kwargs):
@@ -68,21 +70,21 @@ class HtmxLoginView(LoginView):
         return context
 
     def form_valid(self, form):
+        email: str = form.cleaned_data['login']
         try:
-            email = form.cleaned_data['login']
-            user = CustomUser.objects.get(email=email)
-            last_login = user.last_login.astimezone(pytz.timezone('Asia/Jerusalem'))
-            current = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
-            if (current - last_login).days > 0:
-                """web_actions.create_portfolio_and_get_data(
-                  answers_sum = InvestorUser.questionnaire_b.answers_sum,
-                  stocks_collection_number = InvestorUser.stocks_collection_number,
-                  questionnaire_a = InvestorUser.questionnaire_a)  
-                  (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-                   risk_level,
-                   sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio)"""
-                # web_actions.save_three_user_graphs_as_png(user=user)
-                pass
+            user: CustomUser = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            raise ValueError(f'No user with email - `{email}`')
+        try:
+            InvestorUser.objects.get(user=user)
+            # Can only proceed if there is an InvestorUser instance
+            if user.last_login is not None:
+                last_login = user.last_login.astimezone(pytz.timezone('Asia/Jerusalem'))
+                current: datetime.datetime = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
+                if (current - last_login).days > 0:
+                    web_actions.save_three_user_graphs_as_png(user=user)
+            else:
+                raise AttributeError('Invalid logic - InvestorUser exists before the user has logged in!')
         except InvestorUser.DoesNotExist:
             pass
         return super().form_valid(form)
@@ -93,20 +95,20 @@ def logout_view(request):
     context = {
         'title': "You Have Been Logged Out"
     }
-    return render(request, 'account/logout.html', context=context)
+    return render(request, 'account/authenticated/logout.html', context=context)
 
 
 @login_required
 def profile_main(request):
     if request.method == 'GET':
-        form: forms.ModelForm = forms.AccountMetadataForm(instance=request.user, disabled_project=True)
+        form: forms.ModelForm = account_forms.AccountMetadataForm(instance=request.user, disabled_project=True)
     else:
         raise BadRequest
     context = {
         'form': form,
         'title': f"{request.user.first_name}'s Profile"
     }
-    return render(request, 'account/profile_main.html', context=context)
+    return render(request, 'account/authenticated/profile_main.html', context=context)
 
 
 @login_required
@@ -114,15 +116,15 @@ def profile_account(request):
     context = {
         'title': "Account Page"
     }
-    return render(request, 'account/profile_account.html', context=context)
+    return render(request, 'account/authenticated/profile_account.html', context=context)
 
 
 @login_required
 def profile_account_details(request):
     if request.method == 'GET':
-        form: forms.ModelForm = forms.UpdateUserNameAndPhoneNumberForm(instance=request.user)
+        form: forms.ModelForm = account_forms.UpdateUserNameAndPhoneNumberForm(instance=request.user)
     elif request.method == 'POST':
-        form: forms.ModelForm = forms.UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
+        form: forms.ModelForm = account_forms.UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your account details have been updated successfully.')
@@ -133,12 +135,12 @@ def profile_account_details(request):
         'form': form,
         'title': "Update Details",
     }
-    return render(request, 'account/profile_account_details.html', context=context)
+    return render(request, 'account/authenticated/profile_account_details.html', context=context)
 
 
 class MyPasswordChangeForm(PasswordChangeView):
-    form_class = forms.PasswordChangingForm
-    template_name = 'account/profile_account_password.html'
+    form_class = account_forms.PasswordChangingForm
+    template_name = 'account/authenticated/profile_account_password.html'
     success_url = reverse_lazy('profile_account')
 
     def get_context_data(self, **kwargs):
@@ -147,32 +149,24 @@ class MyPasswordChangeForm(PasswordChangeView):
         return context
 
 
-def get_styled_stocks_symbols_data(stocks_symbols_data) -> dict[list]:
-    styled_stocks_symbols_data: dict[list] = dict()
-    for key, value in stocks_symbols_data.items():
-        styled_value: list[str] = list()
-        for symbol, description in zip(value[0], value[1]):
-            styled_value.append(f'{symbol} -> {description}')
-        styled_stocks_symbols_data[key] = styled_value
-    return styled_stocks_symbols_data
-
-
 @login_required
 def profile_investor(request):
-    stocks_symbols_data: dict[list] = get_stocks_from_json_file()
-    styled_stocks_symbols_data: dict[list] = get_styled_stocks_symbols_data(stocks_symbols_data=stocks_symbols_data)
+    stocks_symbols_data: dict[list] = data_management.get_stocks_from_json_file()
+    styled_stocks_symbols_data: dict[list] = data_management.get_styled_stocks_symbols_data(
+        stocks_symbols_data=stocks_symbols_data
+    )
     is_form_filled = True
 
     try:
         investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
         if request.method == 'GET':
-            form: forms.ModelForm = forms.UpdateInvestorUserForm(
+            form: forms.ModelForm = account_forms.UpdateInvestorUserForm(
                 instance=investor_user,
                 investor_user_instance=investor_user,
                 disabled_project=True,
             )
         elif request.method == 'POST':
-            form: forms.ModelForm = forms.UpdateInvestorUserForm(
+            form: forms.ModelForm = account_forms.UpdateInvestorUserForm(
                 request.POST,
                 investor_user_instance=investor_user,
                 instance=investor_user,
@@ -218,42 +212,4 @@ def profile_investor(request):
         'stocks_symbols_data': json.dumps(styled_stocks_symbols_data),
         'title': "Update Collections of Stocks Details",
     }
-    return render(request, 'account/profile_investor.html', context=context)
-
-
-# Checks
-def check_email(request):
-    if request.method == 'POST':
-        form: forms.ModelForm = forms.UserRegisterForm(request.POST)
-        print(form)
-        context = {
-            'field': as_crispy_field(form['email']),
-            'valid': not form['email'].errors
-        }
-        return render(request, 'partials/field.html', context)
-    else:
-        # If it's a GET request, return an empty form
-        form: forms.ModelForm = forms.UserRegisterForm()
-        context = {
-            'field': as_crispy_field(form['email']),
-            'valid': True
-        }
-        return render(request, 'partials/field.html', context)
-
-
-def check_phone_number(request):
-    if request.method == 'POST':
-        form: forms.ModelForm = forms.UserRegisterForm(request.POST)
-        context = {
-            'field': as_crispy_field(form['phone_number']),
-            'valid': not form['phone_number'].errors
-        }
-        return render(request, 'partials/field.html', context)
-    else:
-
-        form: forms.ModelForm = forms.UserRegisterForm()
-        context = {
-            'field': as_crispy_field(form['phone_number']),
-            'valid': True
-        }
-        return render(request, 'partials/field.html', context)
+    return render(request, 'account/authenticated/profile_investor.html', context=context)

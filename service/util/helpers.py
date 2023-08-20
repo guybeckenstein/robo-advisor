@@ -3,6 +3,8 @@ import csv
 import datetime
 import json
 import math
+import os
+
 import boto3
 from bidi import algorithm as bidi_algorithm
 import numpy as np
@@ -12,24 +14,26 @@ from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from typing import Tuple
 import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
-from ..config import aws_settings, settings
-from ..impl.sector import Sector
-from . import tase_interaction
+from service.config import aws, settings
+from service.impl.sector import Sector
+from service.util import tase_interaction
+
+# Global variables
+SINGLE_DAY: int = 86400
 
 
-def get_best_portfolios(df, model_name: str):
+def get_best_portfolios(df, model_name: str) -> list:
     if model_name == 'Markowitz':
-        optional_portfolios = [build_return_markowitz_portfolios_dic(df[0]),
-                               build_return_markowitz_portfolios_dic(df[1]),
-                               build_return_markowitz_portfolios_dic(df[2])]
+        optional_portfolios: list = [
+            build_return_model_portfolios_dict(df=df[i], max_val='Returns', min_val='Volatility') for i in range(3)
+        ]
     else:
-        optional_portfolios = [build_return_gini_portfolios_dic(df[0]),
-                               build_return_gini_portfolios_dic(df[1]),
-                               build_return_gini_portfolios_dic(df[2])]
+        optional_portfolios: list = [
+            build_return_model_portfolios_dict(df=df[i], max_val='Portfolio Annual', min_val='Gini') for i in range(3)
+        ]
     return [optional_portfolios[0]['Safest Portfolio'], optional_portfolios[1]['Sharpe Portfolio'],
             optional_portfolios[2]['Max Risk Portfolio']]
 
@@ -48,54 +52,25 @@ def get_best_weights_column(stocks_symbols, sectors_list, optional_portfolios, p
 
 
 def get_three_best_weights(optional_portfolios) -> list:
-    weighted_low = optional_portfolios[0].iloc[0][3:]
-    weighted_medium = optional_portfolios[1].iloc[0][3:]
-    weighted_high = optional_portfolios[2].iloc[0][3:]
-
-    return [weighted_low, weighted_medium, weighted_high]
+    return [optional_portfolios[i].iloc[0][3:] for i in range(3)]
 
 
 def get_three_best_sectors_weights(sectors_list, three_best_stocks_weights) -> list:
-    sectors_weights_list = []
-    for i in range(len(three_best_stocks_weights)):
-        sectors_weights_list.append(return_sectors_weights_according_to_stocks_weights(sectors_list,
-                                                                                       three_best_stocks_weights[i]))
-
-    return sectors_weights_list
+    return [return_sectors_weights_according_to_stocks_weights(sectors_list, three_best_stocks_weights[i])
+            for i in range(len(three_best_stocks_weights))]
 
 
-def build_return_gini_portfolios_dic(df: pd.DataFrame):
-    return_dic = {'Max Risk Portfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
-    min_gini = df['Gini'].min()
+def build_return_model_portfolios_dict(df: pd.DataFrame, max_val: str,
+                                       min_val: str) -> dict[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    max_portfolio_annual = df[max_val].max()
     max_sharpe = df['Sharpe Ratio'].max()
-    max_portfolio_annual = df['Portfolio Annual'].max()
+    min_markowitz = df[min_val].min()
 
     # use the min, max values to locate and create the two special portfolios
-    sharpe_portfolio = df.loc[df['Sharpe Ratio'] == max_sharpe]
-    safe_portfolio = df.loc[df['Gini'] == min_gini]
-    max_portfolio = df.loc[df['Portfolio Annual'] == max_portfolio_annual]
-
-    return_dic['Max Risk Portfolio'] = max_portfolio
-    return_dic['Safest Portfolio'] = safe_portfolio
-    return_dic['Sharpe Portfolio'] = sharpe_portfolio
-
-    return return_dic
-
-
-def build_return_markowitz_portfolios_dic(df: pd.DataFrame):
-    return_dic = {'Max Risk Portfolio': {}, 'Safest Portfolio': {}, 'Sharpe Portfolio': {}}
-    min_markowitz = df['Volatility'].min()
-    max_sharpe = df['Sharpe Ratio'].max()
-    max_portfolio_annual = df['Returns'].max()
-
-    # use the min, max values to locate and create the two special portfolios
-    sharpe_portfolio = df.loc[df['Sharpe Ratio'] == max_sharpe]
-    safe_portfolio = df.loc[df['Volatility'] == min_markowitz]
-    max_portfolio = df.loc[df['Returns'] == max_portfolio_annual]
-
-    return_dic['Max Risk Portfolio'] = max_portfolio
-    return_dic['Safest Portfolio'] = safe_portfolio
-    return_dic['Sharpe Portfolio'] = sharpe_portfolio
+    return_dic: dict[pd.DataFrame] = dict()
+    return_dic['Max Risk Portfolio'] = df.loc[df[max_val] == max_portfolio_annual]
+    return_dic['Sharpe Portfolio'] = df.loc[df['Sharpe Ratio'] == max_sharpe]
+    return_dic['Safest Portfolio'] = df.loc[df[min_val] == min_markowitz]
 
     return return_dic
 
@@ -124,219 +99,192 @@ def return_sectors_weights_according_to_stocks_weights(sectors: list, stocks_wei
     return sectors_weights
 
 
-def analyze_with_machine_learning_linear_regression(returns_stock: pd.DataFrame, table_index: pd.Index,
-                                                    record_percent_to_predict: float,
-                                                    test_size_machine_learning: str, closing_prices_mode: bool = False):
-    df_final: pd.DataFrame = pd.DataFrame({})
-    forecast_col: str = 'Col'
-    df_final[forecast_col] = returns_stock
-    df_final.fillna(value=-0, inplace=True)
-    forecast_out = int(math.ceil(float(record_percent_to_predict) * len(df_final)))
-    df_final['label'] = df_final[forecast_col].shift(-forecast_out)
+class Analyze:
+    def __init__(
+            self, returns_stock: pd.DataFrame,
+            table_index: pd.Index,
+            record_percent_to_predict: float,
+            is_closing_prices_mode: bool = False
+    ):
+            self._returns_stock: pd.DataFrame = returns_stock
+            self._table_index: pd.Index = table_index
+            self._record_percent_to_predict: float = record_percent_to_predict
+            self._is_closing_prices_mode: bool = is_closing_prices_mode
 
-    # Added date
-    df: pd.DataFrame = df_final
-    df['Date']: pd.Series = table_index
-    # print(df)
-    X: np.ndarray = np.array(df.drop(labels=['label', 'Date'], axis=1))
-    X: np.ndarray = preprocessing.scale(X)
-    X_lately: np.ndarray = X[-forecast_out:]
-    X: np.ndarray = X[:-forecast_out]
-    df.dropna(inplace=True)
-    y: np.ndarray = np.array(df['label'])
+    def linear_regression_model(self, test_size_machine_learning: str) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+        df, forecast_out = self.get_final_dataframe()
 
-    tpl: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] = train_test_split(
-        X, y, test_size=float(test_size_machine_learning)
-    )
-    X_train, X_test, y_train, y_test = tpl
-    clf: LinearRegression = LinearRegression()
-    clf.fit(X_train, y_train)
-    confidence: np.float64 = clf.score(X_test, y_test)
-    # print(confidence)
-    forecast_set: np.ndarray = clf.predict(X_lately)
-    df['Forecast'] = np.nan
+        # Added date
+        df['Date']: pd.Series = self._table_index
+        # print(df)
+        X: np.ndarray = np.array(df.drop(labels=['Label', 'Date'], axis=1))
+        X: np.ndarray = preprocessing.scale(X)
+        X_lately: np.ndarray = X[-forecast_out:]
+        X: np.ndarray = X[:-forecast_out]
+        df.dropna(inplace=True)
+        y: np.ndarray = np.array(df['Label'])
 
-    last_date: str = df.iloc[-1]['Date']
-    last_date_datetime = pd.to_datetime(last_date)
-    last_unix: pd.Timestamp = last_date_datetime.timestamp()
-    one_day: int = 86400
-    next_unix: float = last_unix + one_day
+        tpl: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] = train_test_split(
+            X, y, test_size=float(test_size_machine_learning)
+        )
+        X_train, X_test, y_train, y_test = tpl
+        clf: LinearRegression = LinearRegression()
+        clf.fit(X_train, y_train)
+        # print(confidence)
+        forecast: np.ndarray = clf.predict(X_lately)
+        df['Forecast'] = np.nan
 
-    for i in forecast_set:
-        next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
-        next_unix += 86400
-        df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+        last_date = pd.to_datetime(df.iloc[-1]['Date'])
+        last_unix: pd.Timestamp = last_date.timestamp()
+        next_unix: float = last_unix + SINGLE_DAY
 
-    col: pd.Series = df["Forecast"]
-    col = col.dropna()  # TODO: adding `inplace=True` may make the same effect
-    df["label"] = df['Col']
-    df["label"].fillna(df["Forecast"], inplace=True)
+        for i in forecast:
+            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
+            next_unix += SINGLE_DAY
+            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-    forecast_returns_annual: np.float64 = (((1 + df['label'].mean()) ** 254) - 1) * 100
-    expected_returns: np.float64 = (((1 + df['Forecast'].mean()) ** 254) - 1) * 100
-    if closing_prices_mode:
-        forecast_returns_annual = (((1 + df['label'].pct_change().mean()) ** 254) - 1) * 100
-        expected_returns = (((1 + df['Forecast'].pct_change().mean()) ** 254) - 1) * 100
-    return df, forecast_returns_annual, expected_returns
+        forecast_returns_annual, expected_returns = self.calculate_returns(df)
+        return df, forecast_returns_annual, expected_returns
 
+    def arima_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+        df, forecast_out = self.get_final_dataframe()
 
-def analyze_with_machine_learning_arima(returns_stock: pd.DataFrame, table_index: pd.Index,
-                                        record_percent_to_predict: float = 0.05, closing_prices_mode: bool = False):
-    df_final: pd.DataFrame = pd.DataFrame({})
-    forecast_col: str = 'Col'
-    df_final[forecast_col] = returns_stock
-    df_final.fillna(value=-0, inplace=True)
-    multiplication = record_percent_to_predict * len(df_final)
-    ceil_value = math.ceil(multiplication)
-    forecast_out = int(ceil_value)
-    df_final['label'] = df_final[forecast_col].shift(-forecast_out)
+        # ARIMA requires datetime index for time series data
+        df.index = pd.to_datetime(self._table_index, format='%Y-%m-%d')
 
-    # ARIMA requires datetime index for time series data
-    df_final.index = pd.to_datetime(table_index, format='%Y-%m-%d')
+        # Perform ARIMA forecasting
+        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=True)
+        forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
 
-    # Perform ARIMA forecasting
-    model: pm.ARIMA = pm.auto_arima(df_final[forecast_col], seasonal=False, suppress_warnings=True)
-    forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
+        df['Forecast'] = np.nan
+        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast
 
-    df_final['Forecast'] = np.nan
-    df_final.loc[df_final.index[-forecast_out]:, 'Forecast'] = forecast
+        # Add dates
+        last_date = df.iloc[-1].name
+        last_unix: pd.Timestamp = last_date.timestamp()
+        next_unix: float = last_unix + SINGLE_DAY
 
-    # forecast_returns_annual = (forecast.iloc[-1] / df_final[forecast_col].iloc[-forecast_out - 1]) ** 254 - 1
+        for i in forecast:
+            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
+            next_unix += SINGLE_DAY
+            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-    # add dates
-    last_date = df_final.iloc[-1].name
-    last_unix = last_date.timestamp()
-    one_day = 86400
-    next_unix = last_unix + one_day
-
-    for i in forecast:
-        next_date = datetime.datetime.fromtimestamp(next_unix)
-        next_unix += 86400
-        df_final.loc[next_date] = [np.nan for _ in range(len(df_final.columns) - 1)] + [i]
-    col = df_final["Forecast"]
-    col = col.dropna()
-    df_final["label"] = df_final['Col']
-    df_final["label"].fillna(df_final["Forecast"], inplace=True)
-
-    forecast_returns_annual = (((1 + df_final['label'].mean()) ** 254) - 1) * 100
-    excepted_returns = (((1 + df_final['Forecast'].mean()) ** 254) - 1) * 100
-    if closing_prices_mode:
-        forecast_returns_annual = (((1 + df_final['label'].pct_change().mean()) ** 254) - 1) * 100
-        excepted_returns = (((1 + df_final['Forecast'].pct_change().mean()) ** 254) - 1) * 100
-
-    # Calculate annual return based on the forecast
-    return df_final, forecast_returns_annual, excepted_returns
+        forecast_returns_annual, expected_returns = self.calculate_returns(df)
+        return df, forecast_returns_annual, expected_returns
 
 
-def analyze_with_machine_learning_gbm(returns_stock, table_index, record_percent_to_predict, closing_prices_mode=False):
-    df_final = pd.DataFrame({})
-    forecast_col: str = 'Col'
-    df_final[forecast_col] = returns_stock
-    df_final.fillna(value=-0, inplace=True)
+    def gbm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+        df, forecast_out = self.get_final_dataframe()
 
-    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
-    df_final['label'] = df_final[forecast_col].shift(-forecast_out)
+        df.index = pd.to_datetime(self._table_index)
 
-    df_final.index = pd.to_datetime(table_index)
+        # Perform GBM forecasting
+        model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
+        X = np.arange(len(df))[:, None]  # Use a simple sequence as features for demonstration
+        y = df['Col'].values
+        model.fit(X, y)
+        forecast = model.predict(np.arange(len(df), len(df) + forecast_out)[:, None])
+        df['Forecast'] = np.nan
+        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast
 
-    # Perform GBM forecasting
-    model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
-    X = np.arange(len(df_final))[:, None]  # Use a simple sequence as features for demonstration
-    y = df_final[forecast_col].values
-    model.fit(X, y)
-    forecast = model.predict(np.arange(len(df_final), len(df_final) + forecast_out)[:, None])
-    df_final['Forecast'] = np.nan
-    df_final.loc[df_final.index[-forecast_out]:, 'Forecast'] = forecast
+        # add dates
+        last_date = df.iloc[-1].name
+        last_unix: pd.Timestamp = last_date.timestamp()
+        next_unix: float = last_unix + SINGLE_DAY
 
-    # add dates
-    last_date = df_final.iloc[-1].name
-    last_unix = last_date.timestamp()
-    one_day = 86400
-    next_unix = last_unix + one_day
+        for i in forecast:
+            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
+            next_unix += SINGLE_DAY
+            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-    for i in forecast:
-        next_date = datetime.datetime.fromtimestamp(next_unix)
-        next_unix += 86400
-        df_final.loc[next_date] = [np.nan for _ in range(len(df_final.columns) - 1)] + [i]
-    df_final["Forecast"] = df_final["Forecast"].shift(forecast_out)
-    col = df_final["Forecast"]
-    col = col.dropna()
-    df_final["label"] = df_final["Col"]
-    df_final["label"].fillna(df_final["Forecast"], inplace=True)
+        forecast_returns_annual, expected_returns = self.calculate_returns(df, forecast_out=forecast_out)
+        return df, forecast_returns_annual, expected_returns
 
-    # forecast_returns_annual = (forecast[-1] / df_final[forecast_col].iloc[-forecast_out - 1]) ** 254 - 1
-    forecast_returns_annual = (((1 + df_final['label'].mean()) ** 254) - 1) * 100
-    excepted_returns = (((1 + df_final['Forecast'].mean()) ** 254) - 1) * 100
-    if closing_prices_mode:
-        forecast_returns_annual = (((1 + df_final['label'].pct_change().mean()) ** 254) - 1) * 100
-        excepted_returns = (((1 + df_final['Forecast'].pct_change().mean()) ** 254) - 1) * 100
+    def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
+        df, forecast_out = self.get_final_dataframe()
+        df.index = pd.to_datetime(self._table_index)
 
-    # Calculate annual return based on the forecast
-    return df_final, forecast_returns_annual, excepted_returns
+        # Prepare the data for Prophet
+        df_prophet: pd.DataFrame = pd.DataFrame({'ds': self._table_index, 'y': df['Col']})
 
+        # Create and fit the Prophet model
+        model: Prophet = Prophet()
+        model.fit(df_prophet)
 
-def analyze_with_machine_learning_prophet(returns_stock, table_index, record_percent_to_predict=0.05,
-                                          closing_prices_mode=False,
-                                          ):
-    df_final = pd.DataFrame({})
-    forecast_col: str = 'Col'
-    df_final[forecast_col] = returns_stock
-    df_final.fillna(value=-0, inplace=True)
+        # Generate future dates for forecasting
+        future: pd.DataFrame = model.make_future_dataframe(periods=forecast_out, freq='D')
 
-    forecast_out = int(math.ceil(record_percent_to_predict * len(df_final)))
-    df_final['label'] = df_final[forecast_col].shift(-forecast_out)
+        # Perform the forecast
+        forecast: pd.DataFrame = model.predict(future)
 
-    # Prepare the data for Prophet
-    df_prophet = pd.DataFrame({'ds': table_index, 'y': df_final[forecast_col]})
+        # Extract the forecasted values for future dates
+        forecast_for_future: pd.Series = forecast[forecast['ds'].isin(self._table_index[-forecast_out:])]['yhat']
 
-    # Create and fit the Prophet model
-    model = Prophet()
-    model.fit(df_prophet)
+        # Assign the forecasted values to the 'Forecast' column for future dates
+        df.loc[self._table_index[-forecast_out:], 'Forecast'] = forecast_for_future.values
 
-    # Generate future dates for forecasting
-    future = model.make_future_dataframe(periods=forecast_out, freq='D')
+        # add dates
+        last_date: pd.Timestamp = df.iloc[-1].name
+        try:
+            last_unix = last_date.timestamp()
+        except AttributeError:
+            # convert str to datetime
+            last_date: datetime.datetime = datetime.datetime.strptime(last_date, '%Y-%m-%d')
+            last_unix: float = last_date.timestamp()
 
-    # Perform the forecast
-    forecast = model.predict(future)
+        next_unix: float = last_unix + SINGLE_DAY
+        for i in forecast_for_future:
+            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
+            next_unix += SINGLE_DAY
+            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-    # Extract the forecasted values for future dates
-    forecast_for_future = forecast[forecast['ds'].isin(table_index[-forecast_out:])]['yhat']
+        col_offset: int = len(df) - forecast_out
+        yhat: pd.Series = forecast['yhat']
+        df['Label'] = yhat.values
+        # df['Forecast'][col_offset] = yhat[col_offset].values  # OLD
+        df['Forecast'][col_offset] = yhat[col_offset]           # NEW
 
-    # Assign the forecasted values to the 'Forecast' column for future dates
-    df_final.loc[table_index[-forecast_out:], 'Forecast'] = forecast_for_future.values
+        longdouble: np.longdouble = np.longdouble(254)
+        forecast_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset].mean()))) - 1) * 100
+        excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.mean()))) - 1) * 100
+        if self._is_closing_prices_mode:
+            # Plot the forecast
+            model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
+            plt.title('Stock Price Forecast using Prophet')
+            forecast_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(
+                yhat[col_offset].pct_change().mean()
+            ))) - 1) * 100
+            excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.pct_change().mean()))) - 1) * 100
 
-    # add dates
-    last_date = df_final.iloc[-1].name
-    try:
-        last_unix = last_date.timestamp()
-    except Exception:  # TODO: write relevant and specific Exception here
-        # convert str to datetime
-        last_date = datetime.datetime.strptime(last_date, '%Y-%m-%d')
-        last_unix = last_date.timestamp()
+        return df, forecast_returns_annual, excepted_returns, plt
 
-    one_day = 86400
-    next_unix = last_unix + one_day
+    def get_final_dataframe(self) -> tuple[pd.DataFrame, int]:
+        df: pd.DataFrame = pd.DataFrame({})
+        df['Col'] = self._returns_stock
+        df.fillna(value=-0, inplace=True)
+        forecast_out = int(math.ceil(self._record_percent_to_predict * len(df)))
+        df['Label'] = df['Col'].shift(-forecast_out)
+        return df, forecast_out
 
-    for i in forecast_for_future:
-        next_date = datetime.datetime.fromtimestamp(next_unix)
-        next_unix += 86400
-        df_final.loc[next_date] = [np.nan for _ in range(len(df_final.columns) - 1)] + [i]
-    df_final["label"] = forecast['yhat'].values
-    df_final["Forecast"][len(df_final) - forecast_out:] = forecast['yhat'][len(df_final) - forecast_out:].values
-    # df_final["label"].fillna(df_final["Forecast"], inplace=True)
+    def calculate_returns(self, df: pd.DataFrame, forecast_out=None) -> tuple[np.longdouble, np.longdouble]:
+        if forecast_out is not None:
+            df["Forecast"] = df["Forecast"].shift(forecast_out)
+        df['Label'] = df['Col']
+        df['Label'].fillna(df['Forecast'], inplace=True)
 
-    forecast_returns_annual = (((1 + forecast['yhat'][len(df_final) - forecast_out:].mean()) ** 254) - 1) * 100
-    excepted_returns = (((1 + forecast['yhat'].mean()) ** 254) - 1) * 100
-    if closing_prices_mode:
-        # Plot the forecast
-        model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
-        plt.title('Stock Price Forecast using Prophet')
-        # plt.show()
-        forecast_returns_annual = (((1 + forecast['yhat'][
-                                         len(df_final) - forecast_out:].pct_change().mean()) ** 254) - 1) * 100
-        excepted_returns = (((1 + forecast['yhat'].pct_change().mean()) ** 254) - 1) * 100
-
-    return df_final, forecast_returns_annual, excepted_returns, plt
+        longdouble: np.longdouble = np.longdouble(254)
+        logged_label_mean: np.ndarray = np.log1p(df['Label'].mean())
+        np_exp_res1: np.ndarray = np.exp(longdouble * logged_label_mean)        # Generates RuntimeWarning: overflow encountered in exp
+        forecast_returns_annual: np.longdouble = (np_exp_res1 - 1) * 100
+        logged_forecast_mean: np.ndarray = np.log1p(df['Forecast'].mean())
+        np_exp_res2: np.ndarray = np.exp(longdouble * logged_forecast_mean)     # Generates RuntimeWarning: overflow encountered in exp
+        expected_returns: np.longdouble = (np_exp_res2 - 1) * 100
+        if self._is_closing_prices_mode:
+            logged_label_mean: np.ndarray = np.log1p(df['Label'].pct_change().mean())           # Generates RuntimeWarning: invalid value encountered in log1p
+            forecast_returns_annual: np.longdouble = (np.exp(longdouble * logged_label_mean) - 1) * 100
+            logged_forecast_mean: np.ndarray = np.log1p(df['Forecast'].pct_change().mean())     # Generates RuntimeWarning: invalid value encountered in log1p
+            expected_returns: np.longdouble = (np.exp(longdouble * logged_forecast_mean) - 1) * 100
+        return forecast_returns_annual, expected_returns
 
 
 def update_daily_change_with_machine_learning(
@@ -364,40 +312,36 @@ def update_daily_change_with_machine_learning(
                 stock_name = 0
             else:
                 stock_name = str(stock)
-            if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:  # Linear Regression
-                df, annual_return, excepted_returns = analyze_with_machine_learning_linear_regression(
-                    returns_stock[stock_name], table_index, record_percent_to_predict, test_size_machine_learning,
-                    closing_prices_mode
-                )
-            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
-                df, annual_return, excepted_returns = analyze_with_machine_learning_arima(
-                    returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
-                )
 
-            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
-                df, annual_return, excepted_returns = analyze_with_machine_learning_gbm(
-                    returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
-                )
+            analyze: Analyze = Analyze(
+                returns_stock=returns_stock[stock_name],
+                table_index=table_index,
+                record_percent_to_predict=float(record_percent_to_predict),
+                is_closing_prices_mode=closing_prices_mode
+            )
+            if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:       # Linear Regression
+                df, annual_return, excepted_returns = analyze.linear_regression_model(test_size_machine_learning)
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:     # Arima
+                df, annual_return, excepted_returns = analyze.arima_model()
 
-
-            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
-                df, annual_return, excepted_returns, plt = analyze_with_machine_learning_prophet(
-                    returns_stock[stock_name], table_index, record_percent_to_predict, closing_prices_mode
-                )
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:     # Gradient Boosting Regressor
+                df, annual_return, excepted_returns = analyze.gbm_model()
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:     # Prophet
+                df, annual_return, excepted_returns, plt = analyze.prophet_model()
             else:
                 raise ValueError('Invalid machine model')
-            if df['label'][offset_row:].values.size == returns_stock[stock_name].size:
-                returns_stock[stock_name] = df['label'][offset_row:].values
+            if df['Label'][offset_row:].values.size == returns_stock[stock_name].size:
+                returns_stock[stock_name] = df['Label'][offset_row:].values
             else:
-                returns_stock[stock_name] = df['label'].values
+                returns_stock[stock_name] = df['Label'].values
 
         return returns_stock, annual_return, excepted_returns
 
 
-def get_daily_change_sub_table_offset(models_data, table_index):
+def get_daily_change_sub_table_offset(models_data, table_index) -> tuple[int, float]:
     record_percent_to_predict: float = float(models_data["models_data"]["record_percent_to_predict"])
-    num_of_rows = len(table_index)
-    offset_row = int(math.ceil(record_percent_to_predict * num_of_rows))
+    num_of_rows: int = len(table_index)
+    offset_row: int = int(math.ceil(record_percent_to_predict * num_of_rows))
     return offset_row, record_percent_to_predict
 
 
@@ -414,7 +358,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     yf.pdr_override()
     if start_date is None or end_date is None:
         start_date, end_date = get_from_and_to_dates(num_of_years_history)
-    file_url = location_saving + file_name + ".csv"
+    file_url: str = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocks_names):
         if type(stock) == float:
@@ -433,8 +377,10 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
                 )
             except ValueError:
                 print('Invalid start_date or end_date format, should be %Y-%m-%d')
+                df = pd.DataFrame(df)
             except:
                 print("Error in stock: " + stock)
+                df = pd.DataFrame(df)
             # list to DateFrame
             df = pd.DataFrame(df)
             df["tradeDate"] = pd.to_datetime(df["tradeDate"])
@@ -487,16 +433,16 @@ def get_sectors_data_from_file():
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols: list) -> list:  # TODO - make more efficient
+def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make more efficient
     """
     For each stock symbol, it checks for which sector does it belong.
     :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol
     """
     sectors: list = []
-    sectors_data = get_sectors_data_from_file()
+    sectors_data: [list[dict[str, str, list[object]]]] = get_sectors_data_from_file()
 
     for i in range(len(sectors_data)):
-        curr_sector = Sector(sectors_data[i]['name'])
+        curr_sector: Sector = Sector(sectors_data[i]['name'])
         for j in range(len(stocks_symbols)):
             if stocks_symbols[j] in sectors_data[i]['stocks']:
                 curr_sector.add_stock(stocks_symbols[j])
@@ -530,7 +476,7 @@ def drop_stocks_from_specific_sector(stocks_symbols, stock_sectors, sector_name)
     return new_stocks_symbols
 
 
-def get_from_and_to_dates(num_of_years) -> Tuple[str, str]:
+def get_from_and_to_dates(num_of_years) -> tuple[str, str]:
     today = datetime.datetime.now()
     start_year = today.year - num_of_years
     start_month = today.month
@@ -691,7 +637,13 @@ def get_sectors_names_list() -> list[str]:
     return sectors_list
 
 
-def get_collection_json_data():
+def get_collection_json_data() -> dict[
+    dict[str, str, str, str, str, str],
+    list[dict[list[object], float, float, int]],
+    list[dict[list[object], float, float, int]],
+    list[dict[list[object], float, float, int]],
+    list[dict[list[object], float, float, int]]
+]:
     return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
 
@@ -771,30 +723,41 @@ def save_usa_indexes_table():  # dont delete it
             writer.writerow(stock_data)
 
 
-# AWS , TODO
-def connect_to_s3() -> boto3.client:
-    s3 = boto3.resource(service_name='s3',
-                        region_name=aws_settings.REGION_NAME,
-                        aws_secret_access_key=aws_settings.AWS_SECRET_ACCESS_KEY,
-                        aws_access_key_id=aws_settings.AWS_ACCESS_KEY_ID)
+class AwsInstance:
+    # TODO
+    def __init__(self):
+        self._region_name = aws.REGION_NAME
+        self._aws_access_key_id = aws.AWS_ACCESS_KEY_ID
+        self._aws_secret_access_key = aws.AWS_SECRET_ACCESS_KEY
+        self._region_name = aws.REGION_NAME
 
-    s3_client = boto3.client('s3', aws_access_key_id=aws_settings.AWS_ACCESS_KEY_ID,
-                             aws_secret_access_key=aws_settings.AWS_SECRET_ACCESS_KEY,
-                             region_name=aws_settings.REGION_NAME)
-    return s3_client
+    def connect_to_s3(self) -> boto3.client:
+        s3 = boto3.resource(
+            service_name='s3',
+            region_name=self._region_name,
+            aws_secret_access_key=self._aws_secret_access_key,
+            aws_access_key_id=self._aws_access_key_id
+        )
 
+        s3_client = boto3.client(
+            service_name='s3',
+            region_name=self._region_name,
+            aws_access_key_id=self._aws_access_key_id,
+            aws_secret_access_key=self._aws_secret_access_key,
+        )
+        return s3_client
 
-def upload_file_to_s3(file_path, bucket_name, s3_object_key, s3_client):
-    # Local folder path to upload
-    local_folder_path = 'path/to/your/local/folder'
+    def upload_file_to_s3(self, file_path, bucket_name, s3_object_key, s3_client) -> None:
+        # Local folder path to upload
+        local_folder_path = 'path/to/your/local/folder'
 
-    """for root, dirs, files in os.walk(local_folder_path):
-        for file in files:
-            local_file_path = os.path.join(root, file)
-            s3_object_key = os.path.relpath(local_file_path, local_folder_path)
-            upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
-
-    s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
+        """for root, dirs, files in os.walk(local_folder_path):
+            for file in files:
+                local_file_path = os.path.join(root, file)
+                s3_object_key = os.path.relpath(local_file_path, local_folder_path)
+                upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
+    
+        s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
 
 
 def get_symbols_names_list() -> list[str]:
@@ -809,4 +772,29 @@ def get_descriptions_list() -> list[str]:
     return descriptions_list
 
 
-
+def create_graphs_folders() -> None:
+    try:
+        os.mkdir(f'{settings.GRAPH_IMAGES}')
+    except FileExistsError:
+        pass
+    for i in range(1, 4 + 1):
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/00/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/01/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/10/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/11/')
+        except FileExistsError:
+            pass
