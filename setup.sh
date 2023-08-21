@@ -8,9 +8,6 @@ sudo -n dnf install -y pipenv
 
 cd /vagrant
 # Install dependencies with Pipenv
-export POSTGRESQL_DATABASE=$1
-export POSTGRESQL_USER=$2
-export POSTGRESQL_PASSWORD=$3
 pipenv sync --dev
 
 # run our app. setsid, the parentheses and "&" are used to perform a "double
