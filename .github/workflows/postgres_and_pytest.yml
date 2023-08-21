@@ -1,0 +1,57 @@
+name: PostgreSQL, PyTest & Flake8
+on: pull_request
+jobs:
+  setup-database:
+    name: Setup PostgreSQL Database
+    runs-on: ubuntu-20.04
+    container: fedora:34
+    env:
+      POSTGRESQL_HOST: ${{ secrets.POSTGRESQL_HOST }}
+      POSTGRESQL_PORT: ${{ secrets.POSTGRESQL_PORT }}
+      POSTGRESQL_DATABASE: ${{ secrets.POSTGRESQL_DATABASE }}
+      POSTGRESQL_USER: ${{ secrets.POSTGRESQL_USER }}
+      POSTGRESQL_PASSWORD: ${{ secrets.POSTGRESQL_PASSWORD }}
+    steps:
+      - name: Install PostgreSQL client tools
+        run: dnf install -y postgresql
+      - name: Execute SQL Queries
+        run: |
+          psql \
+            --host=$POSTGRESQL_HOST \
+            --port=$POSTGRESQL_PORT \
+            --dbname=$POSTGRESQL_DATABASE \
+            --username=$POSTGRESQL_USER \
+            --password=$POSTGRESQL_PASSWORD \
+            --command="SELECT * FROM your_table_name;"
+        # Add more SQL commands or queries as needed
+
+  pytest:
+    name: Run the application's tests with PyTest
+    runs-on: ubuntu-20.04
+    container: fedora:34
+    env:
+      POSTGRESQL_DATABASE: ${{ secrets.POSTGRESQL_DATABASE }}
+      POSTGRESQL_USER: ${{ secrets.POSTGRESQL_USER }}
+      POSTGRESQL_PASSWORD: ${{ secrets.POSTGRESQL_PASSWORD }}
+    steps:
+      - name: Install Pipenv and git
+        run: dnf install -y pipenv git
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup environment
+        run: pipenv sync --dev
+      - name: Run PyTest
+        run: pipenv run pytest -v
+  flake8:
+    name: Check code with Flake8
+    runs-on: ubuntu-20.04
+    container: fedora:34
+    steps:
+      - name: Install Pipenv and Git
+        run: dnf install -y pipenv git
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup environment
+        run: pipenv sync --dev
+      - name: Run Flake8
+        run: pipenv run flake8 --max-line-length 120

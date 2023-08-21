@@ -36,12 +36,11 @@ selenium==4.11.2
 Pillow==10.0.0
 plotly==5.16.1
 pluggy==1.2.0
-pmdarima=2.0.3
-prophet=1.1.4
+pmdarima==2.0.3
+prophet==1.1.4
 psycopg2-binary
 pycparser==2.21
 PyJWT==2.8.0
-pyparsing==3.1.1
 pytest==7.4.0
 pytest-django==4.5.2
 pytest-lazy-fixture==0.6.3
@@ -62,7 +61,6 @@ statsmodels==0.14.0
 ta==0.10.2
 threadpoolctl==3.2.0
 tzdata==2023.3
-urllib3==2.0.4
 webencodings==0.5.1
 wheel==0.41.1
 yfinance==0.2.28
