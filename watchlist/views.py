@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import BadRequest
 from django.db.models import QuerySet
 from django.shortcuts import render
+from matplotlib import pyplot as plt
 
 from service.config import settings
 from service.util import data_management, research, helpers

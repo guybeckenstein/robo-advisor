@@ -67,6 +67,7 @@ threadpoolctl = "==3.2.0"
 tzdata = "==2023.3"
 webencodings = "==0.5.1"
 yfinance = "==0.2.28"
+flake8 = "*"
 
 [dev-packages]
 

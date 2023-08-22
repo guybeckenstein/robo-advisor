@@ -116,8 +116,14 @@ class TestProfile:
             for symbol in self.get_stocks_symbols():
                         assert symbol in response.content.decode()
 
-        def test_post_request(self, client: Client, user_factory: Callable, investor_user_factory: Callable,
-                              questionnaire_a_factory: Callable, questionnaire_b_factory: Callable):
+        def test_post_request_with_new_stocks_collection_number_without_investments(self, client: Client,
+                                                                                    user_factory: Callable,
+                                                                                    investor_user_factory: Callable,
+                                                                                    questionnaire_a_factory: Callable,
+                                                                                    questionnaire_b_factory: Callable):
+            """
+            Updates without prior investments
+            """
             user: CustomUser = helper_methods.login_user(client, user_factory)
             investor_user: InvestorUser = investor_user_factory(user=user)
             questionnaire_a_factory(user=user)
@@ -129,7 +135,77 @@ class TestProfile:
                 'investor_user_instance': investor_user,
                 'instance': investor_user,
             }
-            helper_methods.post_request(client, 'profile_investor', data=data, status_code=302)
+            helper_methods.post_request(
+                client, 'profile_investor', data=data, status_code=302
+            )
+            response: TemplateResponse = client.get(reverse('capital_market_algorithm_preferences_form'))
+            helper_methods.assert_successful_status_code_for_get_request(response, template_src='core/form.html')
+            helper_methods.assert_attributes(response, attributes=[
+                "alert alert-info",
+                "Your account details have been updated successfully.",
+                "No investments with your previous stocks",
+                "collection found, thus no stocks are affected.",
+            ])
+
+        def test_post_request_with_new_stocks_collection_number_with_investments(self, client: Client,
+                                                                                 user_factory: Callable,
+                                                                                 investor_user_factory: Callable,
+                                                                                 questionnaire_a_factory: Callable,
+                                                                                 questionnaire_b_factory: Callable,
+                                                                                 investment_factory: Callable):
+            """
+            Updates without prior investments
+            """
+            user: CustomUser = helper_methods.login_user(client, user_factory)
+            investor_user: InvestorUser = investor_user_factory(user=user)
+            questionnaire_a_factory(user=user)
+            questionnaire_b_factory(user=user)
+            investment_factory(investor_user=investor_user)
+
+            assert investor_user.stocks_collection_number == '1'
+            data: dict[str, InvestorUser, InvestorUser] = {
+                'stocks_collection_number': '2',
+                'investor_user_instance': investor_user,
+                'instance': investor_user,
+            }
+            helper_methods.post_request(
+                client, 'profile_investor', data=data, status_code=302
+            )
+            response: TemplateResponse = client.get(reverse('capital_market_algorithm_preferences_form'))
+            helper_methods.assert_successful_status_code_for_get_request(response, template_src='core/form.html')
+            helper_methods.assert_attributes(response, attributes=[
+                "alert alert-success",
+                "Your account details have been updated successfully.",
+                "A single investment is affected by this, and became inactive.",
+            ])
+
+
+        def test_post_request_with_same_stocks_collection_number(self, client: Client, user_factory: Callable,
+                                                                 investor_user_factory: Callable,
+                                                                 questionnaire_a_factory: Callable,
+                                                                 questionnaire_b_factory: Callable,
+                                                                 investment_factory: Callable):
+            """
+            Nothing happens test
+            """
+            user: CustomUser = helper_methods.login_user(client, user_factory)
+            investor_user: InvestorUser = investor_user_factory(user=user)
+            questionnaire_a_factory(user=user)
+            questionnaire_b_factory(user=user)
+            investment_factory(investor_user=investor_user)
+
+            assert investor_user.stocks_collection_number == '1'
+            data: dict[str, InvestorUser, InvestorUser] = {
+                'stocks_collection_number': '1',
+                'investor_user_instance': investor_user,
+                'instance': investor_user,
+            }
+            response: TemplateResponse = helper_methods.post_request(
+                client, 'profile_investor', data=data, status_code=200
+            )
+            helper_methods.assert_attributes(response, attributes=[
+                "alert alert-warning", "You chose the same stocks", "collection number you already had before."
+            ])
 
         def test_redirection_get_request_as_guest(self, client: Client):
             helper_methods.redirection_get_request_as_guest(client, url_name='profile_investor')

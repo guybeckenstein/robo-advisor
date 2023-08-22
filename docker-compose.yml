@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  psql:
+    image: postgres:latest
+    container_name: Postgres_Container
+    hostname: localhost
+    environment:
+      POSTGRES_PASSWORD: !@$#%KLa@#T@#AQ51azgr
+    ports:
+      - '5432:5432'
+    networks:
+      - psql_network
+    restart: always
+
+  robo-advisor:
+    build:
+      context: ./Meals
+      dockerfile: Dockerfile
+    container_name: RoboAdvisor_Container
+    ports:
+      - '5001:5001'
+    networks:
+      - psql_network
+    depends_on:
+      - psql
+    restart: always
+
+networks:
+  psql_network:
+    driver: bridge

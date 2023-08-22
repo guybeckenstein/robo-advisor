@@ -21,7 +21,7 @@ class QuestionnaireA(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'CapitalMarketAlgorithmPreferences'
+        db_table = 'QuestionnaireA'
         verbose_name = 'Capital Market - Algorithm Preferences'
         verbose_name_plural = 'Capital Market - Algorithm Preferences'
 
@@ -36,7 +36,7 @@ class QuestionnaireB(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'CapitalMarketInvestmentPreferences'
+        db_table = 'QuestionnaireB'
         verbose_name = 'Capital Market - Investment Preferences'
         verbose_name_plural = 'Capital Market - Investment Preferences'
 

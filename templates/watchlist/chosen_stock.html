@@ -1,33 +1,35 @@
 {% load static %}
 
-{% if is_chosen_stock_template is True %}
-  <table class="table table-hover">
-    <thead>
-      <tr>
-        <th scope="col">
-          Graph
-        </th>
-        <th scope="col">
-          Image
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">
-          Forecast Stock
-        </th>
-        <td>
-          <img class="img-fluid" src="{% static forecast_stock_img_name %}" alt="Forecast Stock of {{ symbol }}" name="Forecast Stock of {{ symbol }}">
-        </td>
-      </tr>
-      <tr>
-        <th scope="row">
-          Bollinger Bands Squeeze Strategy
-        </th>
-        <td>
-          <img class="img-fluid" src="{% static bb_strategy_img_name %}" alt="BBS Strategy Graph of {{ symbol }}" name="BB Strategy Graph of {{ symbol }}">
-        </td>
-    </tbody>
-  </table>
-{% endif %}
+<div class="watchlist-chosen-stock">
+  {% if is_chosen_stock_template is True %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">
+            Graph
+          </th>
+          <th scope="col">
+            Image
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">
+            Forecast Stock
+          </th>
+          <td>
+            <img class="img-fluid" src="{% static forecast_stock_img_name %}" alt="Forecast Stock of {{ symbol }}" name="Forecast Stock of {{ symbol }}">
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">
+            Bollinger Bands Squeeze Strategy
+          </th>
+          <td>
+            <img class="img-fluid" src="{% static bb_strategy_img_name %}" alt="BBS Strategy Graph of {{ symbol }}" name="BB Strategy Graph of {{ symbol }}">
+          </td>
+      </tbody>
+    </table>
+  {% endif %}
+</div>

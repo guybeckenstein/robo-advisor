@@ -92,7 +92,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Capital Market - Investment Preferences",
                 "verbose_name_plural": "Capital Market - Investment Preferences",
-                "db_table": "CapitalMarketInvestmentPreferences",
+                "db_table": "QuestionnaireB",
             },
         ),
         migrations.CreateModel(
@@ -134,7 +134,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "Capital Market - Algorithm Preferences",
                 "verbose_name_plural": "Capital Market - Algorithm Preferences",
-                "db_table": "CapitalMarketAlgorithmPreferences",
+                "db_table": "QuestionnaireA",
             },
         ),
     ]

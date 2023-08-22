@@ -95,7 +95,7 @@ WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['POSTGRESQL_DATABASE'],
+        'NAME': os.environ['POSTGRESQL_DATABASE'], #  os.environ['POSTGRESQL_DATABASE'].lower(),
         'USER': os.environ['POSTGRESQL_USER'],
         'PASSWORD': os.environ['POSTGRESQL_PASSWORD'],
         'HOST': 'localhost',  # 'dbserver',

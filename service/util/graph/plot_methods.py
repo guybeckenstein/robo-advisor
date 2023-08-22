@@ -242,14 +242,14 @@ def price_forecast(description, df: pd.DataFrame, annual_returns, plt_instance=N
         df[df.columns[0]].plot(label='History')
         df['Forecast'].plot()
         plt.title(f"{description} Stock Price Forecast", pad=10)
-        plt_instance = helpers.PriceForecast.plt_figtext(
+        helpers.PriceForecast.plt_figtext(
             plt_instance=plt, x=x, y=y, annual_returns=annual_returns, forecast_short_time=forecast_short_time
         )
 
-        plt_instance.legend(loc=4)
-        plt_instance.xlabel('Date')
-        plt_instance.ylabel('Price')
-        return plt_instance
+        plt.legend(loc=4)
+        plt.xlabel('Date')
+        plt.ylabel('Price')
+        return plt
 
 
 def distribution_of_stocks(stock_names, pct_change_table) -> plt:
