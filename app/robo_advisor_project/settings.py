@@ -1,12 +1,11 @@
+
 import os
 from pathlib import Path
 
 import environ
 
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 # Load and read .env file
 # OS environment variables take precedence over variables from .env
 env = environ.Env()
@@ -28,7 +27,7 @@ DEBUG = bool(env("DEBUG", default=True))
 # ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
 
-SITE_ID = 1
+SITE_ID = 2
 # Application definition
 INSTALLED_APPS = [
     # Third party apps
@@ -136,7 +135,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('POSTGRES_DB'),
         'USER': env('POSTGRES_USER'),
-        'PASSWORD': '!@$#%KLa@#T@#AQ51azgr',  # env('POSTGRES_PASSWORD'),
+        'PASSWORD': env('POSTGRES_PASSWORD'),
         'HOST': 'localhost',  # env('POSTGRES_HOST'),
         'PORT': env('POSTGRES_PORT'),
     }

@@ -107,9 +107,9 @@ class InvestmentPreferencesForm(forms.ModelForm):
         self.fields['answer_3'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #3: What is your preferable graph?'
                                                     '</span>'
-                                                    f'<div class="capital-market-form-label capital-market-form-img">'
-                                                    f'<img class="capital-market-form-img" src="{second_graph}">'
-                                                    f'</div>')
+                                                    '<div class="capital-market-form-label capital-market-form-img">'
+                                                    '<img class="capital-market-form-img" id="capital-market-swapped" '
+                                                    f'src="{second_graph}"></div>')
 
         main_header = '<h1 style="font-weight: 900;">Capital Market Preferences Form - Investments</h1>'
         if form_type == 'create':

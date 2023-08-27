@@ -18,7 +18,8 @@ from sklearn.model_selection import train_test_split
 import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
-from service.config import aws, settings
+
+from service.config import settings, aws
 from service.impl.sector import Sector
 from service.util import tase_interaction
 

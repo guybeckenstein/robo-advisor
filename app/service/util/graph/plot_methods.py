@@ -1,4 +1,5 @@
 import matplotlib
+
 from service.impl.sector import Sector
 from service.util.graph import helpers
 

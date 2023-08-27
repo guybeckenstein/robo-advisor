@@ -1,6 +1,6 @@
 from impl.user import User
-from service.util import data_management, research
-from service.config import settings
+from util import data_management, research
+from config import settings
 
 if __name__ == '__main__':
     data_management.show_main_menu()

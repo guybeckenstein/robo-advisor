@@ -1,5 +1,5 @@
-from service.util import research
-from service.config import settings
+from util import research
+from config import settings
 
 
 if __name__ == '__main__':

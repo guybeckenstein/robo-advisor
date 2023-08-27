@@ -191,3 +191,29 @@ svg {
 .margin-bottom {
     margin-bottom: 15px;
 }
+
+#div_id_answer_1 div div {
+	margin-left: 106px;
+}
+
+#div_id_answer_2 .capital-market-form-radio {
+	padding-left: 43px;
+}
+
+#div_id_answer_2 .capital-market-form-radio div {
+	margin-left: 40px;
+}
+
+#div_id_answer_3 .capital-market-form-radio {
+	padding-left: 60px;
+}
+
+#div_id_answer_3 .capital-market-form-radio div #id_answer_3_1 {
+	margin-left: 40px;
+	margin-right: 10px;
+}
+
+#div_id_answer_3 .capital-market-form-radio div #id_answer_3_2 {
+	margin-left: 40px;
+	margin-right: 10px;
+}
