@@ -20,7 +20,7 @@ SEABORN_STYLE: str = 'seaborn-v0_8-dark'
 
 class MarkowitzAndGini:
     @staticmethod
-    def create_scatter_plot(df, x: str, y: str, min_variance_portfolio,  sharpe_portfolio, max_returns_portfolio):
+    def create_scatter_plot(df, x: str, y: str, min_variance_portfolio, sharpe_portfolio, max_returns_portfolio):
         plt.style.use(SEABORN_STYLE)
         df.plot.scatter(
             x=x, y=y, c="Sharpe Ratio", cmap="RdYlGn_r", edgecolors="black", figsize=FIG_SIZE, grid=GRID,
@@ -72,7 +72,7 @@ class ThreePortfolios:
     def main_plot(pct_change_table: pd.DataFrame) -> tuple[list[str, str, str], list[str, str, str]]:
         plt.xlabel("Date")
         plt.ylabel("Returns Percentage")
-        plt.title("Three Best Portfolios")
+        plt.title("Three Best Portfolios(BackTest)", fontsize=20, fontweight="bold")
         labels: list[str, str, str] = ['Safest', 'Sharpe', 'Max Returns']
         colors: list[str, str, str] = ['orange', 'green', 'red']
         labels_len: int = len(labels)
@@ -101,7 +101,7 @@ class ThreePortfolios:
         with pd.option_context("display.float_format", "%{:,.2f}".format):
             fig_text_data: dict = {
                 'name': labels,
-                'portfolio': [min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0],  max_returns_portfolio.iloc[0]],
+                'portfolio': [min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0], max_returns_portfolio.iloc[0]],
                 'stocks': stocks_y,
                 'facecolor': colors
             }
@@ -113,6 +113,7 @@ class ThreePortfolios:
                     f"Annual Volatility: {str(round(portfolio[1], 2))}%\n"
                     f"Annual Max Loss: {str(round(portfolio[0] - 1.65 * portfolio[1], 2))}%\n"
                     f"Annual Sharpe Ratio: {str(round(portfolio[2], 2))}\n"
+                    "     Weights\n"  # Label text without underlining
                     f"{fig_text_data['stocks'][i]}"
                 )
                 bbox: dict = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}
@@ -139,7 +140,7 @@ class EstimatedYield:
 
 class PriceForecast:
     @staticmethod
-    def plt_figtext(plt_instance, x, y, history_annual_return,  average_annual_return, forecast_short_time):
+    def plt_figtext(plt_instance, x, y, history_annual_return, average_annual_return, forecast_short_time):
         """
         Add text box with annual returns value
         """
@@ -147,8 +148,8 @@ class PriceForecast:
             x=x,
             y=y,
             s=f"Average Annual Return: {str(round(history_annual_return, 2))}%\n"
-            f"Forecast Annual Return: {str(round(forecast_short_time, 2))}%\n"
-            f"Average Annual Return with forecast: {str(round(average_annual_return, 2))}%\n"
+              f"Forecast Annual Return: {str(round(forecast_short_time, 2))}%\n"
+              f"Average Annual Return with forecast: {str(round(average_annual_return, 2))}%\n"
 
         )
 

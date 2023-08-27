@@ -78,7 +78,6 @@ def gini_graph(sectors: list[Sector], three_best_sectors_weights, min_variance_p
 
 
 def bb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
-
     stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=FIG_SIZE2)
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)
@@ -138,23 +137,21 @@ def portfolio_distribution(yields) -> plt:
         monthly_yields[i]: pd.Series = curr_yield.resample('M').first()
         monthly_changes[i]: pd.Series = monthly_yields[i].pct_change().dropna() * 100
         df_describes[i]: pd.Series = monthly_changes[i].describe().drop(["count"], axis=0)
-        df_describes[i]: pd.Series = df_describes[i].rename(index={'std': 'Std. Deviation'})
+        df_describes[i]: pd.Series = df_describes[i].rename(index={'mean': 'Mean Yield', 'std': 'Standard Deviation',
+                                                                   '50%': '50%(Median)', '25%': '25%(Q1)',
+                                                                   '75%': '75%(Q3)', 'max': 'Max', 'min': 'Min'})
         df_describes[i].index = df_describes[i].index.str.capitalize()
-        sns.distplot(   # Generates UserWarning: `distplot` is a deprecated function and will be removed in seaborn
-            # v0.14.0.
-            a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False, color=colors[i],
-            label=labels[i],
-        )
-        # Using sns.histplot(...):
-        # sns.histplot(
-        #     data=monthly_changes[i], kde=True, label=labels[i],
-        # )
+        ax = sns.distplot(a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False,
+                          color=colors[i],
+                          label=labels[i],
+                          )
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:.0%}".format(x)))
 
     plt.legend(frameon=True, facecolor='white')  # Adjust legend background color
-    plt.xlabel('Monthly Return Percentage', fontsize=12)
-    plt.ylabel('Distribution', fontsize=12)
+    plt.xlabel('Monthly Yield Percentage', fontsize=12)
+    plt.ylabel('Distribution Percentage', fontsize=12)
     plt.grid(True)
-    plt.title("Distribution of Portfolios - By Monthly Returns")
+    plt.title("Distribution of Portfolios - By Monthly Returns", fontsize=20, fontweight="bold")
 
     # Creates subplots under the main graph
     with pd.option_context("display.float_format", "%{:,.2f}".format):
@@ -215,6 +212,7 @@ def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float
               f"Annual Volatility: {str(round(volatility, 2))}%\n"
               f"Max Loss: {str(round(max_loss, 2))}%\n"
               f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
+              "    Weights\n"  # Label text without underlining
               f"{stocks_str.strip()}",
             bbox=dict(facecolor="0.8", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME,
             wrap=WRAP,

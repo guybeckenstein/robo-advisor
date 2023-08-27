@@ -68,7 +68,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
 
 class InvestmentPreferencesForm(forms.ModelForm):
     answer_1 = forms.ChoiceField(
-        choices=((1, '0-1'), (2, '2-3'), (3, '4-100')),
+        choices=((1, '0-1'), (2, '2-4'), (3, '5-20')),
         widget=forms.RadioSelect(),
     )
     answer_2 = forms.ChoiceField(
