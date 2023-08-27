@@ -17,6 +17,8 @@ def save_user_specific_stock(stock: str, operation: str, plt_instance: plt) -> N
     curr_user_directory = settings.RESEARCH_IMAGES
     # Saving files
     graph_image_methods.save_graph(plt_instance, file_name=curr_user_directory + stock + operation)
+    plt.clf()
+    plt.cla()
     plt.close()
 
 

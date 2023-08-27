@@ -172,11 +172,15 @@ class InvestmentPreferencesForm(forms.ModelForm):
         # Saves two graphs
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
         data_management.plot_distribution_of_portfolio(yields, sub_folder=sub_folder)
+        plt.clf()
+        plt.cla()
         plt.close()
 
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )
+        plt.clf()
+        plt.cla()
         plt.close()
 
     class Meta:
