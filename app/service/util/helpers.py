@@ -114,7 +114,7 @@ class Analyze:
         self._is_closing_prices_mode: bool = is_closing_prices_mode
 
     def linear_regression_model(self, test_size_machine_learning: str) -> tuple[
-        pd.DataFrame, np.longdouble, np.longdouble]:  # TODO fix
+        pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
 
         # Added date
@@ -173,7 +173,7 @@ class Analyze:
         return df, forecast_with_historical_returns_annual, expected_returns
 
     def gbm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        df, forecast_out = self.get_final_dataframe()  # TODO fix
+        df, forecast_out = self.get_final_dataframe()
 
         df.index = pd.to_datetime(self._table_index)
 
@@ -445,7 +445,7 @@ def get_sectors_data_from_file():
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make more efficient
+def set_sectors(stocks_symbols: list[object]) -> list[Sector]:
     """
     For each stock symbol, it checks for which sector does it belong.
     :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol
@@ -465,7 +465,7 @@ def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make mo
 
 
 def set_stock_sectors(stocks_symbols, sectors: list) -> list:
-    stock_sectors = []  # TODO - FIX ORDER
+    stock_sectors = []
     for symbol in stocks_symbols:
         found_sector = False
         for curr_sector in sectors:
@@ -479,7 +479,7 @@ def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     return stock_sectors
 
 
-def drop_stocks_from_specific_sector(stocks_symbols, stock_sectors, sector_name):  # TODO - MAKE DYNAMIC
+def drop_stocks_from_specific_sector(stocks_symbols, stock_sectors, sector_name):
     new_stocks_symbols = []
     for i in range(len(stock_sectors)):
         if stock_sectors[i] != sector_name:
@@ -739,7 +739,6 @@ def save_usa_indexes_table():  # dont delete it
 
 
 class AwsInstance:
-    # TODO
     def __init__(self):
         self._region_name = aws.REGION_NAME
         self._aws_access_key_id = aws.AWS_ACCESS_KEY_ID
