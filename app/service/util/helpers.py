@@ -1,6 +1,7 @@
 import codecs
 import csv
 import datetime
+from datetime import datetime as data_time, timedelta
 import json
 import math
 import os
@@ -34,11 +35,8 @@ def get_best_portfolios(df, model_name: str) -> list:
         optional_portfolios: list = [
             build_return_model_portfolios_dict(df=df[i], max_val='Portfolio Annual', min_val='Gini') for i in range(3)
         ]
-    return [
-        optional_portfolios[0]['Safest Portfolio'],
-        optional_portfolios[1]['Sharpe Portfolio'],
-        optional_portfolios[2]['Max Risk Portfolio']
-    ]
+    return [optional_portfolios[0]['Safest Portfolio'], optional_portfolios[1]['Sharpe Portfolio'],
+            optional_portfolios[2]['Max Risk Portfolio']]
 
 
 def get_best_weights_column(stocks_symbols, sectors_list, optional_portfolios, pct_change_table) -> list:
@@ -114,40 +112,38 @@ class Analyze:
         self._record_percent_to_predict: float = record_percent_to_predict
         self._is_closing_prices_mode: bool = is_closing_prices_mode
 
-    def linear_regression_model(self, test_size_machine_learning: str) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+    def linear_regression_model(self, test_size_machine_learning: str) -> tuple[
+        pd.DataFrame, np.longdouble, np.longdouble]:  # TODO fix
         df, forecast_out = self.get_final_dataframe()
 
         # Added date
-        df['Date']: pd.Series = self._table_index
-        # print(df)
-        X: np.ndarray = np.array(df.drop(labels=['Label', 'Date'], axis=1))
-        X: np.ndarray = preprocessing.scale(X)
-        X_lately: np.ndarray = X[-forecast_out:]
-        X: np.ndarray = X[:-forecast_out]
-        df.dropna(inplace=True)
-        y: np.ndarray = np.array(df['Label'])
+        df['Date'] = pd.to_datetime(self._table_index)
 
-        tpl: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] = train_test_split(
+        X = np.array(df.drop(labels=['Label', 'Date'], axis=1))
+        X = preprocessing.scale(X)
+        X_lately = X[-forecast_out:]
+        X = X[:-forecast_out]
+        df.dropna(inplace=True)
+        y = np.array(df['Label'])
+
+        X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=float(test_size_machine_learning)
         )
-        X_train, X_test, y_train, y_test = tpl
-        clf: LinearRegression = LinearRegression()
+
+        clf = LinearRegression()
         clf.fit(X_train, y_train)
-        # print(confidence)
-        forecast: np.ndarray = clf.predict(X_lately)
-        df['Forecast'] = np.nan
 
-        last_date = pd.to_datetime(df.iloc[-1]['Date'])
-        last_unix: pd.Timestamp = last_date.timestamp()
-        next_unix: float = last_unix + SINGLE_DAY
+        forecast = clf.predict(X_lately)
 
-        for i in forecast:
-            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
-            next_unix += SINGLE_DAY
-            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+        forecast_dates = pd.date_range(start=df['Date'].iloc[-1], periods=forecast_out + 1, freq='D')[1:]
+        forecast_df = pd.DataFrame(index=forecast_dates, columns=['Forecast'])
+        forecast_df['Forecast'] = forecast
 
-        forecast_returns_annual, expected_returns = self.calculate_returns(df)
-        return df, forecast_returns_annual, expected_returns
+        # Combine the original DataFrame and the forecast DataFrame
+        combined_df = pd.concat([df, forecast_df])
+
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(combined_df)
+        return combined_df, forecast_with_historical_returns_annual, expected_returns
 
     def arima_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
@@ -156,7 +152,7 @@ class Analyze:
         df.index = pd.to_datetime(self._table_index, format='%Y-%m-%d')
 
         # Perform ARIMA forecasting
-        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=True)
+        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=True, stepwise=False)
         forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
 
         df['Forecast'] = np.nan
@@ -172,11 +168,11 @@ class Analyze:
             next_unix += SINGLE_DAY
             df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        forecast_returns_annual, expected_returns = self.calculate_returns(df)
-        return df, forecast_returns_annual, expected_returns
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
+        return df, forecast_with_historical_returns_annual, expected_returns
 
     def gbm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        df, forecast_out = self.get_final_dataframe()
+        df, forecast_out = self.get_final_dataframe()  # TODO fix
 
         df.index = pd.to_datetime(self._table_index)
 
@@ -199,8 +195,8 @@ class Analyze:
             next_unix += SINGLE_DAY
             df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        forecast_returns_annual, expected_returns = self.calculate_returns(df, forecast_out=forecast_out)
-        return df, forecast_returns_annual, expected_returns
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df, forecast_out=forecast_out)
+        return df, forecast_with_historical_returns_annual, expected_returns
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
         df, forecast_out = self.get_final_dataframe()
@@ -243,22 +239,21 @@ class Analyze:
         col_offset: int = len(df) - forecast_out
         yhat: pd.Series = forecast['yhat']
         df['Label'] = yhat.values
-        # df['Forecast'][col_offset] = yhat[col_offset].values  # OLD
-        df['Forecast'][col_offset] = yhat[col_offset]           # NEW
+        df['Forecast'][col_offset:] = yhat[col_offset:]
 
         longdouble: np.longdouble = np.longdouble(254)
-        forecast_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset].mean()))) - 1) * 100
-        excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.mean()))) - 1) * 100
+        excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset:].mean()))) - 1) * 100
+        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.mean()))) - 1) * 100
         if self._is_closing_prices_mode:
             # Plot the forecast
             model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
             plt.title('Stock Price Forecast using Prophet')
-            forecast_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(
-                yhat[col_offset].pct_change().mean()
-            ))) - 1) * 100
-            excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.pct_change().mean()))) - 1) * 100
+            excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(
+                yhat[col_offset:].pct_change().mean()))) - 1) * 100
+            forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(
+                yhat.pct_change().mean()))) - 1) * 100
 
-        return df, forecast_returns_annual, excepted_returns, plt
+        return df, forecast_with_historical_returns_annual, excepted_returns, plt
 
     def get_final_dataframe(self) -> tuple[pd.DataFrame, int]:
         df: pd.DataFrame = pd.DataFrame({})
@@ -275,18 +270,25 @@ class Analyze:
         df['Label'].fillna(df['Forecast'], inplace=True)
 
         longdouble: np.longdouble = np.longdouble(254)
+
         logged_label_mean: np.ndarray = np.log1p(df['Label'].mean())
-        np_exp_res1: np.ndarray = np.exp(longdouble * logged_label_mean)        # Generates RuntimeWarning: overflow encountered in exp
-        forecast_returns_annual: np.longdouble = (np_exp_res1 - 1) * 100
+        np_exp_res1: np.ndarray = np.exp(
+            longdouble * logged_label_mean)  # Generates RuntimeWarning: overflow encountered in exp
+        forecast_with_historical_returns_annual: np.longdouble = (np_exp_res1 - 1) * 100
+
         logged_forecast_mean: np.ndarray = np.log1p(df['Forecast'].mean())
-        np_exp_res2: np.ndarray = np.exp(longdouble * logged_forecast_mean)     # Generates RuntimeWarning: overflow encountered in exp
+        np_exp_res2: np.ndarray = np.exp(
+            longdouble * logged_forecast_mean)  # Generates RuntimeWarning: overflow encountered in exp
         expected_returns: np.longdouble = (np_exp_res2 - 1) * 100
+
         if self._is_closing_prices_mode:
-            logged_label_mean: np.ndarray = np.log1p(df['Label'].pct_change().mean())           # Generates RuntimeWarning: invalid value encountered in log1p
-            forecast_returns_annual: np.longdouble = (np.exp(longdouble * logged_label_mean) - 1) * 100
-            logged_forecast_mean: np.ndarray = np.log1p(df['Forecast'].pct_change().mean())     # Generates RuntimeWarning: invalid value encountered in log1p
+            logged_label_mean: np.ndarray = np.log1p(
+                df['Label'].pct_change().mean())  # Generates RuntimeWarning: invalid value encountered in log1p
+            forecast_with_historical_returns_annual: np.longdouble = (np.exp(longdouble * logged_label_mean) - 1) * 100
+            logged_forecast_mean: np.ndarray = np.log1p(
+                df['Forecast'].pct_change().mean())  # Generates RuntimeWarning: invalid value encountered in log1p
             expected_returns: np.longdouble = (np.exp(longdouble * logged_forecast_mean) - 1) * 100
-        return forecast_returns_annual, expected_returns
+        return forecast_with_historical_returns_annual, expected_returns
 
 
 def update_daily_change_with_machine_learning(
@@ -321,15 +323,16 @@ def update_daily_change_with_machine_learning(
                 record_percent_to_predict=float(record_percent_to_predict),
                 is_closing_prices_mode=closing_prices_mode
             )
-            if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:       # Linear Regression
-                df, annual_return, excepted_returns = analyze.linear_regression_model(test_size_machine_learning)
-            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:     # Arima
-                df, annual_return, excepted_returns = analyze.arima_model()
+            if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:  # Linear Regression
+                df, annual_return_with_forecast, excepted_returns =\
+                    analyze.linear_regression_model(test_size_machine_learning)
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
+                df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
 
-            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:     # Gradient Boosting Regressor
-                df, annual_return, excepted_returns = analyze.gbm_model()
-            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:     # Prophet
-                df, annual_return, excepted_returns, plt = analyze.prophet_model()
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
+                df, annual_return_with_forecast, excepted_returns = analyze.gbm_model()
+            elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
+                df, annual_return_with_forecast, excepted_returns, plt = analyze.prophet_model()
             else:
                 raise ValueError('Invalid machine model')
             if df['Label'][offset_row:].values.size == returns_stock[stock_name].size:
@@ -337,7 +340,7 @@ def update_daily_change_with_machine_learning(
             else:
                 returns_stock[stock_name] = df['Label'].values
 
-        return returns_stock, annual_return, excepted_returns
+        return returns_stock, annual_return_with_forecast, excepted_returns
 
 
 def get_daily_change_sub_table_offset(models_data, table_index) -> tuple[int, float]:
@@ -809,3 +812,17 @@ def create_graphs_folders() -> None:
             os.mkdir(f'{settings.GRAPH_IMAGES}{i}/11/')
         except FileExistsError:
             pass
+
+
+def currency_exchange(from_currency="USD", to_currency="ILS"):
+    start_date = data_time.now().strftime('%Y-%m-%d')
+    end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
+
+    ticker = f'{from_currency}{to_currency}=X' # Yahoo Finance symbol
+    data = yf.download(ticker, start=start_date, end=end_date)
+
+    if not data.empty:
+        latest_exchange_rate = data['Close'].iloc[-1]
+        return latest_exchange_rate
+    else:
+        raise ValueError("No exchange rate data available for the given date range.")

@@ -27,21 +27,21 @@ SEABORN_STYLE: str = 'seaborn-v0_8-dark'
 
 
 def markowitz_graph(sectors: list[Sector], three_best_sectors_weights, min_variance_portfolio, sharpe_portfolio,
-                    max_returns_portfolio, max_vols_portfolio, df: pd.DataFrame) -> plt:
+                    max_returns_portfolio, df: pd.DataFrame) -> plt:
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     helpers.MarkowitzAndGini.create_scatter_plot(
         df=df,
         x='Volatility',
         y='Returns',
-        sharpe_portfolio=sharpe_portfolio,
         min_variance_portfolio=min_variance_portfolio,
-        max_vols_portfolio=max_vols_portfolio,
+        sharpe_portfolio=sharpe_portfolio,
+        max_returns_portfolio=max_returns_portfolio,
     )
 
     # ------------------ Printing 3 optimal Portfolios -----------------------
     # Setting max_X, max_Y to act as relative border for window size
     helpers.MarkowitzAndGini.plot_markowitz_or_gini_graph(
-        portfolios=[max_returns_portfolio.iloc[0], sharpe_portfolio.iloc[0], min_variance_portfolio.iloc[0]],
+        portfolios=[min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0], max_returns_portfolio.iloc[0]],
         stocks=helpers.MarkowitzAndGini.get_stocks_str(sectors, three_best_sectors_weights),
         text1='Annual Returns',
         text2='Annual Volatility'
@@ -57,16 +57,16 @@ def gini_graph(sectors: list[Sector], three_best_sectors_weights, min_variance_p
         df=df,
         x='Gini',
         y='Portfolio Annual',
-        sharpe_portfolio=sharpe_portfolio,
         min_variance_portfolio=min_variance_portfolio,
-        max_vols_portfolio=max_portfolios_annual_portfolio
+        sharpe_portfolio=sharpe_portfolio,
+        max_returns_portfolio=max_portfolios_annual_portfolio
     )
 
     # ------------------ Printing 3 optimal Portfolios -----------------------
     # Setting max_X, max_Y to act as relative border for window size
     helpers.MarkowitzAndGini.plot_markowitz_or_gini_graph(
         portfolios=[
-            max_portfolios_annual_portfolio.iloc[0], sharpe_portfolio.iloc[0], min_variance_portfolio.iloc[0]
+            min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0], max_portfolios_annual_portfolio.iloc[0]
         ],
         stocks=helpers.MarkowitzAndGini.get_stocks_str(sectors, three_best_sectors_weights),
         text1='Portfolio Annual',
@@ -87,7 +87,7 @@ def bb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
     num_sell_signals = np.count_nonzero(~np.isnan(sell_price))
 
     # Add text annotations for the counts of buy and sell signals
-    attributes: list[tuple] = [('Buy', num_buy_signals, 0.95, 'green'), ('Sell', num_sell_signals, 0.88, 'red')]
+    attributes: list[tuple] = [('Buy', num_buy_signals, 0.93, 'green'), ('Sell', num_sell_signals, 0.87, 'red')]
     for signal_str, signal_var, y, color in attributes:
         plt.annotate(f'{signal_str} Signals: {signal_var}',
                      xy=(0.25, y),
@@ -118,7 +118,7 @@ def three_portfolios_graph(max_returns_portfolio, sharpe_portfolio, min_variance
 
 
 def portfolio_distribution(yields) -> plt:
-    plt.figure()  # Create a new plot instance
+    plt.figure()  # Creates a new plot instance
     plt.subplots(figsize=FIG_SIZE1)
     plt.subplots_adjust(bottom=BOTTOM)
 
@@ -127,6 +127,7 @@ def portfolio_distribution(yields) -> plt:
     df_describes: list[pd.Series] = [None] * len(yields)  # describe of yield changes
 
     labels: list[str, str, str] = ['Low Risk', 'Medium Risk', 'High Risk']
+    colors: list[str] = ['orange', 'green', 'red']
     for i in range(len(yields)):
         # Convert the index to datetime if it's not already in the datetime format
         curr_yield = yields[i]
@@ -138,8 +139,10 @@ def portfolio_distribution(yields) -> plt:
         df_describes[i]: pd.Series = monthly_changes[i].describe().drop(["count"], axis=0)
         df_describes[i]: pd.Series = df_describes[i].rename(index={'std': 'Std. Deviation'})
         df_describes[i].index = df_describes[i].index.str.capitalize()
-        sns.distplot(   # Generates UserWarning: `distplot` is a deprecated function and will be removed in seaborn v0.14.0.
-            a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False, label=labels[i],
+        sns.distplot(   # Generates UserWarning: `distplot` is a deprecated function and will be removed in seaborn
+            # v0.14.0.
+            a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False, color=colors[i],
+            label=labels[i],
         )
         # Using sns.histplot(...):
         # sns.histplot(
@@ -157,8 +160,8 @@ def portfolio_distribution(yields) -> plt:
         y_header: float = 0.23
         y_content: float = 0.15
         alpha: float = 0.5
-        s_params: list[str] = ['Low', 'Medium', 'High']
-        colors: list[str] = ['blue', 'pink', 'green']
+        s_params: list[str] = labels
+        colors: list[str] = colors
         header_fontsize: int = 14
         content_fontsize: int = 10
         for i in range(3):
@@ -181,7 +184,8 @@ def portfolio_distribution(yields) -> plt:
 
 
 def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float, volatility: float, sharpe: float,
-                                         max_loss: float, total_change: float, sectors: list[Sector]) -> plt:
+                                         max_loss: float, total_change: float, sectors: list[Sector],
+                                         excepted_returns: float) -> plt:
     plt.figure()
     plt.style.use(SEABORN_STYLE)
     plt.xlabel("Date")
@@ -189,7 +193,7 @@ def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float
 
     tables: list[str] = ['selected_percent', 'selected_percent_forecast']
     colors: list[str] = ['green', 'blue']
-    labels: list[str] = ['Returns', 'Forecast']
+    labels: list[str] = ['History', 'Forecast']
 
     for i in range(len(tables)):
         df[f'yield__{tables[i]}'].plot(
@@ -205,7 +209,8 @@ def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float
             x=0.45,
             y=0.15,
             s=f"Total Change: {str(round(total_change, 2))}%\n"
-              f"Annual Returns: {str(round(annual_returns, 2))}%\n"
+              f"Annual Return: {str(round(annual_returns, 2))}%\n"
+              f"Excepted Annual Return: {str(round(excepted_returns, 2))}%\n"
               f"Annual Volatility: {str(round(volatility, 2))}%\n"
               f"Max Loss: {str(round(max_loss, 2))}%\n"
               f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
@@ -229,13 +234,15 @@ def sectors_component(weights: list[float], names: list[str]) -> plt:
     return plt
 
 
-def price_forecast(description, df: pd.DataFrame, annual_returns, plt_instance=None) -> plt:
-    forecast_short_time = (((df['Label'][-400:].pct_change().mean() + 1) ** 252) - 1) * 100
+def price_forecast(description, df: pd.DataFrame, annual_return_with_forecast, excepted_returns,
+                   plt_instance=None) -> plt:
+    history_annual_return = (((df[df.columns[0]].pct_change().mean() + 1) ** 254) - 1) * 100
     x: float = 0.15
     y: float = 0.75
     if plt_instance is not None:
         plt_instance = helpers.PriceForecast.plt_figtext(
-            plt_instance=plt, x=x, y=y, annual_returns=annual_returns, forecast_short_time=forecast_short_time
+            plt_instance=plt, x=x, y=y, history_annual_return=history_annual_return,
+            average_annual_return=annual_return_with_forecast, forecast_short_time=excepted_returns
         )
         return plt_instance
     else:
@@ -243,7 +250,8 @@ def price_forecast(description, df: pd.DataFrame, annual_returns, plt_instance=N
         df['Forecast'].plot()
         plt.title(f"{description} Stock Price Forecast", pad=10)
         helpers.PriceForecast.plt_figtext(
-            plt_instance=plt, x=x, y=y, annual_returns=annual_returns, forecast_short_time=forecast_short_time
+            plt_instance=plt, x=x, y=y, history_annual_return=history_annual_return,
+            average_annual_return=annual_return_with_forecast, forecast_short_time=excepted_returns
         )
 
         plt.legend(loc=4)
@@ -267,7 +275,8 @@ def distribution_of_stocks(stock_names, pct_change_table) -> plt:
     return plt
 
 
-def research_graphs(path, data_stats_tuples, intersection_data_list) -> plt:
+def research_graphs(data_stats_tuples, intersection_data_list) -> plt:
+    # TODO : display intersection_data_list
     # Define metric names for the x-axis
     # intersection_data_list_labels = ["top stocks"]
     labels = [
@@ -289,9 +298,6 @@ def research_graphs(path, data_stats_tuples, intersection_data_list) -> plt:
         plt.subplot(4, 3, i + 1)
         plt.subplots_adjust(bottom=BOTTOM)
         plt.title(labels[i], fontsize=12, pad=10)
-        # plt.xlabel('Stocks', fontsize=8)
-        # plt.ylabel('Values', fontsize=8)
-        # plt.xticks(rotation=90)
         plt.grid(True)
         plt.bar(data_stats_tuples[i].index[0:5], data_stats_tuples[i][0:5].values)
         plt.tight_layout()

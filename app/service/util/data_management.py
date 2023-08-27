@@ -21,6 +21,8 @@ import os
 import django
 from django.db.models import QuerySet
 
+from service.util import draw_table
+
 # Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
@@ -28,7 +30,7 @@ from accounts.models import InvestorUser
 
 
 ######################################################################################
-# update DB tables
+# update dataset tables
 def update_all_tables(num_of_years_history, is_daily_running=True):  # build DB for withdraw
     today = datetime.date.today()
     formatted_date = today.strftime("%Y-%m-%d")
@@ -70,12 +72,13 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path,
         # Without machine learning - Markowitz, Gini, With machine learning - Markowitz, Gini
         options_list: list[tuple[int, str]] = [(0, 'Markowitz'), (0, 'Gini'), (1, 'Markowitz'), (1, 'Gini')]
         for i, machine_model_tuple in enumerate(options_list):
-            if i == 2:
+            if i == 2:  # change pct_change_table due to machine learning
                 pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
                     pct_change_table, closing_prices_table.index, models_data
                 )
             update_three_level_data_frame_tables(
-                machine_learning_opt=machine_model_tuple[0], model_name=machine_model_tuple[1], stocks_symbols=stocks_symbols,
+                machine_learning_opt=machine_model_tuple[0], model_name=machine_model_tuple[1],
+                stocks_symbols=stocks_symbols,
                 sectors_list=sectors, closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
                 path=path, models_data=models_data, collection_num=collection_num
             )
@@ -87,33 +90,25 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path,
 def update_three_level_data_frame_tables(machine_learning_opt, model_name, stocks_symbols, sectors_list,
                                          closing_prices_table, pct_change_table, path, models_data, collection_num):
     collection_data = models_data[collection_num][0]
-    limit_percent_medium_risk_stocks = collection_data['LIMIT_PERCENT_MEDIUM_RISK_STOCKS']
-    limit_percent_medium_risk_commodity = collection_data['LIMIT_PERCENT_MEDIUM_RISK_COMMODITY']
-    limit_percent_low_risk_stocks = collection_data['LIMIT_PERCENT_LOW_RISK_STOCKS']
-    limit_percent_low_risk_commodity = collection_data['LIMIT_PERCENT_LOW_RISK_COMMODITY']
-    # high risk
-    update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
-                                     stocks_symbols=stocks_symbols,
-                                     sectors=sectors_list, risk_level="high", max_percent_commodity=1,
-                                     max_percent_stocks=1, closing_prices_table=closing_prices_table,
-                                     pct_change_table=pct_change_table,
-                                     path=path, models_data=models_data)
-    # medium risk
-    update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
-                                     stocks_symbols=stocks_symbols,
-                                     sectors=sectors_list, risk_level="medium",
-                                     max_percent_commodity=limit_percent_medium_risk_commodity,
-                                     max_percent_stocks=limit_percent_medium_risk_stocks,
-                                     closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
-                                     path=path, models_data=models_data)
-    # low risk
-    update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
-                                     stocks_symbols=stocks_symbols,
-                                     sectors=sectors_list, risk_level="low",
-                                     max_percent_commodity=limit_percent_low_risk_commodity,
-                                     max_percent_stocks=limit_percent_low_risk_stocks,
-                                     closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
-                                     path=path, models_data=models_data)
+    limit_percent_medium_risk_stocks: float = collection_data['LIMIT_PERCENT_MEDIUM_RISK_STOCKS']
+    limit_percent_medium_risk_commodity: float = collection_data['LIMIT_PERCENT_MEDIUM_RISK_COMMODITY']
+    limit_percent_low_risk_stocks: float = collection_data['LIMIT_PERCENT_LOW_RISK_STOCKS']
+    limit_percent_low_risk_commodity: float = collection_data['LIMIT_PERCENT_LOW_RISK_COMMODITY']
+
+    limit_percent_stocks_list: list[float] = [limit_percent_low_risk_stocks,
+                                              limit_percent_medium_risk_stocks, 1]
+
+    limit_percent_commodity_list: list[float] = [limit_percent_low_risk_commodity,
+                                                 limit_percent_medium_risk_commodity, 1]
+    #  low, medium, high
+    for i, level_of_risk in enumerate(settings.LEVEL_OF_RISK_LIST):
+        update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
+                                         stocks_symbols=stocks_symbols,
+                                         sectors=sectors_list, levelOfRisk=level_of_risk,
+                                         max_percent_commodity=limit_percent_commodity_list[i],
+                                         max_percent_stocks=limit_percent_stocks_list[i],
+                                         closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
+                                         path=path, models_data=models_data)
 
 
 def update_specific_data_frame_table(is_machine_learning, model_name, stocks_symbols, sectors, risk_level,
@@ -160,12 +155,12 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
 ##################################################################
 # operations
 def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_machine_learning: int,
-                              model_option: int, risk_level: int, extended_data_from_db: tuple) -> Portfolio:
-    sectors, sectors, closing_prices_table, three_best_portfolios, _, pct_change_table, _ = extended_data_from_db
+                              stat_model_name: str, risk_level: int, extended_data_from_db: tuple) -> Portfolio:
+    __, sectors, closing_prices_table, three_best_portfolios, _, pct_change_table, _ = extended_data_from_db
 
     final_portfolio = three_best_portfolios[risk_level - 1]
-    if risk_level == 1:
-        # drop from stocks_symbols the stocks that are in Us Commodity sector
+    if settings.LEVEL_OF_RISK_LIST[risk_level - 1] == "low":
+        # drop from stocks_symbols the stocks that are in US commodity indexes sector
         stocks_symbols = helpers.drop_stocks_from_specific_sector(
             stocks_symbols, helpers.set_stock_sectors(stocks_symbols, sectors), sector_name="US commodity indexes"
         )
@@ -175,7 +170,7 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
         sectors=sectors,
         risk_level=risk_level,
         total_investment_amount=investment_amount,
-        selected_model=model_option,
+        stat_model_name=stat_model_name,
         is_machine_learning=is_machine_learning
     )
 
@@ -183,9 +178,33 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
         closing_prices_table, pct_change_table, final_portfolio.iloc[0][3:],
         final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2]
     )
+
     return portfolio
 
 
+# investment functions
+# site mode
+def changing_portfolio_investments_treatment_web(investor_user: InvestorUser, portfolio: Portfolio,
+                                                 investments: QuerySet[Investment]) -> None:
+    try:
+        if len(investments) > 0:
+            total_profit: float = portfolio.calculate_total_profit_according_to_dates_dates(investments)
+            capital_investments = get_total_capital_investments_web(
+                investments)  # Sums all prior ACTIVE & USER investments
+            investor_user.total_profit += math.floor(total_profit)
+            Investment.objects.create(
+                investor_user=investor_user,
+                amount=investor_user.total_profit + capital_investments,
+                mode=Investment.Mode.ROBOT
+            )
+            investor_user.save()
+        else:
+            raise ValueError('User does not have prior investments, therefore this action won\'t affect it')
+    except ValueError:
+        pass
+
+
+# console mode
 def get_investment_format(investment_amount, entered_as_an_automatic_investment):
     purchase_date = datetime.datetime.now().strftime("%Y-%m-%d")
     is_it_active = True
@@ -200,25 +219,23 @@ def get_investment_format(investment_amount, entered_as_an_automatic_investment)
 
 
 def add_new_investment(user_id, investment_amount, entered_as_an_automatic_investment=False,
-                       db_type="django", investments: list = []) -> dict:
+                       investments: list = []) -> dict:
     if investment_amount < 0:
         return None
     new_investment = get_investment_format(investment_amount, entered_as_an_automatic_investment)
 
-    if len(investments) > 0:
-        try:
-            get_investments_from_db(user_id, db_type)
-        except KeyError:
-            investments = []
-        except ValueError:
-            investments = []
-        except AttributeError:
-            investments = []
+    try:
+        investments = get_user_investments_from_json_file(user_id)  # from json file
+    except KeyError:
+        investments = []
+    except ValueError:
+        investments = []
+    except AttributeError:
+        investments = []
     investments.append(new_investment)
 
-    # save the new investment to the db
-
-    save_new_investments_to_db(user_id, investments, db_type)
+    # save the new investment to the db  (json file)
+    save_investment_to_json_File(user_id, investments)
 
     return new_investment, investments
 
@@ -233,27 +250,7 @@ def changing_portfolio_investments_treatment_console(selected_user: User, invest
                 investment["status"] = False
                 investments[i] = investment
         add_new_investment(selected_user.name, (total_profit + capital_investments),
-                           entered_as_an_automatic_investment=True, db_type="json", investments=investments)
-
-
-def changing_portfolio_investments_treatment_web(investor_user: InvestorUser, portfolio: Portfolio,
-                                                 investments: QuerySet[Investment]) -> None:
-    try:
-        if len(investments) > 0:
-            total_profit: float = portfolio.calculate_total_profit_according_to_dates_dates(investments)
-            capital_investments = get_total_capital_investments_web(
-                investments)  # Sums all prior ACTIVE & USER investments
-            Investment.objects.create(
-                investor_user=investor_user,
-                amount=math.floor(total_profit) + capital_investments,
-                mode=Investment.Mode.ROBOT
-            )
-            investor_user.total_profit += math.floor(total_profit)
-            investor_user.save()
-        else:
-            raise ValueError('User does not have prior investments, therefore this action won\'t affect it')
-    except ValueError:
-        pass
+                           entered_as_an_automatic_investment=True, investments=investments)
 
 
 ############################################################################################################
@@ -303,9 +300,7 @@ def get_three_levels_df_tables(is_machine_learning: int, model_name, collection_
     Get the three level df tables according to machine learning option and model name
     """
     three_levels_df_tables: list[pd.DataFrame] = [
-        get_df_table(is_machine_learning, model_name, risk, collection_path) for risk in [
-            'low', 'medium', 'high'
-        ]
+        get_df_table(is_machine_learning, model_name, risk, collection_path) for risk in settings.LEVEL_OF_RISK_LIST
     ]
 
     return three_levels_df_tables
@@ -325,76 +320,6 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, colle
     return df
 
 
-def get_all_users() -> list:
-    """
-    Get all users with their portfolios details from json file
-    """
-    json_data = get_json_data(settings.USERS_JSON_NAME)
-    num_of_user = len(json_data['usersList'])
-    users_data = json_data['usersList']
-    users: list = [] * num_of_user
-    for user_name in users_data.items():
-        user_id: int = user_name['id']
-        users.append(get_user_from_db(user_id=user_id, user_name=user_name))
-
-    return users
-
-
-def get_user_from_db(user_id: int, user_name: str):
-    """
-    Get specific user by his name with his portfolio details from json file
-    """
-    json_data = get_json_data(settings.USERS_JSON_NAME)
-    if user_name not in json_data['usersList']:
-        print("User not found")
-        return None
-    user_data = json_data['usersList'][user_name][0]
-    total_investment_amount = user_data['startingInvestmentAmount']
-    is_machine_learning = user_data['machineLearningOpt']
-    selected_model = user_data['selectedModel']
-    risk_level = user_data['levelOfRisk']
-    stocks_symbols = user_data['stocksSymbols']
-    stocks_weights = user_data['stocksWeights']
-    annual_returns = user_data['annualReturns']
-    annual_volatility = user_data['annualVolatility']
-    annual_sharpe = user_data['annualSharpe']
-    try:
-        stocks_collection_number = user_data['stocksCollectionNumber']
-    except KeyError:  # Default value
-        stocks_collection_number = "1"
-    sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
-
-    path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{stocks_collection_number}/'
-
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path)
-    portfolio: Portfolio = Portfolio(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        risk_level=risk_level,
-        total_investment_amount=total_investment_amount,
-        selected_model=selected_model,
-        is_machine_learning=is_machine_learning,
-    )
-    pct_change_table: pd = closing_prices_table.pct_change()
-    pct_change_table.dropna(inplace=True)
-    weighted_sum = np.dot(stocks_weights, pct_change_table.T)
-    pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
-    models_data = helpers.get_collection_json_data()
-    if is_machine_learning:
-        weighted_sum = helpers.update_daily_change_with_machine_learning(
-            [weighted_sum], pct_change_table.index, models_data
-        )[0][0]
-    yield_column: str = "yield_" + str(risk_level)
-    pct_change_table[yield_column] = weighted_sum
-    pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
-    portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
-                                 annual_volatility, annual_sharpe)
-    curr_user = User(user_id=user_id, name=user_name, portfolio=portfolio)
-    save_user_portfolio(curr_user)
-
-    return curr_user
-
-
 def get_stocks_symbols_from_collection(stocks_collection_number) -> list:
     """
     Get all stocks symbols from json file
@@ -404,45 +329,9 @@ def get_stocks_symbols_from_collection(stocks_collection_number) -> list:
     return stocks_symbols
 
 
-def get_models_data_from_collections_file():  # TODO - maybe use from admin
+def get_models_data_from_collections_file():
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     return models_data["models_data"]
-
-
-def find_user_in_list(user_name: str, users: list):
-    for curr_user in users:
-        if curr_user.getUserName() == user_name:
-            return curr_user
-    return None
-
-
-def get_num_of_users_in_db() -> int:
-    json_data = get_json_data(settings.USERS_JSON_NAME)
-    return len(json_data['usersList'])
-
-
-def save_investment_to_json_File(user_id, investments):
-    json_data = get_json_data(settings.USERS_JSON_NAME)
-    if user_id not in json_data['usersList']:
-        print("User not found")
-        return None
-    # save in DB
-    json_data['usersList'][user_id][0]['investments_list'] = investments
-
-    # Write the updated JSON data back to the file
-    with open(settings.USERS_JSON_NAME + ".json", 'w') as file:
-        json.dump(json_data, file, indent=4)
-
-
-def get_total_capital_investments_console(investments: list) -> float:
-    """
-    Returning the investment amount that the useer invested
-    """
-    total_capital = 0
-    for investment in investments:
-        if not investment["automatic_investment"]:
-            total_capital += investment["amount"]
-    return total_capital
 
 
 def get_total_capital_investments_web(investments: QuerySet[Investment]) -> float:
@@ -454,84 +343,8 @@ def get_total_capital_investments_web(investments: QuerySet[Investment]) -> floa
         if investment.mode == Investment.Mode.USER:
             total_capital += investment.amount
         else:
-            break
+            continue
     return total_capital
-
-
-def get_total_active_investments(investments):
-    total_amount = 0
-
-    for investment in investments:
-        if investment["status"]:  # TODO
-            total_amount += investment["amount"]
-
-    return total_amount
-
-
-def get_total_investments_details(selected_user, investments) -> tuple:
-    """
-return:
-- The amount of capital investments
-- The amount of profit on the current portfolio only
-- The amount of profit in general
-- The sum of all investments including the profit
-    """
-    total_capital = get_total_capital_investments_console(investments)  # capital investments
-
-    user_portfolio = selected_user.portfolio
-
-    total_portfolio_profit: float = user_portfolio.calculate_total_profit_according_to_dates_dates(investments)
-
-    total_investments_value = get_total_active_investments(investments) + total_portfolio_profit
-
-    total_profit = total_investments_value - total_capital
-
-    return total_capital, total_portfolio_profit, total_profit, total_investments_value
-
-
-def get_user_investments_from_json_file(user_id):
-    json_data = get_json_data(settings.USERS_JSON_NAME)
-    if user_id not in json_data['usersList']:
-        print("User not found")
-        return None
-    try:
-        investment_list = json_data['usersList'][user_id][0]['investments_list']
-    except KeyError:
-        investment_list = []
-    return investment_list
-
-
-def get_investments_from_db(user_id, db_type):
-    if db_type == "django":  # TODO
-        pass
-        # investment_id = 1  # Replace with the actual Investment ID
-        # investments_list = Investment.objects.get(pk=investment_id)
-
-        # try:
-        # Try to get the existing InvestorUser instance
-        # investor_user = InvestorUser.objects.get(pk=1)
-        # except InvestorUser.DoesNotExist:
-        # If the user doesn't exist, create a new instance
-        # investor_user = InvestorUser.objects.create()
-
-        # investments = investor_user.investments if investor_user.investments else []
-    else:
-        investments_list = get_user_investments_from_json_file(user_id)  # from json file
-
-    return investments_list
-
-
-def save_new_investments_to_db(user_id, investments_list, db_type):
-    if db_type == "django":
-        pass  # TODO
-        # Append the new investment to the list of investments
-        # investor_user.investments.append(new_investment)
-        # Update the investor_user's investments field
-        # investor_user.investments = investments_list
-        # Save the updated InvestorUser instance
-        # investor_user.save()
-    else:
-        save_investment_to_json_File(user_id, investments_list)
 
 
 def update_pct_change_table(best_stocks_weights_column, pct_change_table):
@@ -577,7 +390,7 @@ def get_json_data(name):
     return helpers.get_json_data(name)
 
 
-def get_from_and_to_date(num_of_years):  # TODO FIX RETURN TUPLE
+def get_from_and_to_date(num_of_years) -> tuple[str, str]:
     return helpers.get_from_and_to_dates(num_of_years)
 
 
@@ -601,10 +414,6 @@ def update_models_data_settings(
     # Write the updated data back to the JSON file
     with open(file=fully_qualified_file_name, mode='w') as json_file:
         json.dump(data, json_file, indent=4)
-
-
-def get_score_by_answer_from_user(string_to_show: str) -> int:
-    return console_handler.get_score_by_answer_from_user(string_to_show)
 
 
 # graph_plot_methods functions
@@ -632,64 +441,57 @@ def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') 
     return plt_instance
 
 
-def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_option: int,
-                          num_of_years_history, models_data: dict, closing_prices_table_path: str) -> None:
+def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
+                          num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
-    num_por_simulation: int = models_data["models_data"]['num_por_simulation']
-    min_num_por_simulation: int = models_data["models_data"]['min_num_por_simulation']
-    gini_v_value: int = models_data["models_data"]['gini_v_value']
+    models_data = helpers.get_collection_json_data()
+    num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
+    min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
+    gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
     closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_prices_table_path)
     pct_change_table = closing_prices_table.pct_change()
     if num_of_years_history != settings.NUM_OF_YEARS_HISTORY:
-        pct_change_table = pct_change_table.tail(num_of_years_history * 252)
+        pct_change_table = pct_change_table.tail(num_of_years_history * 254)
 
     if is_machine_learning == 1:
         pct_change_table, _, _ = helpers.update_daily_change_with_machine_learning(
-            pct_change_table, models_data, closing_prices_table.index
+            pct_change_table, closing_prices_table.index, models_data
         )
 
-    if model_option == "Markowitz":
-        model_name = "Markowitz"
-    else:
-        model_name = "Gini"
+    three_levels_df_tables: list[pd.DataFrame] = [
+        get_df_table(is_machine_learning, model_name, risk, closing_prices_table_path)
+        for risk in settings.LEVEL_OF_RISK_LIST
+    ]
 
-    stats_models = StatsModels(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        closing_prices_table=closing_prices_table,
-        pct_change_table=pct_change_table,
-        num_por_simulation=num_por_simulation,
-        min_num_por_simulation=min_num_por_simulation,
-        max_percent_commodity=1,
-        max_percent_stocks=1,
-        model_name=model_name,
-        gini_value=gini_v_value,
-    )
-    df: pd.DataFrame = stats_models.df
-    three_best_portfolios = helpers.get_best_portfolios(df=[df, df, df], model_name=model_option)
+    three_best_portfolios = helpers.get_best_portfolios(df=[three_levels_df_tables[0],
+                                                            three_levels_df_tables[1],
+                                                            three_levels_df_tables[2]], model_name=model_name)
     three_best_stocks_weights = helpers.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = helpers.get_three_best_sectors_weights(sectors, three_best_stocks_weights)
 
-    if model_option == "Markowitz":
+    union_df = pd.concat([three_levels_df_tables[0], three_levels_df_tables[1], three_levels_df_tables[2]])
+
+    if model_name == "Markowitz":
         plt_instance = graph_plot_methods.markowitz_graph(
             sectors=sectors, three_best_sectors_weights=three_best_sectors_weights,
             min_variance_portfolio=three_best_portfolios[0], sharpe_portfolio=three_best_portfolios[1],
-            max_returns_portfolio=three_best_portfolios[2], max_vols_portfolio=stats_models.get_max_vols(),
-            df=stats_models.df
+            max_returns_portfolio=three_best_portfolios[2],
+            df=union_df
         )
     else:
         plt_instance = graph_plot_methods.gini_graph(
             sectors=sectors, three_best_sectors_weights=three_best_sectors_weights,
             min_variance_portfolio=three_best_portfolios[0], sharpe_portfolio=three_best_portfolios[1],
-            max_portfolios_annual_portfolio=three_best_portfolios[2], df=stats_models.df
+            max_portfolios_annual_portfolio=three_best_portfolios[2], df=union_df
         )
 
-    graph_image_methods.save_graph(plt_instance, f'{settings.GRAPH_IMAGES}{model_option}_all_option')  # TODO graph_plot_methods at site
+    graph_image_methods.save_graph(plt_instance,
+                                   f'{settings.GRAPH_IMAGES}{sub_folder}{model_name}_all_options')
 
 
 def plot_research_graphs(data_tuple_list: list, intersection_data_list: list, sector_name: int):
     path = settings.RESEARCH_IMAGES
-    research_plt = graph_plot_methods.research_graphs(path, data_tuple_list, intersection_data_list)
+    research_plt = graph_plot_methods.research_graphs(data_tuple_list, intersection_data_list)
     graph_image_methods.save_graph(research_plt, path + "top_stocks_"f'{sector_name}')
     plt.close()
 
@@ -724,11 +526,13 @@ def save_user_portfolio(user: User) -> None:
     plt.close()
 
     # Table of stocks weights
-    stocks_weights_table.draw_all_and_save_as_png(
+    header_text: list[str, str, str] = ['Stock', 'Weight', 'Description']
+    draw_table.draw_all_and_save_as_png(
         file_name=f'{curr_user_directory}/stocks_weights_graph',
         symbols=stocks_symbols,
-        weights=portfolio.stocks_weights,
-        descriptions=helpers.get_stocks_descriptions(stocks_symbols)[1:]
+        values=portfolio.stocks_weights,
+        descriptions=helpers.get_stocks_descriptions(stocks_symbols)[1:],
+        header_text=header_text
     )
 
     # Total yield graph with sectors weights
@@ -740,7 +544,9 @@ def save_user_portfolio(user: User) -> None:
         record_percent_to_predict=float(record_percent_to_predict),
         is_closing_prices_mode=True
     )
-    df, _, _ = analyze.linear_regression_model(test_size_machine_learning)
+    # TODO fix
+    df, annual_return_with_forecast, excepted_returns = analyze.linear_regression_model(test_size_machine_learning)
+    # df, annual_return_with_forecast, excepted_returns = analyze.prophet_model()
     df['yield__selected_percent'] = df['Col']
     df['yield__selected_percent_forecast'] = df["Forecast"]
 
@@ -748,52 +554,61 @@ def save_user_portfolio(user: User) -> None:
     annual_returns, volatility, sharpe, max_loss, total_change = stats_details_tuple
     plt_yield_graph = graph_plot_methods.investment_portfolio_estimated_yield(
         df=df, annual_returns=annual_returns, volatility=volatility, sharpe=sharpe, max_loss=max_loss,
-        total_change=total_change, sectors=portfolio.sectors
+        total_change=total_change, sectors=portfolio.sectors, excepted_returns=excepted_returns
     )
     graph_image_methods.save_graph(plt_yield_graph, file_name=f'{curr_user_directory}/estimated_yield_graph')
     plt.close()
 
 
+def plot_investments_history(login_id, investments_list) -> plt:  # from json file
+    file_name = f'{settings.USER_IMAGES}{login_id}/investments history'
+    header_text: list[str, str, str] = ['id', 'amount', 'Description']
+    descriptions: list = []
+    for investment in investments_list:
+        purchase_date = investment["date"]
+        status = "Active" if investment["status"] else "Inactive"
+        mode = "User" if investment["automatic_investment"] else "Robot"
+        description = f'Date:{purchase_date}, Status:{status}, Model:{mode}'
+        descriptions.append(description)
+
+    draw_table.draw_all_and_save_as_png(
+        file_name=file_name,
+        symbols=[f'{i + 1}' for i in range(len(investments_list))],
+        values=[investment["amount"] for investment in investments_list],
+        descriptions=descriptions,
+        header_text=header_text,
+        percent_mode=False
+    )
+
+
+def view_investment_report(login_id, investment_amount, stocks_weights, stocks_symbols) -> plt:
+    file_name = f'{settings.USER_IMAGES}{login_id}/investment report'
+    # Table of stocks weights
+    header_text: list[str, str, str] = ['Stock', 'Amount to invest', 'Description']
+    descriptions: list = []
+    values: list = []
+    ils_to_usd: float = helpers.currency_exchange(from_currency="USD", to_currency="ILS")
+    for i, stock in enumerate(stocks_symbols):
+        if type(stock) == int or stock.isnumeric():
+            currency = f'{settings.CURRENCY_LIST[0]}'
+            values.append(stocks_weights[i] * investment_amount * ils_to_usd)
+        else:
+            currency = f'{settings.CURRENCY_LIST[1]}'
+            values.append(stocks_weights[i] * investment_amount)
+        description = f'{currency}, {helpers.get_stocks_descriptions([stock])[1:][0]}'
+        descriptions.append(description)
+    draw_table.draw_all_and_save_as_png(
+        file_name=file_name,
+        symbols=stocks_symbols,
+        values=values,
+        descriptions=descriptions,
+        header_text=header_text,
+        percent_mode=False
+    )
+
+
 def plot_image(file_name) -> None:
     pillow_plot_methods.plot_image(file_name)
-
-
-# console functions
-def main_menu() -> None:
-    console_handler.main_menu()
-
-
-def expert_menu() -> None:
-    console_handler.expert_menu()
-
-
-def selected_menu_option() -> int:
-    return console_handler.selected_menu_option()
-
-
-def get_name() -> str:
-    return console_handler.get_name()
-
-
-def get_num_of_years_history() -> int:
-    return console_handler.get_num_of_years_history()
-
-
-def get_machine_learning_option() -> int:
-    return console_handler.get_machine_learning_option()
-
-
-def get_model_option() -> int:
-    return console_handler.get_model_option()
-
-
-def get_machine_learning_model() -> str:
-    option: int = console_handler.get_machine_learning_mdoel()
-    return settings.MACHINE_LEARNING_MODEL[option - 1]
-
-
-def get_investment_amount() -> int:
-    return console_handler.get_investment_amount()
 
 
 def get_stocks_from_json_file() -> dict[list]:
@@ -816,11 +631,6 @@ def get_styled_stocks_symbols_data(stocks_symbols_data) -> dict[list]:
     return styled_stocks_symbols_data
 
 
-def get_collection_number() -> str:
-    stocks = get_stocks_from_json_file()
-    return console_handler.get_collection_number(stocks)
-
-
 def get_stocks_symbols_from_json_file(collection_number: int) -> list[str]:
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     collection: dict = models_data[str(collection_number)][0]
@@ -837,3 +647,227 @@ def is_today_date_change_from_last_updated_df(collection_number: int) -> bool:
 
     if lastUpdatedDateClosingPrices != formatted_date:
         return True
+
+
+# json file DB functions:
+def get_user_from_db(user_id: int, user_name: str):  # users.json file
+    """
+    Get specific user by his name with his portfolio details from json file
+    """
+    json_data = get_json_data(settings.USERS_JSON_NAME)
+    if user_name not in json_data['usersList']:
+        print("User not found")
+        return None
+    user_data = json_data['usersList'][user_name][0]
+    total_investment_amount = user_data['startingInvestmentAmount']
+    is_machine_learning = user_data['machineLearningOpt']
+    stat_model_name = user_data['statModelName']
+    risk_level = user_data['levelOfRisk']
+    stocks_symbols = user_data['stocksSymbols']
+    stocks_weights = user_data['stocksWeights']
+    annual_returns = user_data['annualReturns']
+    annual_volatility = user_data['annualVolatility']
+    annual_sharpe = user_data['annualSharpe']
+    try:
+        stocks_collection_number = user_data['stocksCollectionNumber']
+    except KeyError:  # Default value
+        stocks_collection_number = "1"
+    sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
+
+    path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{stocks_collection_number}/'
+
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path)
+    portfolio: Portfolio = Portfolio(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        risk_level=risk_level,
+        total_investment_amount=total_investment_amount,
+        stat_model_name=stat_model_name,
+        is_machine_learning=is_machine_learning,
+    )
+    pct_change_table: pd = closing_prices_table.pct_change()
+    pct_change_table.dropna(inplace=True)
+    weighted_sum = np.dot(stocks_weights, pct_change_table.T)
+    pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
+    models_data = helpers.get_collection_json_data()
+    if is_machine_learning:
+        weighted_sum, _, _ = helpers.update_daily_change_with_machine_learning(
+            [weighted_sum], pct_change_table.index, models_data
+        )[0][0]
+    yield_column: str = "yield_" + str(risk_level)
+    pct_change_table[yield_column] = weighted_sum
+    pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
+    portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
+                                 annual_volatility, annual_sharpe)
+    curr_user = User(user_id=user_id, name=user_name, portfolio=portfolio)
+    save_user_portfolio(curr_user)
+
+    return curr_user
+
+
+def save_investment_to_json_File(user_id, investments):
+    json_data = get_json_data(settings.USERS_JSON_NAME)
+    if user_id not in json_data['usersList']:
+        print("User not found")
+        return None
+    # save in DB
+    json_data['usersList'][user_id][0]['investments_list'] = investments
+
+    # Write the updated JSON data back to the file
+    with open(settings.USERS_JSON_NAME + ".json", 'w') as file:
+        json.dump(json_data, file, indent=4)
+
+
+def get_user_investments_from_json_file(user_id):
+    json_data = get_json_data(settings.USERS_JSON_NAME)
+    if user_id not in json_data['usersList']:
+        # find name by id
+        for user_name in json_data['usersList']:
+            if json_data['usersList'][user_name][0]['id'] == user_id:
+                user_id = user_name
+                break
+    try:
+        investment_list = json_data['usersList'][user_id][0]['investments_list']
+    except:
+        investment_list = []
+    return investment_list
+
+
+def get_total_capital_investments_console(investments: list) -> float:
+    """
+    Returning the investment amount that the useer invested
+    """
+    total_capital = 0
+    for investment in investments:
+        if not investment["automatic_investment"]:
+            total_capital += investment["amount"]
+    return total_capital
+
+
+def get_total_active_investments(investments):
+    total_amount = 0
+
+    for investment in investments:
+        if investment["status"]:
+            total_amount += investment["amount"]
+
+    return total_amount
+
+
+def get_total_investments_details(selected_user, investments) -> tuple:
+    """
+return:
+    - The amount of capital investments
+    - The amount of profit on the current portfolio only
+    - The amount of profit in general
+    - The sum of all investments including the profit
+    """
+    total_capital = get_total_capital_investments_console(investments)  # capital investments
+    user_portfolio = selected_user.portfolio
+    total_portfolio_profit: float = user_portfolio.calculate_total_profit_according_to_dates_dates(investments)
+    total_investments_value = get_total_active_investments(investments) + total_portfolio_profit
+    total_profit = total_investments_value - total_capital
+
+    return total_capital, total_portfolio_profit, total_profit, total_investments_value
+
+
+def show_investments_from_json_file(login_name: str):
+    investments_list = get_user_investments_from_json_file(login_name)
+    if len(investments_list) == 0:
+        print("No investments yet")
+        return None
+
+    graph_plot_methods.plot_investments_graph(investments_list)
+    print("Investments:")
+    for investment in investments_list:
+        print(investment)
+
+    # TODO - plot graph of investments and send in email
+
+
+# console functions
+def show_main_menu() -> None:
+    console_handler.show_main_menu()
+
+
+def get_menu_choice() -> int:
+    return console_handler.get_menu_choice()
+
+
+def get_name() -> str:
+    return console_handler.get_name()
+
+
+def get_num_of_years_history() -> int:
+    return console_handler.get_num_of_years_history()
+
+
+def get_machine_learning_option() -> int:  # Whether to use machine learning or not
+    return console_handler.get_machine_learning_option()
+
+
+def get_stat_model_option() -> int:
+    return console_handler.get_stat_model_option()
+
+
+def get_machine_learning_model() -> str:  # for forecast graph 4 options
+    option: int = console_handler.get_machine_learning_mdoel()
+    return settings.MACHINE_LEARNING_MODEL[option - 1]
+
+
+def get_investment_amount() -> int:
+    return console_handler.get_investment_amount()
+
+
+def get_collection_number() -> str:
+    stocks = get_stocks_from_json_file()
+    return console_handler.get_collection_number(stocks)
+
+
+def get_sector_name_from_user() -> str:
+    sectors_list = helpers.get_sectors_names_list()
+    return sectors_list[console_handler.get_sector_name_from_user(sectors_list) - 1]
+
+
+def get_basic_data_from_user() -> tuple[int, int, str]:
+    is_machine_learning: int = get_machine_learning_option()
+    model_option: int = get_stat_model_option()
+    stocks_collection_number: str = get_collection_number()
+
+    return is_machine_learning, model_option, stocks_collection_number
+
+
+def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, tables) -> int:
+    sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
+        pct_change_table, yield_list = tables
+
+    # question #1
+    string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
+    first_question_score = get_score_by_answer_from_user(string_to_show)
+
+    # question #2
+    string_to_show = "Which distribution do you prefer?\nlow risk - 1, medium risk - 2, high risk - 3 ?\n"
+    # display distribution of portfolio graph(matplotlib)
+    plot_distribution_of_portfolio(yield_list, sub_folder=sub_folder)
+    plot_image(settings.GRAPH_IMAGES + sub_folder + 'distribution_graph.png')
+    second_question_score = get_score_by_answer_from_user(string_to_show)
+
+    # question #3
+    string_to_show = "Which graph do you prefer?\nsafest - 1, sharpe - 2, max return - 3 ?\n"
+
+    # display 3 best portfolios graph (matplotlib)
+    plot_three_portfolios_graph(
+        three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
+    )
+    plot_image(settings.GRAPH_IMAGES + sub_folder + 'three_portfolios.png')
+    third_question_score = get_score_by_answer_from_user(string_to_show)
+
+    # calculate level of risk by sum of score
+    sum_of_score = first_question_score + second_question_score + third_question_score
+    level_of_risk = get_level_of_risk_by_score(sum_of_score)
+
+    return level_of_risk
+
+
+def get_score_by_answer_from_user(string_to_show: str) -> int:
+    return console_handler.get_score_by_answer_from_user(string_to_show)

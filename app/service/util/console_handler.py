@@ -1,3 +1,9 @@
+menu_operations = ["build a new portfolio", "add investment", "Plot portfolio's data",
+                   "forecast specific stock", "Plot specific stock with bb_strategy",
+                   "makes scanner and find stocks with good result", "plot stat model graph(scatter points)",
+                   "Exit"]
+
+
 def get_name() -> str:
     print("enter name")
     name = input()
@@ -54,7 +60,7 @@ def get_num_of_years_history() -> int:
     return num_of_years
 
 
-def get_model_option() -> int:
+def get_stat_model_option() -> int:
     print("choose model: 0 - Markowitz, 1 - Gini\n")
     model_option = int(input())
     while model_option != 0 and model_option != 1:
@@ -92,6 +98,20 @@ def get_collection_number(stocks: list[object]) -> str:
     return str(collection_number)
 
 
+def get_sector_name_from_user(sectors_list) -> int:
+    print("Please select one of the following options:")
+    for i, option in enumerate(sectors_list):
+        print(f"{i + 1} - {option}")
+        print()
+
+    choice = int(input("Enter your selection: "))
+    while choice < 1 or choice > len(sectors_list):
+        print("Please enter a valid option.")
+        choice = int(input("Enter your selection: "))
+
+    return choice
+
+
 def print_collection_table(stocks_symbols_list: list, stocks_description_list: list):
     # table_data = []
     for symbol, description in zip(stocks_symbols_list, stocks_description_list):
@@ -115,26 +135,18 @@ def valid_answer_input_form(answer) -> None:
         answer = int(input())
 
 
-def selected_menu_option() -> int:
-    return int(input("Enter your selection: "))  # TODO -GET FROM SITE
+def get_menu_choice() -> int:
+    choice = int(input("Enter your selection: "))
+    while choice < 1 or choice > (len(menu_operations) + 1):
+        print("Please enter a valid option.")
+        choice = int(input("Enter your selection: "))
+
+    return choice
 
 
-def main_menu() -> None:
-    # operations- TODO- operates from the site
+def show_main_menu() -> None:
     print("Welcome to the stock market simulator")
     print("Please select one of the following options:")
-    print("1. build a new portfolio")
-    print("2. add investment")
-    print("3. Plot portfolio's data")
-    print("4. operations for experts:")
-    print("8. Exit")
-
-
-def expert_menu() -> None:
-    print("Please select one of the following options:")
-    print("1. Forecast specific stock")
-    print("2. Plot specific stock with bb_strategy")
-    print("3. makes scanner and find stocks with good result")
-    print("4. plot Markowitz graph")
-    print("5. plot Gini graph")
-    print("8. Exit")
+    for i, option in enumerate(menu_operations):
+        print(f"{i + 1} - {option}")
+        print()

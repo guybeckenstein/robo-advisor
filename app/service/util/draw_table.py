@@ -13,14 +13,14 @@ def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[fl
     """
     if len(values) != len(symbols) or len(values) != len(descriptions):
         raise ValueError("Input lists must have the same length.")
-    image, draw = create_blank_image(num_rows=len(symbols))
-    draw_table_header(draw=draw, header_text=header_text)
-    draw_table_rows(num_rows=len(values), symbols=symbols, values=values, descriptions=descriptions,
-                    draw=draw, percent_mode=percent_mode)
+    image, draw = _create_blank_image(num_rows=len(symbols))
+    _draw_table_header(draw=draw, header_text=header_text)
+    _draw_table_rows(num_rows=len(values), symbols=symbols, values=values, descriptions=descriptions,
+                     draw=draw, percent_mode=percent_mode)
     image.save(f"{file_name}.png")  # Save the image
 
 
-def create_blank_image(num_rows: int) -> tuple[Image, ImageDraw]:
+def _create_blank_image(num_rows: int) -> tuple[Image, ImageDraw]:
     # Calculate image size
     image_width = CELL_WIDTH[0] + CELL_WIDTH[1] + CELL_WIDTH[2] + 2 * TABLE_PADDING
     image_height = (num_rows + 1) * CELL_HEIGHT + 2 * TABLE_PADDING
@@ -31,11 +31,11 @@ def create_blank_image(num_rows: int) -> tuple[Image, ImageDraw]:
     return image, draw
 
 
-def draw_table_header(draw: ImageDraw, header_text: ImageFont.truetype) -> None:
+def _draw_table_header(draw: ImageDraw, header_text: ImageFont.truetype) -> None:
     header_font = ImageFont.truetype("arialbd.ttf", size=26)
     # header_text: list[str, str, str] = ['Stock', 'Weight', 'Description']
     for col_idx in range(len(CELL_WIDTH)):
-        x0: int = calculate_cumulative_col_offset(col_idx) + TABLE_PADDING
+        x0: int = _calculate_cumulative_col_offset(col_idx) + TABLE_PADDING
         y0: int = TABLE_PADDING
         x1: int = x0 + CELL_WIDTH[col_idx]
         y1: int = y0 + CELL_HEIGHT
@@ -43,12 +43,12 @@ def draw_table_header(draw: ImageDraw, header_text: ImageFont.truetype) -> None:
         draw.text(xy=(x0 + 5, y0 + 5), text=header_text[col_idx], fill="black", font=header_font)
 
 
-def draw_table_rows(num_rows: int, symbols: list[str], values: list[float], descriptions: list[str],
-                    draw: ImageDraw, percent_mode: bool) -> None:
+def _draw_table_rows(num_rows: int, symbols: list[str], values: list[float], descriptions: list[str],
+                     draw: ImageDraw, percent_mode: bool) -> None:
     x0: list[int, int, int] = [
-        calculate_cumulative_col_offset(0) + TABLE_PADDING,
-        calculate_cumulative_col_offset(1) + TABLE_PADDING,
-        calculate_cumulative_col_offset(2) + TABLE_PADDING,
+        _calculate_cumulative_col_offset(0) + TABLE_PADDING,
+        _calculate_cumulative_col_offset(1) + TABLE_PADDING,
+        _calculate_cumulative_col_offset(2) + TABLE_PADDING,
     ]
     x1: list[int, int, int] = [x0[0] + CELL_WIDTH[0], x0[1] + CELL_WIDTH[1], x0[2] + CELL_WIDTH[2]]
     row_font = ImageFont.truetype("ariali.ttf", size=26)
@@ -66,7 +66,7 @@ def draw_table_rows(num_rows: int, symbols: list[str], values: list[float], desc
         draw.text(xy=(x0[2] + 5, y0 + 5), text=str(description), fill="black", font=row_font)
 
 
-def calculate_cumulative_col_offset(col_idx: int) -> int:
+def _calculate_cumulative_col_offset(col_idx: int) -> int:
     res_sum: int = 0
     for i in range(col_idx):
         res_sum += CELL_WIDTH[i]

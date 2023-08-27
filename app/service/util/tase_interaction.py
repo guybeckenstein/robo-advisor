@@ -99,7 +99,7 @@ def get_tase_access_token():
 
 
 # BUILD URL FOR REQUEST
-def get_app_url_without_date(app_name):  # /tase/prod/impl/v1/short-sales/weekly-balance
+def get_app_url_without_date(app_name):
     return israeli_tase.PREFIX_URL + '/' + app_name
 
 
@@ -114,5 +114,7 @@ def get_app_url_with_date_and_index(app_name, start_year, start_month, start_day
     str_e_m = str(end_month)
     str_e_d = str(end_day)
     hyphen = '-'
-    res = f'{app_without_date}{str_index}&fromDate={str_s_y}{hyphen}{str_s_m}{hyphen}{str_s_d}&toDate={str_e_y}{hyphen}{str_e_m}{hyphen}{str_e_d}'
+    res = (f'{app_without_date}{str_index}&fromDate={str_s_y}{hyphen}{str_s_m}{hyphen}{str_s_d}'
+           f'&toDate={str_e_y}{hyphen}{str_e_m}{hyphen}{str_e_d}')
+
     return res

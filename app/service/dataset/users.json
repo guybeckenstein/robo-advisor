@@ -2,7 +2,7 @@
     "usersList": {
         "tom": [
             {
-                "id": 1,
+                "id": 10,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 1000,
                 "stocksSymbols": [
@@ -62,7 +62,7 @@
                 "totalChange": 56.97306679008574,
                 "monthlyChange": 1.40296394629984,
                 "dailyChange": -0.0005496261455911546,
-                "selectedModel": 1,
+                "statModelName": "Gini",
                 "machineLearningOpt": 1,
                 "stocksCollectionNumber": "1",
                 "investments_list": [
@@ -101,65 +101,211 @@
         ],
         "yarden": [
             {
-                "id": 2,
+                "id": 1,
                 "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
+                "startingInvestmentAmount": 0,
                 "stocksSymbols": [
-                    "TSLA",
-                    "ADBE",
-                    "JNJ",
-                    "EOI",
-                    "AAPL",
-                    "AMZN",
-                    "MSFT",
-                    "GOOG",
-                    "META",
-                    "NVDA",
-                    "AJG",
-                    "BRO",
-                    "CSL",
-                    593038,
+                    169,
+                    170,
+                    603,
+                    601,
+                    701,
+                    714,
+                    "XLK",
+                    "XLV",
+                    "XOP",
+                    "QQQ",
+                    "SHV",
+                    "BIL",
                     273011,
-                    442012,
-                    1081124
+                    695437,
+                    593038,
+                    "LMB",
+                    "AGM",
+                    "TDS",
+                    "MCD",
+                    "FMY",
+                    "EOI"
                 ],
                 "sectorsNames": [
+                    "Israel stocks indexes",
+                    "Israel general bonds indexes",
+                    "Israel government bonds indexes",
+                    "US stocks indexes",
+                    "US bonds indexes",
                     "Israel stocks",
                     "US stocks"
                 ],
                 "sectorsWeights": [
-                    0.2969866482867546,
-                    0.7030133517132447
+                    0.09475541048665881,
+                    0.142540047484055,
+                    0.0732463732597812,
+                    0.0630468572401839,
+                    0.156744773153384,
+                    0.17295978211572494,
+                    0.2967067562602111
                 ],
                 "stocksWeights": [
-                    0.0450592098597718,
-                    0.0101769938844453,
-                    0.0821111295094818,
-                    0.0425747027274106,
-                    0.1176942714256658,
-                    0.054240226135787,
-                    0.0450871193007808,
-                    0.0337506616897417,
-                    0.0076884272999661,
-                    0.1193360357917476,
-                    0.0588315780370021,
-                    0.0853534127649353,
-                    0.0011095832865088,
-                    0.0185028150396067,
-                    0.1035905905982906,
-                    0.0712249806111784,
-                    0.1036682620376789
+                    0.0703586873001422,
+                    0.0243967231865166,
+                    0.0565843230870754,
+                    0.0859557243969796,
+                    0.0372912479358361,
+                    0.0359551253239451,
+                    0.0220888807259175,
+                    0.0370596800250354,
+                    0.0025767263296154,
+                    0.0013215701596156,
+                    0.0547712686942569,
+                    0.1019735044591271,
+                    0.0704044873629734,
+                    0.0865823127371966,
+                    0.0159729820155549,
+                    0.0485838584603658,
+                    0.0483334223341667,
+                    0.0140260440324071,
+                    0.1027711515903714,
+                    0.0568255949115796,
+                    0.0261666849313205
                 ],
-                "annualReturns": 24.4428578969363,
-                "annualMaxLoss": 0.4933085237320256,
-                "annualVolatility": 14.514878408002591,
-                "annualSharpe": 1.6839864041479011,
-                "totalChange": 1137.6672772728339,
-                "monthlyChange": 3.198652299626037,
-                "dailyChange": -0.002241450622595668,
-                "selectedModel": 1,
+                "annualReturns": 9.042186471335969,
+                "annualMaxLoss": -2.300167567611453,
+                "annualVolatility": 6.874153962998437,
+                "annualSharpe": 1.315388994777745,
+                "totalChange": 160.07178276587962,
+                "monthlyChange": 3.1963979310152935,
+                "dailyChange": 0.004528940525397306,
+                "statModelName": "Gini",
                 "machineLearningOpt": 1,
-                "stocksCollectionNumber": "4"
+                "stocksCollectionNumber": "3",
+                "investments_list": [
+                    {
+                        "amount": 2000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 2500,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 5000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 700,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 700,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 10000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 100000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 50000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 50,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 100000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 100000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 2000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 5000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    }
+                ]
             }
         ],
         "hanael": [
@@ -224,641 +370,22 @@
                 "totalChange": 1.000016101691135,
                 "monthlyChange": -945.0715617413496,
                 "dailyChange": -0.00038858149872412475,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "tommy": [
-            {
-                "id": 4,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "Gsg",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.1748299778146243,
-                    0.0,
-                    0.0,
-                    0.2933074880888091,
-                    0.13643137893720014,
-                    0.24393702044565335
-                ],
-                "stocksWeights": [
-                    0.08811687957269534,
-                    0.08671309824192897,
-                    0.047491656578363475,
-                    0.24014716380846735,
-                    0.005668667701978286,
-                    0.13331131856690132,
-                    0.13643137893720014,
-                    0.01818281614681176,
-                    0.21702986418344178,
-                    0.026907156262211577
-                ],
-                "annualReturns": 6.8051015562670445,
-                "annualMaxLoss": -6.830594359983286,
-                "annualVolatility": 8.264058131060807,
-                "annualSharpe": 0.8234576098502727,
-                "totalChange": 2.084923903676671,
-                "monthlyChange": 0.2718765030828685,
-                "dailyChange": 0.005460257436033295,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "MORNA": [
-            {
-                "id": 5,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "GSG",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.056608746509540196,
-                    0.23203875017997228,
-                    0.2610750859184067,
-                    0.1389137304646672,
-                    0.2781598991986643,
-                    0.033203787728748796
-                ],
-                "stocksWeights": [
-                    0.1036700537978386,
-                    0.1283686963821337,
-                    0.1163417027352323,
-                    0.047172541265501,
-                    0.0975608419176734,
-                    0.0003353146077875,
-                    0.0562734319017527,
-                    0.0595893003375497,
-                    0.0787952034479907,
-                    0.0005292266791268,
-                    0.1167142682215755,
-                    0.1614456309770888,
-                    0.0179937071465644,
-                    0.0101453010547319,
-                    0.0050647795274525
-                ],
-                "annualReturns": 3.6677770890648858,
-                "annualMaxLoss": -2.913062366218949,
-                "annualVolatility": 3.9883875486568696,
-                "annualSharpe": 0.9196140155186392,
-                "totalChange": 28.60605551076597,
-                "monthlyChange": 1.7066228710017395,
-                "dailyChange": 0.0068763861496663895,
-                "selectedModel": 1,
-                "machineLearningOpt": 1
-            }
-        ],
-        "FDA": [
-            {
-                "id": 6,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "Gsg",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.2791509107569411,
-                    0.0,
-                    0.0,
-                    0.408818852778007,
-                    0.07403030846443696,
-                    0.1319768498887672
-                ],
-                "stocksWeights": [
-                    0.14408910148204918,
-                    0.13506180927489192,
-                    0.22416458338681058,
-                    0.17785162510188518,
-                    0.006802644289311205,
-                    0.09738118362716937,
-                    0.07403030846443696,
-                    0.00864189448467831,
-                    0.13077367123641956,
-                    0.0012031786523476595
-                ],
-                "annualReturns": 7.720165910023091,
-                "annualMaxLoss": 2.992076758550949,
-                "annualVolatility": 2.865508576649783,
-                "annualSharpe": 2.694169535185668,
-                "totalChange": 2.3182476696489513,
-                "monthlyChange": 0.6502997295716906,
-                "dailyChange": 0.007513486306406434,
-                "selectedModel": 2,
-                "machineLearningOpt": 0
-            }
-        ],
-        "dor": [
-            {
-                "id": 7,
-                "levelOfRisk": 3,
-                "startingInvestmentAmount": 25000,
-                "stocksSymbols": [
-                    "AMD",
-                    "AI",
-                    "AMZN",
-                    "AAPL",
-                    "NVDA",
-                    "TSLA",
-                    "MSFT",
-                    "GOOG",
-                    "SPY",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.7079232075877877,
-                    0.0,
-                    0.29207679241221235
-                ],
-                "stocksWeights": [
-                    0.025774189147470913,
-                    0.02487719626335707,
-                    0.07707662036819542,
-                    0.020143316004695763,
-                    0.28663574945252607,
-                    0.004047358822952935,
-                    0.014871648226820794,
-                    0.1130528771338312,
-                    0.1414442521679375,
-                    0.29207679241221235
-                ],
-                "annualReturns": 34.33498715673002,
-                "annualMaxLoss": 27.057079007903788,
-                "annualVolatility": 4.4108534235310515,
-                "annualSharpe": 7.784204973477353,
-                "totalChange": 1.8144944754230554,
-                "monthlyChange": -1.5021387224880667,
-                "dailyChange": -0.009280502215524695,
-                "selectedModel": 2,
-                "machineLearningOpt": 0
-            }
-        ],
-        "gogl": [
-            {
-                "id": 8,
-                "levelOfRisk": 3,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "Gsg",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.3146070558453742,
-                    0.0,
-                    0.0,
-                    0.5076196278345265,
-                    0.006734532261956881,
-                    0.1016921440239119
-                ],
-                "stocksWeights": [
-                    0.22156777730725466,
-                    0.09303927853811951,
-                    0.19041539801748703,
-                    0.25297072750529315,
-                    0.06423350231174639,
-                    0.053610360264526875,
-                    0.006734532261956881,
-                    0.015736279769703595,
-                    0.04568122025521655,
-                    0.05601092376869535
-                ],
-                "annualReturns": 8.761872819707106,
-                "annualMaxLoss": -9.598512504346216,
-                "annualVolatility": 11.127506257002013,
-                "annualSharpe": 0.7874066855000574,
-                "totalChange": 2.5217958495181905,
-                "monthlyChange": 0.5230776681420357,
-                "dailyChange": 0.000740016921885579,
-                "selectedModel": 2,
-                "machineLearningOpt": 0
-            }
-        ],
-        "moran": [
-            {
-                "id": 9,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 2000,
-                "stocksSymbols": [
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "Gsg",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.2791509107569411,
-                    0.0,
-                    0.0,
-                    0.408818852778007,
-                    0.07403030846443696,
-                    0.1319768498887672
-                ],
-                "stocksWeights": [
-                    0.14408910148204918,
-                    0.13506180927489192,
-                    0.22416458338681058,
-                    0.17785162510188518,
-                    0.006802644289311205,
-                    0.09738118362716937,
-                    0.07403030846443696,
-                    0.00864189448467831,
-                    0.13077367123641956,
-                    0.0012031786523476595
-                ],
-                "annualReturns": 7.8044706948370735,
-                "annualMaxLoss": -6.748576143718516,
-                "annualVolatility": 8.820028387003388,
-                "annualSharpe": 0.8848577750993666,
-                "totalChange": 2.344340117626613,
-                "monthlyChange": 0.6502997295716906,
-                "dailyChange": -0.0006822636173883468,
-                "selectedModel": 2,
-                "machineLearningOpt": 0
-            }
-        ],
-        "tommer": [
-            {
-                "id": 10,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 4000,
-                "stocksSymbols": [
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "Gsg",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity",
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.48943703365999847,
-                    0.0,
-                    0.0,
-                    0.8009271159233357,
-                    0.14316591119915703,
-                    0.34562916446956526,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "stocksWeights": [
-                    0.08811687957269534,
-                    0.08671309824192897,
-                    0.047491656578363475,
-                    0.24014716380846735,
-                    0.005668667701978286,
-                    0.13331131856690132,
-                    0.13643137893720014,
-                    0.01818281614681176,
-                    0.21702986418344178,
-                    0.026907156262211577
-                ],
-                "annualReturns": 6.8210349691136845,
-                "annualMaxLoss": -6.811474110342633,
-                "annualVolatility": 8.262126714822012,
-                "annualSharpe": 0.8255785955057975,
-                "totalChange": 2.087001153488969,
-                "monthlyChange": 0.27187650308280187,
-                "dailyChange": -0.004882844722460297,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "fadfa": [
-            {
-                "id": 11,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "Gsg",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.1523574543937997,
-                    0.14382506849875817,
-                    0.1858963458838309,
-                    0.27105767188979735,
-                    0.020432384369752494,
-                    0.12609323586194923
-                ],
-                "stocksWeights": [
-                    0.11863036000590176,
-                    0.02519470849285641,
-                    0.09432598997024162,
-                    0.005785453082648072,
-                    0.0857849028309412,
-                    0.04037504803726698,
-                    0.11198240635653271,
-                    0.12621552885454487,
-                    0.12333195200465197,
-                    0.021510191030600517,
-                    0.09818311161295837,
-                    0.020432384369752494,
-                    0.0021547274891537036,
-                    0.11226857792783629,
-                    0.013824657934112949
-                ],
-                "annualReturns": 6.092743706648595,
-                "annualMaxLoss": -4.561847562776232,
-                "annualVolatility": 6.457328042075654,
-                "annualSharpe": 0.9435394433964879,
-                "totalChange": 1.9613101119894163,
-                "monthlyChange": 1.3664763246254985,
-                "dailyChange": 0.00048024212584655976,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "agami": [
-            {
-                "id": 12,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 2000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "Gsg",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity",
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.3047149087875994,
-                    0.28765013699751635,
-                    0.3717926917676618,
-                    0.5421153437795947,
-                    0.04086476873950499,
-                    0.25218647172389846,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "stocksWeights": [
-                    0.11863036000590176,
-                    0.02519470849285641,
-                    0.09432598997024162,
-                    0.005785453082648072,
-                    0.0857849028309412,
-                    0.04037504803726698,
-                    0.11198240635653271,
-                    0.12621552885454487,
-                    0.12333195200465197,
-                    0.021510191030600517,
-                    0.09818311161295837,
-                    0.020432384369752494,
-                    0.0021547274891537036,
-                    0.11226857792783629,
-                    0.013824657934112949
-                ],
-                "annualReturns": 5.927530210342269,
-                "annualMaxLoss": -3.8084187250672823,
-                "annualVolatility": 5.900575112369426,
-                "annualSharpe": 1.0045682153789275,
-                "totalChange": 1.9742724481582001,
-                "monthlyChange": 1.366475807445311,
-                "dailyChange": 0.00023499187089824088,
-                "selectedModel": 2,
+                "statModelName": "Gini",
                 "machineLearningOpt": 0
             }
         ],
         "test": [
             {
-                "id": 13,
-                "levelOfRisk": 1,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.039953174605542804,
-                    0.2580943089422989,
-                    0.6246338040254973,
-                    0.0395165862744896,
-                    0.0378021261521711,
-                    0.0
-                ],
-                "stocksWeights": [
-                    0.1984728351097274,
-                    0.0596214738325715,
-                    0.0111922971923062,
-                    0.3505506045618785,
-                    0.2628909022713126,
-                    0.0088979980053999,
-                    0.0310551766001429,
-                    0.0101047076399928,
-                    0.0275666378367544,
-                    0.0018452407977424,
-                    0.029759780932897,
-                    0.0080423452192741
-                ],
-                "annualReturns": 1.7171285412897217,
-                "annualMaxLoss": -0.8063065634405722,
-                "annualVolatility": 1.529354608927451,
-                "annualSharpe": 1.12277985188403,
-                "totalChange": 1.221010987317052,
-                "monthlyChange": 0.9114860816312964,
-                "dailyChange": 0.0014964077358209508,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "ORNA": [
-            {
-                "id": 14,
                 "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
+                "startingInvestmentAmount": 0,
                 "stocksSymbols": [
                     601,
                     602,
                     700,
                     701,
                     702,
-                    "TA35.TA",
-                    "TA90.TA",
+                    142,
+                    143,
                     "SPY",
                     "QQQ",
                     "^RUT",
@@ -869,90 +396,12 @@
                     "OIL"
                 ],
                 "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity",
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.11321749301908039,
-                    0.46407750035994455,
-                    0.5221501718368134,
-                    0.2778274609293344,
-                    0.5563197983973286,
-                    0.06640757545749759,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "stocksWeights": [
-                    0.1036700537978386,
-                    0.1283686963821337,
-                    0.1163417027352323,
-                    0.047172541265501,
-                    0.0975608419176734,
-                    0.0003353146077875,
-                    0.0562734319017527,
-                    0.0595893003375497,
-                    0.0787952034479907,
-                    0.0005292266791268,
-                    0.1167142682215755,
-                    0.1614456309770888,
-                    0.0179937071465644,
-                    0.0101453010547319,
-                    0.0050647795274525
-                ],
-                "annualReturns": 3.550983225210791,
-                "annualMaxLoss": -2.3018004738470017,
-                "annualVolatility": 3.547141635792602,
-                "annualSharpe": 1.0010830098746055,
-                "totalChange": 28.60605551076597,
-                "monthlyChange": 1.7066228710017395,
-                "dailyChange": 0.0068763861496663895,
-                "selectedModel": 2,
-                "machineLearningOpt": 1
-            }
-        ],
-        "YARDEN": [
-            {
-                "id": 15,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "GSG",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
+                    "Israel stocks indexes",
+                    "Israel general bonds indexes",
+                    "Israel government bonds indexes",
+                    "US stocks indexes",
+                    "US bonds indexes",
+                    "US commodity indexes"
                 ],
                 "sectorsWeights": [
                     0.056608746509540196,
@@ -979,213 +428,37 @@
                     0.0101453010547319,
                     0.0050647795274525
                 ],
-                "annualReturns": 3.6347360037302665,
-                "annualMaxLoss": -2.9484083224517827,
-                "annualVolatility": 3.989784440110333,
-                "annualSharpe": 0.9110106218244092,
-                "totalChange": 50.64757679789443,
-                "monthlyChange": 1.3454963871993186,
-                "dailyChange": 0.0009353175628750441,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "re": [
-            {
-                "id": 16,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "GSG",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.056608746509540196,
-                    0.23203875017997228,
-                    0.2610750859184067,
-                    0.1389137304646672,
-                    0.2781598991986643,
-                    0.033203787728748796
-                ],
-                "stocksWeights": [
-                    0.1036700537978386,
-                    0.1283686963821337,
-                    0.1163417027352323,
-                    0.047172541265501,
-                    0.0975608419176734,
-                    0.0003353146077875,
-                    0.0562734319017527,
-                    0.0595893003375497,
-                    0.0787952034479907,
-                    0.0005292266791268,
-                    0.1167142682215755,
-                    0.1614456309770888,
-                    0.0179937071465644,
-                    0.0101453010547319,
-                    0.0050647795274525
-                ],
-                "annualReturns": 3.6347360037302665,
-                "annualMaxLoss": -2.9484083224517827,
-                "annualVolatility": 3.989784440110333,
-                "annualSharpe": 0.9110106218244092,
-                "totalChange": 0.05064757679788556,
-                "monthlyChange": 1.3454963871992964,
-                "dailyChange": 0.0009353175628750441,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "guy": [
-            {
-                "id": 17,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "GSG",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.056608746509540196,
-                    0.23203875017997228,
-                    0.2610750859184067,
-                    0.1389137304646672,
-                    0.2781598991986643,
-                    0.033203787728748796
-                ],
-                "stocksWeights": [
-                    0.1036700537978386,
-                    0.1283686963821337,
-                    0.1163417027352323,
-                    0.047172541265501,
-                    0.0975608419176734,
-                    0.0003353146077875,
-                    0.0562734319017527,
-                    0.0595893003375497,
-                    0.0787952034479907,
-                    0.0005292266791268,
-                    0.1167142682215755,
-                    0.1614456309770888,
-                    0.0179937071465644,
-                    0.0101453010547319,
-                    0.0050647795274525
-                ],
-                "annualReturns": 3.6347360037302665,
-                "annualMaxLoss": -2.9484083224517827,
-                "annualVolatility": 3.989784440110333,
-                "annualSharpe": 0.9110106218244092,
-                "totalChange": 50.64757679789409,
-                "monthlyChange": 1.3454963871992964,
-                "dailyChange": 0.0009353175628750441,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
-            }
-        ],
-        "morna": [
-            {
-                "id": 18,
-                "levelOfRisk": 2,
-                "startingInvestmentAmount": 1000,
-                "stocksSymbols": [
-                    601,
-                    602,
-                    700,
-                    701,
-                    702,
-                    "TA35.TA",
-                    "TA90.TA",
-                    "SPY",
-                    "QQQ",
-                    "^RUT",
-                    "IEI",
-                    "LQD",
-                    "GSG",
-                    "GLD",
-                    "OIL"
-                ],
-                "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
-                ],
-                "sectorsWeights": [
-                    0.056608746509540196,
-                    0.23203875017997228,
-                    0.2610750859184067,
-                    0.1389137304646672,
-                    0.2781598991986643,
-                    0.033203787728748796
-                ],
-                "stocksWeights": [
-                    0.1036700537978386,
-                    0.1283686963821337,
-                    0.1163417027352323,
-                    0.047172541265501,
-                    0.0975608419176734,
-                    0.0003353146077875,
-                    0.0562734319017527,
-                    0.0595893003375497,
-                    0.0787952034479907,
-                    0.0005292266791268,
-                    0.1167142682215755,
-                    0.1614456309770888,
-                    0.0179937071465644,
-                    0.0101453010547319,
-                    0.0050647795274525
-                ],
-                "annualReturns": 3.6347360037302665,
-                "annualMaxLoss": -2.9484083224517827,
-                "annualVolatility": 3.989784440110333,
-                "annualSharpe": 0.9110106218244092,
-                "totalChange": 50.64757679789409,
-                "monthlyChange": 1.3454963871992964,
-                "dailyChange": 0.0009353175628750441,
-                "selectedModel": 1,
-                "machineLearningOpt": 0
+                "annualReturns": 3.074453939331523,
+                "annualMaxLoss": -2.6985703903407803,
+                "annualVolatility": 3.49880262404382,
+                "annualSharpe": 0.8787160265068491,
+                "totalChange": 50.2506403830005,
+                "monthlyChange": 0.7516279395030079,
+                "dailyChange": -0.002598012388396432,
+                "statModelName": "Gini",
+                "machineLearningOpt": 1,
+                "stocksCollectionNumber": "1",
+                "id": -1,
+                "investments_list": [
+                    {
+                        "amount": 500,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-08-27",
+                        "status": true,
+                        "automatic_investment": false
+                    }
+                ]
             }
         ]
     }

@@ -16,10 +16,9 @@ class Portfolio:
             sectors: list[Sector],
             risk_level: int = 1,
             total_investment_amount: int = 0,
-            selected_model=None,
+            stat_model_name=None,
             is_machine_learning=None
     ):
-
         self._sectors: list[Sector] = sectors
         self._risk_level: int = risk_level
         self._total_investment_amount: int = total_investment_amount
@@ -28,13 +27,14 @@ class Portfolio:
         self._stocks_weights = []
         self._closing_prices_table = []
         self._pct_change_table: pd.DataFrame = pd.DataFrame
-        self._selected_model: int = selected_model
+        self._stat_model_name: str = stat_model_name
         self._is_machine_learning: int = is_machine_learning
         self._annual_returns: np.float64 = 0.0
         self._annual_volatility: np.float64 = 0.0
         self._annual_sharpe: np.float64 = 0.0
 
-    # Getters and setters
+        # Getters and setters
+
     @property
     def risk_level(self) -> int:
         return self._risk_level
@@ -52,8 +52,8 @@ class Portfolio:
         self._total_investment_amount = value
 
     @property
-    def selected_model(self) -> int:
-        return self._selected_model
+    def stat_model_name(self) -> int:
+        return self._stat_model_name
 
     @property
     def machine_learning_opt(self) -> int:
@@ -123,7 +123,7 @@ class Portfolio:
         return self._risk_level, self._total_investment_amount, self._stocks_symbols, self.get_sectors_names(), \
             self.get_sectors_weights(), self._stocks_weights, self._annual_returns, self.get_max_loss(), \
             self._annual_volatility, self._annual_sharpe, self.get_total_change(), self.get_monthly_change(), \
-            self.get_daily_change(), self.selected_model, self.machine_learning_opt
+            self.get_daily_change(), self.stat_model_name, self.machine_learning_opt
 
     def calculate_total_profit_according_to_dates_dates(self, investments) -> float:
         profit: float = 0.0
@@ -143,7 +143,7 @@ class Portfolio:
                 raise ValueError('Invalid value for `investments`')
             if is_it_active:
                 profit += amount * self.get_total_value_change(from_date=purchase_date)
-            else:  # TODO: check this for the console application version
+            else:
                 break
 
         return profit
