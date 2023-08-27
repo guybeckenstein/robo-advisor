@@ -23,7 +23,7 @@ class Investment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     mode = models.CharField(max_length=10, choices=Mode.choices, default=Mode.USER)
-    stocks_collection_number = models.IntegerField(
+    stocks_collection_number = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(COLLECTION_MIN), MaxValueValidator(COLLECTION_MAX)], default=COLLECTION_MIN
     )
 
@@ -33,6 +33,12 @@ class Investment(models.Model):
         ordering = ['-id']
         verbose_name = 'Investment'
         verbose_name_plural = 'Investment'
+
+    def __str__(self):
+        date = self.date.strftime('%Y-%m-%d, %H:%M:%S')
+        return (f'{self.investor_user} | Amount: {self.amount} | '
+                f'Status: {self.status} | Mode: {self.mode} | '
+                f'Stocks Collection #: {self.stocks_collection_number} | {date}')
 
     def make_investment_inactive(self) -> bool:
         """

@@ -6,11 +6,16 @@ from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.models import InvestorUser
+from django.views.decorators.http import require_http_methods
 from investment.models import Investment
+
+from service.config import settings
+from service.util import data_management, web_actions
 
 
 # Investment
 @login_required
+@require_http_methods(["GET"])
 def investments_list_view(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     if is_form_filled:
@@ -30,6 +35,7 @@ def investments_list_view(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def add_investment_view(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     if is_form_filled is False:
@@ -46,9 +52,27 @@ def add_investment_view(request):
         amount: int = int(request.POST.get('amount', -1))
         if amount > 0:
             investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
-            Investment.objects.create(investor_user=investor_user, amount=amount)
+            Investment.objects.create(investor_user=investor_user, amount=amount,
+                                      stocks_collection_number=investor_user.stocks_collection_number)
             investor_user.total_investment_amount += amount
             investor_user.save()
+            # save report according to a new investment
+            stocks_weights = investor_user.stocks_weights
+            stocks_symbols = investor_user.stocks_symbols
+
+            # save image
+            data_management.view_investment_report(str(request.user.id), amount,
+                                                   stocks_weights, stocks_symbols)
+            # show result in desktop TODO maybe show in site
+            data_management.plot_image(f'{settings.USER_IMAGES}{str(request.user.id)}/investment report.png')
+
+            # send report to user in email
+            subject = 'Investment Report - Robot Advisor'
+            message = 'Here is your investment report.\n' + f'you invested {amount} dollars.\n'
+            recipient_list = [request.user.email]
+            attachment_path = f'{settings.USER_IMAGES}{str(request.user.id)}/investment report.png'
+            web_actions.send_email(subject, message, recipient_list, attachment_path)
+
             return redirect('my_investments_history')
         else:
             raise ValueError('Invalid amount value')
@@ -56,6 +80,7 @@ def add_investment_view(request):
         raise BadRequest
 
 
+@require_http_methods(["GET"])
 def _investments_list_view(request) -> QuerySet[Investment]:
     page = request.GET.get("page", None)
     investments = Investment.objects.filter(mode=Investment.Mode.USER)

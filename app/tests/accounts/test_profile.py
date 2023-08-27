@@ -17,7 +17,6 @@ ATTRIBUTES: list[str] = ['Account', 'Investor', 'Portfolio', 'Capital Market Pre
 
 @pytest.mark.django_db
 class TestProfile:
-
     class TestProfileMain:
         def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
             response, user = helper_methods.successful_get_request_as_logged_user(
@@ -128,7 +127,7 @@ class TestProfile:
 
             assert investor_user.stocks_collection_number == '1'
             data: dict[str, InvestorUser, InvestorUser] = {
-                'stocks_collection_number': '2',
+                'stocks_collection_number': '3',
                 'investor_user_instance': investor_user,
                 'instance': investor_user,
             }
@@ -161,7 +160,7 @@ class TestProfile:
 
             assert investor_user.stocks_collection_number == '1'
             data: dict[str, InvestorUser, InvestorUser] = {
-                'stocks_collection_number': '2',
+                'stocks_collection_number': '3',
                 'investor_user_instance': investor_user,
                 'instance': investor_user,
             }

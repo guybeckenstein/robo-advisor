@@ -17,12 +17,16 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 
 from core.models import QuestionnaireA, QuestionnaireB
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_control
+from django.views.decorators.http import require_http_methods
 from investment.models import Investment
 from service.util import web_actions, data_management
 from accounts import forms as account_forms
 from .models import InvestorUser, CustomUser
 
 
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class SignUpView(SignupView):
     """
     Creates new employee
@@ -60,6 +64,7 @@ class SignUpView(SignupView):
             return errors
 
 
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class HtmxLoginView(LoginView):
     template_name = 'account/guest/login.html'
     htmx = True
@@ -90,6 +95,7 @@ class HtmxLoginView(LoginView):
         return super().form_valid(form)
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout_view(request):
     logout(request)
     context = {
@@ -98,7 +104,9 @@ def logout_view(request):
     return render(request, 'account/authenticated/logout.html', context=context)
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
+@require_http_methods(["GET"])
 def profile_main(request):
     if request.method == 'GET':
         form: forms.ModelForm = account_forms.AccountMetadataForm(instance=request.user, disabled_project=True)
@@ -111,6 +119,7 @@ def profile_main(request):
     return render(request, 'account/authenticated/profile_main.html', context=context)
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def profile_account(request):
     context = {
@@ -119,7 +128,9 @@ def profile_account(request):
     return render(request, 'account/authenticated/profile_account.html', context=context)
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
+@require_http_methods(["GET", "POST"])
 def profile_account_details(request):
     if request.method == 'GET':
         form: forms.ModelForm = account_forms.UpdateUserNameAndPhoneNumberForm(instance=request.user)
@@ -138,6 +149,7 @@ def profile_account_details(request):
     return render(request, 'account/authenticated/profile_account_details.html', context=context)
 
 
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class MyPasswordChangeForm(PasswordChangeView):
     form_class = account_forms.PasswordChangingForm
     template_name = 'account/authenticated/profile_account_password.html'
@@ -149,7 +161,9 @@ class MyPasswordChangeForm(PasswordChangeView):
         return context
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
+@require_http_methods(["GET", "POST"])
 def profile_investor(request):
     stocks_symbols_data: dict[list] = data_management.get_stocks_from_json_file()
     styled_stocks_symbols_data: dict[list] = data_management.get_styled_stocks_symbols_data(
@@ -173,13 +187,8 @@ def profile_investor(request):
             )
             if form.is_valid():
                 investments: QuerySet[Investment] = Investment.objects.filter(investor_user=investor_user)
-                is_latest_user_investment_active: bool = False
                 if len(investments) > 0:
-                    latest_user_investment: Investment = Investment.objects.filter(mode=Investment.Mode.USER).first().status
-                    is_latest_user_investment_active = latest_user_investment == Investment.Status.ACTIVE
-                if is_latest_user_investment_active:
-                    latest_investment: Investment = investments.first()
-                    if latest_investment.stocks_collection_number != int(form.cleaned_data['stocks_collection_number']):
+                    if investments.last().stocks_collection_number != int(form.cleaned_data['stocks_collection_number']):
                         questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
                         questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
                         (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
@@ -189,17 +198,20 @@ def profile_investor(request):
                             stocks_collection_number=investor_user.stocks_collection_number,
                             questionnaire_a=questionnaire_a,
                         )
+                        # add "robot" investment as one investment with amount of total investments + profit
                         data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio, investments)
                         # Update Investments' Data
                         affected_investments: int = 0
-                        for investment in investments:
-                            if investment.make_investment_inactive() is False:
-                                # In this case we should not continue iterating over the new-to-old-sorted investments
-                                break
-                            else:
-                                if investment.mode == Investment.Mode.USER:
-                                    affected_investments += 1
-                                investment.save()
+                        if len(investments) > 0:
+                            for investment in investments:
+                                if investment.make_investment_inactive() is False:
+                                    # In this case we should not continue iterating over the new-to-old-sorted
+                                    # investments
+                                    break
+                                else:
+                                    if investment.mode == Investment.Mode.USER:
+                                        affected_investments += 1
+                                    investment.save()
                         # Update Form Data
                         form.save()
                         # Update InvestorUser data
@@ -211,7 +223,9 @@ def profile_investor(request):
                         investor_user.annual_sharpe = annual_sharpe
                         investor_user.save()
                         # Continue
-                        if affected_investments == 1:
+                        if affected_investments == 0:
+                            pass
+                        elif affected_investments == 1:
                             messages.success(
                                 request,
                                 'Your account details have been updated successfully.\n'
@@ -236,13 +250,26 @@ def profile_investor(request):
                             'title': "Update Collections of Stocks' Details",
                         }
                         return render(request, 'account/authenticated/profile_investor.html', context=context)
-                else:
+                else:  # there are no investments
+                    # Update Form Data
+                    form.save()
+                    # Update InvestorUser data
+                    investor_user.stocks_collection_number = form.cleaned_data['stocks_collection_number']
+                    investor_user.save()
                     messages.info(
                         request,
                         'Your account details have been updated successfully.\n'
                         "No investments with your previous stocks' collection found, thus no stocks are affected."
                     )
                     return redirect('capital_market_algorithm_preferences_form')
+            else:
+                messages.info(
+                    request,
+                    'Your account details have been updated successfully.\n'
+                    "No investments with your previous stocks' collection found, thus no stocks are affected."
+                )
+                return redirect('capital_market_algorithm_preferences_form')
+
         else:
             raise BadRequest
     except Http404:
@@ -258,6 +285,7 @@ def profile_investor(request):
 
 
 # Currently irrelevant
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def image_upload(request):
     if request.method == "POST" and request.FILES["image_file"]:
         image_file = request.FILES["image_file"]

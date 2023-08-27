@@ -139,4 +139,8 @@ runserver.log
 .idea/misc.xml
 
 # Static files
-static/img/user/*
+app/static/img/user/*
+app/static/img/research/*
+
+# Secret files
+app/secret/*

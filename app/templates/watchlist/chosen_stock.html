@@ -29,6 +29,31 @@
           <td>
             <img class="img-fluid" src="{% static bb_strategy_img_name %}" alt="BBS Strategy Graph of {{ symbol }}" name="BB Strategy Graph of {{ symbol }}">
           </td>
+        </tr>
+        <tr>
+          <th scope="row">
+            More statistics details
+          </th>
+          <td>
+            <a href="{{ more_statistics }}" target="_blank"></a>
+          </td>
+        </tr>
+      <tr>
+          <th scope="row">
+            Links
+          </th>
+          <td>
+            <a href="{{ links_name }}" target="_blank">links of {{ symbol }}</a>
+          </td>
+        </tr>
+      <tr>
+          <th scope="row">
+            Conversation
+          </th>
+          <td>
+            <a href="{{ conversation }}" target="_blank">conversation of {{ symbol }}</a>
+          </td>
+        </tr>
       </tbody>
     </table>
   {% endif %}

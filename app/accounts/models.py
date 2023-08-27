@@ -44,6 +44,12 @@ class CustomUser(AbstractUser):
 
     objects = UserManager()
 
+    class Meta:
+        app_label = 'accounts'
+        db_table = 'CustomUser'
+        verbose_name = 'Custom User'
+        verbose_name_plural = 'Custom User'
+
     def save(self, *args, **kwargs):
         self.username = self.email
         super().save(*args, **kwargs)
@@ -51,17 +57,11 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.email
 
-    class Meta:
-        app_label = 'accounts'
-        db_table = 'CustomUser'
-        verbose_name = 'Custom User'
-        verbose_name_plural = 'Custom User'
-
 
 class InvestorUser(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
     user = models.OneToOneField(CustomUser, on_delete=models.RESTRICT)
-    risk_level = models.IntegerField(validators=[MinValueValidator(RISK_MIN), MaxValueValidator(RISK_MAX)])
+    risk_level = models.PositiveSmallIntegerField(validators=[MinValueValidator(RISK_MIN), MaxValueValidator(RISK_MAX)])
     total_investment_amount = models.IntegerField()
     total_profit = models.IntegerField(default=0)
     stocks_collection_number = models.CharField(max_length=1, default='1')
@@ -82,3 +82,6 @@ class InvestorUser(models.Model):
         db_table = 'InvestorUser'
         verbose_name = 'Investor User'
         verbose_name_plural = 'Investor User'
+
+    def __str__(self):
+        return self.user.email

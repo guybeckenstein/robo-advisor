@@ -13,15 +13,13 @@ services:
       - .env.dev
     depends_on:
       - db
-    restart: always
   db:
     image: postgres:15.4
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     container_name: Postgres_Container
     env_file:
-      - .env.dev
-    restart: always
+      - .env.dev.db
 
 volumes:
   postgres_data:

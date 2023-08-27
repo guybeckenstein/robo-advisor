@@ -7,6 +7,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
+from django.views.decorators.http import require_http_methods
 
 from service.util import web_actions
 from service.util import data_management
@@ -25,6 +26,7 @@ def about(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def administrative_tools_form(request):
     if request.user.is_superuser is False:
         raise Http404
@@ -70,6 +72,7 @@ def administrative_tools_form(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def capital_market_algorithm_preferences_form(request):
     try:
         preferences = QuestionnaireA.objects.get(user=request.user)
@@ -112,6 +115,7 @@ def capital_market_algorithm_preferences_form(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def capital_market_investment_preferences_form(request):
     try:
         questionnaire_a = get_object_or_404(QuestionnaireA, user=request.user)
@@ -223,7 +227,7 @@ def capital_market_investment_preferences_form(request):
                 )
             # Frontend
             web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
-            return redirect('homepage')
+            return redirect('profile_portfolio')
 
         else:  # CREATE and UPDATE
             context = {

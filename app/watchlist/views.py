@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import BadRequest
 from django.db.models import QuerySet
 from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
 from matplotlib import pyplot as plt
 
 from service.config import settings
@@ -13,6 +14,7 @@ from watchlist.models import TopStock
 
 
 @login_required
+@require_http_methods(["GET"])
 def discover_stocks_form(request):
     if request.method == 'GET':
         form: forms.ModelForm = DiscoverStocksForm()
@@ -27,6 +29,7 @@ def discover_stocks_form(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def chosen_stock(request):
     if request.method == 'GET':
         form: forms.ModelForm = DiscoverStocksForm()
@@ -64,7 +67,11 @@ def chosen_stock(request):
         'symbol': symbol,
         'bb_strategy_img_name': f'{settings.RESEARCH_IMAGES}{symbol}_bb_strategy.png',
         'forecast_stock_img_name': f'{settings.RESEARCH_IMAGES}{symbol}_forecast.png',
-    }
+        'more_statistics': 'will be completed later',
+        'links_name': f"https://finance.yahoo.com/quote/{symbol}/?p = {symbol}",
+        'conversation': f"https://finance.yahoo.com/quote/{symbol}/community?p = {symbol}",
+
+    }  # TODO : fix israeli stocks links and conversation
     return render(request, 'watchlist/chosen_stock.html', context=context)
 
 

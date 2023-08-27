@@ -13,3 +13,6 @@ class TopStock(models.Model):
         ordering = ['sector_name']
         verbose_name = 'Top Stock'
         verbose_name_plural = 'Top Stock'
+
+    def __str__(self):
+        return f'{self.sector_name}'

@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     # Basic user API
-    path('sign-up/', views.SignUpView.as_view(), name='signup'),
+    path('signup/', views.SignUpView.as_view(), name='signup'),
     path('login/', views.HtmxLoginView.as_view(), name='account_login'),
     path('logout/', views.logout_view, name='account_logout'),
     # Profile API

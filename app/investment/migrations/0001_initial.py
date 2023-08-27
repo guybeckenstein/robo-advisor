@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "stocks_collection_number",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         default=1,
                         validators=[
                             django.core.validators.MinValueValidator(1),

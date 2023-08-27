@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "answer_1",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(1),
                             django.core.validators.MaxValueValidator(3),
@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "answer_2",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(1),
                             django.core.validators.MaxValueValidator(3),
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "answer_3",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(1),
                             django.core.validators.MaxValueValidator(3),
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "answers_sum",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(3),
                             django.core.validators.MaxValueValidator(9),
@@ -106,7 +106,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "ml_answer",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(0),
                             django.core.validators.MaxValueValidator(1),
@@ -115,7 +115,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "model_answer",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(0),
                             django.core.validators.MaxValueValidator(1),

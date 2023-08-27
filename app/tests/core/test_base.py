@@ -16,7 +16,6 @@ class TestBase:
         # Navigation Bar & Hello message
         helper_methods.assert_attributes(response, attributes=[
             'Home', 'About', 'Profile', 'Investments', 'Capital Market Form', 'Admin', 'Administrative Tools', 'Logout',
-            'Hello', 'Test User'
         ])
 
     def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
@@ -25,7 +24,7 @@ class TestBase:
         )
         # Navigation Bar & Hello message
         helper_methods.assert_attributes(response, attributes=[
-            'Home', 'About', 'Profile', 'Investments', 'Capital Market Form', 'Logout', 'Hello', 'Test User'
+            'Home', 'About', 'Profile', 'Investments', 'Capital Market Form', 'Logout',
         ])
 
     def test_successful_get_request_as_guest(self, client: Client):
@@ -33,4 +32,4 @@ class TestBase:
             client, url_name='homepage', template_src='core/homepage.html'
         )
         # Navigation Bar & Hello message
-        helper_methods.assert_attributes(response, attributes=['Home', 'About', 'Sign Up', 'Login', 'Hello', 'guest'])
+        helper_methods.assert_attributes(response, attributes=['Home', 'About', 'Sign Up', 'Login', ])

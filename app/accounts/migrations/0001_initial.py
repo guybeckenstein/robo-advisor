@@ -114,7 +114,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "risk_level",
-                    models.IntegerField(
+                    models.PositiveSmallIntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(1),
                             django.core.validators.MaxValueValidator(3),

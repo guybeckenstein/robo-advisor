@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
         ('watchlist', '0001_initial'),
     ]
 
-    def generate_team_members_data(apps, schema_editor):
+    def generate_watchlist_data(apps, schema_editor):
         test_data: list = helpers.get_sectors_names_list()
         with transaction.atomic():
             for i, sector_name in enumerate(test_data):
@@ -30,5 +30,5 @@ class Migration(migrations.Migration):
             team_member.save()
 
     operations = [
-        migrations.RunPython(generate_team_members_data),
+        migrations.RunPython(generate_watchlist_data),
     ]

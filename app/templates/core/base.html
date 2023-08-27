@@ -4,6 +4,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href=https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css rel="stylesheet">
     <script src=https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js></script>
@@ -12,7 +13,6 @@
     <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <script src="{% static 'js/default_date.js' %}"></script>
-    <script src="{% static 'js/footer.js' %}"></script>
     {% block extra_js %}
     {% endblock %}
     <link rel="icon" type="image/x-icon" href="{% static 'img/Logo.png' %}">
@@ -28,10 +28,17 @@
   </head>
   <body>
     <!-- htmx -->
-    <script>
+    <script type="text/javascript">
       document.body.addEventListener('htmx:configRequest', (event) => {
         event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
       })
+    </script>
+    <!-- Alerts -->
+    <script type="text/javascript">
+      setTimeout(function () {
+        // Closing the alert
+        $('#alert').alert('close');
+      }, 5000);
     </script>
 
     <div class="elements-container d-flex flex-column vh-100">
@@ -94,26 +101,6 @@
         {% block content %}
         {% endblock %}
       </main>
-      <!-- Footer -->
-<!--      <footer class="py-3">-->
-<!--        <p>-->
-<!--          <span>Hello</span>-->
-<!--          {% if user.is_authenticated %}-->
-<!--            <span class="greeting">{{ user.first_name | title }} {{ user.last_name | title }}</span>-->
-<!--          {% else %}-->
-<!--            <span class="greeting">guest</span>-->
-<!--          {% endif %}-->
-<!--          <span>-->
-<!--            !-->
-<!--          </span>-->
-<!--        </p>-->
-<!--      </footer>-->
     </div>
   </body>
 </html>
-<script type="text/javascript">
-  setTimeout(function () {
-    // Closing the alert
-    $('#alert').alert('close');
-  }, 5000);
-</script>
