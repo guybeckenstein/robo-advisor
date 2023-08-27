@@ -218,3 +218,38 @@ svg {
 	margin-left: 40px;
 	margin-right: 10px;
 }
+
+.switch-img {
+    width: 32px;
+    height: 32px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, .5);
+    background-color: rgba(255, 255, 255, .6);
+	transition: 0.3s;
+	transition-property: background-color box-shadow;
+}
+
+.switch-img:hover {
+    background-color: rgba(255, 255, 255, .9);
+}
+
+.switch-img:active {
+	background-color: rgb(100, 100, 100);
+    box-shadow: 0px 0px 2px rgb(0, 0, 0);
+	fill: white;
+}
+
+.capital-market-disabled-button {
+    width: 32px;
+    height: 32px;
+    box-shadow: 0px 0px 1px rgba(0, 0, 0, 1);
+    background-color: rgba(255, 255, 255, .6);
+	transition: 0.3s;
+	transition-property: background-color box-shadow;
+    opacity: 0.5;
+}
+
+.capital-market-carousel {
+    border: 0px none;
+    background: none;
+    position: absolute;
+}

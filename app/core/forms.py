@@ -104,12 +104,30 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     f'<img src="{first_graph}">'
                                                     f'</div>')
         second_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/three_portfolios.png"
-        self.fields['answer_3'].label = format_html('<span class="capital-market-form-label">'
-                                                    'Question #3: What is your preferable graph?'
-                                                    '</span>'
-                                                    f'<div class="capital-market-form-label capital-market-form-img">'
-                                                    f'<img class="capital-market-form-img" src="{second_graph}">'
-                                                    f'</div>')
+        self.fields['answer_3'].label = format_html(
+            '<span class="capital-market-form-label">'
+            'Question #3: What is your preferable graph?'
+            '</span>'
+            '<div class="capital-market-form-label capital-market-form-img position-relative">'
+            f'<img class="capital-market-form-img" id="capital-market-img" src="{second_graph}">'
+            '<div class="position-absolute top-50" style="height: 100%; width: 100%;">'
+            '<button type="button" class="capital-market-carousel carousel-prev" aria-label="" style="left: 0;">'
+            '<svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">'
+            '<path d="M73.7 96a4 4 0 0 1-2.9-1.2L40 64l30.8-30.8a4 4 0 0 1 '
+            '5.7 5.6L51.3 64l25.2 25.2a4 4 0 0 1-2.8 6.8z">'
+            '</path>'
+            '</svg>'
+            '</button>'
+            '<button type="button" class="capital-market-carousel carousel-next" aria-label="" style="right: 0;">'
+            '<svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">'
+            '<path d="M54.3 96a4 4 0 0 1-2.8-6.8L76.7 64 51.5 38.8a4 4 0 0 1 '
+            '5.7-5.6L88 64 57.2 94.8a4 4 0 0 1-2.9 1.2z">'
+            '</path>'
+            '</svg>'
+            '</button>'
+            '</div>'
+            '</div>'
+        )
 
         main_header = '<h1 style="font-weight: 900;">Capital Market Preferences Form - Investments</h1>'
         if form_type == 'create':
@@ -154,11 +172,15 @@ class InvestmentPreferencesForm(forms.ModelForm):
         # Saves two graphs
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
         data_management.plot_distribution_of_portfolio(yields, sub_folder=sub_folder)
+        plt.clf()
+        plt.cla()
         plt.close()
 
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )
+        plt.clf()
+        plt.cla()
         plt.close()
 
     class Meta:

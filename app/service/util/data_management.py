@@ -493,6 +493,8 @@ def plot_research_graphs(data_tuple_list: list, intersection_data_list: list, se
     path = settings.RESEARCH_IMAGES
     research_plt = graph_plot_methods.research_graphs(data_tuple_list, intersection_data_list)
     graph_image_methods.save_graph(research_plt, path + "top_stocks_"f'{sector_name}')
+    plt.clf()
+    plt.cla()
     plt.close()
 
 
@@ -523,6 +525,8 @@ def save_user_portfolio(user: User) -> None:
     )
 
     graph_image_methods.save_graph(plt_sectors_component, file_name=f'{curr_user_directory}/sectors_weights_graph')
+    plt.clf()
+    plt.cla()
     plt.close()
 
     # Table of stocks weights
@@ -557,6 +561,8 @@ def save_user_portfolio(user: User) -> None:
         total_change=total_change, sectors=portfolio.sectors, excepted_returns=excepted_returns
     )
     graph_image_methods.save_graph(plt_yield_graph, file_name=f'{curr_user_directory}/estimated_yield_graph')
+    plt.clf()
+    plt.cla()
     plt.close()
 
 
