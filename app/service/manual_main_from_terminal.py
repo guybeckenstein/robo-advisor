@@ -119,7 +119,6 @@ if __name__ == '__main__':
                 stock_name + operation + '.png')
 
         elif selection == 6:  # discover good stocks
-            # TODO show intersection
             filters = [0, 1000000000000, 4, 30, 0.5, 1500]
             sector_name: str = data_management.get_sector_name_from_user()
             data_tuple = research.find_good_stocks(sector_name)
