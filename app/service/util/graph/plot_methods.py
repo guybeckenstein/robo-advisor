@@ -274,31 +274,3 @@ def distribution_of_stocks(stock_names, pct_change_table) -> plt:
     return plt
 
 
-def research_graphs(data_stats_tuples, intersection_data_list) -> plt:
-    # TODO : display intersection_data_list
-    # Define metric names for the x-axis
-    # intersection_data_list_labels = ["top stocks"]
-    labels = [
-        'Total Return Percentage',
-        'Total Min Volatility Percentage',
-        'Total Sharpe',
-        'Annual Return Percentage',
-        'Annual Top Min Volatility Percentage',
-        'Annual Sharpe',
-        'Monthly Return Percentage',
-        'Monthly Volatility Percentage',
-        'Monthly Sharpe',
-        'Forecast Return Percentage',
-        'Forecast Volatility Percentage',
-        'Forecast Sharpe'
-    ]
-    plt.figure(figsize=FIG_SIZE4)
-    for i in range(len(data_stats_tuples)):
-        plt.subplot(4, 3, i + 1)
-        plt.subplots_adjust(bottom=BOTTOM)
-        plt.title(labels[i], fontsize=12, pad=10)
-        plt.grid(True)
-        plt.bar(data_stats_tuples[i].index[0:5], data_stats_tuples[i][0:5].values)
-        plt.tight_layout()
-
-    return plt

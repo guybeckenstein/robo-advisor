@@ -457,6 +457,8 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
         pct_change_table, _, _ = helpers.update_daily_change_with_machine_learning(
             pct_change_table, closing_prices_table.index, models_data
         )
+    if type(model_name) == int or model_name.isnumeric():
+        model_name = settings.MODEL_NAME[model_name]
 
     three_levels_df_tables: list[pd.DataFrame] = [
         get_df_table(is_machine_learning, model_name, risk, closing_prices_table_path)
@@ -486,16 +488,13 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
         )
 
     graph_image_methods.save_graph(plt_instance,
-                                   f'{settings.GRAPH_IMAGES}{sub_folder}{model_name}_all_options')
+                                   f'{settings.GRAPH_IMAGES}{sub_folder}all_options')
 
 
-def plot_research_graphs(data_tuple_list: list, intersection_data_list: list, sector_name: int):
-    path = settings.RESEARCH_IMAGES
-    research_plt = graph_plot_methods.research_graphs(data_tuple_list, intersection_data_list)
-    graph_image_methods.save_graph(research_plt, path + "top_stocks_"f'{sector_name}')
-    plt.clf()
-    plt.cla()
-    plt.close()
+def plot_research_graphs(data_tuple_list: list, intersection_data, sector_name: str, labels: list[str]) -> None:
+    prefix_str = "Top Stocks"
+    path = f'{settings.RESEARCH_IMAGES}{prefix_str} {sector_name}'
+    draw_table._draw_research_table(path, data_tuple_list, intersection_data, labels)
 
 
 def save_user_portfolio(user: User) -> None:
@@ -846,7 +845,6 @@ def get_basic_data_from_user() -> tuple[int, int, str]:
 def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, tables) -> int:
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
         pct_change_table, yield_list = tables
-
     # question #1
     string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
     first_question_score = get_score_by_answer_from_user(string_to_show)

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const images = ['/static/img/graphs/1/11/three_portfolios.png', '/static/img/graphs/1/11/Gini_all_options.png'];
+  const images = ['/static/img/graphs/1/11/three_portfolios.png', '/static/img/graphs/1/11/all_options.png'];
   let currentImageIndex = 0;
 
   const prevButton = document.querySelector('.carousel-prev');

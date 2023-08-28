@@ -119,11 +119,11 @@ if __name__ == '__main__':
                 stock_name + operation + '.png')
 
         elif selection == 6:  # discover good stocks
-            filters = [0, 1000000000000, 4, 30, 0.5, 1500]
+            filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
             sector_name: str = data_management.get_sector_name_from_user()
-            data_tuple = research.find_good_stocks(sector_name)
-            sorted_data_tuple, intersection = research.sort_good_stocks(data_tuple, filters)
-            data_management.plot_research_graphs(sorted_data_tuple, intersection, sector_name)
+            intersection = research.get_stocks_stats(sector_name)
+            sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(intersection, filters)
+            data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name, research.labels)
             prefix_str = 'top_stocks_'
 
             # show result
@@ -150,13 +150,7 @@ if __name__ == '__main__':
                 settings.GRAPH_IMAGES + sub_folder + settings.MODEL_NAME[model_option] + '_all_options' + '.png')
 
         elif selection == 9:  # dynamic commands for programmers
-            # save tables
-            # helpers.save_usa_indexes_table()
-            # helpers.save_all_stocks()
-            # sector = "US stocks indexes"
-            # research.find_good_stocks()
-            # filters = [0, 1000000000000, 4, 30, 0.5, 1500]
-            # all_data_tuple = research.get_all_best_stocks(filters)
+            all_data_tuple, intersection = research.get_all_best_stocks(settings.RESEARCH_FILTERS)
             pass
 
         else:
