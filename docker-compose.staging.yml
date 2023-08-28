@@ -17,7 +17,7 @@ services:
     depends_on:
       - db
   db:
-    image: postgres:15.4
+    image: postgres:15.3
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     container_name: Postgres_Container
