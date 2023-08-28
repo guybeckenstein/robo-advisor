@@ -110,7 +110,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
             '</span>'
             '<div class="capital-market-form-label capital-market-form-img position-relative">'
             f'<img class="capital-market-form-img" id="capital-market-img" src="{second_graph}">'
-            '<div class="position-absolute top-50" style="height: 100%; width: 100%;">'
+            '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
             '<button type="button" class="capital-market-carousel carousel-prev" aria-label="" style="left: 0;">'
             '<svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">'
             '<path d="M73.7 96a4 4 0 0 1-2.9-1.2L40 64l30.8-30.8a4 4 0 0 1 '
