@@ -196,7 +196,8 @@ class Analyze:
             next_unix += SINGLE_DAY
             df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df, forecast_out=forecast_out)
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df,
+                                                                                           forecast_out=forecast_out)
         return df, forecast_with_historical_returns_annual, expected_returns
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
@@ -244,7 +245,8 @@ class Analyze:
 
         longdouble: np.longdouble = np.longdouble(254)
         excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset:].mean()))) - 1) * 100
-        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.mean()))) - 1) * 100
+        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(
+            longdouble * np.log1p(yhat.mean()))) - 1) * 100
         if self._is_closing_prices_mode:
             # Plot the forecast
             model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
@@ -325,7 +327,7 @@ def update_daily_change_with_machine_learning(
                 is_closing_prices_mode=closing_prices_mode
             )
             if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:  # Linear Regression
-                df, annual_return_with_forecast, excepted_returns =\
+                df, annual_return_with_forecast, excepted_returns = \
                     analyze.linear_regression_model(test_size_machine_learning)
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
                 df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
@@ -448,7 +450,7 @@ def get_sectors_data_from_file():
 def set_sectors(stocks_symbols: list[object]) -> list[Sector]:
     """
     For each stock symbol, it checks for which sector does it belong.
-    :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol
+    :return: It returns a list of sectors.json.json with the relevant stocks within each sector. Subset of the stock symbol
     """
     sectors: list = []
     sectors_data: [list[dict[str, str, list[object]]]] = get_sectors_data_from_file()
@@ -678,66 +680,6 @@ def convert_company_name_to_israeli_security_number(companyName: str) -> str:
     return result[0]
 
 
-def save_all_stocks():
-    path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
-    sectors_data = get_sectors_data_from_file()
-    # Assuming you have lists named list_symbol, list_sector, and list_description
-    list_symbol = []
-    list_sector = []
-    list_description = []
-
-    # Assuming you have lists named list_symbol, list_sector, and list_description
-
-    for i in range(len(sectors_data)):
-        sector_name = sectors_data[i]["name"]
-        stocks_data = sectors_data[i]["stocks"]
-
-        for stock_symbol in stocks_data:
-            list_symbol.append(stock_symbol)
-            list_sector.append(sector_name)
-            description = get_stocks_descriptions([stock_symbol], is_reverse_mode=False)[1]
-            list_description.append(description)
-
-    data = list(zip(list_symbol, list_sector, list_description))
-
-    with open(path, 'w', newline='', encoding='utf-8') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Symbol', 'sector', 'description'])
-
-        # Write data rows
-        for row in data:
-            csv_writer.writerow(row)
-
-    print("CSV file created successfully!")
-
-
-def save_usa_indexes_table():  # dont delete it
-    sectors_data = get_sectors_data_from_file()
-    stock_data_list = []
-    # create table
-    for i in range(3, 6):
-        stocks = sectors_data[i]["stocks"]
-        for j in range(len(stocks)):
-            stock_info = yf.Ticker(stocks[j]).info
-            stock_data_list.append(stock_info)
-
-    # Create a set of all keys present in the stock data dictionaries
-    all_keys = set()
-    for stock_data in stock_data_list:
-        all_keys.update(stock_data.keys())
-
-    # Define the CSV file path
-    csv_file_path = settings.CONFIG_RESOURCE_LOCATION + 'usa_indexes.csv'
-
-    # Write the data to a CSV file
-    with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=all_keys)
-
-        writer.writeheader()
-        for stock_data in stock_data_list:
-            writer.writerow(stock_data)
-
-
 class AwsInstance:
     def __init__(self):
         self._region_name = aws.REGION_NAME
@@ -818,7 +760,7 @@ def currency_exchange(from_currency="USD", to_currency="ILS"):
     start_date = data_time.now().strftime('%Y-%m-%d')
     end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
 
-    ticker = f'{from_currency}{to_currency}=X' # Yahoo Finance symbol
+    ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol
     data = yf.download(ticker, start=start_date, end=end_date)
 
     if not data.empty:
@@ -826,3 +768,68 @@ def currency_exchange(from_currency="USD", to_currency="ILS"):
         return latest_exchange_rate
     else:
         raise ValueError("No exchange rate data available for the given date range.")
+
+
+def save_all_stocks():  # dont delete it
+    path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
+    sectors_data = get_sectors_data_from_file()
+    # Assuming you have lists named list_symbol, list_sector, and list_description
+    list_symbol = []
+    list_sector = []
+    list_description = []
+
+    # Assuming you have lists named list_symbol, list_sector, and list_description
+
+    for i in range(len(sectors_data)):
+        sector_name = sectors_data[i]["name"]
+        stocks_data = sectors_data[i]["stocks"]
+
+        for stock_symbol in stocks_data:
+            list_symbol.append(stock_symbol)
+            list_sector.append(sector_name)
+            description = get_stocks_descriptions([stock_symbol], is_reverse_mode=False)[1]
+            list_description.append(description)
+
+    data = list(zip(list_symbol, list_sector, list_description))
+
+    with open(path, 'w', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['Symbol', 'sector', 'description'])
+
+        # Write data rows
+        for row in data:
+            csv_writer.writerow(row)
+
+    print("CSV file created successfully!")
+
+
+def save_usa_indexes_table():  # dont delete it
+    sectors_data = get_sectors_data_from_file()
+    stock_data_list = []
+    # create table
+    for i in range(3, 6):
+        stocks = sectors_data[i]["stocks"]
+        for j in range(len(stocks)):
+            stock_info = yf.Ticker(stocks[j]).info
+            stock_data_list.append(stock_info)
+
+    # Create a set of all keys present in the stock data dictionaries
+    all_keys = set()
+    for stock_data in stock_data_list:
+        all_keys.update(stock_data.keys())
+
+    # Define the CSV file path
+    csv_file_path = settings.CONFIG_RESOURCE_LOCATION + 'usa_indexes.csv'
+
+    # Write the data to a CSV file
+    with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=all_keys)
+
+        writer.writeheader()
+        for stock_data in stock_data_list:
+            writer.writerow(stock_data)
+
+
+def save_json_data(SECTORS_JSON_NAME, sectors_json_file):
+    with open(SECTORS_JSON_NAME + ".json", 'w', encoding='utf-8') as f:
+        json.dump(sectors_json_file, f, ensure_ascii=False, indent=4)

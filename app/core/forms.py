@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 
 from accounts.models import InvestorUser
 from service.util import data_management
+from service.config import settings as settings_service
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 
@@ -104,6 +105,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     f'<img src="{first_graph}">'
                                                     f'</div>')
         second_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/three_portfolios.png"
+        three_graphs = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
         self.fields['answer_3'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #3: What is your preferable graph?'
@@ -169,16 +171,26 @@ class InvestmentPreferencesForm(forms.ModelForm):
         )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yields = db_tuple
-        # Saves two graphs
+        # Saves three graphs
+        # distribution graph
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
         data_management.plot_distribution_of_portfolio(yields, sub_folder=sub_folder)
         plt.clf()
         plt.cla()
         plt.close()
-
+        # three portfolios graph
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )
+        plt.clf()
+        plt.cla()
+        plt.close()
+        # stat model graph
+        closing_prices_table_path = (settings_service.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+                                     + stocks_collection_number + '/')
+        data_management.plot_stat_model_graph(
+            stocks_symbols, int(ml_answer), int(model_answer), settings_service.NUM_OF_YEARS_HISTORY,
+            closing_prices_table_path, sub_folder=sub_folder)
         plt.clf()
         plt.cla()
         plt.close()

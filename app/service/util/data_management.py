@@ -104,7 +104,7 @@ def update_three_level_data_frame_tables(machine_learning_opt, model_name, stock
     for i, level_of_risk in enumerate(settings.LEVEL_OF_RISK_LIST):
         update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
                                          stocks_symbols=stocks_symbols,
-                                         sectors=sectors_list, levelOfRisk=level_of_risk,
+                                         sectors=sectors_list, risk_level=level_of_risk,
                                          max_percent_commodity=limit_percent_commodity_list[i],
                                          max_percent_stocks=limit_percent_stocks_list[i],
                                          closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
@@ -443,6 +443,7 @@ def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') 
 
 def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
                           num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
+
     sectors: list = set_sectors(stocks_symbols)
     models_data = helpers.get_collection_json_data()
     num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
@@ -518,7 +519,7 @@ def save_user_portfolio(user: User) -> None:
     portfolio: Portfolio = user.portfolio
     stocks_symbols: list[str] = portfolio.stocks_symbols
 
-    # pie chart of sectors & sectors weights
+    # pie chart of sectors.json.json & sectors.json.json weights
     plt_sectors_component = graph_plot_methods.sectors_component(
         weights=portfolio.get_sectors_weights(), names=portfolio.get_sectors_names()
     )
@@ -538,7 +539,7 @@ def save_user_portfolio(user: User) -> None:
         header_text=header_text
     )
 
-    # Total yield graph with sectors weights
+    # Total yield graph with sectors.json.json weights
     table: pd.DataFrame = portfolio.pct_change_table
     table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
     analyze: Analyze = Analyze(
@@ -842,9 +843,14 @@ def get_basic_data_from_user() -> tuple[int, int, str]:
     return is_machine_learning, model_option, stocks_collection_number
 
 
-def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, tables) -> int:
+def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, tables, is_machine_learning,
+                                                                   model_option, stocks_symbols,
+                                                                   stocks_collection_number) -> int:
+
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
         pct_change_table, yield_list = tables
+    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+                                 + stocks_collection_number + '/')
     # question #1
     string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
     first_question_score = get_score_by_answer_from_user(string_to_show)
@@ -864,6 +870,16 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
         three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
     )
     plot_image(settings.GRAPH_IMAGES + sub_folder + 'three_portfolios.png')
+
+    # display stat model graph (matplotlib)
+    plot_stat_model_graph(
+        stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
+        model_name=settings.MODEL_NAME[model_option], num_of_years_history=settings.NUM_OF_YEARS_HISTORY,
+        closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder)
+
+    # show result
+    plot_image(settings.GRAPH_IMAGES + sub_folder + 'all_options' + '.png')
+
     third_question_score = get_score_by_answer_from_user(string_to_show)
 
     # calculate level of risk by sum of score

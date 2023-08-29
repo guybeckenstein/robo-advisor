@@ -182,7 +182,7 @@ def download_data_for_research(num_of_years_history: int) -> None:
     """
     Downloading thousands of stocks to csv files - 10 years back
     """
-    sectors_names_list = helpers.get_sectors_names_list()[7:]
+    sectors_names_list = helpers.get_sectors_names_list()[:]
     closing_price_all_sectors_table = pd.DataFrame()
     for i, sector_name in enumerate(sectors_names_list):
         stocks_symbols = helpers.get_stocks_symbols_list_by_sector(sector_name)
@@ -217,7 +217,6 @@ def get_stocks_stats(sector="US stocks indexes") -> list:
                 stat_list = stat_list.iloc[row_selected[count]]
             all_data_lists.append(stat_list)
             count += 1
-    intercection = make_intersection(all_data_lists)
 
     return all_data_lists
 
@@ -398,14 +397,46 @@ def get_closing_price_table_by_sector(sector_name: str):
     return pd.read_csv(settings.RESEARCH_LOCATION + converted_name + ".csv")
 
 
-def get_intersection_table_by_sector(sector_name: str):
+def get_intersection_table_by_sector(sector_name: str = "unified"):
     converted_name = sector_name.replace(" ", "_") + "_intersection"
     return pd.read_csv(settings.RESEARCH_LOCATION + converted_name + ".csv")
 
 
-def get_top_stocks_by_label_and_sector(sector_name: str, label: str, ascending: bool = False, filters=None):
-    pass
+def get_top_stocks_by_label_and_sector(sector_name: str = "unified", label: str = labels[0], ascending: bool = False,
+                                       top_stocks_numbers: int = 10):
+    intersection_table = get_intersection_table_by_sector(sector_name)
+    return intersection_table.sort_values(by=label, ascending=ascending).head(top_stocks_numbers)
 
 
-def update_collections_file():
+def update_collections_file():  # update stocks.json file with the new stocks according to the research
     return None
+
+
+def update_stocks_names_tables():  # update stocks tables with the new stocks according to the research
+    sectors_names = helpers.get_sectors_names_list()  # sectors.json.json.json
+    unified_intersection_data = get_intersection_table_by_sector("unified")  # updated data
+    symbols_list_unified_tables = unified_intersection_data[unified_intersection_data.columns[0]].to_list()
+    all_basics_data = helpers.get_all_stocks_table()
+    # update sectors.json.json.json file
+    sectors_json_file = helpers.get_json_data(settings.SECTORS_JSON_NAME)
+    for i, sector_name in enumerate(sectors_names):
+        stocks_list = sectors_json_file['sectorsList']['result'][i]['stocks']
+        for stock in stocks_list:
+            if str(stock) not in symbols_list_unified_tables:
+                print("stock not in unified_intersection_data: ", stock)
+                stocks_list.remove(stock)
+                # Remove rows from all_basics_data
+                all_basics_data = all_basics_data[all_basics_data['Symbol'] != str(stock)]
+        sectors_json_file['sectorsList']['result'][i]['stocks'] = stocks_list
+    # Save the updated sectors.json.json.json file
+    helpers.save_json_data(settings.SECTORS_JSON_NAME, sectors_json_file)
+    # Save the updated all_basics_data DataFrame back to CSV
+    all_basics_data.to_csv(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv", index=False)
+
+
+
+
+
+
+
+

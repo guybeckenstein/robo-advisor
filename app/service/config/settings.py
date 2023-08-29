@@ -14,7 +14,7 @@ if 'service/' in DJANGO_DIR:
     DJANGO_DIR = DJANGO_DIR[:(0 - len('service/'))]
 CONFIG = 'config/'
 CONFIG_RESOURCE_LOCATION = BASE_SERVICE_DIR + CONFIG
-SECTORS_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'sectors'  # sectors json file
+SECTORS_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'sectors'  # sectors.json.json json file
 INDICES_LIST_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'indicesList'  # indices list json file
 SECURITIES_LIST_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'securitiesList'  # indices list json file
 # Datasets

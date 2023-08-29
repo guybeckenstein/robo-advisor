@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
             # get data according to risk questionnaire form
             level_of_risk: int = (data_management.get_level_of_risk_according_to_questionnaire_form_from_console
-                                  (sub_folder, tables))
+                                  (sub_folder, tables, is_machine_learning, model_option, stocks_symbols, stocks_collection_number))
 
             # creates new user with portfolio details
             new_portfolio = data_management.create_new_user_portfolio(
@@ -147,11 +147,11 @@ if __name__ == '__main__':
 
             # show result
             data_management.plot_image(
-                settings.GRAPH_IMAGES + sub_folder + settings.MODEL_NAME[model_option] + '_all_options' + '.png')
+                settings.GRAPH_IMAGES + sub_folder + 'all_options' + '.png')
 
         elif selection == 9:  # dynamic commands for programmers
             all_data_tuple, intersection = research.get_all_best_stocks(settings.RESEARCH_FILTERS)
-            pass
+
 
         else:
             break

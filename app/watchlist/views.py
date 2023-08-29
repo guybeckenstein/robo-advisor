@@ -62,6 +62,23 @@ def chosen_stock(request):
         plt.clf()
         plt.cla()
         plt.close()
+
+        overview:str = f"https://finance.yahoo.com/quote/{symbol}/?p = {symbol}"
+        conversation_link:str = f"https://finance.yahoo.com/quote/{symbol}/community?p = {symbol}"
+        more_statistics:str = f"https://finance.yahoo.com/quote/{symbol}/key-statistics?p = {symbol}"
+
+        # israeli stock
+        if type(symbol) == int or symbol.isnumeric():
+            num_of_digits = len(str(symbol))
+            conversation_link = f"https://www.sponser.co.il/Tag.aspx?id={symbol}"
+            if num_of_digits > 3:
+                overview = f"https://market.tase.co.il/he/market_data/security/{symbol}/major_data"
+                more_statistics = f"https://market.tase.co.il/he/market_data/security/{symbol}/statistics"
+            else:
+                overview = f"https://market.tase.co.il/he/market_data/index/{symbol}/major_data"
+                more_statistics = f"https://market.tase.co.il/he/market_data/index/{symbol}/statistics"
+
+
     else:
         raise BadRequest
     context = {
@@ -71,11 +88,11 @@ def chosen_stock(request):
         'symbol': symbol,
         'bb_strategy_img_name': f'{settings.RESEARCH_IMAGES}{symbol}_bb_strategy.png',
         'forecast_stock_img_name': f'{settings.RESEARCH_IMAGES}{symbol}_forecast.png',
-        'more_statistics': 'will be completed later',
-        'links_name': f"https://finance.yahoo.com/quote/{symbol}/?p = {symbol}",
-        'conversation': f"https://finance.yahoo.com/quote/{symbol}/community?p = {symbol}",
+        'more_statistics': more_statistics,
+        'overview': overview,
+        'conversation': conversation_link,
 
-    }  # TODO : fix israeli stocks links and conversation
+    }
     return render(request, 'watchlist/chosen_stock.html', context=context)
 
 

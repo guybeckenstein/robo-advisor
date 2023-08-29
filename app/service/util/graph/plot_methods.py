@@ -70,7 +70,7 @@ def gini_graph(sectors: list[Sector], three_best_sectors_weights, min_variance_p
             min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0], max_portfolios_annual_portfolio.iloc[0]
         ],
         stocks=helpers.MarkowitzAndGini.get_stocks_str(sectors, three_best_sectors_weights),
-        text1='Portfolio Annual',
+        text1='Annual Returns',
         text2='Annual Gini'
     )
 
@@ -221,13 +221,13 @@ def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float
 
 
 def sectors_component(weights: list[float], names: list[str]) -> plt:
-    # TODO: some texts are cut from the image, fix this. Removing `plt.figure(1)` makes the image 50% empty
-    plt.figure(1)
+    plt.figure(figsize=FIG_SIZE4)  # Adjust width and height as needed
     plt.pie(
         x=weights,
         labels=names,
         autopct="%1.1f%%",
         startangle=140,
+
     )
     plt.axis("equal")
     return plt

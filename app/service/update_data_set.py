@@ -1,4 +1,5 @@
-from util import data_management
+from impl.user import User
+from util import data_management, research
 from config import settings
 
 if __name__ == '__main__':
