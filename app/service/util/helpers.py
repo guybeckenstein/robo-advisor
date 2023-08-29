@@ -453,7 +453,7 @@ def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make mo
     sectors_data: [list[dict[str, str, list[object]]]] = get_sectors_data_from_file()
 
     for i in range(len(sectors_data)):
-        curr_sector: Sector = Sector(sectors_data[i]['name'])
+        curr_sector: Sector = Sector(_name=sectors_data[i]['name'])
         for j in range(len(stocks_symbols)):
             if stocks_symbols[j] in sectors_data[i]['stocks']:
                 curr_sector.add_stock(stocks_symbols[j])
@@ -818,7 +818,7 @@ def currency_exchange(from_currency="USD", to_currency="ILS"):
     start_date = data_time.now().strftime('%Y-%m-%d')
     end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
 
-    ticker = f'{from_currency}{to_currency}=X' # Yahoo Finance symbol
+    ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol
     data = yf.download(ticker, start=start_date, end=end_date)
 
     if not data.empty:

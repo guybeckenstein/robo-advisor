@@ -101,10 +101,10 @@ def update_three_level_data_frame_tables(machine_learning_opt, model_name, stock
     limit_percent_commodity_list: list[float] = [limit_percent_low_risk_commodity,
                                                  limit_percent_medium_risk_commodity, 1]
     #  low, medium, high
-    for i, level_of_risk in enumerate(settings.LEVEL_OF_RISK_LIST):
+    for i, risk_level in enumerate(settings.LEVEL_OF_RISK_LIST):
         update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
                                          stocks_symbols=stocks_symbols,
-                                         sectors=sectors_list, levelOfRisk=level_of_risk,
+                                         sectors=sectors_list, risk_level=risk_level,
                                          max_percent_commodity=limit_percent_commodity_list[i],
                                          max_percent_stocks=limit_percent_stocks_list[i],
                                          closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
@@ -134,18 +134,18 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
                 pct_change_table = pct_change_table.drop(stocks_symbols[i], axis=1)
         stocks_symbols = filtered_stocks
 
-    stats_models = StatsModels(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        closing_prices_table=closing_prices_table,
-        pct_change_table=pct_change_table,
+    stats_models: StatsModels = StatsModels(
+        _stocks_symbols=stocks_symbols,
+        _sectors=sectors,
+        _model_name=model_name,
+        _gini_v_value=gini_v_value,
+    )
+    stats_models.check_model_name_and_get_optimal_portfolio_as_dataframe(
         num_por_simulation=num_por_simulation,
         min_num_por_simulation=min_num_por_simulation,
+        pct_change_table=pct_change_table,
         max_percent_commodity=max_percent_commodity,
         max_percent_stocks=max_percent_stocks,
-        model_name=model_name,
-        gini_value=gini_v_value
-
     )
     df: pd.DataFrame = stats_models.df
     df.to_csv(locationForSaving + model_name + '_df_' + risk_level + '.csv')
@@ -166,12 +166,7 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
         )
 
     portfolio = Portfolio(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        risk_level=risk_level,
-        total_investment_amount=investment_amount,
-        stat_model_name=stat_model_name,
-        is_machine_learning=is_machine_learning
+        stocks_symbols, sectors, risk_level, investment_amount, stat_model_name, is_machine_learning
     )
 
     portfolio.update_stocks_data(
@@ -684,12 +679,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path)
     portfolio: Portfolio = Portfolio(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        risk_level=risk_level,
-        total_investment_amount=total_investment_amount,
-        stat_model_name=stat_model_name,
-        is_machine_learning=is_machine_learning,
+        stocks_symbols, sectors, risk_level, total_investment_amount, stat_model_name, is_machine_learning,
     )
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
@@ -705,10 +695,10 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
     portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
                                  annual_volatility, annual_sharpe)
-    curr_user = User(user_id=user_id, name=user_name, portfolio=portfolio)
-    save_user_portfolio(curr_user)
+    user: User = User(_id=user_id, _name=user_name, _portfolio=portfolio)
+    save_user_portfolio(user)
 
-    return curr_user
+    return user
 
 
 def save_investment_to_json_File(user_id, investments):

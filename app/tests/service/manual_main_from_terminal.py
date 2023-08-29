@@ -7,8 +7,8 @@ from service.util import data_management, research
 
 @pytest.mark.django_db
 class TestManualMainFromTerminal:
-    login_id: int = -1
-    login_name: str = 'test'  # data_management.get_name()
+    user_id: int = -1
+    user_name: str = 'test'  # data_management.get_name()
     data_changed = False
     is_machine_learning: int = 1
     model_option: int = 1  # gini
@@ -34,7 +34,7 @@ class TestManualMainFromTerminal:
         level_of_risk = data_management.get_level_of_risk_by_score(sum_of_score)
 
         # creates new user with portfolio details
-        new_portfolio = data_management.create_new_user_portfolio(
+        portfolio = data_management.create_new_user_portfolio(
             stocks_symbols=stocks_symbols,
             investment_amount=0,
             is_machine_learning=self.is_machine_learning,
@@ -43,12 +43,12 @@ class TestManualMainFromTerminal:
             extended_data_from_db=tables,
         )
 
-        user: User = User(user_id=self.login_id,
-                          name=self.login_name,
-                          portfolio=new_portfolio,
-                          stocks_collection_number=self.stocks_collection_number)
+        user: User = User(
+            _id=self.user_id, _name=self.user_name, _portfolio=portfolio,
+            _stocks_collection_number=self.stocks_collection_number
+        )
         try:
-            investments_list = data_management.get_user_investments_from_json_file(self.login_name)
+            investments_list = data_management.get_user_investments_from_json_file(self.user_name)
             data_management.changing_portfolio_investments_treatment_console(user.portfolio, investments_list)
         except Exception as e:
             print(e)
@@ -59,22 +59,22 @@ class TestManualMainFromTerminal:
     def test_add_investment(self):
         investment_amount: int = 500
         if investment_amount is not None:
-            __, investments_list = data_management.add_new_investment(self.login_name, investment_amount)
+            __, investments_list = data_management.add_new_investment(self.user_name, investment_amount)
 
         if self.show_result:
-            data_management.plot_investments_history(self.login_id, investments_list)
+            data_management.plot_investments_history(self.user_id, investments_list)
 
     def test_plot_user_portfolio_graphs(self):
         # TODO: this test fails
         json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
-        collection_number = json_data['usersList'][self.login_name][0]['stocksCollectionNumber']
-        user_instance = data_management.get_user_from_db(self.login_id, self.login_name)
+        collection_number = json_data['usersList'][self.user_name][0]['stocksCollectionNumber']
+        user_instance = data_management.get_user_from_db(self.user_id, self.user_name)
         data_management.save_user_portfolio(user_instance)
 
         if self.show_result:
-            data_management.plot_image(f'{settings.USER_IMAGES}{self.login_id}/sectors_weights_graph.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{self.login_id}/stocks_weights_graph.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{self.login_id}/estimated_yield_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{self.user_id}/sectors_weights_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{self.user_id}/stocks_weights_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{self.user_id}/estimated_yield_graph.png')
 
     def test_forecast_specific_stock(self):
         models_data: dict = data_management.get_models_data_from_collections_file()

@@ -1,47 +1,50 @@
+from dataclasses import dataclass, field
+
 import numpy as np
 import pandas as pd
+
+from service.impl.sector import Sector
 from service.util import helpers
 
 
+@dataclass(init=True, order=False, frozen=False)
 class StatsModels:
+    _model_name: str
+    _gini_v_value: float
+    # Default values
+    _stocks_symbols: list[int | str] = field(default_factory=list)
+    _sectors: list[Sector] = field(default_factory=list)
+    _stock_sectors: list = field(default_factory=helpers.set_stock_sectors(_stocks_symbols, _sectors))
+    _df: pd.DataFrame = field(default=None)
+    # Unused:
+    # _three_best_portfolios: list = field(default=None)
+    # _three_best_stocks_weights: list = field(default=None)
+    # _three_best_sectors_weights: list = field(default=None)
+    # _best_stocks_weights_column: list = field(default=None)
+    # _closing_prices_table: pd.DataFrame = field(default_factory=pd.DataFrame)
 
-    def __init__(
-            self,
-            stocks_symbols,
-            pct_change_table,
-            num_por_simulation,
-            min_num_por_simulation,
-            max_percent_commodity,
-            max_percent_stocks,
-            closing_prices_table=None,
-            sectors=None,
-            model_name=None,
-            gini_value=4
+    @property
+    def df(self) -> pd.DataFrame:
+        return self._df
+
+    def check_model_name_and_get_optimal_portfolio_as_dataframe(
+            self, num_por_simulation: int, min_num_por_simulation: int, pct_change_table: pd.DataFrame,
+            max_percent_commodity: float, max_percent_stocks: list[float]
     ):
-        self._df = None
-        self._three_best_portfolios = None
-        self._three_best_stocks_weights = None
-        self._three_best_sectors_weights = None
-        self._best_stocks_weights_column = None
-        self._stock_sectors = helpers.set_stock_sectors(stocks_symbols, sectors)
-        self._sectors_list = sectors
-        self._model_name = model_name
-        self._closing_prices_table = closing_prices_table
-        self.gini_v_value = gini_value
-        if model_name == "Markowitz":
-            self.get_markowitz_optimal_portfolio_as_dataframe(
-                num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
+        if self._model_name == "Markowitz":
+            self._get_markowitz_optimal_portfolio_as_dataframe(
+                num_por_simulation, min_num_por_simulation, pct_change_table, self._stocks_symbols,
                 max_percent_commodity, max_percent_stocks
             )
         else:
-            self.get_gini_optimal_portfolio_as_dataframe(
-                num_por_simulation, min_num_por_simulation, pct_change_table, stocks_symbols,
+            self._get_gini_optimal_portfolio_as_dataframe(
+                num_por_simulation, min_num_por_simulation, pct_change_table, self._stocks_symbols,
                 max_percent_commodity, max_percent_stocks
             )
 
-    def get_markowitz_optimal_portfolio_as_dataframe(self, num_por_simulation: int, min_num_por_simulation: int,
-                                                     pct_change_table: pd.DataFrame, stocks_symbols: list[str],
-                                                     max_percent_commodity, max_percent_stocks) -> None:
+    def _get_markowitz_optimal_portfolio_as_dataframe(self, num_por_simulation: int, min_num_por_simulation: int,
+                                                      pct_change_table: pd.DataFrame, stocks_symbols: list[str],
+                                                      max_percent_commodity, max_percent_stocks) -> None:
 
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
@@ -126,15 +129,14 @@ class StatsModels:
         # reorder dataframe columns
         self._df = df[column_order]
 
-    def get_gini_optimal_portfolio_as_dataframe(self, num_por_simulation, min_num_por_simulation, pct_change_table,
-                                                stocks_symbols, max_percent_commodity, max_percent_stocks) -> None:
+    def _get_gini_optimal_portfolio_as_dataframe(self, num_por_simulation, min_num_por_simulation, pct_change_table,
+                                                 stocks_symbols, max_percent_commodity, max_percent_stocks) -> None:
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
             if type(symbol) == int:
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
-        v_value = self.gini_v_value
         returns_daily = pct_change_table
         port_portfolio_annual: list = []
         portfolio_gini_annual: list = []
@@ -183,14 +185,14 @@ class StatsModels:
             rank = portfolio_return.rank()
             rank_divided_n = rank / len(rank)  # Rank/N
             one_sub_rank_divided_n = 1 - rank_divided_n  # 1-Rank/N
-            one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (v_value - 1)  # (1-Rank/N)^(V-1)
+            one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (self._gini_v_value - 1)  # (1-Rank/N)^(V-1)
             mue = portfolio_return.mean().tolist()[0]
             x_avg = one_sub_rank_divided_n_power_v_sub_one.mean().tolist()[0]
             portfolio_mue = portfolio_return - mue
             rank_sub_x_avg = one_sub_rank_divided_n_power_v_sub_one - x_avg
             portfolio_mue_mult_rank_x_avg = portfolio_mue * rank_sub_x_avg
             summary = portfolio_mue_mult_rank_x_avg.sum().tolist()[0] / (len(rank) - 1)
-            gini_daily = summary * (-v_value)
+            gini_daily = summary * (-self._gini_v_value)
             gini_annual = gini_daily * (254 ** 0.5)
             portfolio_annual = ((1 + mue) ** 254) - 1
             sharpe = portfolio_annual / gini_annual
@@ -218,10 +220,6 @@ class StatsModels:
 
             # reorder dataframe columns
             self._df = df[column_order]
-
-    @property
-    def df(self) -> pd.DataFrame:
-        return self._df
 
     def get_max_vols(self):
         if self._model_name == "Markowitz":

@@ -59,8 +59,8 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
     )
 
     # Save plots
-    data_management.save_user_portfolio(User(
-        user_id=user.id, name=f'{user.first_name} {user.last_name}', portfolio=portfolio)
+    data_management.save_user_portfolio(
+        User(_id=user.id, _name=f'{user.first_name} {user.last_name}', _portfolio=portfolio)
     )
 
 
