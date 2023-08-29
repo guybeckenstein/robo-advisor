@@ -13,7 +13,7 @@ from service.impl.sector import Sector
 
 @dataclass(init=True, order=False, frozen=False)
 class Portfolio:
-    _stocks_symbols: list[str | int] = field(default_factory=list)
+    _stocks_symbols: list[str | int] = field(default=list)
     _sectors: list[Sector] = field(default_factory=list)
     _risk_level: int = field(default=1)
     _total_investment_amount: int = field(default=0)

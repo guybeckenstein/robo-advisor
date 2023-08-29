@@ -684,7 +684,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
     models_data = helpers.get_collection_json_data()
     if is_machine_learning:
-        weighted_sum, _, _ = helpers.update_daily_change_with_machine_learning(
+        weighted_sum = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
         )[0][0]
     yield_column: str = "yield_" + str(risk_level)

@@ -97,7 +97,7 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
     value_font = ImageFont.truetype("arial.ttf", size=VALUE_FONT_SIZE)
 
     # Calculate image dimensions based on the number of rows and columns
-    num_rows = num_of_stocks_showing + 1
+    num_rows = min(num_of_stocks_showing, len(intersection_data)) + 1
     num_cols = len(intersection_data.columns) + 1
     image_width = CELL_WIDTH * num_cols + TABLE_PADDING
     image_height = CELL_HEIGHT * num_rows + TABLE_PADDING
@@ -126,7 +126,7 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
             draw.text((x0 + 5, y_text), line, font=title_font, fill="black", align="center")
 
     # Draw data rows
-    for row_idx in range(min(num_of_stocks_showing, len(intersection_data))):
+    for row_idx in range(num_rows - 1):
         stock_name = intersection_data.index[row_idx]
         y0 = (row_idx + 1) * CELL_HEIGHT + TABLE_PADDING
         x0_stock = 0  # x-coordinate for the "Stock" column
