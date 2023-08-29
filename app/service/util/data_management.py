@@ -134,18 +134,18 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
                 pct_change_table = pct_change_table.drop(stocks_symbols[i], axis=1)
         stocks_symbols = filtered_stocks
 
-    stats_models = StatsModels(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        closing_prices_table=closing_prices_table,
-        pct_change_table=pct_change_table,
+    stats_models: StatsModels = StatsModels(
+        _stocks_symbols=stocks_symbols,
+        _sectors=sectors,
+        _model_name=model_name,
+        _gini_v_value=gini_v_value,
+    )
+    stats_models.check_model_name_and_get_optimal_portfolio_as_dataframe(
         num_por_simulation=num_por_simulation,
         min_num_por_simulation=min_num_por_simulation,
+        pct_change_table=pct_change_table,
         max_percent_commodity=max_percent_commodity,
         max_percent_stocks=max_percent_stocks,
-        model_name=model_name,
-        gini_value=gini_v_value
-
     )
     df: pd.DataFrame = stats_models.df
     df.to_csv(locationForSaving + model_name + '_df_' + risk_level + '.csv')
@@ -166,12 +166,7 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
         )
 
     portfolio = Portfolio(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        risk_level=risk_level,
-        total_investment_amount=investment_amount,
-        stat_model_name=stat_model_name,
-        is_machine_learning=is_machine_learning
+        stocks_symbols, sectors, risk_level, investment_amount, stat_model_name, is_machine_learning
     )
 
     portfolio.update_stocks_data(
@@ -443,7 +438,6 @@ def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') 
 
 def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
                           num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
-
     sectors: list = set_sectors(stocks_symbols)
     models_data = helpers.get_collection_json_data()
     num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
@@ -458,8 +452,6 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
         pct_change_table, _, _ = helpers.update_daily_change_with_machine_learning(
             pct_change_table, closing_prices_table.index, models_data
         )
-    if type(model_name) == int or model_name.isnumeric():
-        model_name = settings.MODEL_NAME[model_name]
 
     three_levels_df_tables: list[pd.DataFrame] = [
         get_df_table(is_machine_learning, model_name, risk, closing_prices_table_path)
@@ -684,12 +676,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path)
     portfolio: Portfolio = Portfolio(
-        stocks_symbols=stocks_symbols,
-        sectors=sectors,
-        risk_level=risk_level,
-        total_investment_amount=total_investment_amount,
-        stat_model_name=stat_model_name,
-        is_machine_learning=is_machine_learning,
+        stocks_symbols, sectors, risk_level, total_investment_amount, stat_model_name, is_machine_learning,
     )
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
@@ -705,10 +692,10 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
     portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
                                  annual_volatility, annual_sharpe)
-    curr_user = User(user_id=user_id, name=user_name, portfolio=portfolio)
-    save_user_portfolio(curr_user)
+    user: User = User(_id=user_id, _name=user_name, _portfolio=portfolio)
+    save_user_portfolio(user)
 
-    return curr_user
+    return user
 
 
 def save_investment_to_json_File(user_id, investments):

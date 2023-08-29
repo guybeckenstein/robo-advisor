@@ -456,7 +456,7 @@ def set_sectors(stocks_symbols: list[object]) -> list[Sector]:
     sectors_data: [list[dict[str, str, list[object]]]] = get_sectors_data_from_file()
 
     for i in range(len(sectors_data)):
-        curr_sector: Sector = Sector(sectors_data[i]['name'])
+        curr_sector: Sector = Sector(_name=sectors_data[i]['name'])
         for j in range(len(stocks_symbols)):
             if stocks_symbols[j] in sectors_data[i]['stocks']:
                 curr_sector.add_stock(stocks_symbols[j])

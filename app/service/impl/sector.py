@@ -1,8 +1,11 @@
+from dataclasses import dataclass, field
+
+
+@dataclass(init=True, order=False, frozen=False)
 class Sector:
-    def __init__(self, name: str = "", weight: float = 0.0):
-        self._name: str = name
-        self._weight: float = weight
-        self._stocks: list = []
+    _name: str
+    _weight: float = field(default=0.0)
+    _stocks: list = field(default_factory=list)
 
     @property
     def name(self) -> str:
@@ -12,17 +15,9 @@ class Sector:
     def weight(self) -> float:
         return self._weight
 
-    @weight.setter
-    def weight(self, value: float) -> None:
-        self._weight = value
-
     @property
     def stocks(self) -> list:
         return self._stocks
-
-    @stocks.setter
-    def stocks(self, value: list) -> None:
-        self._stocks = value
 
     def add_weight(self, value: float) -> None:
         self._weight = self.weight + value
