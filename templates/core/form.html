@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <div class="content card mx-auto w-75">
+    <div class="row justify-content-center p-3">
+      <div class="border border-light-subtle" style="background-color: #fafafa; width: 98%;">
+        <div class="info m-2">
+          {% crispy form %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
