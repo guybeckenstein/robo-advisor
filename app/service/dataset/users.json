@@ -101,31 +101,27 @@
         ],
         "yarden": [
             {
-                "id": 1,
                 "levelOfRisk": 2,
                 "startingInvestmentAmount": 0,
                 "stocksSymbols": [
                     169,
-                    170,
-                    603,
+                    161,
+                    162,
+                    13,
+                    143,
                     601,
+                    603,
                     701,
-                    714,
-                    "XLK",
-                    "XLV",
-                    "XOP",
+                    712,
+                    702,
+                    "SPY",
                     "QQQ",
+                    "XLK",
                     "SHV",
-                    "BIL",
-                    273011,
-                    695437,
-                    593038,
-                    "LMB",
-                    "AGM",
-                    "TDS",
-                    "MCD",
-                    "FMY",
-                    "EOI"
+                    "SHY",
+                    "IEI",
+                    "LQD",
+                    "GLD"
                 ],
                 "sectorsNames": [
                     "Israel stocks indexes",
@@ -133,179 +129,47 @@
                     "Israel government bonds indexes",
                     "US stocks indexes",
                     "US bonds indexes",
-                    "Israel stocks",
-                    "US stocks"
+                    "US commodity indexes"
                 ],
                 "sectorsWeights": [
-                    0.09475541048665881,
-                    0.142540047484055,
-                    0.0732463732597812,
-                    0.0630468572401839,
-                    0.156744773153384,
-                    0.17295978211572494,
-                    0.2967067562602111
+                    0.15886145094492798,
+                    0.1752433972249521,
+                    0.1628750141353483,
+                    0.1977595373127808,
+                    0.27957502932465983,
+                    0.0256855710573303
                 ],
                 "stocksWeights": [
-                    0.0703586873001422,
-                    0.0243967231865166,
-                    0.0565843230870754,
-                    0.0859557243969796,
-                    0.0372912479358361,
-                    0.0359551253239451,
-                    0.0220888807259175,
-                    0.0370596800250354,
-                    0.0025767263296154,
-                    0.0013215701596156,
-                    0.0547712686942569,
-                    0.1019735044591271,
-                    0.0704044873629734,
-                    0.0865823127371966,
-                    0.0159729820155549,
-                    0.0485838584603658,
-                    0.0483334223341667,
-                    0.0140260440324071,
-                    0.1027711515903714,
-                    0.0568255949115796,
-                    0.0261666849313205
+                    0.0291135050364478,
+                    0.0106249364596634,
+                    0.0027417631704064,
+                    0.1041047347128979,
+                    0.0122765115655125,
+                    0.0762107550707802,
+                    0.0990326421541719,
+                    0.0473571681231395,
+                    0.0254808887705937,
+                    0.0900369572416151,
+                    0.0566308277651816,
+                    0.0465504652978809,
+                    0.0945782442497183,
+                    0.1061114993015102,
+                    0.0474450121370351,
+                    0.1027183067725208,
+                    0.0233002111135937,
+                    0.0256855710573303
                 ],
-                "annualReturns": 9.042186471335969,
-                "annualMaxLoss": -2.300167567611453,
-                "annualVolatility": 6.874153962998437,
-                "annualSharpe": 1.315388994777745,
-                "totalChange": 160.07178276587962,
-                "monthlyChange": 3.1963979310152935,
-                "dailyChange": 0.004528940525397306,
+                "annualReturns": 5.200790027535351,
+                "annualMaxLoss": -2.553106625216781,
+                "annualVolatility": 4.699331304698262,
+                "annualSharpe": 1.1067085273038195,
+                "totalChange": 91.132266279813,
+                "monthlyChange": 1.668123861787607,
+                "dailyChange": 0.0030206745867228492,
                 "statModelName": "Gini",
                 "machineLearningOpt": 1,
-                "stocksCollectionNumber": "3",
-                "investments_list": [
-                    {
-                        "amount": 2000,
-                        "date": "2023-08-23",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 2500,
-                        "date": "2023-08-23",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 5000,
-                        "date": "2023-08-23",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 1000,
-                        "date": "2023-08-23",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 1000,
-                        "date": "2023-08-23",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 1000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 1000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 500,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 700,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 700,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 10000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 100000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 50000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 1000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 50,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 100000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 100000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 1000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 1000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 2000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 5000,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    }
-                ]
+                "stocksCollectionNumber": "2",
+                "id": 1
             }
         ],
         "hanael": [

@@ -1,3 +1,9 @@
+# Add the root directory of your project to the sys.path list
+import sys
+import os
+project_root = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(project_root)
+
 from impl.user import User
 from util import data_management, research
 from config import settings

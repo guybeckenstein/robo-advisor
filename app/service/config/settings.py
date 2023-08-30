@@ -26,6 +26,7 @@ USERS_JSON_NAME = DATASET_LOCATION + 'users'  # where to save the users details
 MACHINE_LEARNING_LOCATION = 'includingMachineLearning/'  # directory with 6 tables
 NON_MACHINE_LEARNING_LOCATION = 'withoutMachineLearning/'  # directory with 6 tables
 CLOSING_PRICES_FILE_NAME = "closing_prices"
+PCT_CHANGE_FILE_NAME = "pct_change"
 
 # STATIC FILES
 GRAPH_IMAGES = DJANGO_DIR + 'static/img/graphs/'

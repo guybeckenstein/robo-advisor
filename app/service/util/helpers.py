@@ -258,6 +258,32 @@ class Analyze:
 
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
 
+    def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+        df, forecast_out = self.get_final_dataframe()
+
+        # ARIMA requires datetime index for time series data
+        df.index = pd.to_datetime(self._table_index, format='%Y-%m-%d')
+
+        # Perform ARIMA forecasting
+        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=True, stepwise=False)
+        forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
+
+        df['Forecast'] = np.nan
+        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast
+
+        # Add dates
+        last_date = df.iloc[-1].name
+        last_unix: pd.Timestamp = last_date.timestamp()
+        next_unix: float = last_unix + SINGLE_DAY
+
+        for i in forecast:
+            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
+            next_unix += SINGLE_DAY
+            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
+        return df, forecast_with_historical_returns_annual, expected_returns
+
     def get_final_dataframe(self) -> tuple[pd.DataFrame, int]:
         df: pd.DataFrame = pd.DataFrame({})
         df['Col'] = self._returns_stock
@@ -293,6 +319,10 @@ class Analyze:
             expected_returns: np.longdouble = (np.exp(longdouble * logged_forecast_mean) - 1) * 100
         return forecast_with_historical_returns_annual, expected_returns
 
+    @property
+    def returns_stock(self):
+        return self._returns_stock
+
 
 def update_daily_change_with_machine_learning(
         returns_stock, table_index: pd.Index, models_data: dict, closing_prices_mode: bool = False
@@ -314,6 +344,7 @@ def update_daily_change_with_machine_learning(
     else:
         annual_return = None
         excepted_returns = None
+
         for i, stock in enumerate(columns):
             if is_ndarray_mode:
                 stock_name = 0
@@ -331,7 +362,6 @@ def update_daily_change_with_machine_learning(
                     analyze.linear_regression_model(test_size_machine_learning)
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
                 df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
-
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
                 df, annual_return_with_forecast, excepted_returns = analyze.gbm_model()
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
@@ -340,6 +370,7 @@ def update_daily_change_with_machine_learning(
                 raise ValueError('Invalid machine model')
             if df['Label'][offset_row:].values.size == returns_stock[stock_name].size:
                 returns_stock[stock_name] = df['Label'][offset_row:].values
+                # TODO, in arima its include the forecast, if we save the file pct_change, we dont need the offset_row
             else:
                 returns_stock[stock_name] = df['Label'].values
 
@@ -757,7 +788,7 @@ def create_graphs_folders() -> None:
 
 
 def currency_exchange(from_currency="USD", to_currency="ILS"):
-    start_date = data_time.now().strftime('%Y-%m-%d')
+    start_date = (data_time.now() - timedelta(days=1)).strftime('%Y-%m-%d')
     end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
 
     ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol

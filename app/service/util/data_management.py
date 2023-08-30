@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 from investment.models import Investment
 from service.config import settings
 from service.impl.portfolio import Portfolio
@@ -76,6 +77,7 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path,
                 pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
                     pct_change_table, closing_prices_table.index, models_data
                 )
+
             update_three_level_data_frame_tables(
                 machine_learning_opt=machine_model_tuple[0], model_name=machine_model_tuple[1],
                 stocks_symbols=stocks_symbols,
@@ -439,19 +441,9 @@ def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') 
 def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
                           num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
-    models_data = helpers.get_collection_json_data()
-    num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
-    min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
-    gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_prices_table_path)
-    pct_change_table = closing_prices_table.pct_change()
-    if num_of_years_history != settings.NUM_OF_YEARS_HISTORY:
-        pct_change_table = pct_change_table.tail(num_of_years_history * 254)
 
-    if is_machine_learning == 1:
-        pct_change_table, _, _ = helpers.update_daily_change_with_machine_learning(
-            pct_change_table, closing_prices_table.index, models_data
-        )
+    if type(model_name) == int:
+        model_name = settings.MODEL_NAME[model_name]
 
     three_levels_df_tables: list[pd.DataFrame] = [
         get_df_table(is_machine_learning, model_name, risk, closing_prices_table_path)
@@ -540,9 +532,7 @@ def save_user_portfolio(user: User) -> None:
         record_percent_to_predict=float(record_percent_to_predict),
         is_closing_prices_mode=True
     )
-    # TODO fix
     df, annual_return_with_forecast, excepted_returns = analyze.linear_regression_model(test_size_machine_learning)
-    # df, annual_return_with_forecast, excepted_returns = analyze.prophet_model()
     df['yield__selected_percent'] = df['Col']
     df['yield__selected_percent_forecast'] = df["Forecast"]
 
@@ -683,7 +673,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
     models_data = helpers.get_collection_json_data()
-    if is_machine_learning:
+    if is_machine_learning:  # TODO maybe remove
         weighted_sum = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
         )[0][0]
@@ -833,7 +823,6 @@ def get_basic_data_from_user() -> tuple[int, int, str]:
 def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, tables, is_machine_learning,
                                                                    model_option, stocks_symbols,
                                                                    stocks_collection_number) -> int:
-
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
         pct_change_table, yield_list = tables
     closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
