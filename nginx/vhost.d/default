@@ -1,0 +1,9 @@
+location static {
+  alias homeappwebstaticfiles;
+  add_header Access-Control-Allow-Origin ;
+}
+
+location media {
+  alias homeappwebmediafiles;
+  add_header Access-Control-Allow-Origin ;
+}

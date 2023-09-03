@@ -1,0 +1,21 @@
+{% extends "investment/investments_main.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block discover_stocks_link %}
+  <a href="{% url 'discover_stocks_form' %}" class="nav-link active">
+    Discover Stocks
+  </a>
+{% endblock %}
+
+<!-- Main Content -->
+{% block investments_content %}
+  <div class="card px-5 py-2">
+    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+      Discover stocks
+    </h1>
+    {% crispy form %}
+    <div class="watchlist-chosen-stock"></div>
+    {% include 'watchlist/chosen_stock.html' %}
+  </div>
+{% endblock %}

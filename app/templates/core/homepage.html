@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="content">
+    <h2 style="color: #226A80; font-size: 55px; font-weight: 800; letter-spacing: 2px; line-height: 60px; margin-bottom: 30px;">
+      Robo Advisor <br>
+      <span style="color: rgb(255, 255, 255); font-size: 50px; font-weight: 600;">
+        Smart AI Investor!
+      </span>
+    </h2>
+    <ul class="list-unstyled">
+      <li>
+        The website was developed within the fintech laboratory managed by Zevin, at the
+        <u>Tel Aviv Jaffa Academic College</u>
+        for <strong>research purposes</strong> only.
+      </li>
+      <li>
+        The recommendations of the system should not be considered as the implementation of an action,
+        but everyone must consult with a qualified advisor on behalf of the Securities Authority
+      </li>
+    </ul>
+  </div>
+  <div class="team-members">
+    {% for team_member in team_members %}
+      <a href="https://github.com/{{ team_member.github_username }}" class="text-decoration-none">
+        <p>
+          {{ team_member.full_name }}
+        </p>
+        <img src="{% static team_member.img %}" alt="{{ team_member.alt }}">
+      </a>
+    {% endfor %}
+  </div>
+{% endblock %}
