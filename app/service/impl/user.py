@@ -9,7 +9,7 @@ from service.impl.portfolio import Portfolio
 class User:
     _id: int = field(default=-1)
     _name: str = field(default="")
-    _portfolio: Portfolio = field(default=Portfolio())
+    _portfolio: Portfolio = field(default_factory=Portfolio())
     _stocks_collection_number: str = field(default="1")
 
     @property

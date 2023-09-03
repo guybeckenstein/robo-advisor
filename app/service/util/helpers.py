@@ -465,6 +465,7 @@ def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make mo
 
 def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     stock_sectors = []  # TODO - FIX ORDER
+
     for symbol in stocks_symbols:
         found_sector = False
         for curr_sector in sectors:
