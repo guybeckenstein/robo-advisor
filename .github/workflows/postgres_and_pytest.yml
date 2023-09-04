@@ -44,6 +44,6 @@ jobs:
       - name: Run Flake8
         run: pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
       - name: Run Migrations
-        run: python manage.py migrate
+        run: pipenv run python manage.py migrate
       - name: Run PyTest
         run: pipenv run pytest -v
