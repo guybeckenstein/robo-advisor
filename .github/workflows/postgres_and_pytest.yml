@@ -39,9 +39,7 @@ jobs:
       - name: Activate the virtual environment
         run: source venv/bin/activate
       - name: Install dependencies
-        run: python3.11 -m pipenv sync
-      - name: Install dependencies from requirements.txt
-        run: python3.11 -m pip install -r requirements.txt
+        run: pip install -r requirements.txt
         # Linter
       - name: Run Flake8
         run: python3.11 -m pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
