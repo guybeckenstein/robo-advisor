@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
 
                 sites: QuerySet[Site] = Site.objects.all()
                 for site in sites:
-                        social_app.sites.add(site)
+                    social_app.sites.add(site)
 
     operations = [
         migrations.RunPython(generate_site_data),

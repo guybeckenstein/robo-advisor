@@ -234,7 +234,7 @@ def get_sorted_list_by_parameters(data_frame, row_selected=-1, ascending=False, 
         return data_frame.sort_values(ascending=ascending).head(top_stocks_numbers)
     else:
         # Get the last row (latest date)
-        last_row = data_frame.iloc[-1]
+        # last_row = data_frame.iloc[-1]
         data_frame = data_frame.iloc[row_selected]
         # filters
         data_frame = data_frame[(data_frame >= min_value) & (data_frame <= max_value)]

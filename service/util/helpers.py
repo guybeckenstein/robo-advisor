@@ -112,8 +112,9 @@ class Analyze:
         self._record_percent_to_predict: float = record_percent_to_predict
         self._is_closing_prices_mode: bool = is_closing_prices_mode
 
-    def linear_regression_model(self, test_size_machine_learning: str) -> tuple[
-        pd.DataFrame, np.longdouble, np.longdouble]:  # TODO fix
+    def linear_regression_model(
+            self, test_size_machine_learning: str
+    ) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:  # TODO fix
         df, forecast_out = self.get_final_dataframe()
 
         # Added date
@@ -309,7 +310,7 @@ def update_daily_change_with_machine_learning(
     if len(columns) == 0:
         raise AttributeError('columns length is invalid - 0. Should be at least 1')
     else:
-        annual_return = None
+        # annual_return = None
         excepted_returns = None
         for i, stock in enumerate(columns):
             if is_ndarray_mode:

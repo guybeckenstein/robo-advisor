@@ -113,9 +113,7 @@ if __name__ == '__main__':
             research.save_user_specific_stock(stock_name, operation, plt_instance)
 
             # show result
-            data_management.plot_image(
-                settings.RESEARCH_IMAGES +
-                stock_name + operation + '.png')
+            data_management.plot_image(f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
 
         elif selection == 6:  # discover good stocks
             # TODO show intersection
@@ -138,8 +136,7 @@ if __name__ == '__main__':
             sub_folder = str(stocks_collection_number) + '/' + str(is_machine_learning) + str(model_option) + "/"
 
             stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
-            closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                         + stocks_collection_number + '/')
+            closing_prices_table_path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{stocks_collection_number}/'
             data_management.plot_stat_model_graph(
                 stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
                 model_name=settings.MODEL_NAME[model_option], num_of_years_history=num_of_years_history,

@@ -440,9 +440,9 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
                           num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
     models_data = helpers.get_collection_json_data()
-    num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
-    min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
-    gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
+    # num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
+    # min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
+    # gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
     closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_prices_table_path)
     pct_change_table = closing_prices_table.pct_change()
     if num_of_years_history != settings.NUM_OF_YEARS_HISTORY:
@@ -724,7 +724,7 @@ def get_user_investments_from_json_file(user_id):
                 break
     try:
         investment_list = json_data['usersList'][user_id][0]['investments_list']
-    except:
+    except (ValueError, AttributeError):
         investment_list = []
     return investment_list
 
