@@ -52,10 +52,9 @@ class StatsModels:
 
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
-            if type(symbol) == int:
-                stocks_names.append(str(symbol))
-            else:
-                stocks_names.append(symbol)
+            if isinstance(symbol, int):
+                symbol = str(symbol)
+            stocks_names.append(symbol)
 
         returns_daily = pct_change_table
         returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
@@ -137,10 +136,9 @@ class StatsModels:
                                                  stocks_symbols, max_percent_commodity, max_percent_stocks) -> None:
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
-            if type(symbol) == int:
-                stocks_names.append(str(symbol))
-            else:
-                stocks_names.append(symbol)
+            if isinstance(symbol, int):
+                symbol = str(symbol)
+            stocks_names.append(symbol)
         returns_daily = pct_change_table
         port_portfolio_annual: list = []
         portfolio_gini_annual: list = []

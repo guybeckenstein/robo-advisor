@@ -370,9 +370,9 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     file_url: str = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocks_names):
-        if type(stock) == float:
+        if isinstance(stock, float):
             continue
-        if type(stock) == int or stock.isnumeric():  # Israeli stock
+        elif isinstance(stock, int) or stock.isnumeric():  # Israeli stock
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
@@ -549,13 +549,13 @@ def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
     usa_indexes_table: pd.DataFrame = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
         try:
-            if type(stock) == int or stock.isnumeric():
+            if isinstance(stock, int) or stock.isnumeric():
                 num_of_digits = len(str(stock))
                 if num_of_digits > 3:
                     is_index_type = False
                 else:  # israeli index name always has maximum of 3 digits
                     is_index_type = True
-                if type(stock) == str:
+                if isinstance(stock, str):
                     stock = int(stock)
                 stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
                                                                                  is_reverse_mode=is_reverse_mode))

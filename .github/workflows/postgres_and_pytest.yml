@@ -1,59 +1,49 @@
 name: PostgreSQL, PyTest & Flake8
 on: pull_request
 jobs:
+  # Label of the container job
   setup-database:
+    # Containers must run in Linux based operating systems
     name: Setup PostgreSQL Database
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+
+    # Service containers to run with `container-job`
     services:
+      # Label used to access the service container
       postgres:
+        # Docker Hub image
         image: postgres:latest
+        # Provide the password for postgres
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        ports:
-          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Wait for PostgreSQL to start
         run: |
-          sleep 10
-      - name: Execute PostgreSQL Commands
-        run: |
-          psql --host=localhost --port=5432 --username=$POSTGRES_USER --dbname=$POSTGRES_DB -w --command="CREATE DATABASE $POSTGRES_DB;"
-          psql --host=localhost --port=5432 --username=$POSTGRES_USER --dbname=$POSTGRES_DB -w --command="ALTER DATABASE $POSTGRES_DB SET TIMEZONE TO 'Israel';"
-      - name: Run Migrations
-        run: |
-          python manage.py migrate
+          sleep 1
 
   pytest:
-    name: Run the application's tests with PyTest
-    runs-on: ubuntu-20.04
+    name: Run the application's tests with PyTest, then check code with Flake8
+    runs-on: ubuntu-latest
     container: fedora:34
     env:
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
     needs: setup-database
     steps:
       - name: Install Pipenv and git
         run: dnf install -y pipenv git
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup environment
-        run: pipenv sync --dev
-      - name: Run PyTest
-        run: pipenv run pytest -v
-  flake8:
-    name: Check code with Flake8
-    runs-on: ubuntu-20.04
-    container: fedora:34
-    needs: setup-database
-    steps:
-      - name: Install Pipenv and Git
-        run: dnf install -y pipenv git
-      - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup environment
         run: pipenv sync --dev
       - name: Run Flake8
         run: pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
+      - name: Run Migrations
+        run: python manage.py migrate
+      - name: Run PyTest
+        run: pipenv run pytest -v

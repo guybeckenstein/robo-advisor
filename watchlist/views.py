@@ -36,7 +36,7 @@ def chosen_stock(request):
         # Form data
         data = request.GET
         ml_model = data.get('ml_model', None)
-        if type(ml_model) == int or ml_model.isnumeric():
+        if isinstance(ml_model, int) or ml_model.isnumeric():
             ml_model = int(data.get('ml_model', None)) - 1
             ml_model = settings.MACHINE_LEARNING_MODEL[ml_model]
         description = data.get('symbol', None)

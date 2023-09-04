@@ -590,7 +590,7 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
     values: list = []
     ils_to_usd: float = helpers.currency_exchange(from_currency="USD", to_currency="ILS")
     for i, stock in enumerate(stocks_symbols):
-        if type(stock) == int or stock.isnumeric():
+        if isinstance(stock, int) or stock.isnumeric():
             currency = f'{settings.CURRENCY_LIST[0]}'
             values.append(stocks_weights[i] * investment_amount * ils_to_usd)
         else:

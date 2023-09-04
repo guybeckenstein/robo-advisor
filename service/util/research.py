@@ -118,8 +118,7 @@ def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"
         Returns the graph_plot_methods instance
     """
 
-    if type(stock_name) == int or stock_name.isnumeric():  # israeli stock
-
+    if isinstance(stock_name, int) or stock_name.isnumeric():  # israeli stock
         today = datetime.datetime.now()
         min_start_year = today.year - 10
         min_start_month = today.month

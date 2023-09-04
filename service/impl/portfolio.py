@@ -121,12 +121,12 @@ class Portfolio:
         profit: float = 0.0
 
         for i, investment in enumerate(investments):
-            if type(investment) == dict:
+            if isinstance(investment, dict):
                 amount = investment["amount"]
                 purchase_date = investment["date"]
                 is_it_active = investment["status"]
                 # automatic_investment = investment["automatic_investment"]
-            elif type(investment) == Investment:
+            elif isinstance(investment, Investment):
                 amount = investment.amount
                 purchase_date = investment.formatted_date()
                 is_it_active = investment.status  # status is `ACTIVE` or `INACTIVE`
@@ -195,7 +195,7 @@ class Portfolio:
                     self._sectors[j].add_weight(self._stocks_weights[i])
 
     def set_stocks_weights(self, stocks_weights) -> None:
-        if type(stocks_weights) == list:
+        if isinstance(stocks_weights, list):
             self._stocks_weights = stocks_weights
         else:
             nd_array = stocks_weights.values
