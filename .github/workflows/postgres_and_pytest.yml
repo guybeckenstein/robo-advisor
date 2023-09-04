@@ -1,26 +1,27 @@
 name: PostgreSQL, PyTest & Flake8
 on: pull_request
 jobs:
+  # Label of the container job
   setup-database:
+    # Containers must run in Linux based operating systems
     name: Setup PostgreSQL Database
     runs-on: ubuntu-latest
+
+    # Service containers to run with `container-job`
     services:
+      # Label used to access the service container
       postgres:
+        # Docker Hub image
         image: postgres:latest
+        # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    steps:
-      - name: Wait for PostgreSQL to start
-        run: |
-          sleep 10
-      - name: Run Migrations
-        run: |
-          python manage.py migrate
 
   pytest:
     name: Run the application's tests with PyTest, then check code with Flake8
@@ -36,7 +37,9 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup environment
         run: pipenv sync --dev
-      - name: Run PyTest
-        run: pipenv run pytest -v
       - name: Run Flake8
         run: pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
+      - name: Run Migrations
+        run: python manage.py migrate
+      - name: Run PyTest
+        run: pipenv run pytest -v
