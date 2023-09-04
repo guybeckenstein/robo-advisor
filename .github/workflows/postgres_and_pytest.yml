@@ -26,9 +26,9 @@ jobs:
       - name: Wait for PostgreSQL to start
         run: |
           sleep 1
-
-  pytest:
-    name: Run the application's tests with PyTest, then check code with Flake8
+  
+  flake8-and-pytest:
+    name: Check code with Flake8, then run the application's tests with PyTest
     runs-on: ubuntu-latest
     container: fedora:34
     env:
