@@ -42,9 +42,9 @@ jobs:
         run: pip install -r requirements.txt
         # Linter
       - name: Run Flake8
-        run: python3.11 -m pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
+        run: python -m flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
       - name: Run Migrations
         run: python manage.py migrate
         # Tests
       - name: Run PyTest
-        run: python3.11 -m pipenv run pytest -v
+        run: python -m pytest -v
