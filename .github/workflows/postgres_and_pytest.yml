@@ -7,26 +7,21 @@ jobs:
     name: Setup PostgreSQL Database
     runs-on: ubuntu-latest
 
-    # Service containers to run with `container-job`
-    services:
-      # Label used to access the service container
-      postgres:
-        # Docker Hub image
-        image: postgres:latest
-        # Provide the password for postgres
-        env:
+    services:  # Service containers to run with `container-job`
+      postgres:  # Label used to access the service container
+        image: postgres:latest  # Docker Hub image
+        env:  # Provide the password for postgres
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        # Set health checks to wait until postgres has started
-        options: >-
+        options: >-  # Set health checks to wait until postgres has started
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     steps:
-        - name: Wait for PostgreSQL to start
+      - name: Wait for PostgreSQL to start
         run: |
           sleep 1
-
+  # Label of the container job
   flake8-and-pytest:
     # Containers must run in Linux based operating systems
     name: Check code with Flake8, then run the application's tests with PyTest
