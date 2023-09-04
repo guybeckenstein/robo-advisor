@@ -19,14 +19,14 @@ jobs:
           sleep 10
       - name: Execute PostgreSQL Commands
         run: |
-          psql --host=postgres --port=5432 --username=$POSTGRES_USER --dbname=$POSTGRES_DB -w --command="CREATE DATABASE $POSTGRES_DB;"
-          psql --host=postgres --port=5432 --username=$POSTGRES_USER --dbname=$POSTGRES_DB -w --command="ALTER DATABASE $POSTGRES_DB SET TIMEZONE TO 'Israel';"
+          psql --host=127.0.0.1 --port=5432 --username=$POSTGRES_USER --dbname=$POSTGRES_DB -w --command="CREATE DATABASE $POSTGRES_DB;"
+          psql --host=127.0.0.1 --port=5432 --username=$POSTGRES_USER --dbname=$POSTGRES_DB -w --command="ALTER DATABASE $POSTGRES_DB SET TIMEZONE TO 'Israel';"
       - name: Run Migrations
         run: |
           python manage.py migrate
 
   pytest:
-    name: Run the application's tests with PyTest
+    name: Run the application's tests with PyTest, then check code with Flake8
     runs-on: ubuntu-20.04
     container: fedora:34
     env:
@@ -43,17 +43,5 @@ jobs:
         run: pipenv sync --dev
       - name: Run PyTest
         run: pipenv run pytest -v
-  flake8:
-    name: Check code with Flake8
-    runs-on: ubuntu-20.04
-    container: fedora:34
-    needs: setup-database
-    steps:
-      - name: Install Pipenv and Git
-        run: dnf install -y pipenv git
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup environment
-        run: pipenv sync --dev
       - name: Run Flake8
         run: pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
