@@ -1,12 +1,12 @@
 import codecs
 import csv
 import datetime
+import io
 from datetime import datetime as data_time, timedelta
 import json
 import math
 import os
 
-import boto3
 from bidi import algorithm as bidi_algorithm
 import numpy as np
 import pandas as pd
@@ -19,9 +19,13 @@ import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
 
-from service.config import settings, aws
+import boto3
+
+from service.config import settings, aws, google_drive
 from service.impl.sector import Sector
 from service.util import tase_interaction
+
+from PIL import Image
 
 # Global variables
 SINGLE_DAY: int = 86400
@@ -710,35 +714,35 @@ def convert_company_name_to_israeli_security_number(companyName: str) -> str:
 
     return result[0]
 
-
 class AwsInstance:
     def __init__(self):
-        self._region_name = aws.REGION_NAME
+        # aws
+        self.app_name = aws.APP_NAME
         self._aws_access_key_id = aws.AWS_ACCESS_KEY_ID
         self._aws_secret_access_key = aws.AWS_SECRET_ACCESS_KEY
         self._region_name = aws.REGION_NAME
 
-    def connect_to_s3(self) -> boto3.client:
-        # s3 = boto3.resource(
-        #     service_name='s3',
-        #     region_name=self._region_name,
-        #     aws_secret_access_key=self._aws_secret_access_key,
-        #     aws_access_key_id=self._aws_access_key_id
-        # )
+    def connect_to_s3(self):  # -> boto3.client:
+        s3 = boto3.resource(
+            service_name='s3',
+            region_name=self._region_name,
+            aws_secret_access_key=self._aws_secret_access_key,
+            aws_access_key_id=self._aws_access_key_id
+        )
 
-        s3_client = boto3.client(
+        """s3_client = boto3.client(
             service_name='s3',
             region_name=self._region_name,
             aws_access_key_id=self._aws_access_key_id,
             aws_secret_access_key=self._aws_secret_access_key,
         )
-        return s3_client
+        return s3_client"""
 
-    def upload_file_to_s3(self, file_path, bucket_name, s3_object_key, s3_client) -> None:
+    """def upload_file_to_s3(self, file_path, bucket_name, s3_object_key, s3_client) -> None:
         # Local folder path to upload
         # local_folder_path = 'path/to/your/local/folder'
 
-        """for root, dirs, files in os.walk(local_folder_path):
+        for root, dirs, files in os.walk(local_folder_path):
             for file in files:
                 local_file_path = os.path.join(root, file)
                 s3_object_key = os.path.relpath(local_file_path, local_folder_path)
@@ -861,6 +865,24 @@ def save_usa_indexes_table():  # dont delete it
             writer.writerow(stock_data)
 
 
-def save_json_data(SECTORS_JSON_NAME, sectors_json_file):
-    with open(SECTORS_JSON_NAME + ".json", 'w', encoding='utf-8') as f:
+def save_json_data(path, sectors_json_file):
+    with open(path + ".json", 'w', encoding='utf-8') as f:
         json.dump(sectors_json_file, f, ensure_ascii=False, indent=4)
+
+
+def convert_data_stream_to_pd(file_stream):
+    # Convert the binary content directly to a Pandas DataFrame
+    return pd.read_csv(file_stream, encoding='utf-8')
+
+def convert_data_stream_to_png(file_stream):
+    # Create an Image object from the binary stream
+    return Image.open(io.BytesIO(file_stream.read()))
+
+def convert_data_stream_to_json(file_stream):
+    # Convert the binary content directly to a Pandas DataFrame
+    return json.load(file_stream)
+
+
+def get_sorted_path(full_path, num_of_last_elements):
+    split_path = full_path.split('/')
+    return '/'.join(split_path[-num_of_last_elements:])

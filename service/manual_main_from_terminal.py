@@ -1,6 +1,10 @@
 # Add the root directory of your project to the sys.path list
+import pandas as pd
 import sys
 import os
+
+from service.util import helpers
+
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(project_root)
 
@@ -8,11 +12,10 @@ from impl.user import User
 from util import data_management, research
 from config import settings
 
-
-
-
-
 if __name__ == '__main__':
+
+    #data_management.update_files_from_google_drive()
+
     data_management.show_main_menu()
     selection = data_management.get_menu_choice()
     exit_loop_operation = 8
@@ -40,7 +43,8 @@ if __name__ == '__main__':
 
             # get data according to risk questionnaire form
             level_of_risk: int = (data_management.get_level_of_risk_according_to_questionnaire_form_from_console
-                                  (sub_folder, tables, is_machine_learning, model_option, stocks_symbols, stocks_collection_number))
+                                  (sub_folder, tables, is_machine_learning, model_option, stocks_symbols,
+                                   stocks_collection_number))
 
             # creates new user with portfolio details
             portfolio = data_management.create_new_user_portfolio(
@@ -131,8 +135,10 @@ if __name__ == '__main__':
             filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
             sector_name: str = data_management.get_sector_name_from_user()
             intersection = research.get_stocks_stats(sector_name)
-            sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(intersection, filters)
-            data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name, research.labels)
+            sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
+                intersection, filters)
+            data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name,
+                                                 research.labels)
             prefix_str = 'top_stocks_'
 
             # show result
@@ -160,7 +166,7 @@ if __name__ == '__main__':
 
         elif selection == 9:  # dynamic commands for programmers
             all_data_tuple, intersection = research.get_all_best_stocks(settings.RESEARCH_FILTERS)
-
+            # helpers.AwsInstance().connect_to_s3()
 
         else:
             break

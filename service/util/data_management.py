@@ -17,17 +17,19 @@ from service.util.helpers import Analyze
 from service.util.graph import image_methods as graph_image_methods
 from service.util.graph import plot_methods as graph_plot_methods
 from service.util.pillow import plot_methods as pillow_plot_methods
+from service.config import google_drive
 import os
 # django imports
 import django
 from django.db.models import QuerySet
-
 from service.util import draw_table
 
 # Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
 from accounts.models import InvestorUser
+
+google_drive_instance = google_drive.GoogleDriveInstance()
 
 
 ######################################################################################
@@ -867,3 +869,50 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
 
 def get_score_by_answer_from_user(string_to_show: str) -> int:
     return console_handler.get_score_by_answer_from_user(string_to_show)
+
+
+def upload_file_to_google_drive(file_path):
+    file_path = file_path.split('/')[-3:]
+    google_drive_instance.upload_file(file_path)
+
+
+def get_file_from_google_drive(file_path):
+    return google_drive_instance.get_file_by_path(file_path)
+
+
+def update_files_from_google_drive():
+    if google_drive_instance.service is None:
+        return
+
+    # update stocks.json
+    stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)
+    stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
+    # save stocks.json to local
+    helpers.save_json_data(settings.STOCKS_JSON_NAME, stocks_json)
+
+    # update users.json
+    stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
+    stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
+    # save users.json to local
+    helpers.save_json_data(settings.USERS_JSON_NAME, stocks_json)
+
+    #update csv files
+    basic_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+    machine_non_machine_learining= ['includingMachineLearning', 'withoutMachineLearning']
+    for i in range(1, 5):
+        collection_path = basic_path + str(i) + '/'
+        closing_price_path = helpers.get_sorted_path(collection_path + f'closing_prices', num_of_last_elements=2)
+        pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
+        # save csv to local
+
+        # update df csv files
+        for j in range(1, 4):
+            stocks_json_path = basic_path + str(i) + '/' + machine_non_machine_learining[j - 1] + '/'
+            df_path = helpers.get_sorted_path(f'df_{j}', num_of_last_elements=2)
+            pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
+            # save csv to local
+            helpers.save_pd_to_csv(df_path, pd_table)
+
+    # update top stocks images
+   # png_files = google_drive_instance.get_all_png_files()
+
