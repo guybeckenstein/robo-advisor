@@ -20,8 +20,7 @@ SEABORN_STYLE: str = 'seaborn-v0_8-dark'
 
 class MarkowitzAndGini:
     @staticmethod
-    def create_scatter_plot(df: pd.DataFrame, x: str, y: str, min_variance_portfolio,
-                            sharpe_portfolio, max_returns_portfolio) -> None:
+    def create_scatter_plot(df, x: str, y: str, min_variance_portfolio,  sharpe_portfolio, max_returns_portfolio):
         plt.style.use(SEABORN_STYLE)
         df.plot.scatter(
             x=x, y=y, c="Sharpe Ratio", cmap="RdYlGn_r", edgecolors="black", figsize=FIG_SIZE, grid=GRID,
@@ -102,7 +101,7 @@ class ThreePortfolios:
         with pd.option_context("display.float_format", "%{:,.2f}".format):
             fig_text_data: dict = {
                 'name': labels,
-                'portfolio': [min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0], max_returns_portfolio.iloc[0]],
+                'portfolio': [min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0],  max_returns_portfolio.iloc[0]],
                 'stocks': stocks_y,
                 'facecolor': colors
             }
@@ -140,7 +139,7 @@ class EstimatedYield:
 
 class PriceForecast:
     @staticmethod
-    def plt_figtext(plt_instance, x, y, history_annual_return, average_annual_return, forecast_short_time):
+    def plt_figtext(plt_instance, x, y, history_annual_return,  average_annual_return, forecast_short_time):
         """
         Add text box with annual returns value
         """

@@ -457,6 +457,12 @@
                         "date": "2023-08-27",
                         "status": true,
                         "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-09-04",
+                        "status": true,
+                        "automatic_investment": false
                     }
                 ]
             }

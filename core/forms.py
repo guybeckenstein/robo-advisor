@@ -27,6 +27,8 @@ class AlgorithmPreferencesForm(forms.ModelForm):
         form_type = kwargs.pop('form_type', 'create')
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self.helper.form_tag = False  # add this
+        self.helper.disable_csrf = True
         self.helper.form_id = 'preferences-form'
         self.fields['ml_answer'].label = format_html(
             '<span class="capital-market-form-label">'
@@ -49,7 +51,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
                 Div(InlineRadios('model_answer', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
         elif form_type == 'update':
             self.helper.layout = Layout(
                 HTML(main_header),
@@ -59,7 +61,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
                 Div(InlineRadios('model_answer', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     class Meta:
         model = QuestionnaireA
@@ -89,15 +91,15 @@ class InvestmentPreferencesForm(forms.ModelForm):
         stocks_collections_number: str = kwargs.pop('collections_number', None)
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self.helper.form_tag = False  # add this
+        self.helper.disable_csrf = True
         self.helper.form_id = 'capital-market-form'
         self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #1: For how many years do you want to invest?'
                                                     '</span>')
         ml_answer: int = questionnaire_a.ml_answer
         model_answer: int = questionnaire_a.model_answer
-        # Sub folder for current user to fetch its relevant graphs
-        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'
-
+        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'  # Sub folder for current user to fetch its relevant graphs
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #2: Which distribution do you prefer?'
@@ -142,7 +144,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
         elif form_type == 'update':
             self.helper.layout = Layout(
                 HTML(main_header),
@@ -153,7 +155,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     @staticmethod
     def get_questionnaire_graphs(questionnaire_a: QuestionnaireA):

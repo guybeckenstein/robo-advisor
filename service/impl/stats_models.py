@@ -52,9 +52,10 @@ class StatsModels:
 
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
-            if isinstance(symbol, int):
-                symbol = str(symbol)
-            stocks_names.append(symbol)
+            if type(symbol) == int:
+                stocks_names.append(str(symbol))
+            else:
+                stocks_names.append(symbol)
 
         returns_daily = pct_change_table
         returns_annual = ((1 + returns_daily.mean()) ** 254) - 1
@@ -136,9 +137,10 @@ class StatsModels:
                                                  stocks_symbols, max_percent_commodity, max_percent_stocks) -> None:
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
-            if isinstance(symbol, int):
-                symbol = str(symbol)
-            stocks_names.append(symbol)
+            if type(symbol) == int:
+                stocks_names.append(str(symbol))
+            else:
+                stocks_names.append(symbol)
         returns_daily = pct_change_table
         port_portfolio_annual: list = []
         portfolio_gini_annual: list = []
@@ -185,13 +187,9 @@ class StatsModels:
             portfolio = np.dot(returns_daily, weights)
             portfolio_return = pd.DataFrame(portfolio)
             rank = portfolio_return.rank()
-            # Rank/N
-            rank_divided_n = rank / len(rank)
-            # 1-Rank/N
-            one_sub_rank_divided_n = 1 - rank_divided_n
-            # (1-Rank/N)^(V-1)
-            one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (self._gini_v_value - 1)
-
+            rank_divided_n = rank / len(rank)  # Rank/N
+            one_sub_rank_divided_n = 1 - rank_divided_n  # 1-Rank/N
+            one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (self._gini_v_value - 1)  # (1-Rank/N)^(V-1)
             mue = portfolio_return.mean().tolist()[0]
             x_avg = one_sub_rank_divided_n_power_v_sub_one.mean().tolist()[0]
             portfolio_mue = portfolio_return - mue

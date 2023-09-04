@@ -28,22 +28,32 @@ jobs:
           sleep 1
 
   pytest:
-    name: Run the application's tests with PyTest, then check code with Flake8
-    runs-on: ubuntu-latest
+    name: Run the application's tests with PyTest
+    runs-on: ubuntu-20.04
     container: fedora:34
     env:
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-    needs: setup-database
     steps:
       - name: Install Pipenv and git
         run: dnf install -y pipenv git
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
+      - name: Setup environment
+        run: pipenv sync --dev
+      - name: Run PyTest
+        run: pipenv run pytest -v
+  flake8:
+    name: Check code with Flake8
+    runs-on: ubuntu-20.04
+    container: fedora:34
+    steps:
+      - name: Install Pipenv and Git
+        run: dnf install -y pipenv git
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Setup environment
         run: pipenv sync --dev
       - name: Run Flake8
-        run: pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
-      - name: Run Migrations
-        run: python manage.py migrate
-      - name: Run PyTest
-        run: pipenv run pytest -v
+        run: pipenv run flake8 --max-line-length 120

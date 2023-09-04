@@ -6,8 +6,8 @@ if __name__ == '__main__':
     data_management.show_main_menu()
     selection = data_management.get_menu_choice()
     exit_loop_operation = 8
-    user_id: int = 1
-    user_name: int = 'yarden'  # data_management.get_name()
+    login_id: int = 1
+    login_name: int = 'yarden'  # data_management.get_name()
     data_changed = False
 
     while selection != exit_loop_operation:
@@ -33,7 +33,7 @@ if __name__ == '__main__':
                                   (sub_folder, tables))
 
             # creates new user with portfolio details
-            portfolio = data_management.create_new_user_portfolio(
+            new_portfolio = data_management.create_new_user_portfolio(
                 stocks_symbols=stocks_symbols,
                 investment_amount=0,
                 is_machine_learning=is_machine_learning,
@@ -42,11 +42,12 @@ if __name__ == '__main__':
                 extended_data_from_db=tables,
             )
 
-            user: User = User(
-                _id=user_id, _name=user_name, _portfolio=portfolio, _stocks_collection_number=stocks_collection_number
-            )
+            user: User = User(user_id=login_id,
+                              name=login_name,
+                              portfolio=new_portfolio,
+                              stocks_collection_number=stocks_collection_number)
             try:
-                investments_list = data_management.get_user_investments_from_json_file(user_name)
+                investments_list = data_management.get_user_investments_from_json_file(login_name)
                 data_management.changing_portfolio_investments_treatment_console(user.portfolio, investments_list)
             except Exception as e:
                 print(e)
@@ -58,34 +59,34 @@ if __name__ == '__main__':
 
             investment_amount: int = data_management.get_investment_amount()  # get from terminal
             if investment_amount is not None:
-                __, investments_list = data_management.add_new_investment(user_name, investment_amount)
+                __, investments_list = data_management.add_new_investment(login_name, investment_amount)
 
                 # save investments history
-                data_management.plot_investments_history(user_id, investments_list)
+                data_management.plot_investments_history(login_id, investments_list)
                 # show result
-                data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/investments history.png')
+                data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/investments history.png')
 
                 # save report according to a new investment
                 # get stocks weights and stocks symbols from db
                 json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
-                stocks_weights = json_data['usersList'][user_name][0]['stocksWeights']
-                stocks_symbols = json_data['usersList'][user_name][0]['stocksSymbols']
-                data_management.view_investment_report(user_id, investment_amount,
+                stocks_weights = json_data['usersList'][login_name][0]['stocksWeights']
+                stocks_symbols = json_data['usersList'][login_name][0]['stocksSymbols']
+                data_management.view_investment_report(login_id, investment_amount,
                                                        stocks_weights, stocks_symbols)
                 # show result
-                data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/investment report.png')
+                data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/investment report.png')
 
         elif selection == 3:  # show user portfolio graphs
 
             json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
-            collection_number = json_data['usersList'][user_name][0]['stocksCollectionNumber']
+            collection_number = json_data['usersList'][login_name][0]['stocksCollectionNumber']
             if data_management.is_today_date_change_from_last_updated_df(collection_number) or data_changed:
-                data_management.get_user_from_db(user_id, user_name)
+                data_management.get_user_from_db(login_id, login_name)
 
             # show results
-            data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/sectors_weights_graph.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/stocks_weights_graph.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/estimated_yield_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/sectors_weights_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/stocks_weights_graph.png')
+            data_management.plot_image(f'{settings.USER_IMAGES}{login_id}/estimated_yield_graph.png')
 
         elif selection == 4:  # forecast specific stock using machine learning
 
@@ -113,7 +114,9 @@ if __name__ == '__main__':
             research.save_user_specific_stock(stock_name, operation, plt_instance)
 
             # show result
-            data_management.plot_image(f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
+            data_management.plot_image(
+                settings.RESEARCH_IMAGES +
+                stock_name + operation + '.png')
 
         elif selection == 6:  # discover good stocks
             # TODO show intersection
@@ -136,7 +139,8 @@ if __name__ == '__main__':
             sub_folder = str(stocks_collection_number) + '/' + str(is_machine_learning) + str(model_option) + "/"
 
             stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
-            closing_prices_table_path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{stocks_collection_number}/'
+            closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+                                         + stocks_collection_number + '/')
             data_management.plot_stat_model_graph(
                 stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
                 model_name=settings.MODEL_NAME[model_option], num_of_years_history=num_of_years_history,

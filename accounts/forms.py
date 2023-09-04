@@ -1,3 +1,4 @@
+from allauth.account.forms import LoginForm, ResetPasswordForm
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, HTML
@@ -24,20 +25,82 @@ class UserRegisterForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
 
+        self.fields['first_name'].widget.attrs.update({
+            'hx-get': reverse_lazy('check_first_name'),
+            'hx-target': '#div_id_first_name',
+            'hx-trigger': 'keyup[target.value.length > 6]'
+
+        })
+        self.fields['last_name'].widget.attrs.update({
+            'hx-get': reverse_lazy('check_last_name'),
+            'hx-target': '#div_id_last_name',
+            'hx-trigger': 'keyup[target.value.length > 4]'
+
+        })
+
         self.helper.form_id = 'signup-form'
         self.helper.add_input(Submit('submit', 'Submit'))
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'first_name', 'last_name', 'phone_number',)
+        fields = ('email', 'first_name', 'last_name', 'phone_number', 'password1', 'password2')
+        widgets = {
+            # 'first_name': forms.TextInput(attrs={
+            #     'hx-get': reverse_lazy('check_first_name'),
+            #     'hx-target': '#div_id_first_name',
+            #     'hx-trigger': 'keyup[target.value.length > 4]'
+            # }),
+            'email': forms.TextInput(attrs={
+                'hx-get': reverse_lazy('check_email'),
+                'hx-target': '#div_id_email',
+                'hx-trigger': 'keyup[target.value.length > 8]'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'hx-get': reverse_lazy('check_phone_number'),
+                'hx-target': '#div_id_phone_number',
+                'hx-trigger': 'keyup changed delay:2s'
+            }),
+        }
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
+
         try:
             ac_il_email_validator(email)
         except ValidationError as e:
             raise forms.ValidationError(str(e))
+
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("User with this email address is already registered.")
+
         return email
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data['last_name']
+        # Add your validation logic here
+        if not last_name.replace(" ", "").isalpha():
+            raise forms.ValidationError("Only alphabetic characters and spaces are allowed.")
+        return last_name
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data['first_name']
+        # Add your validation logic here
+        if not first_name.replace(" ", "").isalpha():
+            raise forms.ValidationError("Only alphabetic characters and spaces are allowed.")
+        return first_name
+
+
+class CustomLoginForm(LoginForm):
+    # fields = ['email', 'password']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+
+        self.fields['login'].widget.attrs.update({
+            'hx-post': reverse_lazy('check_login_email_view'),
+            'hx-target': '#email-validation',
+            'hx-trigger': 'keyup changed delay:2s'
+        })
 
 
 class AccountMetadataForm(forms.ModelForm):
@@ -65,12 +128,46 @@ class UpdateUserNameAndPhoneNumberForm(forms.ModelForm):
                 'phone_number',
             ),
             HTML('<hr>'),
-            FormActions(Submit('submit', 'Save', css_class='btn-dark')),
+            # FormActions(Submit('submit', 'Save', css_class='btn-dark')),
         )
 
     class Meta:
         model = CustomUser
         fields = ('first_name', 'last_name', 'phone_number',)
+        widgets = {
+            'phone_number': forms.TextInput(attrs={
+                'hx-get': reverse_lazy('check_phone_number'),
+                'hx-target': '#div_id_phone_number',
+                'hx-trigger': 'keyup changed delay:1s'
+            }),
+            'first_name': forms.TextInput(attrs={
+                'hx-get': reverse_lazy('check_first_name'),
+                'hx-target': '#div_id_first_name',
+                'hx-trigger': 'keyup[target.value.length > 6]'
+
+            }),
+            'last_name': forms.TextInput(attrs={
+
+                'hx-get': reverse_lazy('check_last_name'),
+                'hx-target': '#div_id_last_name',
+                'hx-trigger': 'keyup[target.value.length > 4]'
+
+            })
+        }
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data['last_name']
+        # Add your validation logic here
+        if not last_name.replace(" ", "").isalpha():
+            raise forms.ValidationError("Only alphabetic characters and spaces are allowed.")
+        return last_name
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data['first_name']
+        # Add your validation logic here
+        if not first_name.replace(" ", "").isalpha():
+            raise forms.ValidationError("Only alphabetic characters and spaces are allowed.")
+        return first_name
 
     @property
     def clean_fields(self):
@@ -190,3 +287,14 @@ class UpdateInvestorUserForm(forms.ModelForm):
     class Meta:
         model = InvestorUser
         fields = ('total_investment_amount', 'total_profit', 'stocks_collection_number', 'stocks_symbols',)
+
+
+class CustomResetPasswordForm(ResetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add any additional fields you want
+        self.fields['email'].widget.attrs.update({
+            'hx-post': reverse_lazy('check_login_email_reset'),
+            'hx-target': '#email-validation',
+            'hx-trigger': 'keyup changed delay:2s'
+        })

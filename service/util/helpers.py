@@ -112,9 +112,8 @@ class Analyze:
         self._record_percent_to_predict: float = record_percent_to_predict
         self._is_closing_prices_mode: bool = is_closing_prices_mode
 
-    def linear_regression_model(
-            self, test_size_machine_learning: str
-    ) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:  # TODO fix
+    def linear_regression_model(self, test_size_machine_learning: str) -> tuple[
+        pd.DataFrame, np.longdouble, np.longdouble]:  # TODO fix
         df, forecast_out = self.get_final_dataframe()
 
         # Added date
@@ -196,9 +195,7 @@ class Analyze:
             next_unix += SINGLE_DAY
             df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(
-            df=df, forecast_out=forecast_out
-        )
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df, forecast_out=forecast_out)
         return df, forecast_with_historical_returns_annual, expected_returns
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
@@ -246,8 +243,7 @@ class Analyze:
 
         longdouble: np.longdouble = np.longdouble(254)
         excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset:].mean()))) - 1) * 100
-        mean_val = np.log1p(yhat.mean())
-        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * mean_val)) - 1) * 100
+        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.mean()))) - 1) * 100
         if self._is_closing_prices_mode:
             # Plot the forecast
             model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
@@ -313,7 +309,7 @@ def update_daily_change_with_machine_learning(
     if len(columns) == 0:
         raise AttributeError('columns length is invalid - 0. Should be at least 1')
     else:
-        # annual_return = None
+        annual_return = None
         excepted_returns = None
         for i, stock in enumerate(columns):
             if is_ndarray_mode:
@@ -370,9 +366,9 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     file_url: str = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocks_names):
-        if isinstance(stock, float):
+        if type(stock) == float:
             continue
-        elif isinstance(stock, int) or stock.isnumeric():  # Israeli stock
+        if type(stock) == int or stock.isnumeric():  # Israeli stock
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
@@ -457,7 +453,7 @@ def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make mo
     sectors_data: [list[dict[str, str, list[object]]]] = get_sectors_data_from_file()
 
     for i in range(len(sectors_data)):
-        curr_sector: Sector = Sector(_name=sectors_data[i]['name'])
+        curr_sector: Sector = Sector(sectors_data[i]['name'])
         for j in range(len(stocks_symbols)):
             if stocks_symbols[j] in sectors_data[i]['stocks']:
                 curr_sector.add_stock(stocks_symbols[j])
@@ -469,7 +465,6 @@ def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make mo
 
 def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     stock_sectors = []  # TODO - FIX ORDER
-
     for symbol in stocks_symbols:
         found_sector = False
         for curr_sector in sectors:
@@ -549,13 +544,13 @@ def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
     usa_indexes_table: pd.DataFrame = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
         try:
-            if isinstance(stock, int) or stock.isnumeric():
+            if type(stock) == int or stock.isnumeric():
                 num_of_digits = len(str(stock))
                 if num_of_digits > 3:
                     is_index_type = False
                 else:  # israeli index name always has maximum of 3 digits
                     is_index_type = True
-                if isinstance(stock, str):
+                if type(stock) == str:
                     stock = int(stock)
                 stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
                                                                                  is_reverse_mode=is_reverse_mode))
@@ -820,7 +815,7 @@ def create_graphs_folders() -> None:
 
 
 def currency_exchange(from_currency="USD", to_currency="ILS"):
-    start_date = data_time.now().strftime('%Y-%m-%d')
+    start_date = (data_time.now() - timedelta(days=1)).strftime('%Y-%m-%d')
     end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
 
     ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol

@@ -59,8 +59,8 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
     )
 
     # Save plots
-    data_management.save_user_portfolio(
-        User(_id=user.id, _name=f'{user.first_name} {user.last_name}', _portfolio=portfolio)
+    data_management.save_user_portfolio(User(
+        user_id=user.id, name=f'{user.first_name} {user.last_name}', portfolio=portfolio)
     )
 
 
@@ -122,14 +122,14 @@ def create_portfolio_instance(user: CustomUser):
     return annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level, stocks_weights
 
 
-def send_email(subject, message, recipient_list, attachment_path=None):  # TODO: fix spam issue
-    from_email = django_settings.EMAIL_HOST_USER
+def send_email(subject, message, recipient_list, attachment_path=None):
+    from_email = django_settings.DEFAULT_FROM_EMAIL
     # Send the email with attachment
     text_content = strip_tags(message)
     msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
 
     # Attach the image
     with open(attachment_path, 'rb') as image_file:
-        msg.attach_file(image_file.name, 'image/png')  # Adjust MIME type if needed
+        msg.attach_file(image_file.name, 'image/png')
 
     msg.send()
