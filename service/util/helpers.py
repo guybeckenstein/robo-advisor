@@ -822,7 +822,7 @@ def currency_exchange(from_currency="USD", to_currency="ILS"):
     data = yf.download(ticker, start=start_date, end=end_date)
 
     if not data.empty:
-        latest_exchange_rate = data['Close'].iloc[-1]
+        latest_exchange_rate = data['Close'].iloc[-2:]
         return latest_exchange_rate
     else:
         raise ValueError("No exchange rate data available for the given date range.")
