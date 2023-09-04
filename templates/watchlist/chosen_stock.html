@@ -1,0 +1,60 @@
+{% load static %}
+
+<div class="watchlist-chosen-stock">
+  {% if is_chosen_stock_template is True %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">
+            Graph
+          </th>
+          <th scope="col">
+            Image
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">
+            Forecast Stock
+          </th>
+          <td>
+            <img class="img-fluid" src="{% static forecast_stock_img_name %}" alt="Forecast Stock of {{ symbol }}" name="Forecast Stock of {{ symbol }}">
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">
+            Bollinger Bands Squeeze Strategy
+          </th>
+          <td>
+            <img class="img-fluid" src="{% static bb_strategy_img_name %}" alt="BBS Strategy Graph of {{ symbol }}" name="BB Strategy Graph of {{ symbol }}">
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">
+            More statistics details
+          </th>
+          <td>
+            <a href="{{ more_statistics }}" target="_blank"></a>
+          </td>
+        </tr>
+      <tr>
+          <th scope="row">
+            Links
+          </th>
+          <td>
+            <a href="{{ links_name }}" target="_blank">links of {{ symbol }}</a>
+          </td>
+        </tr>
+      <tr>
+          <th scope="row">
+            Conversation
+          </th>
+          <td>
+            <a href="{{ conversation }}" target="_blank">conversation of {{ symbol }}</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  {% endif %}
+</div>

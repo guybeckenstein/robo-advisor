@@ -1,0 +1,8 @@
+<div id="load-more" hx-swap-oob="true">
+  {% if investments.has_next %}
+    <div class="ui divider"></div>
+    <button class="btn btn-primary mt-4" hx-get="{% url 'add_investment' %}" hx-vals='{"page": "{{ investments.next_page_number }}"}' hx-target="#investments-list" hx-swap="beforeend" >
+      Next Page
+    </button>
+  {% endif %}
+</div>

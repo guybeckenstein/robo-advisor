@@ -1,0 +1,25 @@
+{% extends "account/authenticated/profile_account.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block profile_account_title %}
+  Account Details
+{% endblock %}
+
+{% block profile_account_details %}
+  <h2 style="font-size: 24px; text-align: center; font-weight: 600; padding: 0 0 10px 0;">
+    <a href="{% url 'profile_account' %}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+      <<
+    </a>
+  </h2>
+{% endblock %}
+
+{% block profile_account_functions %}
+  <form action="{% url 'profile_account_details' %}" method="post">
+    {{ form | crispy }}
+    <button type="submit" class="btn btn-dark"> Submit </button>
+  </form>
+
+
+
+{% endblock %}

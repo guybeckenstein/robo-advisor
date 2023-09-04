@@ -1,0 +1,22 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <div class="content card mx-auto w-75">
+    <div class="row justify-content-center p-3">
+      <div class="border border-light-subtle" style="background-color: #fafafa; width: 98%;">
+        <h2 class="my-4 text-center">
+          Join Today
+        </h2>
+        {% crispy form %}
+           <div id="password2-error" style="color: red;"></div>
+        <small class="text-muted">
+          Already Have An Account?
+          <a href="{% url 'account_login' %}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+            Login
+          </a>
+        </small>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "account/authenticated/profile_main.html" %}
+{% load crispy_forms_tags %}
+
+<!-- User profile navigation bar -->
+{% block profile_account %}
+  <a href="{% url 'profile_account' %}" class="nav-link active">
+    Account
+  </a>
+{% endblock %}
+<!-- Main Content -->
+{% block profile_content %}
+  <div class="card px-5 py-2">
+    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0 0 0;">
+      {% block profile_account_title %}
+        Account
+      {% endblock %}
+    </h1>
+    <hr>
+    <div class="d-flex justify-content-between mb-3">
+      <div class="p-2">
+        {% block profile_account_details %}
+          <a href="{% url 'profile_account_details' %}" style="font-size: 24px; text-align: center; font-weight: 600; padding: 0 0 10px 0;" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+            Details
+          </a>
+        {% endblock %}
+      </div>
+      <div class="p-2">
+        {% block profile_account_password %}
+          <a href="{% url 'profile_account_password' %}" style="font-size: 24px; text-align: center; font-weight: 600; padding: 0 0 10px 0;" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+            Password
+          </a>
+        {% endblock %}
+      </div>
+    </div>
+
+    {% block profile_account_functions %}
+    {% endblock %}
+  </div>
+{% endblock %}

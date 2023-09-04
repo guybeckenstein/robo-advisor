@@ -1,0 +1,471 @@
+{
+    "usersList": {
+        "tom": [
+            {
+                "id": 10,
+                "levelOfRisk": 2,
+                "startingInvestmentAmount": 1000,
+                "stocksSymbols": [
+                    601,
+                    602,
+                    700,
+                    701,
+                    702,
+                    142,
+                    143,
+                    "SPY",
+                    "QQQ",
+                    "^RUT",
+                    "IEI",
+                    "LQD",
+                    "GSG",
+                    "GLD",
+                    "OIL"
+                ],
+                "sectorsNames": [
+                    "Israel stocks indexes",
+                    "Israel general bonds indexes",
+                    "Israel government bonds indexes",
+                    "US stocks indexes",
+                    "US bonds indexes",
+                    "US commodity indexes"
+                ],
+                "sectorsWeights": [
+                    0.11328709422494139,
+                    0.18622620780443,
+                    0.2500526551323597,
+                    0.1713620415553693,
+                    0.1001047149913929,
+                    0.17896728629150602
+                ],
+                "stocksWeights": [
+                    0.0371119560947466,
+                    0.1491142517096834,
+                    0.10900465330509,
+                    0.0113623619671986,
+                    0.1296856398600711,
+                    0.0266057448878235,
+                    0.0866813493371179,
+                    0.0652765844102519,
+                    0.0374571506000896,
+                    0.0686283065450278,
+                    0.0520387892392715,
+                    0.0480659257521214,
+                    0.0050149282214801,
+                    0.1666827024128897,
+                    0.0072696556571362
+                ],
+                "annualReturns": 3.78911796689085,
+                "annualMaxLoss": -4.440105800953538,
+                "annualVolatility": 4.987408344148114,
+                "annualSharpe": 0.7597368624000367,
+                "totalChange": 56.97306679008574,
+                "monthlyChange": 1.40296394629984,
+                "dailyChange": -0.0005496261455911546,
+                "statModelName": "Gini",
+                "machineLearningOpt": 1,
+                "stocksCollectionNumber": "1",
+                "investments_list": [
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-13",
+                        "status": false,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 2000,
+                        "date": "2023-08-13",
+                        "status": false,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 3000,
+                        "date": "2023-08-13",
+                        "status": false,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 5000,
+                        "date": "2023-08-13",
+                        "status": false,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-08-13",
+                        "status": true,
+                        "automatic_investment": false
+                    }
+                ]
+            }
+        ],
+        "yarden": [
+            {
+                "id": 1,
+                "levelOfRisk": 2,
+                "startingInvestmentAmount": 0,
+                "stocksSymbols": [
+                    169,
+                    170,
+                    603,
+                    601,
+                    701,
+                    714,
+                    "XLK",
+                    "XLV",
+                    "XOP",
+                    "QQQ",
+                    "SHV",
+                    "BIL",
+                    273011,
+                    695437,
+                    593038,
+                    "LMB",
+                    "AGM",
+                    "TDS",
+                    "MCD",
+                    "FMY",
+                    "EOI"
+                ],
+                "sectorsNames": [
+                    "Israel stocks indexes",
+                    "Israel general bonds indexes",
+                    "Israel government bonds indexes",
+                    "US stocks indexes",
+                    "US bonds indexes",
+                    "Israel stocks",
+                    "US stocks"
+                ],
+                "sectorsWeights": [
+                    0.09475541048665881,
+                    0.142540047484055,
+                    0.0732463732597812,
+                    0.0630468572401839,
+                    0.156744773153384,
+                    0.17295978211572494,
+                    0.2967067562602111
+                ],
+                "stocksWeights": [
+                    0.0703586873001422,
+                    0.0243967231865166,
+                    0.0565843230870754,
+                    0.0859557243969796,
+                    0.0372912479358361,
+                    0.0359551253239451,
+                    0.0220888807259175,
+                    0.0370596800250354,
+                    0.0025767263296154,
+                    0.0013215701596156,
+                    0.0547712686942569,
+                    0.1019735044591271,
+                    0.0704044873629734,
+                    0.0865823127371966,
+                    0.0159729820155549,
+                    0.0485838584603658,
+                    0.0483334223341667,
+                    0.0140260440324071,
+                    0.1027711515903714,
+                    0.0568255949115796,
+                    0.0261666849313205
+                ],
+                "annualReturns": 9.042186471335969,
+                "annualMaxLoss": -2.300167567611453,
+                "annualVolatility": 6.874153962998437,
+                "annualSharpe": 1.315388994777745,
+                "totalChange": 160.07178276587962,
+                "monthlyChange": 3.1963979310152935,
+                "dailyChange": 0.004528940525397306,
+                "statModelName": "Gini",
+                "machineLearningOpt": 1,
+                "stocksCollectionNumber": "3",
+                "investments_list": [
+                    {
+                        "amount": 2000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 2500,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 5000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 700,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 700,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 10000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 100000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 50000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 50,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 100000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 100000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 1000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 2000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 5000,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    }
+                ]
+            }
+        ],
+        "hanael": [
+            {
+                "id": 3,
+                "levelOfRisk": 2,
+                "startingInvestmentAmount": 1000,
+                "stocksSymbols": [
+                    601,
+                    602,
+                    700,
+                    701,
+                    702,
+                    "TA35.TA",
+                    "TA90.TA",
+                    "SPY",
+                    "QQQ",
+                    "^RUT",
+                    "IEI",
+                    "LQD",
+                    "Gsg",
+                    "GLD",
+                    "OIL"
+                ],
+                "sectorsNames": [
+                    "Israel stocks",
+                    "Israel general bonds",
+                    "Israel government bonds",
+                    "US stocks",
+                    "US bonds",
+                    "US commodity"
+                ],
+                "sectorsWeights": [
+                    0.1523574543937997,
+                    0.14382506849875817,
+                    0.1858963458838309,
+                    0.27105767188979735,
+                    0.020432384369752494,
+                    0.12609323586194923
+                ],
+                "stocksWeights": [
+                    0.11863036000590176,
+                    0.02519470849285641,
+                    0.09432598997024162,
+                    0.005785453082648072,
+                    0.0857849028309412,
+                    0.04037504803726698,
+                    0.11198240635653271,
+                    0.12621552885454487,
+                    0.12333195200465197,
+                    0.021510191030600517,
+                    0.09818311161295837,
+                    0.020432384369752494,
+                    0.0021547274891537036,
+                    0.11226857792783629,
+                    0.013824657934112949
+                ],
+                "annualReturns": 5.939733924938107,
+                "annualMaxLoss": -4.744313605621839,
+                "annualVolatility": 6.475180321551482,
+                "annualSharpe": 0.9173078786962522,
+                "totalChange": 1.000016101691135,
+                "monthlyChange": -945.0715617413496,
+                "dailyChange": -0.00038858149872412475,
+                "statModelName": "Gini",
+                "machineLearningOpt": 0
+            }
+        ],
+        "test": [
+            {
+                "levelOfRisk": 2,
+                "startingInvestmentAmount": 0,
+                "stocksSymbols": [
+                    601,
+                    602,
+                    700,
+                    701,
+                    702,
+                    142,
+                    143,
+                    "SPY",
+                    "QQQ",
+                    "^RUT",
+                    "IEI",
+                    "LQD",
+                    "GSG",
+                    "GLD",
+                    "OIL"
+                ],
+                "sectorsNames": [
+                    "Israel stocks indexes",
+                    "Israel general bonds indexes",
+                    "Israel government bonds indexes",
+                    "US stocks indexes",
+                    "US bonds indexes",
+                    "US commodity indexes"
+                ],
+                "sectorsWeights": [
+                    0.056608746509540196,
+                    0.23203875017997228,
+                    0.2610750859184067,
+                    0.1389137304646672,
+                    0.2781598991986643,
+                    0.033203787728748796
+                ],
+                "stocksWeights": [
+                    0.1036700537978386,
+                    0.1283686963821337,
+                    0.1163417027352323,
+                    0.047172541265501,
+                    0.0975608419176734,
+                    0.0003353146077875,
+                    0.0562734319017527,
+                    0.0595893003375497,
+                    0.0787952034479907,
+                    0.0005292266791268,
+                    0.1167142682215755,
+                    0.1614456309770888,
+                    0.0179937071465644,
+                    0.0101453010547319,
+                    0.0050647795274525
+                ],
+                "annualReturns": 3.074453939331523,
+                "annualMaxLoss": -2.6985703903407803,
+                "annualVolatility": 3.49880262404382,
+                "annualSharpe": 0.8787160265068491,
+                "totalChange": 50.2506403830005,
+                "monthlyChange": 0.7516279395030079,
+                "dailyChange": -0.002598012388396432,
+                "statModelName": "Gini",
+                "machineLearningOpt": 1,
+                "stocksCollectionNumber": "1",
+                "id": -1,
+                "investments_list": [
+                    {
+                        "amount": 500,
+                        "date": "2023-08-23",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-08-24",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-08-27",
+                        "status": true,
+                        "automatic_investment": false
+                    },
+                    {
+                        "amount": 500,
+                        "date": "2023-09-04",
+                        "status": true,
+                        "automatic_investment": false
+                    }
+                ]
+            }
+        ]
+    }
+}

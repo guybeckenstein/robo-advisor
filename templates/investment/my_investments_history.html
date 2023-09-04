@@ -1,0 +1,83 @@
+{#{% extends "investment/investments_main.html" %}#}
+{#{% load crispy_forms_tags %}#}
+{##}
+{#{% block investments_history_link %}#}
+{#  <a href="{% url 'my_investments_history' %}" class="nav-link active">#}
+{#    Investments History#}
+{#  </a>#}
+{#{% endblock %}#}
+{##}
+{#{% block investments_content %}#}
+{#  <div class="card px-5 py-2 pb-3" style="background-color: rgb(255, 255, 255);">#}
+{#    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">#}
+{#      My Investments History#}
+{#    </h1>#}
+{#    {% if is_form_filled %}#}
+{#      <form  class="mb-4" hx-post="{% url 'add_investment' %}">#}
+{#        {% csrf_token %}#}
+{##}
+{#          <label class="input-group-text" for="id_amount">#}
+{#            Amount To Invest#}
+{#          </label>#}
+{#          <div class="row">#}
+{#              <div class="col-md-12">#}
+{#                     {{ form | crispy }}#}
+{#                    <button class="btn btn-outline-dark">#}
+{#            Invest#}
+{#          </button>#}
+{##}
+{#              </div>#}
+{#          </div>#}
+{##}
+{#          <input type="number" id="id_amount" class="form-control" placeholder="Add Amount" name="amount" required>#}
+{##}
+{#      </form>#}
+{##}
+{#      {% include 'investment/add_investment.html' %}#}
+{#    {% else %}#}
+{#      <hr>#}
+{#      <a href="{% url 'capital_market_algorithm_preferences_form' %}" class="link-primary text-decoration-none">#}
+{#        Please fill the form for more information#}
+{#      </a>#}
+{#      <br>#}
+{##}
+{#    {% endif %}#}
+{#  </div>#}
+{#{% endblock %}#}
+
+
+{% extends "investment/investments_main.html" %}
+{% load crispy_forms_tags %}
+
+{% block investments_history_link %}
+  <a href="{% url 'my_investments_history' %}" class="nav-link active">
+    Investments History
+  </a>
+{% endblock %}
+
+{% block investments_content %}
+  <div class="card px-5 py-2 pb-3" style="background-color: rgb(255, 255, 255);">
+    <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+      My Investments History
+    </h1>
+    {% if is_form_filled %}
+      <form class="mb-4" action="{% url 'add_investment' %}" method="POST">
+        {% csrf_token %}
+
+            {{ form | crispy }}
+
+          <button class="btn btn-outline-dark">
+            Invest
+          </button>
+
+      </form>
+      {% include 'investment/add_investment.html' %}
+    {% else %}
+      <hr>
+      <a href="{% url 'capital_market_algorithm_preferences_form' %}" class="link-primary text-decoration-none">
+        Please fill the form for more information
+      </a>
+      <br>
+    {% endif %}
+  </div>
+{% endblock %}
