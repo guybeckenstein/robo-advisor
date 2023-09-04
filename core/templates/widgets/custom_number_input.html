@@ -1,0 +1,10 @@
+<input type="{{ widget.type }}" name="{{ widget.name }}"
+       {% if widget.value != None %} value="{{ widget.value|default:'' }}"
+       {% elif widget.data != None %} value="{{ widget.data|default:'' }}"
+       {% endif %}
+       {% include "django/forms/widgets/attrs.html" %}
+       {% if widget.step != None %} step="{{ widget.step }}"{% endif %}
+       {% if widget.min != None %} min="{{ widget.min }}"{% endif %}
+       {% if widget.max != None %} max="{{ widget.max }}"{% endif %}
+       {% if widget.required %} required{% endif %}
+>

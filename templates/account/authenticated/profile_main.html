@@ -1,0 +1,55 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <!-- User profile sidebar -->
+  <aside class="d-flex flex-column flex-shrink-0 p-3 bg-white border content-sidebar" style="margin-left: 0;">
+    <a href="{% url 'profile_main' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+      <span class="fs-4">{{ user.first_name }}'s Dashboard</span>
+    </a>
+    <hr>
+    {% block profile_navbar %}
+      <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          {% block profile_account %}
+            <a href="{% url 'profile_account' %}" class="nav-link link-body-emphasis">
+              Account
+            </a>
+          {% endblock %}
+        </li>
+        <li>
+          {% block profile_investor %}
+            <a href="{% url 'profile_investor' %}" class="nav-link link-body-emphasis">
+              Investor
+            </a>
+          {% endblock %}
+        </li>
+        <li>
+          {% block profile_portfolio %}
+            <a href="{% url 'profile_portfolio' %}" class="nav-link link-body-emphasis">
+              Portfolio
+            </a>
+          {% endblock %}
+        </li>
+        <li>
+          <a href="{% url 'capital_market_algorithm_preferences_form' %}" class="nav-link link-body-emphasis">
+            Capital Market Preferences
+          </a>
+        </li>
+      </ul>
+    {% endblock %}
+  </aside>
+  <!-- Main Content -->
+  <div class="position-absolute" style="right: 116px; top: 250px; width: 1000px;">
+    {% block profile_content %}
+      <div class="card px-5 py-2">
+        <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
+          Account Details
+        </h1>
+        <hr>
+        {% crispy form %}
+      </div>
+    {% endblock %}
+  </div>
+{% endblock %}

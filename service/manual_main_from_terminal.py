@@ -14,7 +14,7 @@ from config import settings
 
 if __name__ == '__main__':
 
-    data_management.update_files_from_google_drive()
+    #data_management.update_files_from_google_drive()
 
     data_management.show_main_menu()
     selection = data_management.get_menu_choice()
