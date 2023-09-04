@@ -1,7 +1,6 @@
 import codecs
 import csv
 import datetime
-import io
 from datetime import datetime as data_time, timedelta
 import json
 import math
