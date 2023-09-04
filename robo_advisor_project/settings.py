@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Load and read .env file
 # OS environment variables take precedence over variables from .env
 env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, '../.env.dev'))
+env.read_env(os.path.join(BASE_DIR, './.env.dev'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,17 +20,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY: str = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(env("DEBUG", default=True))
+DEBUG: bool = bool(env("DEBUG", default=True))
 
 # ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS: list[str] = env("DJANGO_ALLOWED_HOSTS").split(" ")
 
 SITE_ID = 1
 # Application definition
-INSTALLED_APPS = [
+INSTALLED_APPS: str = [
     # Third party apps
     'allauth',
     'allauth.account',
@@ -59,7 +59,7 @@ INSTALLED_APPS = [
 ]
 
 # Provider specific settings
-SOCIALACCOUNT_PROVIDERS = {
+SOCIALACCOUNT_PROVIDERS: dict[dict] = {
     'facebook': {
         'METHOD': 'oauth2',  # Set to 'js_sdk' to use the Facebook connect SDK
         'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
@@ -126,7 +126,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
+CSRF_TRUSTED_ORIGINS: list[str] = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

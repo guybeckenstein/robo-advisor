@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Load and read .env file
 # OS environment variables take precedence over variables from .env
 env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, '../../.env.oauth'))
+env.read_env(os.path.join(BASE_DIR, '../.env.oauth'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
