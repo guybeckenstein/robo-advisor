@@ -4,26 +4,38 @@ jobs:
   setup-database:
     name: Setup PostgreSQL Database
     runs-on: ubuntu-20.04
-    container: fedora:34
-    env:
-      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
     steps:
-      - name: Install PostgreSQL client tools
-        run: dnf install -y postgresql
-      - name: Execute SQL Queries
+      - name: Wait for PostgreSQL to start
+        run: |
+          sleep 10
+      - name: Execute PostgreSQL Commands
         run: |
           psql \
-            --host=$POSTGRES_HOST \
-            --port=$POSTGRES_PORT \
-            --dbname=$POSTGRES_DB \
+            --host=localhost \
+            --port=5432 \
             --username=$POSTGRES_USER \
             --password=$POSTGRES_PASSWORD \
-            --command="SELECT * FROM your_table_name;"
-        # Add more SQL commands or queries as needed
+            --dbname=$POSTGRES_DB \
+            --command="CREATE DATABASE $POSTGRES_DB;"
+          psql \
+            --host=localhost \
+            --port=5432 \
+            --username=$POSTGRES_USER \
+            --password=$POSTGRES_PASSWORD \
+            --dbname=$POSTGRES_DB \
+            --command="ALTER DATABASE $POSTGRES_DB SET TIMEZONE TO 'Israel';"
+      - name: Run Migrations
+        run: |
+          python manage.py migrate
 
   pytest:
     name: Run the application's tests with PyTest
@@ -54,4 +66,4 @@ jobs:
       - name: Setup environment
         run: pipenv sync --dev
       - name: Run Flake8
-        run: pipenv run flake8 --max-line-length 120 --ignore=E402,F401
+        run: pipenv run flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .

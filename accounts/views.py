@@ -188,18 +188,21 @@ def profile_investor(request):
             if form.is_valid():
                 investments: QuerySet[Investment] = Investment.objects.filter(investor_user=investor_user)
                 if len(investments) > 0:
-                    if investments.last().stocks_collection_number != int(form.cleaned_data['stocks_collection_number']):
+                    form_stocks_collection_number: int = int(form.cleaned_data['stocks_collection_number'])
+                    if investments.last().stocks_collection_number != form_stocks_collection_number:
                         questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
                         questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
-                        (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-                         risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change,
-                         portfolio) = web_actions.create_portfolio_and_get_data(
+                        (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change,
+                         monthly_change, risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights,
+                         total_change, portfolio) = web_actions.create_portfolio_and_get_data(
                             answers_sum=questionnaire_b.answers_sum,
                             stocks_collection_number=investor_user.stocks_collection_number,
                             questionnaire_a=questionnaire_a,
                         )
                         # add "robot" investment as one investment with amount of total investments + profit
-                        data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio, investments)
+                        data_management.changing_portfolio_investments_treatment_web(
+                            investor_user, portfolio, investments
+                        )
                         # Update Investments' Data
                         affected_investments: int = 0
                         if len(investments) > 0:

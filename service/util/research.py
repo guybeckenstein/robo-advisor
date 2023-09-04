@@ -64,7 +64,9 @@ def forecast_specific_stock(stock: str, machine_learning_model: str, models_data
                          f'{settings.MACHINE_LEARNING_MODEL[2]}\n'
                          f'{settings.MACHINE_LEARNING_MODEL[3]}\n')
 
-    plt_instance = graph_plot_methods.price_forecast(description, df, annual_return_with_forecast, excepted_returns, plt)
+    plt_instance = graph_plot_methods.price_forecast(
+        description, df, annual_return_with_forecast, excepted_returns, plt
+    )
 
     return plt_instance
 

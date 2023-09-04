@@ -196,7 +196,9 @@ class Analyze:
             next_unix += SINGLE_DAY
             df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df, forecast_out=forecast_out)
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(
+            df=df, forecast_out=forecast_out
+        )
         return df, forecast_with_historical_returns_annual, expected_returns
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
@@ -244,7 +246,8 @@ class Analyze:
 
         longdouble: np.longdouble = np.longdouble(254)
         excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset:].mean()))) - 1) * 100
-        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(yhat.mean()))) - 1) * 100
+        mean_val = np.log1p(yhat.mean())
+        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * mean_val)) - 1) * 100
         if self._is_closing_prices_mode:
             # Plot the forecast
             model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))

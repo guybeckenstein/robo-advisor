@@ -187,9 +187,13 @@ class StatsModels:
             portfolio = np.dot(returns_daily, weights)
             portfolio_return = pd.DataFrame(portfolio)
             rank = portfolio_return.rank()
-            rank_divided_n = rank / len(rank)  # Rank/N
-            one_sub_rank_divided_n = 1 - rank_divided_n  # 1-Rank/N
-            one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (self._gini_v_value - 1)  # (1-Rank/N)^(V-1)
+            # Rank/N
+            rank_divided_n = rank / len(rank)
+            # 1-Rank/N
+            one_sub_rank_divided_n = 1 - rank_divided_n
+            # (1-Rank/N)^(V-1)
+            one_sub_rank_divided_n_power_v_sub_one = one_sub_rank_divided_n ** (self._gini_v_value - 1)
+
             mue = portfolio_return.mean().tolist()[0]
             x_avg = one_sub_rank_divided_n_power_v_sub_one.mean().tolist()[0]
             portfolio_mue = portfolio_return - mue
