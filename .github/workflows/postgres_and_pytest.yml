@@ -38,6 +38,9 @@ jobs:
         run: pip install pipenv
       - name: Check Python Version
         run: python3.11 --version
+      - name: Clear Python Environment
+        run: |
+          pipenv --rm
       - name: Install dependencies
         run: python3.11 -m pipenv sync
       - name: Install dependencies from requirements.txt
