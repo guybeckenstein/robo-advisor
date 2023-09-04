@@ -19,6 +19,7 @@ django-environ==0.10.0
 django-htmx==1.16.0
 django-jazzmin==2.6.0
 django-phonenumber-field==7.1.0
+flake8==6.1.0
 fonttools==4.42.1
 frozendict==2.3.8
 gunicorn==21.2.0
@@ -39,8 +40,6 @@ selenium==4.11.2
 Pillow==10.0.0
 plotly==5.16.1
 pluggy==1.2.0
-pmdarima==2.0.3
-prophet==1.1.4
 psycopg2-binary==2.9.7
 pycparser==2.21
 PyJWT==2.8.0
