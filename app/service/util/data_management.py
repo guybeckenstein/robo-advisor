@@ -5,7 +5,6 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 from investment.models import Investment
 from service.config import settings
 from service.impl.portfolio import Portfolio
@@ -17,19 +16,17 @@ from service.util.helpers import Analyze
 from service.util.graph import image_methods as graph_image_methods
 from service.util.graph import plot_methods as graph_plot_methods
 from service.util.pillow import plot_methods as pillow_plot_methods
-from service.config import google_drive
 import os
 # django imports
 import django
 from django.db.models import QuerySet
+
 from service.util import draw_table
 
 # Set up Django settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
 from accounts.models import InvestorUser
-
-google_drive_instance = google_drive.GoogleDriveInstance()
 
 
 ######################################################################################
@@ -79,7 +76,6 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path,
                 pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
                     pct_change_table, closing_prices_table.index, models_data
                 )
-
             update_three_level_data_frame_tables(
                 machine_learning_opt=machine_model_tuple[0], model_name=machine_model_tuple[1],
                 stocks_symbols=stocks_symbols,
@@ -108,7 +104,7 @@ def update_three_level_data_frame_tables(machine_learning_opt, model_name, stock
     for i, level_of_risk in enumerate(settings.LEVEL_OF_RISK_LIST):
         update_specific_data_frame_table(is_machine_learning=machine_learning_opt, model_name=model_name,
                                          stocks_symbols=stocks_symbols,
-                                         sectors=sectors_list, risk_level=level_of_risk,
+                                         sectors=sectors_list, levelOfRisk=level_of_risk,
                                          max_percent_commodity=limit_percent_commodity_list[i],
                                          max_percent_stocks=limit_percent_stocks_list[i],
                                          closing_prices_table=closing_prices_table, pct_change_table=pct_change_table,
@@ -138,18 +134,18 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
                 pct_change_table = pct_change_table.drop(stocks_symbols[i], axis=1)
         stocks_symbols = filtered_stocks
 
-    stats_models: StatsModels = StatsModels(
-        _stocks_symbols=stocks_symbols,
-        _sectors=sectors,
-        _model_name=model_name,
-        _gini_v_value=gini_v_value,
-    )
-    stats_models.check_model_name_and_get_optimal_portfolio_as_dataframe(
+    stats_models = StatsModels(
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        closing_prices_table=closing_prices_table,
+        pct_change_table=pct_change_table,
         num_por_simulation=num_por_simulation,
         min_num_por_simulation=min_num_por_simulation,
-        pct_change_table=pct_change_table,
         max_percent_commodity=max_percent_commodity,
         max_percent_stocks=max_percent_stocks,
+        model_name=model_name,
+        gini_value=gini_v_value
+
     )
     df: pd.DataFrame = stats_models.df
     df.to_csv(locationForSaving + model_name + '_df_' + risk_level + '.csv')
@@ -170,7 +166,12 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
         )
 
     portfolio = Portfolio(
-        stocks_symbols, sectors, risk_level, investment_amount, stat_model_name, is_machine_learning
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        risk_level=risk_level,
+        total_investment_amount=investment_amount,
+        stat_model_name=stat_model_name,
+        is_machine_learning=is_machine_learning
     )
 
     portfolio.update_stocks_data(
@@ -443,9 +444,19 @@ def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') 
 def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
                           num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
+    models_data = helpers.get_collection_json_data()
+    num_por_simulation: int = int(models_data["models_data"]['num_por_simulation'])
+    min_num_por_simulation: int = int(models_data["models_data"]['min_num_por_simulation'])
+    gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(closing_prices_table_path)
+    pct_change_table = closing_prices_table.pct_change()
+    if num_of_years_history != settings.NUM_OF_YEARS_HISTORY:
+        pct_change_table = pct_change_table.tail(num_of_years_history * 254)
 
-    if type(model_name) == int:
-        model_name = settings.MODEL_NAME[model_name]
+    if is_machine_learning == 1:
+        pct_change_table, _, _ = helpers.update_daily_change_with_machine_learning(
+            pct_change_table, closing_prices_table.index, models_data
+        )
 
     three_levels_df_tables: list[pd.DataFrame] = [
         get_df_table(is_machine_learning, model_name, risk, closing_prices_table_path)
@@ -475,13 +486,16 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
         )
 
     graph_image_methods.save_graph(plt_instance,
-                                   f'{settings.GRAPH_IMAGES}{sub_folder}all_options')
+                                   f'{settings.GRAPH_IMAGES}{sub_folder}{model_name}_all_options')
 
 
-def plot_research_graphs(data_tuple_list: list, intersection_data, sector_name: str, labels: list[str]) -> None:
-    prefix_str = "Top Stocks"
-    path = f'{settings.RESEARCH_IMAGES}{prefix_str} {sector_name}'
-    draw_table._draw_research_table(path, data_tuple_list, intersection_data, labels)
+def plot_research_graphs(data_tuple_list: list, intersection_data_list: list, sector_name: int):
+    path = settings.RESEARCH_IMAGES
+    research_plt = graph_plot_methods.research_graphs(data_tuple_list, intersection_data_list)
+    graph_image_methods.save_graph(research_plt, path + "top_stocks_"f'{sector_name}')
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def save_user_portfolio(user: User) -> None:
@@ -505,7 +519,7 @@ def save_user_portfolio(user: User) -> None:
     portfolio: Portfolio = user.portfolio
     stocks_symbols: list[str] = portfolio.stocks_symbols
 
-    # pie chart of sectors.json.json & sectors.json.json weights
+    # pie chart of sectors & sectors weights
     plt_sectors_component = graph_plot_methods.sectors_component(
         weights=portfolio.get_sectors_weights(), names=portfolio.get_sectors_names()
     )
@@ -525,7 +539,7 @@ def save_user_portfolio(user: User) -> None:
         header_text=header_text
     )
 
-    # Total yield graph with sectors.json.json weights
+    # Total yield graph with sectors weights
     table: pd.DataFrame = portfolio.pct_change_table
     table['yield__selected_percent'] = (table["yield_selected"] - 1) * 100
     analyze: Analyze = Analyze(
@@ -534,7 +548,9 @@ def save_user_portfolio(user: User) -> None:
         record_percent_to_predict=float(record_percent_to_predict),
         is_closing_prices_mode=True
     )
+    # TODO fix
     df, annual_return_with_forecast, excepted_returns = analyze.linear_regression_model(test_size_machine_learning)
+    # df, annual_return_with_forecast, excepted_returns = analyze.prophet_model()
     df['yield__selected_percent'] = df['Col']
     df['yield__selected_percent_forecast'] = df["Forecast"]
 
@@ -668,14 +684,19 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
 
     closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path)
     portfolio: Portfolio = Portfolio(
-        stocks_symbols, sectors, risk_level, total_investment_amount, stat_model_name, is_machine_learning,
+        stocks_symbols=stocks_symbols,
+        sectors=sectors,
+        risk_level=risk_level,
+        total_investment_amount=total_investment_amount,
+        stat_model_name=stat_model_name,
+        is_machine_learning=is_machine_learning,
     )
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
     models_data = helpers.get_collection_json_data()
-    if is_machine_learning:  # TODO maybe remove
+    if is_machine_learning:
         weighted_sum = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
         )[0][0]
@@ -684,10 +705,10 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
     portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
                                  annual_volatility, annual_sharpe)
-    user: User = User(_id=user_id, _name=user_name, _portfolio=portfolio)
-    save_user_portfolio(user)
+    curr_user = User(user_id=user_id, name=user_name, portfolio=portfolio)
+    save_user_portfolio(curr_user)
 
-    return user
+    return curr_user
 
 
 def save_investment_to_json_File(user_id, investments):
@@ -822,13 +843,10 @@ def get_basic_data_from_user() -> tuple[int, int, str]:
     return is_machine_learning, model_option, stocks_collection_number
 
 
-def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, tables, is_machine_learning,
-                                                                   model_option, stocks_symbols,
-                                                                   stocks_collection_number) -> int:
+def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, tables) -> int:
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
         pct_change_table, yield_list = tables
-    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                 + stocks_collection_number + '/')
+
     # question #1
     string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
     first_question_score = get_score_by_answer_from_user(string_to_show)
@@ -848,16 +866,6 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
         three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
     )
     plot_image(settings.GRAPH_IMAGES + sub_folder + 'three_portfolios.png')
-
-    # display stat model graph (matplotlib)
-    plot_stat_model_graph(
-        stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
-        model_name=settings.MODEL_NAME[model_option], num_of_years_history=settings.NUM_OF_YEARS_HISTORY,
-        closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder)
-
-    # show result
-    plot_image(settings.GRAPH_IMAGES + sub_folder + 'all_options' + '.png')
-
     third_question_score = get_score_by_answer_from_user(string_to_show)
 
     # calculate level of risk by sum of score
@@ -869,49 +877,3 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
 
 def get_score_by_answer_from_user(string_to_show: str) -> int:
     return console_handler.get_score_by_answer_from_user(string_to_show)
-
-
-def upload_file_to_google_drive(file_path):
-    file_path = file_path.split('/')[-3:]
-    google_drive_instance.upload_file(file_path)
-
-
-def get_file_from_google_drive(file_path):
-    return google_drive_instance.get_file_by_path(file_path)
-
-
-def update_files_from_google_drive():
-    if google_drive_instance.service is None:
-        return
-
-    # update stocks.json
-    stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)
-    stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
-    # save stocks.json to local
-    helpers.save_json_data(settings.STOCKS_JSON_NAME, stocks_json)
-
-    # update users.json
-    stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
-    stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
-    # save users.json to local
-    helpers.save_json_data(settings.USERS_JSON_NAME, stocks_json)
-
-    #update csv files
-    basic_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-    machine_non_machine_learining= ['includingMachineLearning', 'withoutMachineLearning']
-    for i in range(1, 5):
-        collection_path = basic_path + str(i) + '/'
-        closing_price_path = helpers.get_sorted_path(collection_path + f'closing_prices', num_of_last_elements=2)
-        pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
-        # save csv to local
-
-        # update df csv files
-        for j in range(1, 4):
-            stocks_json_path = basic_path + str(i) + '/' + machine_non_machine_learining[j - 1] + '/'
-            df_path = helpers.get_sorted_path(f'df_{j}', num_of_last_elements=2)
-            pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
-            # save csv to local
-            helpers.save_pd_to_csv(df_path, pd_table)
-
-    # update top stocks images
-   # png_files = google_drive_instance.get_all_png_files()

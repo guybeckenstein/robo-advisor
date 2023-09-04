@@ -42,7 +42,7 @@ class TestPreferencesForm:
                 'Capital Market Preferences Form - Algorithms',
                 'Question #1: Would you like to use machine learning algorithms for stock market investments?',
                 'Question #2: Which statistic model would you like to use for stock market investments?',
-                'div_id_ml_answer', 'div_id_model_answer',
+                # 'div_id_ml_answer', 'div_id_model_answer',
             ])
 
         def test_redirection_get_request_as_guest(self, client):

@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from accounts.models import CustomUser, InvestorUser
 from service.util import data_management
-from tests import helper_methods
+from app.tests import helper_methods
 
 # Global constant variables
 DASHBOARD: str = "'s Dashboard"

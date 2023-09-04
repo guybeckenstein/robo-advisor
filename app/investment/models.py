@@ -19,7 +19,7 @@ class Investment(models.Model):
 
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
     investor_user = models.ForeignKey(InvestorUser, on_delete=models.RESTRICT)
-    amount = models.IntegerField(validators=[MinValueValidator(1)])
+    amount = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     mode = models.CharField(max_length=10, choices=Mode.choices, default=Mode.USER)

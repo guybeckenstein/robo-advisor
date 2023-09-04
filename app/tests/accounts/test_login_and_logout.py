@@ -21,8 +21,9 @@ class TestLoginAndLogout:
             url_name='account_login',
             template_src='account/guest/login.html',
         )
+        print(helper_methods.assert_attributes)
         helper_methods.assert_attributes(response, attributes=[
-            'E-mail', 'Password', 'Remember Me', 'Login', 'Forgot Password?', "Don't have an account?", 'Sign up here'
+            'email', 'password', 'Login', 'Forgot Password?', "Don't have an account?", 'Sign up here'
         ])
 
     def test_login_invalid_credentials(self, client: Client, user_factory: Callable):

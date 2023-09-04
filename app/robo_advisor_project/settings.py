@@ -1,15 +1,9 @@
-
 import os
 from pathlib import Path
 
-import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Load and read .env file
-# OS environment variables take precedence over variables from .env
-env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, './.env.dev'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,13 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = 'django-insecure-2f(wsgq6o$nmh&m@$7=jw5pldw^cyn%u44m+e34z7hss&($rl&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(env("DEBUG", default=True))
+DEBUG = True
 
-# ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = 'localhost 127.0.0.1 [::1]'.split(" ")
 
 SITE_ID = 2
 # Application definition
@@ -99,6 +93,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -125,20 +120,31 @@ TEMPLATES = [
 WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
+# CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+# old password: 'PASSWORD': '1234qwer',
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': 'localhost',  # env('POSTGRES_HOST'),
-        'PORT': env('POSTGRES_PORT'),
+        'NAME': 'robo_advisor',
+        'USER': 'postgres',  # Insert Postgres Username here
+        'PASSWORD': 'jorden123',
+         # Insert Postgres Password here
+        'HOST': 'localhost',
+        'PORT': 5432,
     }
+}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+ACCOUNT_FORMS = {
+    'login': 'accounts.forms.CustomLoginForm',
+    'reset_password': 'accounts.forms.CustomResetPasswordForm'
 }
 
 # Password validation
@@ -342,9 +348,11 @@ LOGOUT_REDIRECT_URL = 'account_logout'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'noreply.robo.advisor@gmail.com'
-EMAIL_HOST_PASSWORD = 'mwepxsnhsvkpkzzo'
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_HOST_USER = "apikey"
+EMAIL_HOST_PASSWORD = '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'
+DEFAULT_FROM_EMAIL = 'noreply.robo.advisor@gmail.com'
+
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

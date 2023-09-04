@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-import environ
 from allauth.socialaccount.models import SocialApp
 from django.db import migrations, transaction
 
@@ -10,11 +9,6 @@ from django.db.models import QuerySet
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Load and read .env file
-# OS environment variables take precedence over variables from .env
-env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, '../../.env.oauth'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,9 +34,9 @@ class Migration(migrations.Migration):
 
     def generate_socialapp_data(apps, schema_editor):
         socialapp_data: list[tuple] = [
-            ('facebook', 'facebook', env("FACEBOOK_CLIENT_ID"), env("FACEBOOK_CLIENT_SECRET"),),
-            ('google', 'google', env("GMAIL_CLIENT_ID"), env("GMAIL_CLIENT_SECRET"),),
-            ('github', 'github', env("GITHUB_CLIENT_ID"), env("GITHUB_CLIENT_SECRET"),),
+            ('facebook', 'facebook', '', '',),
+            ('google', 'google', '', '',),
+            ('github', 'github', '', '',),
         ]
         with transaction.atomic():
             for i, (provider, name, client_id, secret_key) in enumerate(socialapp_data):

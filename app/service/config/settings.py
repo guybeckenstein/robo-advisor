@@ -14,7 +14,7 @@ if 'service/' in DJANGO_DIR:
     DJANGO_DIR = DJANGO_DIR[:(0 - len('service/'))]
 CONFIG = 'config/'
 CONFIG_RESOURCE_LOCATION = BASE_SERVICE_DIR + CONFIG
-SECTORS_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'sectors'  # sectors.json.json json file
+SECTORS_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'sectors'  # sectors json file
 INDICES_LIST_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'indicesList'  # indices list json file
 SECURITIES_LIST_JSON_NAME = CONFIG_RESOURCE_LOCATION + 'securitiesList'  # indices list json file
 # Datasets
@@ -26,7 +26,6 @@ USERS_JSON_NAME = DATASET_LOCATION + 'users'  # where to save the users details
 MACHINE_LEARNING_LOCATION = 'includingMachineLearning/'  # directory with 6 tables
 NON_MACHINE_LEARNING_LOCATION = 'withoutMachineLearning/'  # directory with 6 tables
 CLOSING_PRICES_FILE_NAME = "closing_prices"
-PCT_CHANGE_FILE_NAME = "pct_change"
 
 # STATIC FILES
 GRAPH_IMAGES = DJANGO_DIR + 'static/img/graphs/'
@@ -38,5 +37,3 @@ RESEARCH_TOP_STOCKS_IMAGES = DJANGO_DIR + 'static/img/research/'
 RESEARCH_LOCATION = BASE_SERVICE_DIR + 'research/'
 RESEARCH_RESULTS_LOCATION = RESEARCH_LOCATION + 'img/'
 RESEARCH_RESULTS_TOP_STOCKS = RESEARCH_RESULTS_LOCATION + 'top_stocks/'
-RESEARCH_FILTERS = [0, 1000000000000, 4, 30, 0.5, 1500, 0.25]
-

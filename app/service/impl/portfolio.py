@@ -1,6 +1,4 @@
 import os
-from dataclasses import dataclass, field
-
 import numpy as np
 import pandas as pd
 import datetime
@@ -11,23 +9,32 @@ from investment.models import Investment
 from service.impl.sector import Sector
 
 
-@dataclass(init=True, order=False, frozen=False)
 class Portfolio:
-    _stocks_symbols: list[str | int] = field(default=list)
-    _sectors: list[Sector] = field(default_factory=list)
-    _risk_level: int = field(default=1)
-    _total_investment_amount: int = field(default=0)
-    _stat_model_name: str = field(default='1')
-    _is_machine_learning: int = field(default=0)
-    _last_date_of_investment: datetime.date = field(default=datetime.datetime.now().date())
-    _stocks_weights: list = field(default_factory=list)
-    _closing_prices_table: pd.DataFrame = field(default_factory=pd.DataFrame)
-    _pct_change_table: pd.DataFrame = field(default_factory=pd.DataFrame)
-    _annual_returns: np.float64 = field(default=0.0)
-    _annual_volatility: np.float64 = field(default=0.0)
-    _annual_sharpe: np.float64 = field(default=0.0)
+    def __init__(
+            self,
+            stocks_symbols: list,
+            sectors: list[Sector],
+            risk_level: int = 1,
+            total_investment_amount: int = 0,
+            stat_model_name=None,
+            is_machine_learning=None
+    ):
+        self._sectors: list[Sector] = sectors
+        self._risk_level: int = risk_level
+        self._total_investment_amount: int = total_investment_amount
+        self._last_date_of_investment: datetime.date = datetime.datetime.now().date()
+        self._stocks_symbols: list = stocks_symbols
+        self._stocks_weights = []
+        self._closing_prices_table = []
+        self._pct_change_table: pd.DataFrame = pd.DataFrame
+        self._stat_model_name: str = stat_model_name
+        self._is_machine_learning: int = is_machine_learning
+        self._annual_returns: np.float64 = 0.0
+        self._annual_volatility: np.float64 = 0.0
+        self._annual_sharpe: np.float64 = 0.0
 
-    # Getters and setters
+        # Getters and setters
+
     @property
     def risk_level(self) -> int:
         return self._risk_level
@@ -85,6 +92,7 @@ class Portfolio:
         return self._sectors
 
     # More methods
+
     def get_max_loss(self) -> float:
         return self._annual_returns - 1.65 * self._annual_volatility
 
@@ -115,7 +123,7 @@ class Portfolio:
         return self._risk_level, self._total_investment_amount, self._stocks_symbols, self.get_sectors_names(), \
             self.get_sectors_weights(), self._stocks_weights, self._annual_returns, self.get_max_loss(), \
             self._annual_volatility, self._annual_sharpe, self.get_total_change(), self.get_monthly_change(), \
-            self.get_daily_change(), self._stat_model_name, self._is_machine_learning
+            self.get_daily_change(), self.stat_model_name, self.machine_learning_opt
 
     def calculate_total_profit_according_to_dates_dates(self, investments) -> float:
         profit: float = 0.0

@@ -4,17 +4,20 @@ import json
 import pytz
 
 from allauth.account.views import SignupView, LoginView
+from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
+from crispy_forms.utils import render_crispy_form
 from django import forms
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import BadRequest
 from django.core.files.storage import FileSystemStorage
 from django.db.models import QuerySet
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
+from django.views.generic import FormView
 
 from core.models import QuestionnaireA, QuestionnaireB
 from django.utils.decorators import method_decorator
@@ -23,6 +26,8 @@ from django.views.decorators.http import require_http_methods
 from investment.models import Investment
 from service.util import web_actions, data_management
 from accounts import forms as account_forms
+
+from .forms import CustomLoginForm
 from .models import InvestorUser, CustomUser
 
 
@@ -64,9 +69,55 @@ class SignUpView(SignupView):
             return errors
 
 
-@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+def check_email(request):
+    form = account_forms.UserRegisterForm(request.GET)
+    context = {
+        'field': as_crispy_field(form['email']),
+        'valid': not form['email'].errors
+    }
+    return render(request, 'partials/field.html', context)
+
+
+def check_first_name(request):
+    form = account_forms.UserRegisterForm(request.GET)
+    context = {
+        'field': as_crispy_field(form['first_name']),
+        'valid': not form['first_name'].errors
+    }
+    return render(request, 'partials/field.html', context)
+
+
+def check_last_name(request):
+    form = account_forms.UserRegisterForm(request.GET)
+    context = {
+        'field': as_crispy_field(form['last_name']),
+        'valid': not form['last_name'].errors
+    }
+    return render(request, 'partials/field.html', context)
+
+def check_phone_number(request):
+    form = account_forms.UserRegisterForm(request.GET)
+    print(form)
+    context = {
+        'field': as_crispy_field(form['phone_number']),
+        'valid': not form['phone_number'].errors
+    }
+    return render(request, 'partials/field.html', context)
+
+
+def check_password_confirmation(request):
+    form = account_forms.UserRegisterForm(request.GET)
+    context = {
+        'field': as_crispy_field(form['password2']),
+        'valid': not form['password2'].errors
+    }
+    return render(request, 'partials/field.html', context)
+
+
+# @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class HtmxLoginView(LoginView):
     template_name = 'account/guest/login.html'
+    form_class = CustomLoginForm
     htmx = True
 
     def get_context_data(self, **kwargs):
@@ -93,6 +144,66 @@ class HtmxLoginView(LoginView):
         except InvestorUser.DoesNotExist:
             pass
         return super().form_valid(form)
+
+
+def check_login_email(request):
+    form = CustomLoginForm(request.POST)
+
+    User = CustomUser
+    email = request.POST.get('login')
+    print(email)
+    # print(form.cleaned_data.get['login'])
+
+    try:
+        User.objects.get(email=email)
+        valid = True
+        print('valid true')
+    except User.DoesNotExist:
+        valid = False
+    context = {
+        'field': form['login'],
+
+        'valid': valid,
+    }
+    return render(request, 'partials/email_validation.html', context)
+
+    # return JsonResponse({'valid': valid})
+
+
+def check_login_email_reset(request):
+    form = CustomLoginForm(request.POST)
+
+    User = CustomUser
+    email = request.POST.get('email')
+    print(email)
+    # print(form.cleaned_data.get['login'])
+
+    try:
+        User.objects.get(email=email)
+        valid = True
+        print('valid true')
+    except User.DoesNotExist:
+        valid = False
+    context = {
+        'field': form['login'],
+
+        'valid': valid,
+    }
+    return render(request, 'partials/email_validation.html', context)
+
+
+def custom_login_view(request):
+    if request.method == 'POST':
+        form = CustomLoginForm(request, data=request.POST)
+        if form.is_valid():
+            # Authenticate user
+            user = form.get_user()
+            login(request, user)
+            # Handle any additional logic
+            return redirect('home')  # Redirect to a different page after login
+    else:
+        form = CustomLoginForm()
+    return render(request, 'account/guest/login.html', {'form': form})
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -188,18 +299,22 @@ def profile_investor(request):
             if form.is_valid():
                 investments: QuerySet[Investment] = Investment.objects.filter(investor_user=investor_user)
                 if len(investments) > 0:
-                    if investments.last().stocks_collection_number != int(form.cleaned_data['stocks_collection_number']):
+                    if investments.last().stocks_collection_number != int(
+                            form.cleaned_data['stocks_collection_number']):
                         questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
                         questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
-                        (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-                         risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change,
-                         portfolio) = web_actions.create_portfolio_and_get_data(
+                        (
+                            annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change,
+                            monthly_change,
+                            risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change,
+                            portfolio) = web_actions.create_portfolio_and_get_data(
                             answers_sum=questionnaire_b.answers_sum,
                             stocks_collection_number=investor_user.stocks_collection_number,
                             questionnaire_a=questionnaire_a,
                         )
                         # add "robot" investment as one investment with amount of total investments + profit
-                        data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio, investments)
+                        data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio,
+                                                                                     investments)
                         # Update Investments' Data
                         affected_investments: int = 0
                         if len(investments) > 0:
