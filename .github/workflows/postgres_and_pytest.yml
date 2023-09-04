@@ -3,32 +3,37 @@ on: pull_request
 jobs:
   setup-database:
     name: Setup PostgreSQL Database
-    runs-on: ubuntu-20.04
-    container:
-      image: fedora:34
-      options: --network=host
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Wait for PostgreSQL to start
         run: |
           sleep 10
-      - name: Execute PostgreSQL Commands
-        run: |
-          psql --host=127.0.0.1 --port=5432 --username=postgres --dbname=robo_advisor -w --command="CREATE DATABASE $POSTGRES_DB;"
-          psql --host=127.0.0.1 --port=5432 --username=postgres --dbname=robo_advisor -w --command="ALTER DATABASE $POSTGRES_DB SET TIMEZONE TO 'Israel';"
       - name: Run Migrations
         run: |
           python manage.py migrate
 
   pytest:
     name: Run the application's tests with PyTest, then check code with Flake8
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     container: fedora:34
+    env:
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
     needs: setup-database
     steps:
       - name: Install Pipenv and git
         run: dnf install -y pipenv git
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup environment
         run: pipenv sync --dev
       - name: Run PyTest
