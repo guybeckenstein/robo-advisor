@@ -815,14 +815,14 @@ def create_graphs_folders() -> None:
 
 
 def currency_exchange(from_currency="USD", to_currency="ILS"):
-    start_date = data_time.now().strftime('%Y-%m-%d')
+    start_date = (data_time.now() - timedelta(days=1)).strftime('%Y-%m-%d')
     end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
 
-    ticker = f'{from_currency}{to_currency}=X' # Yahoo Finance symbol
+    ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol
     data = yf.download(ticker, start=start_date, end=end_date)
 
     if not data.empty:
-        latest_exchange_rate = data['Close'].iloc[-2:]
+        latest_exchange_rate = data['Close'].iloc[-1]
         return latest_exchange_rate
     else:
         raise ValueError("No exchange rate data available for the given date range.")

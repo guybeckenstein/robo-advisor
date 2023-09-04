@@ -68,8 +68,6 @@ def add_investment_view(request):
             # save image
             data_management.view_investment_report(str(request.user.id), amount,
                                                    stocks_weights, stocks_symbols)
-            # show result in desktop TODO maybe show in site
-            data_management.plot_image(f'{settings.USER_IMAGES}{str(request.user.id)}/investment report.png')
 
             # send report to user in email
             subject = 'Investment Report - Robot Advisor'
