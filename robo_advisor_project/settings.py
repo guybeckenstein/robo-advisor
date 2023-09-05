@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 import environ
 
 
@@ -135,7 +136,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'robo_advisor',
         'USER': 'postgres',
-        'PASSWORD': os.environ.get("POSTGRESQL_PASSWORD"),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD", 'sup3rs3cr3t!@$!@%J!@124'),
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),  # Use the environment variable here
         'PORT': os.environ.get('POSTGRES_PORT', 5432),
     }
