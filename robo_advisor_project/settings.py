@@ -137,8 +137,8 @@ DATABASES = {
         'NAME': 'robo_advisor',
         'USER': 'postgres',
         'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
-        'HOST': os.environ.get("POSTGRES_HOST"),
-        'PORT': os.environ.get("POSTGRES_PORT"),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),  # Use the environment variable here
+        'PORT': os.environ.get('POSTGRES_PORT', 5432),
     }
 }
 
