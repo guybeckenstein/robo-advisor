@@ -42,7 +42,7 @@ jobs:
       - name: Run Migrations
         run: python manage.py migrate --noinput
         env:
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
           POSTGRES_PORT: 5432  # The default PostgreSQL port
         # Tests
