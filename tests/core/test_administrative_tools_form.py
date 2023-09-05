@@ -13,12 +13,13 @@ class TestAdministrativeToolsForm:
 
     def test_successful_get_request_as_admin(self, client: Client, superuser_factory: Callable):
         response, _ = helper_methods.successful_get_request_as_admin(
-            client, superuser_factory, url_name='administrative_tools_form', template_src='core/form.html'
+            client, superuser_factory, url_name='administrative_tools_form',
+            template_src='core/administrative_tool_form.html'
         )
         models_data: dict[Number] = data_management.get_models_data_from_collections_file()
         # Assert attributes
         helper_methods.assert_attributes(response, attributes=[
-            "Update Models' Data",
+            "Update Models Data",
             'Administration Tools enable modification of some of the metadata, which affects models directly',
             'Num por simulation', models_data['num_por_simulation'],
             'Min num por simulation', models_data['min_num_por_simulation'],

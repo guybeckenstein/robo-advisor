@@ -20,8 +20,7 @@ SEABORN_STYLE: str = 'seaborn-v0_8-dark'
 
 class MarkowitzAndGini:
     @staticmethod
-    def create_scatter_plot(df: pd.DataFrame, x: str, y: str, min_variance_portfolio,
-                            sharpe_portfolio, max_returns_portfolio) -> None:
+    def create_scatter_plot(df, x: str, y: str, min_variance_portfolio, sharpe_portfolio, max_returns_portfolio):
         plt.style.use(SEABORN_STYLE)
         df.plot.scatter(
             x=x, y=y, c="Sharpe Ratio", cmap="RdYlGn_r", edgecolors="black", figsize=FIG_SIZE, grid=GRID,
@@ -33,7 +32,10 @@ class MarkowitzAndGini:
 
         plt.xlabel(f"{x} (Std. Deviation) Percentage")
         plt.ylabel(f"Expected {y} Percentage")
-        plt.title("Efficient Frontier")
+        plt.title("Efficient Frontier", fontsize=20, fontweight="bold")
+        plt.suptitle("Each point expresses a different distribution of weights of the investment portfolio.\n"
+                     " where 'sharpe ratio' is the ratio between the annual profit and the standard deviation.",
+                     fontsize=12, fontweight="bold")
         plt.subplots_adjust(bottom=BOTTOM)
 
     @staticmethod
@@ -51,19 +53,24 @@ class MarkowitzAndGini:
         portfolios_names: list[str, str, str] = ['Safest Portfolio', 'Sharpest Portfolio', 'Max Returns Portfolio']
         with pd.option_context("display.float_format", "%{:,.2f}".format):
             for i in range(len(portfolios)):
-                x: float = 0.2 + 0.25 * i
+                x: float = 0.2 + 0.3 * i
                 plt.figtext(
                     x=x,
                     y=0.15,
-                    s=f"{portfolios_names[i]}\n"
-                      f"{text1}: {str(round(portfolios[i][0], 2))}%\n"
+                    s=f"{text1}: {str(round(portfolios[i][0], 2))}%\n"
                       f"{text2}: {str(round(portfolios[i][1], 2))}%\n"
                       f"Annual Max Loss: {str(round(portfolios[i][0] - 1.65 * portfolios[i][1], 2))}%\n"
                       f"Sharpe Ratio: {str(round(portfolios[i][2], 2))}\n"
+                      "     Weights\n"  
                       f"{stocks[i]}",
                     bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=10, style=STYLE, ha=HA, va=VA,
                     fontname=FONT_NAME,
                     wrap=WRAP,
+                )
+
+                plt.figtext(
+                    x=x, y=0.28, s=f"{portfolios_names[i]}\n", fontsize=14,
+                    fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
                 )
 
 
@@ -73,7 +80,7 @@ class ThreePortfolios:
     def main_plot(pct_change_table: pd.DataFrame) -> tuple[list[str, str, str], list[str, str, str]]:
         plt.xlabel("Date")
         plt.ylabel("Returns Percentage")
-        plt.title("Three Best Portfolios")
+        plt.title("Three Best Portfolios(BackTest)", fontsize=20, fontweight="bold")
         labels: list[str, str, str] = ['Safest', 'Sharpe', 'Max Returns']
         colors: list[str, str, str] = ['orange', 'green', 'red']
         labels_len: int = len(labels)
@@ -114,6 +121,7 @@ class ThreePortfolios:
                     f"Annual Volatility: {str(round(portfolio[1], 2))}%\n"
                     f"Annual Max Loss: {str(round(portfolio[0] - 1.65 * portfolio[1], 2))}%\n"
                     f"Annual Sharpe Ratio: {str(round(portfolio[2], 2))}\n"
+                    "     Weights\n"  # Label text without underlining
                     f"{fig_text_data['stocks'][i]}"
                 )
                 bbox: dict = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}
@@ -148,8 +156,8 @@ class PriceForecast:
             x=x,
             y=y,
             s=f"Average Annual Return: {str(round(history_annual_return, 2))}%\n"
-            f"Forecast Annual Return: {str(round(forecast_short_time, 2))}%\n"
-            f"Average Annual Return with forecast: {str(round(average_annual_return, 2))}%\n"
+              f"Forecast Annual Return: {str(round(forecast_short_time, 2))}%\n"
+              f"Average Annual Return with forecast: {str(round(average_annual_return, 2))}%\n"
 
         )
 

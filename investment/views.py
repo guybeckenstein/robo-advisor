@@ -1,5 +1,6 @@
+from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import BadRequest
+from django.core.exceptions import BadRequest, ValidationError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import QuerySet
 from django.http import Http404
@@ -7,6 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.models import InvestorUser
 from django.views.decorators.http import require_http_methods
+
+from investment.forms import InvestmentForm
 from investment.models import Investment
 
 from service.config import settings
@@ -25,11 +28,13 @@ def investments_list_view(request):
             'is_form_filled': is_form_filled,
             'title': 'Investments',
             'is_investments_view': False,
+            'form': InvestmentForm,
         }
     else:
-        context: dict = {
+        context = {
             'is_form_filled': is_form_filled,
             'title': 'Investments',
+            'form': InvestmentForm,
         }
     return render(request, 'investment/my_investments_history.html', context=context)
 
@@ -63,8 +68,6 @@ def add_investment_view(request):
             # save image
             data_management.view_investment_report(str(request.user.id), amount,
                                                    stocks_weights, stocks_symbols)
-            # show result in desktop TODO maybe show in site
-            data_management.plot_image(f'{settings.USER_IMAGES}{str(request.user.id)}/investment report.png')
 
             # send report to user in email
             subject = 'Investment Report - Robot Advisor'
@@ -83,7 +86,11 @@ def add_investment_view(request):
 @require_http_methods(["GET"])
 def _investments_list_view(request) -> QuerySet[Investment]:
     page = request.GET.get("page", None)
-    investments = Investment.objects.filter(mode=Investment.Mode.USER)
+    # Assuming you want to retrieve the single InvestorUser object for the current user
+    investor_user = get_object_or_404(InvestorUser, user=request.user)
+
+    # Now, you can use the retrieved investor_user to filter the investments
+    investments = Investment.objects.filter(investor_user=investor_user, mode=Investment.Mode.USER)
 
     if request.method == 'GET':
         paginator = Paginator(investments, per_page=3)
@@ -112,6 +119,7 @@ def profile_portfolio(request):
         'user': request.user,
         'is_form_filled': is_form_filled,
         'title': 'Profile Portfolio',
+
     }
     return render(request, 'investment/profile_portfolio.html', context=context)
 
@@ -124,3 +132,12 @@ def _check_if_preferences_form_is_filled(request):
     except Http404:
         is_form_filled = False
     return is_form_filled
+
+
+def check_positive_number(request):
+    form = InvestmentForm(request.GET)
+    context = {
+        'field': as_crispy_field(form['amount']),
+        'valid': not form['amount'].errors
+    }
+    return render(request, 'partials/field.html', context)

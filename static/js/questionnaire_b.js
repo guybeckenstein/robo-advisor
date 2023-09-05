@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const images = ['/static/img/graphs/1/11/three_portfolios.png', '/static/img/graphs/1/11/Gini_all_options.png'];
+  const imgElement = document.getElementById('capital-market-img');
+  const prevButton = document.querySelector('.capital-market-carousel.carousel-prev');
+  const nextButton = document.querySelector('.capital-market-carousel.carousel-next');
+  const prevButtonSvg = prevButton.querySelector('svg.switch-img');
+  const nextButtonSvg = nextButton.querySelector('svg.switch-img');
+  const images = [imgElement.getAttribute('data-second-graph'), imgElement.getAttribute('data-three-graph')];
   let currentImageIndex = 0;
-
-  const prevButton = document.querySelector('.carousel-prev');
-  const nextButton = document.querySelector('.carousel-next');
-  const prevButtonSvg = document.querySelector('.carousel-prev svg');
-  const nextButtonSvg = document.querySelector('.carousel-next svg');
 
   // Initialize values
   prevButton.disabled = true; // Initialized value is disabled
@@ -27,8 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   function updateImageDisplay() {
-    const imgElement = document.getElementById('capital-market-img');
-
     imgElement.src = images[currentImageIndex];
 
     prevButton.disabled = currentImageIndex === 0;
@@ -51,4 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
       nextButtonSvg.classList.add('switch-img');
     }
   }
+
+  // Initial image display
+  updateImageDisplay();
 });
+

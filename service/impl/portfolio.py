@@ -13,7 +13,7 @@ from service.impl.sector import Sector
 
 @dataclass(init=True, order=False, frozen=False)
 class Portfolio:
-    _stocks_symbols: list[str | int] = field(default_factory=list)
+    _stocks_symbols: list[str | int] = field(default=list)
     _sectors: list[Sector] = field(default_factory=list)
     _risk_level: int = field(default=1)
     _total_investment_amount: int = field(default=0)
@@ -121,12 +121,12 @@ class Portfolio:
         profit: float = 0.0
 
         for i, investment in enumerate(investments):
-            if isinstance(investment, dict):
+            if type(investment) == dict:
                 amount = investment["amount"]
                 purchase_date = investment["date"]
                 is_it_active = investment["status"]
                 # automatic_investment = investment["automatic_investment"]
-            elif isinstance(investment, Investment):
+            elif type(investment) == Investment:
                 amount = investment.amount
                 purchase_date = investment.formatted_date()
                 is_it_active = investment.status  # status is `ACTIVE` or `INACTIVE`
@@ -195,7 +195,7 @@ class Portfolio:
                     self._sectors[j].add_weight(self._stocks_weights[i])
 
     def set_stocks_weights(self, stocks_weights) -> None:
-        if isinstance(stocks_weights, list):
+        if type(stocks_weights) == list:
             self._stocks_weights = stocks_weights
         else:
             nd_array = stocks_weights.values

@@ -15,5 +15,11 @@
 {% endblock %}
 
 {% block profile_account_functions %}
-  {% crispy form %}
+  <form action="{% url 'profile_account_details' %}" method="post">
+    {{ form | crispy }}
+    <button type="submit" class="btn btn-dark"> Submit </button>
+  </form>
+
+
+
 {% endblock %}

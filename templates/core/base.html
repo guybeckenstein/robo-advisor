@@ -26,6 +26,9 @@
         Robo Advisor - Smart AI Investor
       </title>
     {% endif %}
+  {% block extrahead %}
+
+{% endblock extrahead %}
   </head>
   <body>
     <!-- htmx -->
@@ -103,5 +106,7 @@
         {% endblock %}
       </main>
     </div>
+    {% block extrascript %}
+    {% endblock extrascript %}
   </body>
 </html>

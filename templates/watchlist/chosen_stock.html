@@ -1,5 +1,4 @@
 {% load static %}
-
 <div class="watchlist-chosen-stock">
   {% if is_chosen_stock_template is True %}
     <table class="table table-hover">
@@ -32,29 +31,47 @@
         </tr>
         <tr>
           <th scope="row">
-            More statistics details
+           <a href="{{ overview }}" target="_blank">Overview</a>
           </th>
           <td>
-            <a href="{{ more_statistics }}" target="_blank"></a>
+            <iframe src="{{ overview }}" width="100%" height="1000" frameborder="0"></iframe>
+         </td>
+        </tr>
+      <tr>
+          <th scope="row">
+            <a href="{{ conversation }}" target="_blank">Conversation</a>
+          </th>
+          <td>
+            <iframe src="{{ conversation }}" width="100%" height="1000" frameborder="0" ></iframe>
           </td>
         </tr>
       <tr>
           <th scope="row">
-            Links
+            <a href="{{ more_statistics }}" target="_blank">More statistics</a>
           </th>
           <td>
-            <a href="{{ links_name }}" target="_blank">links of {{ symbol }}</a>
-          </td>
-        </tr>
-      <tr>
-          <th scope="row">
-            Conversation
-          </th>
-          <td>
-            <a href="{{ conversation }}" target="_blank">conversation of {{ symbol }}</a>
+            <iframe src="{{ more_statistics }}" width="100%" height="1000" frameborder="0"></iframe>
           </td>
         </tr>
       </tbody>
     </table>
   {% endif %}
 </div>
+
+<script>
+function loadExternalSiteContent(url, targetId) {
+    const targetElement = document.getElementById(targetId);
+
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            targetElement.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading external site content:', error);
+        });
+}
+
+// Call the function to load the conversation content
+loadExternalSiteContent('{{ conversation }}', 'conversation-content');
+</script>
