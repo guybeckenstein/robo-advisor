@@ -8,6 +8,8 @@ services:
       - .env.staging.db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - web_network
   web:
     build:
       context: .
@@ -22,6 +24,8 @@ services:
     volumes:
       - static_volume:/home/web/app/staticfiles
       - media_volume:/home/web/app/mediafiles
+    networks:
+      - web_network
     depends_on:
       - db
   nginx-proxy:
@@ -42,6 +46,8 @@ services:
       - html:/usr/share/nginx/html
       - vhost:/etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - web_network
     depends_on:
       - web
   acme-companion:
@@ -55,6 +61,8 @@ services:
       - vhost:/etc/nginx/vhost.d
       - acme:/etc/acme.sh
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - web_network
     depends_on:
       - nginx-proxy
 
@@ -66,3 +74,6 @@ volumes:
   html:
   vhost:
   acme:
+
+networks:
+  web_network:

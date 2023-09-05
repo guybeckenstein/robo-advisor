@@ -8,6 +8,8 @@ services:
       - .env.dev.db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - web_network
   web:
     build:
       context: .
@@ -21,8 +23,13 @@ services:
       - .env.oauth
     volumes:
       - .:/usr/src/app/
+    networks:
+      - web_network
     depends_on:
       - db
 
 volumes:
   postgres_data:
+
+networks:
+  web_network:
