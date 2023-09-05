@@ -135,7 +135,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'robo_advisor',
         'USER': 'postgres',
-        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
+        'PASSWORD': os.environ.get("POSTGRESQL_PASSWORD"),
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),  # Use the environment variable here
         'PORT': os.environ.get('POSTGRES_PORT', 5432),
     }
