@@ -41,5 +41,6 @@ jobs:
       - name: Run PyTest
         run: python -m pytest -v
         env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
           POSTGRES_PORT: 5432  # The default PostgreSQL port
