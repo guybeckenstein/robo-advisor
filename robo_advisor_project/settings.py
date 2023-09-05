@@ -27,7 +27,7 @@ DEBUG = bool(env("DEBUG", default=True))
 # ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS", default='localhost 127.0.0.1 [::1]').split(" ")
 
-SITE_ID = 2
+SITE_ID: int = None
 # Application definition
 INSTALLED_APPS = [
     # Third party apps
@@ -100,6 +100,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_htmx.middleware.HtmxMiddleware",
+    "accounts.middleware.DynamicSiteIDMiddleware",
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'

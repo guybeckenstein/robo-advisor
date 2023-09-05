@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.10'
 
 services:
   db:
@@ -12,7 +12,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    command: gunicorn robo_advisor_project.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn robo_advisor_project.wsgi:application --bind 0.0.0.0:8000 --timeout 90 --preload
     container_name: RoboAdvisor_Container
     expose:
       - 8000
@@ -27,17 +27,17 @@ services:
   nginx:
     build:
       context: nginx
-      dockerfile: Dockerfile
-    container_name: NginxProxy_Container
+      dockerfile: Dockerfile.prod
+    container_name: NGINX_Container
     restart: always
     ports:
       - '1337:80'
-      - '443:443'
     environment:
       - TRUST_DOWNSTREAM_PROXY=false
     volumes:
       - static_volume:/home/web/app/staticfiles
       - media_volume:/home/web/app/mediafiles
+      - /var/run/docker.sock:/tmp/docker.sock:ro
     depends_on:
       - web
 
