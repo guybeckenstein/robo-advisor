@@ -31,7 +31,6 @@ class User:
 
     def update_json_file(self, json_name: str):
         json_data = self.get_json_data(json_name)
-
         (level_of_risk, total_investment_amount, stocks_symbols, sectors_names, sectors_weights, stocks_weights,
          annual_returns, annual_max_loss, annual_volatility, annual_sharpe, total_change, monthly_change,
          daily_change, stat_model_name, machine_learning_opt) = self._portfolio.get_portfolio_data()

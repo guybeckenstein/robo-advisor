@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # keep collection 1 as it is
 
     # TODO -MAKE DAILY RUNNING OF THIS SCRIPT
-    # daily update
+    # daily update  TODO upload to google drive
     data_management.update_all_tables(settings.NUM_OF_YEARS_HISTORY, is_daily_running=True)
 
     # update from other reasons like chainging the number of years in history or changing the stocks collections
@@ -24,3 +24,7 @@ if __name__ == '__main__':
     # call save graphs or save directly or add txt file with last updated images
 
     # TODO update users graphs in db according to users.json file
+
+    # TODO upload stocks.json to google drive
+
+

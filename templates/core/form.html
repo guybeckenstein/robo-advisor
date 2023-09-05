@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
+
 {% block extrahead %}
 <style>
 
@@ -17,21 +18,31 @@
 }
 </style>
 {% endblock extrahead %}
+
 {% block content %}
-  <div class="content card mx-auto w-75">
+
+<div class="content card mx-auto w-75">
     <div class="row justify-content-center p-3">
          <div class="border border-light-subtle" style="background-color: #fafafa; width: 98%;">
-                <form hx-post="{% url 'capital_market_algorithm_preferences_form' %}" hx-replace-url="true" hx-indicator="#spinner">
-                    {% crispy form %}
-                   <button type="submit" class="btn btn-primary">
-                    Save
-                  <img id="spinner" class="htmx-indicator" src="{% static 'img/bars.svg' %}">
-                </button>
-            </form>
-            </div>
 
+             <form hx-post="{% url 'capital_market_algorithm_preferences_form' %}" hx-replace-url="true" hx-indicator="#spinner">
 
-      </div>
+                {% csrf_token %}
+            {% crispy form %}
+            <button type="submit" class="btn btn-primary">
+                Save
+              <img id="spinner" class="htmx-indicator" src="{% static 'img/bars.svg' %}">
+            </button>
+        </form>
+{#            {% endif %}#}
+         </div>
     </div>
+  </div>
 
 {% endblock %}
+
+{% block extrascript %}
+<script>
+// Add your additional JavaScript here if needed
+</script>
+{% endblock extrascript %}

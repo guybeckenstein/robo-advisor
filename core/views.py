@@ -147,7 +147,7 @@ def capital_market_investment_preferences_form(request):
                     user_preferences_instance=questionnaire_a,
                     collections_number=stocks_collections_number,
                 ),
-                'form_type':'create',
+                'form_type': 'create',
             }
 
             return render(request, 'core/form2.html', context=context)
@@ -233,11 +233,11 @@ def capital_market_investment_preferences_form(request):
                     monthly_change=monthly_change,
                     daily_change=daily_change,
                 )
+            investor_user.save()
             # Frontend
             web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
             if request.htmx:
                 return HttpResponseClientRedirect("/profile/portfolio/")
-            # return redirect('profile_portfolio')
 
         else:  # CREATE and UPDATE
             context = {

@@ -689,14 +689,17 @@ def get_sectors_names_list() -> list[str]:
     return sectors_list
 
 
-def get_collection_json_data() -> dict[
+def get_collection_json_data(google_drive_source=False) -> dict[
     dict[str, str, str, str, str, str],
     list[dict[list[object], float, float, int]],
     list[dict[list[object], float, float, int]],
     list[dict[list[object], float, float, int]],
     list[dict[list[object], float, float, int]]
 ]:
-    return get_json_data(settings.STOCKS_JSON_NAME)['collections']
+    if google_drive_source:
+        return convert_data_stream_to_json(google_drive_source)['collections']
+    else:
+        return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
 
 def convert_israeli_security_number_to_company_name(israeli_security_number: str) -> str:
@@ -872,7 +875,7 @@ def save_json_data(path, sectors_json_file):
 
 def convert_data_stream_to_pd(file_stream):
     # Convert the binary content directly to a Pandas DataFrame
-    return pd.read_csv(file_stream, encoding='utf-8')
+    return pd.read_csv(file_stream, encoding='utf-8', index_col=0)
 
 def convert_data_stream_to_png(file_stream):
     # Create an Image object from the binary stream

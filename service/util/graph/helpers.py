@@ -104,7 +104,7 @@ class ThreePortfolios:
         for i in range(len(sectors)):
             for j in range(3):
                 weight = three_best_sectors_weights[j][i] * 100
-                stocks_y[j] += sectors[i].name + "(" + str("{:.2f}".format(weight)) + "%),\n"
+                stocks_y[j] += f"{sectors[i].name} ({weight:.2f}%),\n"
         stocks_y = [stock_y[:-2] for stock_y in stocks_y]
         with pd.option_context("display.float_format", "%{:,.2f}".format):
             fig_text_data: dict = {
@@ -113,16 +113,17 @@ class ThreePortfolios:
                 'stocks': stocks_y,
                 'facecolor': colors
             }
+            plt.rcParams['font.family'] = 'monospace'  # Set a monospaced font
             for i in range(3):
                 x: float = 0.2 + 0.3 * i
                 portfolio = fig_text_data['portfolio'][i]
                 s: str = (
-                    f"Annual Returns: {str(round(portfolio[0], 2))}%\n "
-                    f"Annual Volatility: {str(round(portfolio[1], 2))}%\n"
-                    f"Annual Max Loss: {str(round(portfolio[0] - 1.65 * portfolio[1], 2))}%\n"
-                    f"Annual Sharpe Ratio: {str(round(portfolio[2], 2))}\n"
-                    "     Weights\n"  # Label text without underlining
-                    f"{fig_text_data['stocks'][i]}"
+                    f"Annual Returns: {portfolio[0]:.2f}%\n"  # Left-aligned (default)
+                    f"Annual Volatility: {portfolio[1]:.2f}%\n"  # Left-aligned (default)
+                    f"Annual Max Loss: {portfolio[0] - 1.65 * portfolio[1]:.2f}%\n"  # Left-aligned (default)
+                    f"Annual Sharpe Ratio: {portfolio[2]:.2f}\n"  # Left-aligned (default)
+                    "    Weights\n"  # Left-aligned (default)
+                    f"{fig_text_data['stocks'][i]}"  # Left-aligned (default)
                 )
                 bbox: dict = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}
                 plt.figtext(
