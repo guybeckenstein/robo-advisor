@@ -10,6 +10,8 @@ jobs:
     services:  # Service containers to run with `container-job`
       postgres:  # Label used to access the service container
         image: postgres:latest  # Docker Hub image
+        ports:
+          - 5432:5432  # Opens TCP port 5432 on the host and service container
         env:  # Provide the password for postgres
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-  # Set health checks to wait until postgres has started
