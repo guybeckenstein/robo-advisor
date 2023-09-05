@@ -1,9 +1,9 @@
 import math
-
+from service.impl.user import User
 import numpy as np
 import pandas as pd
 from django.shortcuts import get_object_or_404
-from service.impl.user import User
+
 from service.impl.portfolio import Portfolio
 from service.util import data_management
 from service.config import settings
@@ -40,11 +40,6 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table[f"weighted_sum_{str(risk_level)}"] = weighted_sum
 
-    if is_machine_learning:
-        weighted_sum: pd.DataFrame = helpers.update_daily_change_with_machine_learning(
-            [weighted_sum], pct_change_table.index, models_data
-        )[0][0]
-
     # Update the new sub-table's length (should be at most equal to the old one), then update the table itself
     yield_column: str = f"yield_{str(risk_level)}"
     pct_change_table[yield_column] = weighted_sum
@@ -59,8 +54,8 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
     )
 
     # Save plots
-    data_management.save_user_portfolio(User(
-        user_id=user.id, name=f'{user.first_name} {user.last_name}', portfolio=portfolio)
+    data_management.save_user_portfolio(
+        User(_id=user.id, _name=f'{user.first_name} {user.last_name}', _portfolio=portfolio)
     )
 
 

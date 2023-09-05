@@ -902,12 +902,16 @@ def update_files_from_google_drive():
     for i in range(1, 5):
         collection_path = basic_path + str(i) + '/'
         closing_price_path = helpers.get_sorted_path(collection_path + f'closing_prices', num_of_last_elements=2)
-        pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
+        pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(closing_price_path + '.csv'))
+        last_update_closing_price =  helpers.get_sorted_path(collection_path + f'lastUpdatedClosingPrice.txt', num_of_last_elements=2)
+        last_update_df_tables = helpers.get_sorted_path(collection_path + f'lastUpdatedDftables.txt',
+                                                            num_of_last_elements=2)
+
         # save csv to local
 
         # update df csv files
-        for j in range(1, 4):
-            stocks_json_path = basic_path + str(i) + '/' + machine_non_machine_learining[j - 1] + '/'
+        for name in machine_non_machine_learining:
+            table_path = collection_path + name + '/'
             df_path = helpers.get_sorted_path(f'df_{j}', num_of_last_elements=2)
             pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
             # save csv to local
@@ -915,4 +919,6 @@ def update_files_from_google_drive():
 
     # update top stocks images
    # png_files = google_drive_instance.get_all_png_files()
+
+
 

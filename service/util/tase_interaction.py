@@ -78,8 +78,6 @@ def get_json_data_of_symbol(app_url):
 
 # Auth
 def get_base_64_token():
-    # key = '7e247414e7047349d83b7b8a427c529c'
-    # secret = '7a809c498662c88a0054b767a92f0399'
 
     token: str = israeli_tase.KEY + ':' + israeli_tase.SECRET
     base_64_token = base64.b64encode(token.encode('ascii')).decode('ascii')

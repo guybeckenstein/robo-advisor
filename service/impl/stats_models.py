@@ -14,18 +14,16 @@ class StatsModels:
     # Default values
     _stocks_symbols: list[int | str] = field(default_factory=list)
     _sectors: list[Sector] = field(default_factory=list)
-    _stock_sectors: list = field(default=None)
     _df: pd.DataFrame = field(default=None)
+
+    def __post_init__(self):
+        self._stock_sectors = helpers.set_stock_sectors(self._stocks_symbols, self._sectors)
     # Unused:
     # _three_best_portfolios: list = field(default=None)
     # _three_best_stocks_weights: list = field(default=None)
     # _three_best_sectors_weights: list = field(default=None)
     # _best_stocks_weights_column: list = field(default=None)
     # _closing_prices_table: pd.DataFrame = field(default_factory=pd.DataFrame)
-
-    def __post_init__(self):
-        if self._stock_sectors is None:
-            self._stock_sectors = helpers.set_stock_sectors(self._stocks_symbols, self._sectors)
 
     @property
     def df(self) -> pd.DataFrame:

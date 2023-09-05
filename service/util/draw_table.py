@@ -1,4 +1,8 @@
+import textwrap
+
 from PIL import Image, ImageDraw, ImageFont
+
+from service.util import helpers
 
 # Global constants
 CELL_WIDTH: list[int, int, int] = [200, 105, 1255]
@@ -44,7 +48,7 @@ def _draw_table_header(draw: ImageDraw, header_text: ImageFont.truetype) -> None
 
 
 def _draw_table_rows(num_rows: int, symbols: list[str], values: list[float], descriptions: list[str],
-                     draw: ImageDraw, percent_mode: bool) -> None:
+                     draw: ImageDraw, percent_mode: bool = False) -> None:
     x0: list[int, int, int] = [
         _calculate_cumulative_col_offset(0) + TABLE_PADDING,
         _calculate_cumulative_col_offset(1) + TABLE_PADDING,
@@ -71,3 +75,83 @@ def _calculate_cumulative_col_offset(col_idx: int) -> int:
     for i in range(col_idx):
         res_sum += CELL_WIDTH[i]
     return res_sum
+
+
+def _draw_research_table(path, data_tuple_list, intersection_data, labels):
+    intersection_data = intersection_data.sort_values(by="Total Return Percentage", ascending=False).head(10)
+    num_of_stocks_showing = 10
+    descriptions = helpers.get_stocks_descriptions(intersection_data.index.values)[1:]
+
+    # Add "Stock" column to intersection_data.columns
+    column_headers = ['Stock'] + labels
+
+    # Define cell dimensions and font size
+    CELL_WIDTH = 170
+    CELL_HEIGHT = 90
+    TABLE_PADDING = 10
+    # Define font sizes for titles and values
+    TITLE_FONT_SIZE = 18
+    VALUE_FONT_SIZE = 22
+    # Load title and value fonts with the specified sizes
+    title_font = ImageFont.truetype("arial.ttf", size=TITLE_FONT_SIZE)
+    value_font = ImageFont.truetype("arial.ttf", size=VALUE_FONT_SIZE)
+
+    # Calculate image dimensions based on the number of rows and columns
+    num_rows = min(num_of_stocks_showing, len(intersection_data)) + 1
+    num_cols = len(intersection_data.columns) + 1
+    image_width = CELL_WIDTH * num_cols + TABLE_PADDING
+    image_height = CELL_HEIGHT * num_rows + TABLE_PADDING
+
+    # Create a blank image
+    image = Image.new("RGB", (image_width, image_height), "white")
+    draw = ImageDraw.Draw(image)
+
+    # Draw headers
+    headers = ['Stock'] + list(intersection_data.columns)
+    for col_idx, header in enumerate(headers):
+        x0 = col_idx * CELL_WIDTH + TABLE_PADDING
+        y0 = 0
+        x1 = (col_idx + 1) * CELL_WIDTH + TABLE_PADDING
+        y1 = CELL_HEIGHT
+        draw.rectangle([(x0, y0), (x1, y1)], outline="black", fill="lightgray")
+
+        # Wrap header text and calculate height
+        lines = textwrap.wrap(header, width=10)  # Adjust the width as needed
+        header_height = len(lines) * (TITLE_FONT_SIZE + 4)  # Adjust the line spacing
+
+        # Calculate y-coordinate for multiline header
+        y_header = y0 + (CELL_HEIGHT - header_height) / 2  # Adjust the y-coordinate for centering
+        for line_idx, line in enumerate(lines):
+            y_text = y_header + line_idx * (TITLE_FONT_SIZE + 4)  # Adjust the y-coordinate for each line
+            draw.text((x0 + 5, y_text), line, font=title_font, fill="black", align="center")
+
+    # Draw data rows
+    for row_idx in range(num_rows - 1):
+        stock_name = intersection_data.index[row_idx]
+        y0 = (row_idx + 1) * CELL_HEIGHT + TABLE_PADDING
+        x0_stock = 0  # x-coordinate for the "Stock" column
+
+        for col_idx, col_name in enumerate(column_headers):
+            if col_name == "Stock":
+                value = str(descriptions[row_idx])
+            else:
+                value = round(intersection_data.values[row_idx][col_idx-1], 2)
+            x0 = (col_idx + 0) * CELL_WIDTH + TABLE_PADDING
+            y1 = (row_idx + 2) * CELL_HEIGHT + TABLE_PADDING
+            x1 = (col_idx + 1) * CELL_WIDTH + TABLE_PADDING
+
+            # Wrap text and calculate height
+            lines = textwrap.wrap(str(value), width=15)  # Adjust the width as needed
+            cell_height = len(lines) * (VALUE_FONT_SIZE + 4)  # Adjust the line spacing
+
+            draw.rectangle([(x0, y0), (x1, y1 + cell_height)], outline="black", fill="white")
+
+            # Calculate y-coordinate for multiline text
+            y_text = y0 + (cell_height - len(lines) * (VALUE_FONT_SIZE + 4)) / 2  # Adjust the y-coordinate for centering
+
+            # Draw multiline text
+            multiline_text = "\n".join(lines)
+            draw.multiline_text((x0 + 5, y_text), multiline_text, font=value_font, fill="black", align="center", spacing=4)
+    # Save the image
+    image.save(f"{path} intersection.png")
+

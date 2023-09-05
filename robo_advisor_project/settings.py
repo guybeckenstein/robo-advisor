@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -8,18 +9,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load and read .env file
+# OS environment variables take precedence over variables from .env
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, './.env.dev'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2f(wsgq6o$nmh&m@$7=jw5pldw^cyn%u44m+e34z7hss&($rl&'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(env("DEBUG", default=True))
 
-ALLOWED_HOSTS = ['*']
-# ALLOWED_HOSTS = 'localhost 127.0.0.1 [::1]'.split(" ")
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
 
 SITE_ID = 2
 # Application definition
@@ -120,7 +125,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-# CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -128,9 +133,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'robo_advisor',
-        'USER': 'postgres',  # Insert Postgres Username here
-        'PASSWORD': 'jorden123',
+        'NAME': env('POSTGRES_DB'),
+        'USER': env('POSTGRES_USER'),  # Insert Postgres Username here
+        'PASSWORD': env('POSTGRES_PASSWORD'),
          # Insert Postgres Password here
         'HOST': 'localhost',
         'PORT': 5432,
