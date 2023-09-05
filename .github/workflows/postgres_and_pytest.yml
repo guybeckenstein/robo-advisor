@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     services:  # Service containers to run with `container-job`
-      postgres:  # Label used to access the service container
+      db:  # Label used to access the service container
         image: postgres:latest  # Docker Hub image
         ports:
           - 5432:5432  # Opens TCP port 5432 on the host and service container
@@ -49,6 +49,6 @@ jobs:
       - name: Run PyTest
         run: python -m pytest -v
         env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: db  # The hostname used to communicate with the PostgreSQL service container
           POSTGRES_PORT: 5432  # The default PostgreSQL port
