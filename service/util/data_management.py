@@ -901,9 +901,9 @@ def update_files_from_google_drive():
     machine_non_machine_learining= ['includingMachineLearning', 'withoutMachineLearning']
     for i in range(1, 5):
         collection_path = basic_path + str(i) + '/'
-        closing_price_path = helpers.get_sorted_path(collection_path + f'closing_prices', num_of_last_elements=2)
+        closing_price_path = helpers.get_sorted_path(collection_path + f'closing_prices', num_of_last_elements=3)
         pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(closing_price_path + '.csv'))
-        last_update_closing_price =  helpers.get_sorted_path(collection_path + f'lastUpdatedClosingPrice.txt', num_of_last_elements=2)
+        last_update_closing_price =  helpers.get_sorted_path(collection_path + f'lastUpdatedClosingPrice.txt', num_of_last_elements=3)
         last_update_df_tables = helpers.get_sorted_path(collection_path + f'lastUpdatedDftables.txt',
                                                             num_of_last_elements=2)
 

@@ -18,10 +18,12 @@ env.read_env(os.path.join(BASE_DIR, './.env.dev'))
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# SECRET_KEY = 'django-insecure-2f(wsgq6o$nmh&m@$7=jw5pldw^cyn%u44m+e34z7hss&($rl&'
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(env("DEBUG", default=True))
+# DEBUG = True
 
 # ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
@@ -123,13 +125,24 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
-
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 # old password: 'PASSWORD': '1234qwer',
+"""DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'robo_advisor',
+        'USER': 'postgres',  # Insert Postgres Username here
+        'PASSWORD': 'jorden123',
+         # Insert Postgres Password here
+        'HOST': 'localhost',
+        'PORT': 5432,
+    }
+}"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
