@@ -134,11 +134,11 @@ CSRF_TRUSTED_ORIGINS: list[str] = os.environ.get("CSRF_TRUSTED_ORIGINS").split("
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),
+        'NAME': 'robo_advisor',
+        'USER': 'postgres',
         'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
         'HOST': 'postgres',
-        'PORT': env('POSTGRES_PORT'),
+        'PORT': 5432,
     }
 }
 
