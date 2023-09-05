@@ -4,7 +4,7 @@ jobs:
   # Label of the container job
   setup-database:
     # Containers must run in Linux based operating systems
-    name: Setup PostgreSQL Database
+    name: Setup PostgreSQL Database, check code with Flake8, and run the application's tests with PyTest
     runs-on: ubuntu-latest
 
     services:  # Service containers to run with `container-job`
@@ -19,16 +19,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    steps:
-      - name: Wait for PostgreSQL to start
-        run: |
-          sleep 1
-  # Label of the container job
-  flake8-and-pytest:
-    # Containers must run in Linux based operating systems
-    name: Check code with Flake8, then run the application's tests with PyTest
-    runs-on: ubuntu-latest
-    needs: setup-database
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -46,7 +36,7 @@ jobs:
       - name: Run Flake8
         run: python -m flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
       - name: Run Migrations
-        run: python manage.py migrate
+        run: python manage.py migrate --noinput
         # Tests
       - name: Run PyTest
         run: python -m pytest -v
