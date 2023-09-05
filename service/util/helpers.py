@@ -455,6 +455,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
 
     if save_to_csv:
         # convert to csv
+        # TODO upload to google drive
         closing_prices_table.to_csv(file_url, index=True, header=True)
 
     return closing_prices_table

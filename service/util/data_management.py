@@ -50,6 +50,7 @@ def update_all_tables(num_of_years_history, is_daily_running=True):  # build DB 
 
 
 def update_closing_prices_tables(formatted_date_today, stocks_symbols, num_of_years_history, path, is_daily_running):
+    # TODO get last_updated_date_closing_prices from google drive
     with open(path + "lastUpdatedClosingPrice.txt", "r") as file:
         last_updated_date_closing_prices = file.read().strip()
 
@@ -58,8 +59,10 @@ def update_closing_prices_tables(formatted_date_today, stocks_symbols, num_of_ye
                                        stocks_symbols,
                                        num_of_years_history, save_to_csv=True)
 
+        # TODO upload last_updated_date_closing_prices to google drive
         with open(path + "lastUpdatedClosingPrice.txt", "w") as file:
             file.write(formatted_date_today)
+
 
 
 def update_data_frame_tables(formatted_date_today, collection_json_data, path,
@@ -67,11 +70,12 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path,
                              is_daily_running: bool = True):
     stocks_symbols = collection_json_data['stocksSymbols']
 
+    # TODO get last_updated_date_closing_prices from google drive
     with open(path + "lastUpdatedDftables.txt", "r") as file:
         last_updated_df_tables = file.read().strip()
     if last_updated_df_tables != formatted_date_today or not is_daily_running:
         sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
-        closing_prices_table = get_closing_prices_table(path)
+        closing_prices_table = get_closing_prices_table(path, google_drive_source=True)
         pct_change_table = closing_prices_table.pct_change()
 
         # Without machine learning - Markowitz, Gini, With machine learning - Markowitz, Gini
@@ -89,6 +93,7 @@ def update_data_frame_tables(formatted_date_today, collection_json_data, path,
                 path=path, models_data=models_data, collection_num=collection_num
             )
 
+        # TODO upload last_updated_date_closing_prices to google drive
         with open(path + "lastUpdatedDftables.txt", "w") as file:
             file.write(formatted_date_today)
 
@@ -154,6 +159,7 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
         max_percent_stocks=max_percent_stocks,
     )
     df: pd.DataFrame = stats_models.df
+    # TODO upload to google drive
     df.to_csv(locationForSaving + model_name + '_df_' + risk_level + '.csv')
     print(f'Updated DataFrame -> (ML - {is_machine_learning}; Model Name - {model_name}; Risk Level - {risk_level})')
 
@@ -332,7 +338,7 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, colle
             get_file_from_google_drive(google_drive_table_path + '.csv'))
     else:
         df: pd.DataFrame = pd.read_csv(f'{collection_path}{model_name}_df_{level_of_risk}.csv')
-    df = df.iloc[:, 1:]
+        df = df.iloc[:, 1:]
     df = df.apply(pd.to_numeric, errors='coerce')
     return df
 
