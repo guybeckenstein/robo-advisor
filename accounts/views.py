@@ -95,6 +95,7 @@ def check_last_name(request):
     }
     return render(request, 'partials/field.html', context)
 
+
 def check_phone_number(request):
     form = account_forms.UserRegisterForm(request.GET)
     print(form)

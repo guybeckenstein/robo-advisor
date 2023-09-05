@@ -117,8 +117,9 @@ class Analyze:
         self._record_percent_to_predict: float = record_percent_to_predict
         self._is_closing_prices_mode: bool = is_closing_prices_mode
 
-    def linear_regression_model(self, test_size_machine_learning: str) -> tuple[
-        pd.DataFrame, np.longdouble, np.longdouble]:
+    def linear_regression_model(
+            self, test_size_machine_learning: str
+    ) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
 
         # Added date
@@ -346,7 +347,7 @@ def update_daily_change_with_machine_learning(
     if len(columns) == 0:
         raise AttributeError('columns length is invalid - 0. Should be at least 1')
     else:
-        annual_return = None
+        # annual_return = None
         excepted_returns = None
 
         for i, stock in enumerate(columns):
@@ -404,9 +405,9 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     file_url: str = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocks_names):
-        if type(stock) == float:
+        if isinstance(stock, float):
             continue
-        if type(stock) == int or stock.isnumeric():  # Israeli stock
+        if isinstance(stock, int) or stock.isnumeric():  # Israeli stock
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
@@ -582,13 +583,13 @@ def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
     usa_indexes_table: pd.DataFrame = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
         try:
-            if type(stock) == int or stock.isnumeric():
+            if isinstance(stock, int) or stock.isnumeric():
                 num_of_digits = len(str(stock))
                 if num_of_digits > 3:
                     is_index_type = False
                 else:  # israeli index name always has maximum of 3 digits
                     is_index_type = True
-                if type(stock) == str:
+                if isinstance(stock, str):
                     stock = int(stock)
                 stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
                                                                                  is_reverse_mode=is_reverse_mode))
@@ -714,6 +715,7 @@ def convert_company_name_to_israeli_security_number(companyName: str) -> str:
 
     return result[0]
 
+
 class AwsInstance:
     def __init__(self):
         # aws
@@ -723,12 +725,12 @@ class AwsInstance:
         self._region_name = aws.REGION_NAME
 
     def connect_to_s3(self):  # -> boto3.client:
-        s3 = boto3.resource(
-            service_name='s3',
-            region_name=self._region_name,
-            aws_secret_access_key=self._aws_secret_access_key,
-            aws_access_key_id=self._aws_access_key_id
-        )
+        # s3 = boto3.resource(
+        #     service_name='s3',
+        #     region_name=self._region_name,
+        #     aws_secret_access_key=self._aws_secret_access_key,
+        #     aws_access_key_id=self._aws_access_key_id
+        # )
 
         """s3_client = boto3.client(
             service_name='s3',
@@ -874,9 +876,11 @@ def convert_data_stream_to_pd(file_stream):
     # Convert the binary content directly to a Pandas DataFrame
     return pd.read_csv(file_stream, encoding='utf-8')
 
+
 def convert_data_stream_to_png(file_stream):
     # Create an Image object from the binary stream
     return Image.open(io.BytesIO(file_stream.read()))
+
 
 def convert_data_stream_to_json(file_stream):
     # Convert the binary content directly to a Pandas DataFrame

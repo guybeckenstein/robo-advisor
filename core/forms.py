@@ -115,8 +115,9 @@ class InvestmentPreferencesForm(forms.ModelForm):
             'Question #3: What is your preferable graph?'
             '</span>'
             '<div class="capital-market-form-label capital-market-form-img position-relative">'
-             f'<img class="capital-market-form-img" id="capital-market-img" data-second-graph="{second_graph}" data-three-graph="{three_graphs}" src="{second_graph}">'
-    '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
+            f'<img class="capital-market-form-img" id="capital-market-img" data-second-graph="{second_graph}"'
+            f'data-three-graph="{three_graphs}" src="{second_graph}">'
+            '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
             '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
             '<button type="button" class="capital-market-carousel carousel-prev" aria-label="" style="left: 0;">'
             '<svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">'
@@ -191,14 +192,15 @@ class InvestmentPreferencesForm(forms.ModelForm):
         plt.cla()
         plt.close()
         # stat model graph
-        closing_prices_table_path = (settings_service.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                     + stocks_collection_number + '/')
+        basic_stock_collection_repository_dir: str = settings_service.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+        closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
         data_management.plot_stat_model_graph(
             stocks_symbols, int(ml_answer), int(model_answer), settings_service.NUM_OF_YEARS_HISTORY,
             closing_prices_table_path, sub_folder=sub_folder)
         plt.clf()
         plt.cla()
         plt.close()
+
     class Meta:
         model = QuestionnaireB
         fields = ['answer_1', 'answer_2', 'answer_3']

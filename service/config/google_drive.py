@@ -32,7 +32,7 @@ class GoogleDriveInstance:
 
     def get_files(self):
         # List files and subfolders in the folder
-        old_file_id = self.find_file_id_by_name('Top Stocks Israel general bonds indexes intersection.png')
+        # old_file_id = self.find_file_id_by_name('Top Stocks Israel general bonds indexes intersection.png')
         results = self.service.files().list(q=f"'{MAIN_FOLDER_ID}' in parents").execute()
         files = results.get('files', [])
         if not files:
@@ -41,8 +41,8 @@ class GoogleDriveInstance:
             print('Files:')
             for file in files:
                 # Download the image
-                request = self.service.files().get_media(fileId=file['id'])
-                image_data = request.execute()
+                # request = self.service.files().get_media(fileId=file['id'])
+                # image_data = request.execute()
 
                 # Display the image
                 """image_bytes = io.BytesIO(base64.b64decode(image_data))
@@ -53,8 +53,8 @@ class GoogleDriveInstance:
                 plt.show()"""
 
     def upload_file(self, file_path):
-        folder_id = MAIN_FOLDER_ID
-        file_name = file_path.split('/')[-1]
+        # folder_id = MAIN_FOLDER_ID
+        # file_name = file_path.split('/')[-1]
 
         # Check if a file with the same name exists in the folder
         existing_file_id = self.find_file_id_by_path_name(file_path)
@@ -62,14 +62,14 @@ class GoogleDriveInstance:
         if existing_file_id:
             self.service.files().delete(fileId=existing_file_id).execute()
 
-        file_metadata = {
-            'name': file_name,
-            'parents': [folder_id]
-        }
+        # file_metadata = {
+        #     'name': file_name,
+        #     'parents': [folder_id]
+        # }
 
         # Upload the file
-        media = MediaFileUpload(file_path, resumable=True)
-        file = self.service.files().create(body=file_metadata, media_body=media).execute()
+        # media = MediaFileUpload(file_path, resumable=True)
+        # file = self.service.files().create(body=file_metadata, media_body=media).execute()
 
     def find_file_id_by_path_name(self, file_path):
         parent_folder_id = MAIN_FOLDER_ID
@@ -125,9 +125,9 @@ class GoogleDriveInstance:
         return self.get_file_by_id(file_id)
 
     def get_all_png_files(self):
-        folder_id = MAIN_FOLDER_ID
+        # folder_id = MAIN_FOLDER_ID
         # Search for all PNG files within the folder
-        query = f" mimeType='image/png'"
+        query = " mimeType='image/png'"
         results = self.service.files().list(q=query).execute()
         files = results.get('files', [])
         images_list = []
@@ -142,5 +142,3 @@ class GoogleDriveInstance:
                 images_list.append(self.get_file_by_id(file['id']))
 
             return images_list
-
-

@@ -20,7 +20,7 @@ class TestManualMainFromTerminal:
     def test_creates_new_user(self):
 
         stocks_symbols = data_management.get_stocks_symbols_from_collection(self.stocks_collection_number)
-        sub_folder = f'{self.stocks_collection_number}/{self.is_machine_learning}{self.model_option}/'
+        # sub_folder = f'{self.stocks_collection_number}/{self.is_machine_learning}{self.model_option}/'
         # Extended data from datasets (CSV Tables)
         tables = data_management.get_extended_data_from_db(
             stocks_symbols, self.is_machine_learning, self.model_option, self.stocks_collection_number,
@@ -66,8 +66,8 @@ class TestManualMainFromTerminal:
 
     def test_plot_user_portfolio_graphs(self):
         # TODO: this test fails
-        json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
-        collection_number = json_data['usersList'][self.user_name][0]['stocksCollectionNumber']
+        # json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
+        # collection_number = json_data['usersList'][self.user_name][0]['stocksCollectionNumber']
         user_instance = data_management.get_user_from_db(self.user_id, self.user_name)
         data_management.save_user_portfolio(user_instance)
 
@@ -78,7 +78,7 @@ class TestManualMainFromTerminal:
 
     def test_forecast_specific_stock(self):
         models_data: dict = data_management.get_models_data_from_collections_file()
-        for i in range (len(settings.MACHINE_LEARNING_MODEL)):
+        for i in range(len(settings.MACHINE_LEARNING_MODEL)):
 
             plt_instance = research.forecast_specific_stock(str(self.stock_name), settings.MACHINE_LEARNING_MODEL[i],
                                                             models_data, self.num_of_years_history)
@@ -113,12 +113,11 @@ class TestManualMainFromTerminal:
             data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}.png')
 
     def test_stat_model_scatter_graph(self):
-        sub_folder = (str(self.stocks_collection_number) + '/' +
-                      str(self.is_machine_learning) + str(self.model_option) + "/")
+        sub_folder = f'{self.stocks_collection_number}{self.is_machine_learning}{self.model_option}/'
 
         stocks_symbols = data_management.get_stocks_symbols_from_collection(self.stocks_collection_number)
-        closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                     + self.stocks_collection_number + '/')
+        basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+        closing_prices_table_path = f'{basic_stock_collection_repository_dir}{self.stocks_collection_number}/'
         data_management.plot_stat_model_graph(
             stocks_symbols=stocks_symbols, is_machine_learning=self.is_machine_learning,
             model_name=settings.MODEL_NAME[self.model_option], num_of_years_history=self.num_of_years_history,

@@ -11,6 +11,7 @@ services:
       - '8000:8000'
     env_file:
       - .env.dev
+      - .env.oauth
     depends_on:
       - db
   db:

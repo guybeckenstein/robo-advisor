@@ -133,7 +133,7 @@ def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"
         Returns the graph_plot_methods instance
     """
 
-    if type(stock_name) == int or stock_name.isnumeric():  # israeli stock
+    if isinstance(stock_name, int) or stock_name.isnumeric():  # israeli stock
 
         today = datetime.datetime.now()
         min_start_year = today.year - 10
@@ -432,11 +432,3 @@ def update_stocks_names_tables():  # update stocks tables with the new stocks ac
     helpers.save_json_data(settings.SECTORS_JSON_NAME, sectors_json_file)
     # Save the updated all_basics_data DataFrame back to CSV
     all_basics_data.to_csv(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv", index=False)
-
-
-
-
-
-
-
-

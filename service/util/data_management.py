@@ -444,7 +444,7 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
                           num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
 
-    if type(model_name) == int:
+    if isinstance(model_name, int):
         model_name = settings.MODEL_NAME[model_name]
 
     three_levels_df_tables: list[pd.DataFrame] = [
@@ -579,7 +579,7 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
     values: list = []
     ils_to_usd: float = helpers.currency_exchange(from_currency="USD", to_currency="ILS")
     for i, stock in enumerate(stocks_symbols):
-        if type(stock) == int or stock.isnumeric():
+        if isinstance(stock, int) or stock.isnumeric():
             currency = f'{settings.CURRENCY_LIST[0]}'
             values.append(stocks_weights[i] * investment_amount * ils_to_usd)
         else:
@@ -713,7 +713,7 @@ def get_user_investments_from_json_file(user_id):
                 break
     try:
         investment_list = json_data['usersList'][user_id][0]['investments_list']
-    except:
+    except (ValueError, AttributeError):
         investment_list = []
     return investment_list
 
@@ -827,8 +827,8 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
                                                                    stocks_collection_number) -> int:
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
         pct_change_table, yield_list = tables
-    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                 + stocks_collection_number + '/')
+    basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+    closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
     # question #1
     string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
     first_question_score = get_score_by_answer_from_user(string_to_show)
@@ -896,29 +896,29 @@ def update_files_from_google_drive():
     # save users.json to local
     helpers.save_json_data(settings.USERS_JSON_NAME, stocks_json)
 
-    #update csv files
-    basic_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-    machine_non_machine_learining= ['includingMachineLearning', 'withoutMachineLearning']
-    for i in range(1, 5):
-        collection_path = basic_path + str(i) + '/'
-        closing_price_path = helpers.get_sorted_path(collection_path + f'closing_prices', num_of_last_elements=3)
-        pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(closing_price_path + '.csv'))
-        last_update_closing_price =  helpers.get_sorted_path(collection_path + f'lastUpdatedClosingPrice.txt', num_of_last_elements=3)
-        last_update_df_tables = helpers.get_sorted_path(collection_path + f'lastUpdatedDftables.txt',
-                                                            num_of_last_elements=2)
+    # update csv files
+    # basic_path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+    # machine_non_machine_learining = ['includingMachineLearning', 'withoutMachineLearning']
+    for i in range(1, 4 + 1):
+        pass
+        # closing_price_path = helpers.get_sorted_path(f'{basic_path}{i}/closing_prices', num_of_last_elements=3)
+        # pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(closing_price_path + '.csv'))
+        # last_update_closing_price =  helpers.get_sorted_path(
+        #     f'{collection_path}lastUpdatedClosingPrice.txt', num_of_last_elements=3
+        # )
+        # last_update_df_tables = helpers.get_sorted_path(
+        #     collection_path + f'lastUpdatedDftables.txt', num_of_last_elements=2
+        # )
 
         # save csv to local
 
         # update df csv files
-        for name in machine_non_machine_learining:
-            table_path = collection_path + name + '/'
-            df_path = helpers.get_sorted_path(f'df_{j}', num_of_last_elements=2)
-            pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
-            # save csv to local
-            helpers.save_pd_to_csv(df_path, pd_table)
+        # for name in machine_non_machine_learining:
+        #     table_path = collection_path + name + '/'
+        #     df_path = helpers.get_sorted_path(f'df_{j}', num_of_last_elements=2)
+        #     pd_table = helpers.convert_data_stream_to_pd(get_file_from_google_drive(stocks_json_path + '.csv'))
+        #     # save csv to local
+        #     helpers.save_pd_to_csv(df_path, pd_table)
 
     # update top stocks images
-   # png_files = google_drive_instance.get_all_png_files()
-
-
-
+    # png_files = google_drive_instance.get_all_png_files()

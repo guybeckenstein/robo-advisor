@@ -127,15 +127,15 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
 
     # Draw data rows
     for row_idx in range(num_rows - 1):
-        stock_name = intersection_data.index[row_idx]
+        # stock_name = intersection_data.index[row_idx]
         y0 = (row_idx + 1) * CELL_HEIGHT + TABLE_PADDING
-        x0_stock = 0  # x-coordinate for the "Stock" column
+        # x0_stock = 0  # x-coordinate for the "Stock" column
 
         for col_idx, col_name in enumerate(column_headers):
             if col_name == "Stock":
                 value = str(descriptions[row_idx])
             else:
-                value = round(intersection_data.values[row_idx][col_idx-1], 2)
+                value = round(intersection_data.values[row_idx][col_idx - 1], 2)
             x0 = (col_idx + 0) * CELL_WIDTH + TABLE_PADDING
             y1 = (row_idx + 2) * CELL_HEIGHT + TABLE_PADDING
             x1 = (col_idx + 1) * CELL_WIDTH + TABLE_PADDING
@@ -154,4 +154,3 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
             draw.multiline_text((x0 + 5, y_text), multiline_text, font=value_font, fill="black", align="center", spacing=4)
     # Save the image
     image.save(f"{path} intersection.png")
-

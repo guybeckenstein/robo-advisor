@@ -147,7 +147,7 @@ def capital_market_investment_preferences_form(request):
                     user_preferences_instance=questionnaire_a,
                     collections_number=stocks_collections_number,
                 ),
-                'form_type':'create',
+                'form_type': 'create',
             }
 
             return render(request, 'core/form2.html', context=context)

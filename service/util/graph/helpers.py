@@ -61,7 +61,7 @@ class MarkowitzAndGini:
                       f"{text2}: {str(round(portfolios[i][1], 2))}%\n"
                       f"Annual Max Loss: {str(round(portfolios[i][0] - 1.65 * portfolios[i][1], 2))}%\n"
                       f"Sharpe Ratio: {str(round(portfolios[i][2], 2))}\n"
-                      "     Weights\n"  
+                      "     Weights\n"
                       f"{stocks[i]}",
                     bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=10, style=STYLE, ha=HA, va=VA,
                     fontname=FONT_NAME,
