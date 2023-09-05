@@ -1,9 +1,9 @@
 location /static {
-    alias /home/app/web/staticfiles;
+    alias /home/web/app/staticfiles;
     add_header Access-Control-Allow-Origin *;
 }
 
 location /media {
-    alias /home/app/web/mediafiles;
+    alias /home/web/app/mediafiles;
     add_header Access-Control-Allow-Origin *;
 }

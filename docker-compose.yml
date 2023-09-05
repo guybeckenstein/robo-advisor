@@ -3,22 +3,24 @@ version: '3.8'
 services:
   db:
     image: postgres:15.3
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
     container_name: Postgres_Container
     env_file:
       - .env.dev.db
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/usr/src/app/
+      - postgres_data:/var/lib/postgresql/data/
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
     container_name: RoboAdvisor_Container
     ports:
       - '8000:8000'
     env_file:
       - .env.dev
       - .env.oauth
+    volumes:
+      - .:/usr/src/app/
     depends_on:
       - db
 

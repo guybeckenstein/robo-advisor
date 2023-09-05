@@ -20,8 +20,8 @@ services:
       - .env.staging
       - .env.oauth
     volumes:
-      - static_volume:/home/app/web/staticfiles
-      - media_volume:/home/app/web/mediafiles
+      - static_volume:/home/web/app/staticfiles
+      - media_volume:/home/web/app/mediafiles
     depends_on:
       - db
   nginx-proxy:
@@ -36,8 +36,8 @@ services:
     environment:
       - TRUST_DOWNSTREAM_PROXY=false
     volumes:
-      - static_volume:/home/app/web/staticfiles
-      - media_volume:/home/app/web/mediafiles
+      - static_volume:/home/web/app/staticfiles
+      - media_volume:/home/web/app/mediafiles
       - certs:/etc/nginx/certs
       - html:/usr/share/nginx/html
       - vhost:/etc/nginx/vhost.d
