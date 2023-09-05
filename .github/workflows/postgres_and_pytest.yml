@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     services:  # Service containers to run with `container-job`
-      db:  # Label used to access the service container
+      postgres:  # Label used to access the service container
         image: postgres:latest  # Docker Hub image
         ports:
           - 5432:5432  # Opens TCP port 5432 on the host and service container
         env:  # Provide the password for postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: password
         options: >-  # Set health checks to wait until postgres has started
           --health-cmd pg_isready
           --health-interval 10s
@@ -37,18 +37,18 @@ jobs:
         run: python -m flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
       - name: Create PostgreSQL Database
         run: |
-          export PGPASSWORD=postgres
+          export PGPASSWORD=password
           psql -h localhost -U postgres -c "CREATE DATABASE robo_advisor"
       - name: Run Migrations
         run: python manage.py migrate --noinput
         env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PASSWORD: password
           POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
           POSTGRES_PORT: 5432  # The default PostgreSQL port
         # Tests
       - name: Run PyTest
         run: python -m pytest -v
         env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_HOST: db  # The hostname used to communicate with the PostgreSQL service container
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
           POSTGRES_PORT: 5432  # The default PostgreSQL port
