@@ -37,6 +37,7 @@ jobs:
         run: python -m flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
       - name: Create PostgreSQL Database
         run: |
+          export PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
           psql -h localhost -U postgres -c "CREATE DATABASE robo_advisor"
       - name: Run Migrations
         run: python manage.py migrate --noinput
