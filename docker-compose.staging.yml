@@ -3,9 +3,8 @@ version: '3.8'
 services:
   web:
     build:
-      context: ./app
+      context: .
       dockerfile: Dockerfile.prod
-    image: <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/django-ec2:web
     command: gunicorn robo_advisor_project.wsgi:application --bind 0.0.0.0:8000
     container_name: RoboAdvisor_Container
     volumes:
@@ -18,11 +17,10 @@ services:
   nginx-proxy:
     container_name: nginx-proxy
     build: nginx
-    image: <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/django-ec2:web
     restart: always
     ports:
       - '443:443'
-      - '80:80'
+      - '1337:80'
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
@@ -51,3 +49,4 @@ volumes:
   certs:
   html:
   vhost:
+  acme:

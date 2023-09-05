@@ -45,8 +45,7 @@ RUN mkdir -p /home/app
 RUN addgroup --system app && adduser --system --group app
 
 # create the appropriate directories
-ENV HOME=/home/app
-ENV APP_HOME=/home/app/web
+ENV APP_HOME=/home/web/app
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/staticfiles
 RUN mkdir $APP_HOME/mediafiles
@@ -60,7 +59,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
 
 # copy entrypoint.prod.sh
-COPY ./entrypoint.prod.sh .
+COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
 RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.prod.sh
 RUN chmod +x  $APP_HOME/entrypoint.prod.sh
 
