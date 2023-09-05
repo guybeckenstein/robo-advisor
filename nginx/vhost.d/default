@@ -1,9 +1,9 @@
-location static {
-  alias homeappwebstaticfiles;
-  add_header Access-Control-Allow-Origin ;
+location /static {
+    alias /home/web/app/staticfiles;
+    add_header Access-Control-Allow-Origin *;
 }
 
-location media {
-  alias homeappwebmediafiles;
-  add_header Access-Control-Allow-Origin ;
+location /media {
+    alias /home/web/app/mediafiles;
+    add_header Access-Control-Allow-Origin *;
 }

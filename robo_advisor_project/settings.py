@@ -6,27 +6,26 @@ import environ
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 # Load and read .env file
 # OS environment variables take precedence over variables from .env
 env = environ.Env()
 env.read_env(os.path.join(BASE_DIR, './.env.dev'))
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-2f(wsgq6o$nmh&m@$7=jw5pldw^cyn%u44m+e34z7hss&($rl&'
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default='django-insecure-2f(wsgq6o$nmh&m@$7=jw5pldw^cyn%u44m+e34z7hss&($rl&')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(env("DEBUG", default=True))
 # DEBUG = True
 
 # ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS", default='localhost 127.0.0.1 [::1]').split(" ")
 
 SITE_ID = 2
 # Application definition
@@ -127,39 +126,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS", default='*').split(" ")
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-# old password: 'PASSWORD': '1234qwer',
-"""DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'robo_advisor',
-        'USER': 'postgres',  # Insert Postgres Username here
-        'PASSWORD': 'jorden123',
-         # Insert Postgres Password here
-        'HOST': 'localhost',
-        'PORT': 5432,
-    }
-}"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),  # Insert Postgres Username here
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-         # Insert Postgres Password here
-        'HOST': 'localhost',
-        'PORT': 5432,
+        'NAME': env('POSTGRES_DB', default='robo_advisor'),
+        'USER': env('POSTGRES_USER', default='postgres'),
+        'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
+        'HOST': env('POSTGRES_HOST', default='localhost'),
+        'PORT': int(env('POSTGRES_PORT', default=5432)),
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+
 ACCOUNT_FORMS = {
     'login': 'accounts.forms.CustomLoginForm',
     'reset_password': 'accounts.forms.CustomResetPasswordForm'
@@ -257,18 +238,18 @@ JAZZMIN_SETTINGS = {
 
     # Links to put along the top menu
     "topmenu_links": [
-
-        # Url that gets reversed (Permissions can be added)
-        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
-
-        # external url that opens in a new window (Permissions can be added)
-        {"name": "Support", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
-
-        # model admin to link to (Permissions checked against model)
-        {"model": "auth.User"},
-
-        # App with dropdown menu to all its models pages (Permissions checked against models)
-        {"app": "books"},
+        {  # Url that gets reversed (Permissions can be added)
+            "name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]
+        },
+        {  # external url that opens in a new window (Permissions can be added)
+            "name": "Support", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True
+        },
+        {  # model admin to link to (Permissions checked against model)
+            "model": "auth.User"
+        },
+        {  # App with dropdown menu to all its models pages (Permissions checked against models)
+            "app": "books"
+        },
     ],
 
     #############
@@ -310,7 +291,6 @@ JAZZMIN_SETTINGS = {
         }]
     },
 
-    # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
     # for the full list of 5.13.0 free icon classes
     "icons": {
         "auth": "fas fa-users-cog",

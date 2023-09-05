@@ -123,9 +123,7 @@ if __name__ == '__main__':
             research.save_user_specific_stock(stock_name, operation, plt_instance)
 
             # show result
-            data_management.plot_image(
-                settings.RESEARCH_IMAGES +
-                stock_name + operation + '.png')
+            data_management.plot_image(settings.RESEARCH_IMAGES + stock_name + operation + '.png')
 
         elif selection == 6:  # discover good stocks
             filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
@@ -149,8 +147,8 @@ if __name__ == '__main__':
             sub_folder = str(stocks_collection_number) + '/' + str(is_machine_learning) + str(model_option) + "/"
 
             stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
-            closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                         + stocks_collection_number + '/')
+            basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+            closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
             data_management.plot_stat_model_graph(
                 stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
                 model_name=settings.MODEL_NAME[model_option], num_of_years_history=num_of_years_history,

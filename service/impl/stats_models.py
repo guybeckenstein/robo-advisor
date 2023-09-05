@@ -50,7 +50,7 @@ class StatsModels:
 
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
-            if type(symbol) == int:
+            if isinstance(symbol, int):
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)
@@ -135,7 +135,7 @@ class StatsModels:
                                                  stocks_symbols, max_percent_commodity, max_percent_stocks) -> None:
         stocks_names: list[str] = []
         for symbol in stocks_symbols:
-            if type(symbol) == int:
+            if isinstance(symbol, int):
                 stocks_names.append(str(symbol))
             else:
                 stocks_names.append(symbol)

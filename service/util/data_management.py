@@ -863,8 +863,8 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
                                                                    stocks_collection_number) -> int:
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
         pct_change_table, yield_list = tables
-    closing_prices_table_path = (settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-                                 + stocks_collection_number + '/')
+    basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+    closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
     # question #1
     string_to_show = "for how many years do you want to invest?\n" + "0-1 - 1\n""1-3 - 2\n""3-100 - 3\n"
     first_question_score = get_score_by_answer_from_user(string_to_show)

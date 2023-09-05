@@ -36,7 +36,7 @@ def chosen_stock(request):
         # Form data
         data = request.GET
         ml_model = data.get('ml_model', None)
-        if type(ml_model) == int or ml_model.isnumeric():
+        if isinstance(ml_model, int) or ml_model.isnumeric():
             ml_model = int(data.get('ml_model', None)) - 1
             ml_model = settings.MACHINE_LEARNING_MODEL[ml_model]
         description = data.get('symbol', None)
@@ -63,12 +63,12 @@ def chosen_stock(request):
         plt.cla()
         plt.close()
 
-        overview:str = f"https://finance.yahoo.com/quote/{symbol}/?p = {symbol}"
-        conversation_link:str = f"https://finance.yahoo.com/quote/{symbol}/community?p = {symbol}"
-        more_statistics:str = f"https://finance.yahoo.com/quote/{symbol}/key-statistics?p = {symbol}"
+        overview: str = f"https://finance.yahoo.com/quote/{symbol}/?p = {symbol}"
+        conversation_link: str = f"https://finance.yahoo.com/quote/{symbol}/community?p = {symbol}"
+        more_statistics: str = f"https://finance.yahoo.com/quote/{symbol}/key-statistics?p = {symbol}"
 
         # israeli stock
-        if type(symbol) == int or symbol.isnumeric():
+        if isinstance(symbol, int) or symbol.isnumeric():
             num_of_digits = len(str(symbol))
             conversation_link = f"https://www.sponser.co.il/Tag.aspx?id={symbol}"
             if num_of_digits > 3:
@@ -77,7 +77,6 @@ def chosen_stock(request):
             else:
                 overview = f"https://market.tase.co.il/he/market_data/index/{symbol}/major_data"
                 more_statistics = f"https://market.tase.co.il/he/market_data/index/{symbol}/statistics"
-
 
     else:
         raise BadRequest

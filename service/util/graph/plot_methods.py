@@ -272,5 +272,3 @@ def distribution_of_stocks(stock_names, pct_change_table) -> plt:
     plt.grid(True)
     plt.legend()
     return plt
-
-

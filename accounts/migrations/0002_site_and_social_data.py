@@ -40,9 +40,24 @@ class Migration(migrations.Migration):
 
     def generate_socialapp_data(apps, schema_editor):
         socialapp_data: list[tuple] = [
-            ('facebook', 'facebook', env("FACEBOOK_CLIENT_ID"), env("FACEBOOK_CLIENT_SECRET"),),
-            ('google', 'google', env("GMAIL_CLIENT_ID"), env("GMAIL_CLIENT_SECRET"),),
-            ('github', 'github', env("GITHUB_CLIENT_ID"), env("GITHUB_CLIENT_SECRET"),),
+            (
+                'facebook',
+                'facebook',
+                env("FACEBOOK_CLIENT_ID", default=ValueError),
+                env("FACEBOOK_CLIENT_SECRET", default=ValueError),
+            ),
+            (
+                'google',
+                'google',
+                env("GMAIL_CLIENT_ID", default=ValueError),
+                env("GMAIL_CLIENT_SECRET", default=ValueError),
+            ),
+            (
+                'github',
+                'github',
+                env("GITHUB_CLIENT_ID", default=ValueError),
+                env("GITHUB_CLIENT_SECRET", default=ValueError),
+            ),
         ]
         with transaction.atomic():
             for i, (provider, name, client_id, secret_key) in enumerate(socialapp_data):
@@ -56,7 +71,7 @@ class Migration(migrations.Migration):
 
                 sites: QuerySet[Site] = Site.objects.all()
                 for site in sites:
-                        social_app.sites.add(site)
+                    social_app.sites.add(site)
 
     operations = [
         migrations.RunPython(generate_site_data),

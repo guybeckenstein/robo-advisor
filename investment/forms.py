@@ -34,4 +34,3 @@ class InvestmentForm(forms.ModelForm):
             'hx-trigger': 'keyup changed delay:2s'
             # Optional delay to reduce frequent requests
         })
-

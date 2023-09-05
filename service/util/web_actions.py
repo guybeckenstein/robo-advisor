@@ -37,7 +37,7 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
     )
     pct_change_table: pd.DataFrame = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
-    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
+    # models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table[f"weighted_sum_{str(risk_level)}"] = weighted_sum
 
