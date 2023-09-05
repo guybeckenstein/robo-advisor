@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 
 from accounts.models import InvestorUser
 from service.util import data_management
+from service.config import settings as settings_service
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 
@@ -27,6 +28,8 @@ class AlgorithmPreferencesForm(forms.ModelForm):
         form_type = kwargs.pop('form_type', 'create')
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self.helper.form_tag = False  # add this
+        self.helper.disable_csrf = True
         self.helper.form_id = 'preferences-form'
         self.fields['ml_answer'].label = format_html(
             '<span class="capital-market-form-label">'
@@ -49,7 +52,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
                 Div(InlineRadios('model_answer', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
         elif form_type == 'update':
             self.helper.layout = Layout(
                 HTML(main_header),
@@ -59,7 +62,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('ml_answer', css_class='capital-market-form-radio')),
                 Div(InlineRadios('model_answer', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     class Meta:
         model = QuestionnaireA
@@ -68,7 +71,7 @@ class AlgorithmPreferencesForm(forms.ModelForm):
 
 class InvestmentPreferencesForm(forms.ModelForm):
     answer_1 = forms.ChoiceField(
-        choices=((1, '0-1'), (2, '2-3'), (3, '4-100')),
+        choices=((1, '0-1'), (2, '2-4'), (3, '5-20')),
         widget=forms.RadioSelect(),
     )
     answer_2 = forms.ChoiceField(
@@ -89,15 +92,15 @@ class InvestmentPreferencesForm(forms.ModelForm):
         stocks_collections_number: str = kwargs.pop('collections_number', None)
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self.helper.form_tag = False  # add this
+        self.helper.disable_csrf = True
         self.helper.form_id = 'capital-market-form'
         self.fields['answer_1'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #1: For how many years do you want to invest?'
                                                     '</span>')
         ml_answer: int = questionnaire_a.ml_answer
         model_answer: int = questionnaire_a.model_answer
-        # Sub folder for current user to fetch its relevant graphs
-        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'
-
+        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'  # Sub folder for current user to fetch its relevant graphs
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #2: Which distribution do you prefer?'
@@ -106,6 +109,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     f'<img src="{first_graph}">'
                                                     f'</div>')
         second_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/three_portfolios.png"
+        three_graphs = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
         self.fields['answer_3'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #3: What is your preferable graph?'
@@ -142,7 +146,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
         elif form_type == 'update':
             self.helper.layout = Layout(
                 HTML(main_header),
@@ -153,7 +157,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),
             )
-            self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
+            # self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     @staticmethod
     def get_questionnaire_graphs(questionnaire_a: QuestionnaireA):
@@ -171,20 +175,29 @@ class InvestmentPreferencesForm(forms.ModelForm):
         )
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yields = db_tuple
-        # Saves two graphs
+        # Saves three graphs
+        # distribution graph
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
         data_management.plot_distribution_of_portfolio(yields, sub_folder=sub_folder)
         plt.clf()
         plt.cla()
         plt.close()
-
+        # three portfolios graph
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )
         plt.clf()
         plt.cla()
         plt.close()
-
+        # stat model graph
+        closing_prices_table_path = (settings_service.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+                                     + stocks_collection_number + '/')
+        data_management.plot_stat_model_graph(
+            stocks_symbols, int(ml_answer), int(model_answer), settings_service.NUM_OF_YEARS_HISTORY,
+            closing_prices_table_path, sub_folder=sub_folder)
+        plt.clf()
+        plt.cla()
+        plt.close()
     class Meta:
         model = QuestionnaireB
         fields = ['answer_1', 'answer_2', 'answer_3']

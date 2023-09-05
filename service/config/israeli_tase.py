@@ -1,9 +1,3 @@
-TOKEN_URL = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
-
-# key and secret of ofer
-# key = '7e247414e7047349d83b7b8a427c529c'
-# secret = '7a809c498662c88a0054b767a92f0399'
-
 # "key and secret of yardet1998 - "robo-advisor"
 KEY = 'fb4577af7a020ad0e443632a102003d4'
 SECRET = '038af8b13e67a0fd0cbdbb1cdcb973c6'
@@ -11,6 +5,12 @@ SECRET = '038af8b13e67a0fd0cbdbb1cdcb973c6'
 # key and secret of yarden - "roboadvisor-mta"
 # key = "9791b4a859c4650efe0d77c2ed9d6919"
 # secret = "e8d0264a8472c411443a6dfbcdf0992f"
+
+# key and secret of ofer
+# key = '7e247414e7047349d83b7b8a427c529c'
+# secret = '7a809c498662c88a0054b767a92f0399'
+
+TOKEN_URL = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
 
 BASE_URL = "https://openapigw.tase.co.il/tase/prod/api/v1"
 PREFIX_URL = "/tase/prod/api/v1"
@@ -40,14 +40,3 @@ BASIC_SECURITIES_COMPANY_LIST = "basic-securities/companies-list"
 SHORT_SALES_WEEKLY_BALANCE_NAME = "short-sales/weekly-balance"
 SHORT_SALES_HISTORICAL_DATA = "short-sales/history"
 FUND_LIST_NAME = "fund/fund-list"
-# indexEndOfDayHistoryFiveYearsSpecificDate
-# =prefixUrl+"/indices/eod/history/five-years/by-date?date
-# ="+str(year)+"-"+str(month)+"-"+str(day)+"&id="+str(name) """
-# past 7 days
-# indexEndOfDayHistorySevenDaysUpToday = (prefixUrl + "/indices/eod/seven-days/by-index?id=" + str(name))
-# indexEndOfDayHistorySevenDaySpecificDate
-# prefixUrl+"/indices/eod//seven-days/by-date?date
-# ="+str(year)+"-"+str(month)+"-"+str(day)+"&id="+str(name) """
-# past day
-# indexEndOfDay=prefixUrl+"/indices/eod/history/ten-years/by-date?date
-# ="+str(year)+"-"+str(month)+"-"+str(day)+"&id="+str(name) """

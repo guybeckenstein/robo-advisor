@@ -1,9 +1,9 @@
 import math
-
+from service.impl.user import User
 import numpy as np
 import pandas as pd
 from django.shortcuts import get_object_or_404
-from service.impl.user import User
+
 from service.impl.portfolio import Portfolio
 from service.util import data_management
 from service.config import settings
@@ -39,11 +39,6 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table[f"weighted_sum_{str(risk_level)}"] = weighted_sum
-
-    if is_machine_learning:
-        weighted_sum: pd.DataFrame = helpers.update_daily_change_with_machine_learning(
-            [weighted_sum], pct_change_table.index, models_data
-        )[0][0]
 
     # Update the new sub-table's length (should be at most equal to the old one), then update the table itself
     yield_column: str = f"yield_{str(risk_level)}"
@@ -122,14 +117,14 @@ def create_portfolio_instance(user: CustomUser):
     return annual_returns, annual_sharpe, annual_volatility, is_machine_learning, portfolio, risk_level, stocks_weights
 
 
-def send_email(subject, message, recipient_list, attachment_path=None):  # TODO: fix spam issue
-    from_email = django_settings.EMAIL_HOST_USER
+def send_email(subject, message, recipient_list, attachment_path=None):
+    from_email = django_settings.EMAIL_HOST
     # Send the email with attachment
     text_content = strip_tags(message)
     msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
 
     # Attach the image
     with open(attachment_path, 'rb') as image_file:
-        msg.attach_file(image_file.name, 'image/png')  # Adjust MIME type if needed
+        msg.attach_file(image_file.name, 'image/png')
 
     msg.send()

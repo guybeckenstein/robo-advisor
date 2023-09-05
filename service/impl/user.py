@@ -1,7 +1,6 @@
 import codecs
 import json
 from dataclasses import dataclass, field
-
 from service.impl.portfolio import Portfolio
 
 

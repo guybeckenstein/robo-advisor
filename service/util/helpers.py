@@ -1,12 +1,12 @@
 import codecs
 import csv
 import datetime
+import io
 from datetime import datetime as data_time, timedelta
 import json
 import math
 import os
 
-import boto3
 from bidi import algorithm as bidi_algorithm
 import numpy as np
 import pandas as pd
@@ -18,9 +18,14 @@ from sklearn.model_selection import train_test_split
 import pmdarima as pm
 from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
-from service.config import aws, settings
+
+import boto3
+
+from service.config import settings, aws, google_drive
 from service.impl.sector import Sector
 from service.util import tase_interaction
+
+from PIL import Image
 
 # Global variables
 SINGLE_DAY: int = 86400
@@ -112,9 +117,8 @@ class Analyze:
         self._record_percent_to_predict: float = record_percent_to_predict
         self._is_closing_prices_mode: bool = is_closing_prices_mode
 
-    def linear_regression_model(
-            self, test_size_machine_learning: str
-    ) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:  # TODO fix
+    def linear_regression_model(self, test_size_machine_learning: str) -> tuple[
+        pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
 
         # Added date
@@ -173,7 +177,7 @@ class Analyze:
         return df, forecast_with_historical_returns_annual, expected_returns
 
     def gbm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        df, forecast_out = self.get_final_dataframe()  # TODO fix
+        df, forecast_out = self.get_final_dataframe()
 
         df.index = pd.to_datetime(self._table_index)
 
@@ -196,9 +200,8 @@ class Analyze:
             next_unix += SINGLE_DAY
             df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(
-            df=df, forecast_out=forecast_out
-        )
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df,
+                                                                                           forecast_out=forecast_out)
         return df, forecast_with_historical_returns_annual, expected_returns
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
@@ -246,8 +249,8 @@ class Analyze:
 
         longdouble: np.longdouble = np.longdouble(254)
         excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset:].mean()))) - 1) * 100
-        mean_val = np.log1p(yhat.mean())
-        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * mean_val)) - 1) * 100
+        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(
+            longdouble * np.log1p(yhat.mean()))) - 1) * 100
         if self._is_closing_prices_mode:
             # Plot the forecast
             model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
@@ -258,6 +261,32 @@ class Analyze:
                 yhat.pct_change().mean()))) - 1) * 100
 
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
+
+    def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+        df, forecast_out = self.get_final_dataframe()
+
+        # ARIMA requires datetime index for time series data
+        df.index = pd.to_datetime(self._table_index, format='%Y-%m-%d')
+
+        # Perform ARIMA forecasting
+        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=True, stepwise=False)
+        forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
+
+        df['Forecast'] = np.nan
+        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast
+
+        # Add dates
+        last_date = df.iloc[-1].name
+        last_unix: pd.Timestamp = last_date.timestamp()
+        next_unix: float = last_unix + SINGLE_DAY
+
+        for i in forecast:
+            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
+            next_unix += SINGLE_DAY
+            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+
+        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
+        return df, forecast_with_historical_returns_annual, expected_returns
 
     def get_final_dataframe(self) -> tuple[pd.DataFrame, int]:
         df: pd.DataFrame = pd.DataFrame({})
@@ -294,6 +323,10 @@ class Analyze:
             expected_returns: np.longdouble = (np.exp(longdouble * logged_forecast_mean) - 1) * 100
         return forecast_with_historical_returns_annual, expected_returns
 
+    @property
+    def returns_stock(self):
+        return self._returns_stock
+
 
 def update_daily_change_with_machine_learning(
         returns_stock, table_index: pd.Index, models_data: dict, closing_prices_mode: bool = False
@@ -313,8 +346,9 @@ def update_daily_change_with_machine_learning(
     if len(columns) == 0:
         raise AttributeError('columns length is invalid - 0. Should be at least 1')
     else:
-        # annual_return = None
+        annual_return = None
         excepted_returns = None
+
         for i, stock in enumerate(columns):
             if is_ndarray_mode:
                 stock_name = 0
@@ -328,11 +362,10 @@ def update_daily_change_with_machine_learning(
                 is_closing_prices_mode=closing_prices_mode
             )
             if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:  # Linear Regression
-                df, annual_return_with_forecast, excepted_returns =\
+                df, annual_return_with_forecast, excepted_returns = \
                     analyze.linear_regression_model(test_size_machine_learning)
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
                 df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
-
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
                 df, annual_return_with_forecast, excepted_returns = analyze.gbm_model()
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
@@ -341,6 +374,7 @@ def update_daily_change_with_machine_learning(
                 raise ValueError('Invalid machine model')
             if df['Label'][offset_row:].values.size == returns_stock[stock_name].size:
                 returns_stock[stock_name] = df['Label'][offset_row:].values
+
             else:
                 returns_stock[stock_name] = df['Label'].values
 
@@ -370,9 +404,9 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     file_url: str = location_saving + file_name + ".csv"
 
     for i, stock in enumerate(stocks_names):
-        if isinstance(stock, float):
+        if type(stock) == float:
             continue
-        elif isinstance(stock, int) or stock.isnumeric():  # Israeli stock
+        if type(stock) == int or stock.isnumeric():  # Israeli stock
             num_of_digits = len(str(stock))
             if num_of_digits > 3:
                 is_index_type = False
@@ -448,10 +482,10 @@ def get_sectors_data_from_file():
     return sectors_data['sectorsList']['result']
 
 
-def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make more efficient
+def set_sectors(stocks_symbols: list[object]) -> list[Sector]:
     """
     For each stock symbol, it checks for which sector does it belong.
-    :return: It returns a list of sectors with the relevant stocks within each sector. Subset of the stock symbol
+    :return: It returns a list of sectors.json.json with the relevant stocks within each sector. Subset of the stock symbol
     """
     sectors: list = []
     sectors_data: [list[dict[str, str, list[object]]]] = get_sectors_data_from_file()
@@ -468,8 +502,7 @@ def set_sectors(stocks_symbols: list[object]) -> list[Sector]:  # TODO - make mo
 
 
 def set_stock_sectors(stocks_symbols, sectors: list) -> list:
-    stock_sectors = []  # TODO - FIX ORDER
-
+    stock_sectors = []
     for symbol in stocks_symbols:
         found_sector = False
         for curr_sector in sectors:
@@ -483,7 +516,7 @@ def set_stock_sectors(stocks_symbols, sectors: list) -> list:
     return stock_sectors
 
 
-def drop_stocks_from_specific_sector(stocks_symbols, stock_sectors, sector_name):  # TODO - MAKE DYNAMIC
+def drop_stocks_from_specific_sector(stocks_symbols, stock_sectors, sector_name):
     new_stocks_symbols = []
     for i in range(len(stock_sectors)):
         if stock_sectors[i] != sector_name:
@@ -549,13 +582,13 @@ def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
     usa_indexes_table: pd.DataFrame = get_usa_indexes_table()
     for i, stock in enumerate(stocks_symbols):
         try:
-            if isinstance(stock, int) or stock.isnumeric():
+            if type(stock) == int or stock.isnumeric():
                 num_of_digits = len(str(stock))
                 if num_of_digits > 3:
                     is_index_type = False
                 else:  # israeli index name always has maximum of 3 digits
                     is_index_type = True
-                if isinstance(stock, str):
+                if type(stock) == str:
                     stock = int(stock)
                 stocks_descriptions.append(convert_israeli_symbol_number_to_name(stock, is_index_type=is_index_type,
                                                                                  is_reverse_mode=is_reverse_mode))
@@ -681,8 +714,98 @@ def convert_company_name_to_israeli_security_number(companyName: str) -> str:
 
     return result[0]
 
+class AwsInstance:
+    def __init__(self):
+        # aws
+        self.app_name = aws.APP_NAME
+        self._aws_access_key_id = aws.AWS_ACCESS_KEY_ID
+        self._aws_secret_access_key = aws.AWS_SECRET_ACCESS_KEY
+        self._region_name = aws.REGION_NAME
 
-def save_all_stocks():
+    def connect_to_s3(self):  # -> boto3.client:
+        s3 = boto3.resource(
+            service_name='s3',
+            region_name=self._region_name,
+            aws_secret_access_key=self._aws_secret_access_key,
+            aws_access_key_id=self._aws_access_key_id
+        )
+
+        """s3_client = boto3.client(
+            service_name='s3',
+            region_name=self._region_name,
+            aws_access_key_id=self._aws_access_key_id,
+            aws_secret_access_key=self._aws_secret_access_key,
+        )
+        return s3_client"""
+
+    """def upload_file_to_s3(self, file_path, bucket_name, s3_object_key, s3_client) -> None:
+        # Local folder path to upload
+        # local_folder_path = 'path/to/your/local/folder'
+
+        for root, dirs, files in os.walk(local_folder_path):
+            for file in files:
+                local_file_path = os.path.join(root, file)
+                s3_object_key = os.path.relpath(local_file_path, local_folder_path)
+                upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
+
+        s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
+
+
+def get_symbols_names_list() -> list[str]:
+    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
+    symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
+    return symbols_list
+
+
+def get_descriptions_list() -> list[str]:
+    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
+    descriptions_list: list[str] = all_stocks_Data['description'].unique().tolist()
+    return descriptions_list
+
+
+def create_graphs_folders() -> None:
+    try:
+        os.mkdir(f'{settings.GRAPH_IMAGES}')
+    except FileExistsError:
+        pass
+    for i in range(1, 4 + 1):
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/00/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/01/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/10/')
+        except FileExistsError:
+            pass
+        try:
+            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/11/')
+        except FileExistsError:
+            pass
+
+
+def currency_exchange(from_currency="USD", to_currency="ILS"):
+    start_date = (data_time.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
+
+    ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol
+    data = yf.download(ticker, start=start_date, end=end_date)
+
+    if not data.empty:
+        latest_exchange_rate = data['Close'].iloc[-1]
+        return latest_exchange_rate
+    else:
+        raise ValueError("No exchange rate data available for the given date range.")
+
+
+def save_all_stocks():  # dont delete it
     path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
     sectors_data = get_sectors_data_from_file()
     # Assuming you have lists named list_symbol, list_sector, and list_description
@@ -742,92 +865,24 @@ def save_usa_indexes_table():  # dont delete it
             writer.writerow(stock_data)
 
 
-class AwsInstance:
-    # TODO
-    def __init__(self):
-        self._region_name = aws.REGION_NAME
-        self._aws_access_key_id = aws.AWS_ACCESS_KEY_ID
-        self._aws_secret_access_key = aws.AWS_SECRET_ACCESS_KEY
-        self._region_name = aws.REGION_NAME
-
-    def connect_to_s3(self) -> boto3.client:
-        # s3 = boto3.resource(
-        #     service_name='s3',
-        #     region_name=self._region_name,
-        #     aws_secret_access_key=self._aws_secret_access_key,
-        #     aws_access_key_id=self._aws_access_key_id
-        # )
-
-        s3_client = boto3.client(
-            service_name='s3',
-            region_name=self._region_name,
-            aws_access_key_id=self._aws_access_key_id,
-            aws_secret_access_key=self._aws_secret_access_key,
-        )
-        return s3_client
-
-    def upload_file_to_s3(self, file_path, bucket_name, s3_object_key, s3_client) -> None:
-        # Local folder path to upload
-        # local_folder_path = 'path/to/your/local/folder'
-
-        """for root, dirs, files in os.walk(local_folder_path):
-            for file in files:
-                local_file_path = os.path.join(root, file)
-                s3_object_key = os.path.relpath(local_file_path, local_folder_path)
-                upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
-
-        s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
+def save_json_data(path, sectors_json_file):
+    with open(path + ".json", 'w', encoding='utf-8') as f:
+        json.dump(sectors_json_file, f, ensure_ascii=False, indent=4)
 
 
-def get_symbols_names_list() -> list[str]:
-    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
-    symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
-    return symbols_list
+def convert_data_stream_to_pd(file_stream):
+    # Convert the binary content directly to a Pandas DataFrame
+    return pd.read_csv(file_stream, encoding='utf-8')
+
+def convert_data_stream_to_png(file_stream):
+    # Create an Image object from the binary stream
+    return Image.open(io.BytesIO(file_stream.read()))
+
+def convert_data_stream_to_json(file_stream):
+    # Convert the binary content directly to a Pandas DataFrame
+    return json.load(file_stream)
 
 
-def get_descriptions_list() -> list[str]:
-    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
-    descriptions_list: list[str] = all_stocks_Data['description'].unique().tolist()
-    return descriptions_list
-
-
-def create_graphs_folders() -> None:
-    try:
-        os.mkdir(f'{settings.GRAPH_IMAGES}')
-    except FileExistsError:
-        pass
-    for i in range(1, 4 + 1):
-        try:
-            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/')
-        except FileExistsError:
-            pass
-        try:
-            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/00/')
-        except FileExistsError:
-            pass
-        try:
-            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/01/')
-        except FileExistsError:
-            pass
-        try:
-            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/10/')
-        except FileExistsError:
-            pass
-        try:
-            os.mkdir(f'{settings.GRAPH_IMAGES}{i}/11/')
-        except FileExistsError:
-            pass
-
-
-def currency_exchange(from_currency="USD", to_currency="ILS"):
-    start_date = data_time.now().strftime('%Y-%m-%d')
-    end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
-
-    ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol
-    data = yf.download(ticker, start=start_date, end=end_date)
-
-    if not data.empty:
-        latest_exchange_rate = data['Close'].iloc[-1]
-        return latest_exchange_rate
-    else:
-        raise ValueError("No exchange rate data available for the given date range.")
+def get_sorted_path(full_path, num_of_last_elements):
+    split_path = full_path.split('/')
+    return '/'.join(split_path[-num_of_last_elements:])

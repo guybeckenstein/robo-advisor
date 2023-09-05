@@ -9,6 +9,7 @@
           Join Today
         </h2>
         {% crispy form %}
+           <div id="password2-error" style="color: red;"></div>
         <small class="text-muted">
           Already Have An Account?
           <a href="{% url 'account_login' %}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">

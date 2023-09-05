@@ -47,8 +47,8 @@ class CustomUser(AbstractUser):
     class Meta:
         app_label = 'accounts'
         db_table = 'CustomUser'
-        verbose_name = 'Custom User'
-        verbose_name_plural = 'Custom User'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
 
     def save(self, *args, **kwargs):
         self.username = self.email
