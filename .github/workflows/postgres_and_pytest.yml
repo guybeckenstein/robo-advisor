@@ -25,7 +25,7 @@ jobs:
   flake8-and-pytest:
     # Containers must run in Linux based operating systems
     name: Check code with Flake8, then run the application's tests with PyTest
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     needs: setup-database
     steps:
       - name: Checkout code
@@ -48,3 +48,6 @@ jobs:
         # Tests
       - name: Run PyTest
         run: python -m pytest -v
+        env:
+          POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
+          POSTGRES_PORT: 5432  # The default PostgreSQL port
