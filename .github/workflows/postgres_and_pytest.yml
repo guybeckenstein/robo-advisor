@@ -35,6 +35,9 @@ jobs:
         # Linter
       - name: Run Flake8
         run: python -m flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
+      - name: Print previous password
+        run: |
+          echo "${{ secrets.POSTGRES_PASSWORD }}"
       - name: Create PostgreSQL Database
         run: |
           export PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }}
