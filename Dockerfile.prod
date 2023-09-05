@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc
 # lint
 RUN pip install --upgrade pip
 RUN pip install flake8==6.0.0
-COPY . /usr/src/app/
+COPY . /usr/src/app
 RUN flake8 --ignore=E402,E501,F401 --exclude=venv .
 
 # install python dependencies
@@ -62,7 +62,7 @@ RUN pip install --no-cache /wheels/*
 COPY . $APP_HOME
 
 # copy entrypoint.prod.sh
-COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
+COPY ./entrypoint.prod.sh /usr/src/app/entrypoint.prod.sh
 RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.prod.sh
 RUN chmod +x  $APP_HOME/entrypoint.prod.sh
 
@@ -73,4 +73,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # run entrypoint.prod.sh
-ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+ENTRYPOINT ["/home/web/app/entrypoint.prod.sh"]

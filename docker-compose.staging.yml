@@ -1,36 +1,40 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15.3
+    container_name: Postgres_Container
+    env_file:
+      - .env.staging.db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
   web:
     build:
       context: .
       dockerfile: Dockerfile.prod
     command: gunicorn robo_advisor_project.wsgi:application --bind 0.0.0.0:8000
     container_name: RoboAdvisor_Container
-    volumes:
-      - static_volume:/home/app/web/staticfiles
-      - media_volume:/home/app/web/mediafiles
     expose:
       - 8000
     env_file:
       - .env.staging
       - .env.oauth
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
     depends_on:
       - db
-  db:
-    image: postgres:15.3
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    container_name: Postgres_Container
-    env_file:
-      - .env.staging.db
   nginx-proxy:
-    container_name: nginx-proxy
-    build: nginx
+    build:
+      context: nginx
+      dockerfile: Dockerfile
+    container_name: NginxProxy_Container
     restart: always
     ports:
-      - '443:443'
       - '1337:80'
+      - '443:443'
+    environment:
+      - TRUST_DOWNSTREAM_PROXY=false
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
@@ -42,14 +46,15 @@ services:
       - web
   acme-companion:
     image: nginxproxy/acme-companion
+    container_name: AcmeCompanion_Container
     env_file:
       - ./.env.staging.proxy-companion
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - certs:/etc/nginx/certs
       - html:/usr/share/nginx/html
       - vhost:/etc/nginx/vhost.d
       - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - nginx-proxy
 
