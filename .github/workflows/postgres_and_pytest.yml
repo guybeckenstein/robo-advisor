@@ -37,10 +37,17 @@ jobs:
         run: python -m flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
       - name: Create PostgreSQL Database
         run: |
-          export PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          export PGPASSWORD="${{ POSTGRES_PASSWORD }}"
+          echo "$PGPASSWORD"
           psql -h localhost -U postgres -c "CREATE DATABASE robo_advisor"
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       - name: Run Migrations
         run: python manage.py migrate --noinput
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
+          POSTGRES_PORT: 5432  # The default PostgreSQL port
         # Tests
       - name: Run PyTest
         run: python -m pytest -v
