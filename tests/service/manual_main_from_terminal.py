@@ -1,7 +1,7 @@
-import pytest
-
-from service.config import settings
 from service.impl.user import User
+import pytest
+from service.config import settings
+
 from service.util import data_management, research
 
 

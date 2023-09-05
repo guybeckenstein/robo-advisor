@@ -118,7 +118,7 @@ def create_portfolio_instance(user: CustomUser):
 
 
 def send_email(subject, message, recipient_list, attachment_path=None):
-    from_email = django_settings.DEFAULT_FROM_EMAIL
+    from_email = django_settings.EMAIL_HOST
     # Send the email with attachment
     text_content = strip_tags(message)
     msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
