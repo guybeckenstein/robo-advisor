@@ -53,7 +53,7 @@ class TestManualMainFromTerminal:
         except Exception as e:
             print(e)
         # add user to datasets (json file)
-        user.update_json_file(settings.USERS_JSON_NAME)
+        user.update_json_file(settings.USERS_JSON_NAME)  #
         data_management.save_user_portfolio(user)
 
     def test_add_investment(self):

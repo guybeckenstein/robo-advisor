@@ -285,6 +285,7 @@ def profile_investor(request):
 
     try:
         investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
+        old_collection_number = investor_user.stocks_collection_number
         if request.method == 'GET':
             form: forms.ModelForm = account_forms.UpdateInvestorUserForm(
                 instance=investor_user,
@@ -298,61 +299,15 @@ def profile_investor(request):
                 instance=investor_user,
             )
             if form.is_valid():
-                investments: QuerySet[Investment] = Investment.objects.filter(investor_user=investor_user)
+                investments = Investment.objects.filter(investor_user=investor_user)
                 if len(investments) > 0:
-                    if investments.last().stocks_collection_number != int(
+                    if int(old_collection_number) != int(
                             form.cleaned_data['stocks_collection_number']):
-                        questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
-                        questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
-                        (
-                            annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change,
-                            monthly_change,
-                            risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change,
-                            portfolio) = web_actions.create_portfolio_and_get_data(
-                            answers_sum=questionnaire_b.answers_sum,
-                            stocks_collection_number=investor_user.stocks_collection_number,
-                            questionnaire_a=questionnaire_a,
+                        messege = update_data(form, investor_user, request, investments)
+                        messages.warning(
+                            request,
+                            messege
                         )
-                        # add "robot" investment as one investment with amount of total investments + profit
-                        data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio,
-                                                                                     investments)
-                        # Update Investments' Data
-                        affected_investments: int = 0
-                        if len(investments) > 0:
-                            for investment in investments:
-                                if investment.make_investment_inactive() is False:
-                                    # In this case we should not continue iterating over the new-to-old-sorted
-                                    # investments
-                                    break
-                                else:
-                                    if investment.mode == Investment.Mode.USER:
-                                        affected_investments += 1
-                                    investment.save()
-                        # Update Form Data
-                        form.save()
-                        # Update InvestorUser data
-                        investor_user.stocks_weights = stocks_weights
-                        investor_user.stocks_collection_number = form.cleaned_data['stocks_collection_number']
-                        investor_user.annual_returns = annual_returns
-                        investor_user.annual_max_loss = annual_max_loss
-                        investor_user.annual_volatility = annual_volatility
-                        investor_user.annual_sharpe = annual_sharpe
-                        investor_user.save()
-                        # Continue
-                        if affected_investments == 0:
-                            pass
-                        elif affected_investments == 1:
-                            messages.success(
-                                request,
-                                'Your account details have been updated successfully.\n'
-                                'A single investment is affected by this, and became inactive.'
-                            )
-                        else:
-                            messages.success(
-                                request,
-                                'Your account details have been updated successfully.\n'
-                                f'{affected_investments} investments are affected by this, and became inactive.'
-                            )
                         return redirect('capital_market_algorithm_preferences_form')
                     else:
                         messages.warning(
@@ -367,15 +322,10 @@ def profile_investor(request):
                         }
                         return render(request, 'account/authenticated/profile_investor.html', context=context)
                 else:  # there are no investments
-                    # Update Form Data
-                    form.save()
-                    # Update InvestorUser data
-                    investor_user.stocks_collection_number = form.cleaned_data['stocks_collection_number']
-                    investor_user.save()
-                    messages.info(
+                    messege = update_data(form, investor_user, request, investments)
+                    messages.warning(
                         request,
-                        'Your account details have been updated successfully.\n'
-                        "No investments with your previous stocks' collection found, thus no stocks are affected."
+                        messege
                     )
                     return redirect('capital_market_algorithm_preferences_form')
             else:
@@ -413,3 +363,57 @@ def image_upload(request):
             "image_url": image_url
         })
     return render(request, "upload.html")
+
+
+def update_data(form, investor_user, request, investments):
+    questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
+    questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
+    (
+        annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change,
+        monthly_change,
+        risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change,
+        portfolio) = web_actions.create_portfolio_and_get_data(
+        answers_sum=questionnaire_b.answers_sum,
+        stocks_collection_number=investor_user.stocks_collection_number,
+        questionnaire_a=questionnaire_a,
+    )
+    affected_investments: int = 0
+    if len(investments) > 0:
+        # add "robot" investment as one investment with amount of total investments + profit
+        data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio,
+                                                                     investments)
+        for investment in investments:
+            if investment.make_investment_inactive() is False:
+                # In this case we should not continue iterating over the new-to-old-sorted
+                # investments
+                break
+            else:
+                if investment.mode == Investment.Mode.USER:
+                    affected_investments += 1
+                investment.save()
+
+        if affected_investments == 0:
+            message = 'Your account details have been updated successfully.'
+        elif affected_investments == 1:
+            message = 'Your account details have been updated successfully.\n' \
+                      'A single investment is affected by this, and became inactive.'
+        else:
+            message = 'Your account details have been updated successfully.\n' \
+                      f'{affected_investments} investments are affected by this, and became inactive.'
+
+    else:
+        message = 'Your account details have been updated successfully.\n' \
+                  "No investments with your previous stocks' collection found, thus no stocks are affected."
+    # Update Form Data
+    form.save()
+
+    # Update InvestorUser data
+    investor_user.stocks_weights = stocks_weights
+    investor_user.stocks_collection_number = form.cleaned_data['stocks_collection_number']
+    investor_user.annual_returns = annual_returns
+    investor_user.annual_max_loss = annual_max_loss
+    investor_user.annual_volatility = annual_volatility
+    investor_user.annual_sharpe = annual_sharpe
+    investor_user.save()
+
+    return message

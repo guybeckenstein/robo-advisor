@@ -14,8 +14,6 @@ from config import settings
 
 if __name__ == '__main__':
 
-    data_management.update_files_from_google_drive()
-
     data_management.show_main_menu()
     selection = data_management.get_menu_choice()
     exit_loop_operation = 8
@@ -73,12 +71,10 @@ if __name__ == '__main__':
             investment_amount: int = data_management.get_investment_amount()  # get from terminal
             if investment_amount is not None:
                 __, investments_list = data_management.add_new_investment(user_name, investment_amount)
-
                 # save investments history
                 data_management.plot_investments_history(user_id, investments_list)
                 # show result
                 data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/investments history.png')
-
                 # save report according to a new investment
                 # get stocks weights and stocks symbols from db
                 json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
@@ -90,13 +86,13 @@ if __name__ == '__main__':
                 data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/investment report.png')
 
         elif selection == 3:  # show user portfolio graphs
-
             json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
             collection_number = json_data['usersList'][user_name][0]['stocksCollectionNumber']
             if data_management.is_today_date_change_from_last_updated_df(collection_number) or data_changed:
                 data_management.get_user_from_db(user_id, user_name)
 
             # show results
+            # TODO GET FROM GOOGLE DRIVE
             data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/sectors_weights_graph.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/stocks_weights_graph.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/estimated_yield_graph.png')
@@ -164,6 +160,7 @@ if __name__ == '__main__':
 
         elif selection == 9:  # dynamic commands for programmers
             all_data_tuple, intersection = research.get_all_best_stocks(settings.RESEARCH_FILTERS)
+            data_management.update_files_from_google_drive()
             # helpers.AwsInstance().connect_to_s3()
 
         else:
@@ -171,3 +168,5 @@ if __name__ == '__main__':
 
         data_management.show_main_menu()
         selection = data_management.get_menu_choice()
+    # TODO
+    #data_management.upload_file_to_google_drive(settings.USERS_JSON_NAME +".json", 2)

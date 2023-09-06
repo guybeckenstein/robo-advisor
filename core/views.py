@@ -233,6 +233,7 @@ def capital_market_investment_preferences_form(request):
                     monthly_change=monthly_change,
                     daily_change=daily_change,
                 )
+            investor_user.save()
             # Frontend
             web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
             if request.htmx is not None:

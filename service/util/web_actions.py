@@ -32,7 +32,8 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
 
     # get the closing prices table
     closing_prices_table: pd.DataFrame = get_closing_prices_table(
-        path=f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{investor_user.stocks_collection_number}/'
+        path=f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{investor_user.stocks_collection_number}/',
+        google_drive_source=True
     )
     pct_change_table: pd.DataFrame = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
