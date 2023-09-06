@@ -30,7 +30,6 @@ jobs:
       run: |
         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
         echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
-        echo "POSTGRES_HOST=db" >> .env
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
@@ -43,10 +42,10 @@ jobs:
     - name: Run Docker Container, Flake8 Linter, and Test with PyTest
       run: |
         docker-compose exec web bash -c "
+          flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
           echo 'Starting container...'
           ./entrypoint.sh
           echo 'Container finished.'
-          flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
           pytest -s -v
         "
       env:
