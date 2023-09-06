@@ -24,6 +24,7 @@ from django.views.decorators.http import require_http_methods
 from core.views import make_investments_inactive
 from investment.models import Investment
 from service.util import web_actions, data_management
+from service.config import settings as service_settings
 from accounts import forms as account_forms
 
 from .forms import CustomLoginForm
@@ -139,11 +140,11 @@ class HtmxLoginView(LoginView):
                 current: datetime.datetime = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
                 if (current - last_login).days > 0:
                     web_actions.save_three_user_graphs_as_png(user=user)
-                    # data_management.update_files_from_google_drive()
+                    if service_settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
+                        data_management.update_files_from_google_drive()
                     """
                     Dataset and static images are updated daily, only when the date of the last update is different from today,
                     """
-                    # TODO Added an option on the website to activate the method by a button,
                     # it will be displayed if the last date for the change is different from today's date
 
             else:

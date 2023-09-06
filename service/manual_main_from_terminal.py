@@ -20,7 +20,8 @@ if __name__ == '__main__':
     user_id: int = 1
     user_name: int = 'yarden'  # data_management.get_name()
     data_changed = False
-    data_management.update_files_from_google_drive()
+    if settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
+        data_management.update_files_from_google_drive()
 
     while selection != exit_loop_operation:
 
@@ -93,7 +94,6 @@ if __name__ == '__main__':
                 data_management.get_user_from_db(user_id, user_name)
 
             # show results
-            # TODO GET FROM GOOGLE DRIVE
             data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/sectors_weights_graph.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/stocks_weights_graph.png')
             data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/estimated_yield_graph.png')
@@ -169,5 +169,3 @@ if __name__ == '__main__':
 
         data_management.show_main_menu()
         selection = data_management.get_menu_choice()
-    # TODO upload users.json to google drive
-    #data_management.upload_file_to_google_drive(settings.USERS_JSON_NAME +".json", 2)

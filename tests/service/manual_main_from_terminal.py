@@ -16,6 +16,7 @@ class TestManualMainFromTerminal:
     stock_name: str = 'AAPL'
     num_of_years_history: int = 10
     show_result: bool = False
+    data_management.update_files_from_google_drive()
 
     def test_creates_new_user(self):
 
@@ -65,9 +66,6 @@ class TestManualMainFromTerminal:
             data_management.plot_investments_history(self.user_id, investments_list)
 
     def test_plot_user_portfolio_graphs(self):
-        # TODO: this test fails
-        # json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
-        # collection_number = json_data['usersList'][self.user_name][0]['stocksCollectionNumber']
         user_instance = data_management.get_user_from_db(self.user_id, self.user_name)
         data_management.save_user_portfolio(user_instance)
 

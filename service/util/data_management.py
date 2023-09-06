@@ -51,8 +51,8 @@ def update_all_tables(num_of_years_history, is_daily_running=True):  # build DB 
 
 def update_closing_prices_tables(stocks_symbols, num_of_years_history, path, is_daily_running):
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        pass
-        # TODO - get from google drive
+        last_updated_date_closing_prices = get_file_from_google_drive(
+            helpers.get_sorted_path(path,3) + f'lastUpdatedClosingPrice' + '.txt').getvalue().decode('utf-8')
     else:
         with open(path + "lastUpdatedClosingPrice.txt", "r") as file:
             last_updated_date_closing_prices = file.read().strip()
@@ -61,11 +61,11 @@ def update_closing_prices_tables(stocks_symbols, num_of_years_history, path, is_
         helpers.convert_data_to_tables(path, settings.CLOSING_PRICES_FILE_NAME,
                                        stocks_symbols,
                                        num_of_years_history, save_to_csv=True)
+        google_drive_instance.upload_file(path + settings.CLOSING_PRICES_FILE_NAME + ".csv")
 
-        # TODO upload last_updated_date_closing_prices to google drive
+        google_drive_instance.upload_file(path + "lastUpdatedClosingPrice.txt", 3)
         with open(path + "lastUpdatedClosingPrice.txt", "w") as file:
             file.write(formatted_date_today)
-
 
 
 def update_data_frame_tables(collection_json_data, path,
@@ -73,7 +73,8 @@ def update_data_frame_tables(collection_json_data, path,
                              is_daily_running: bool = True):
     stocks_symbols = collection_json_data['stocksSymbols']
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        # TODO get last_updated_date_closing_prices from google drive
+        last_updated_date_closing_prices = get_file_from_google_drive(
+            helpers.get_sorted_path(path, 3) + f'lastUpdatedDftables' + '.txt').getvalue().decode('utf-8')
         pass
     else:
         with open(path + "lastUpdatedDftables.txt", "r") as file:
@@ -98,7 +99,7 @@ def update_data_frame_tables(collection_json_data, path,
                 path=path, models_data=models_data, collection_num=collection_num
             )
 
-        # TODO upload last_updated_date_closing_prices to google drive
+        google_drive_instance.upload_file(path + "lastUpdatedDftables.txt", 3)
         with open(path + "lastUpdatedDftables.txt", "w") as file:
             file.write(formatted_date_today)
 
@@ -164,7 +165,7 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
         max_percent_stocks=max_percent_stocks,
     )
     df: pd.DataFrame = stats_models.df
-    # TODO upload to google drive
+    google_drive_instance.upload_file(locationForSaving + model_name + '_df_' + risk_level + '.csv')
     df.to_csv(locationForSaving + model_name + '_df_' + risk_level + '.csv')
     print(f'Updated DataFrame -> (ML - {is_machine_learning}; Model Name - {model_name}; Risk Level - {risk_level})')
 
@@ -333,7 +334,8 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, colle
     else:
         collection_path += settings.NON_MACHINE_LEARNING_LOCATION
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        google_drive_table_path = helpers.get_sorted_path(f'{collection_path}{model_name}_df_{level_of_risk}', num_of_last_elements=4)
+        google_drive_table_path = helpers.get_sorted_path(f'{collection_path}{model_name}_df_{level_of_risk}',
+                                                          num_of_last_elements=4)
         df: pd.DataFrame = helpers.convert_data_stream_to_pd(
             get_file_from_google_drive(google_drive_table_path + '.csv'))
     else:
@@ -951,18 +953,49 @@ def update_files_from_google_drive():
 
         # update users.json
         stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
-        stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
+        users_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
         # save users.json to local
-        helpers.save_json_data(settings.USERS_JSON_NAME, stocks_json)
+        helpers.save_json_data(settings.USERS_JSON_NAME, users_json)
 
+        # update top stocks images
         png_files = google_drive_instance.get_all_png_files()
         for img in png_files:
             image = Image.open(img["data"])
             image.save(f'{settings.RESEARCH_TOP_STOCKS_IMAGES}/{img["name"]}', "PNG")
 
+        # update csv and last updated txt files
+        basic_path = "dataset/"
+        machine_learning_opt_dir = ['includingMachineLearning/', 'withoutMachineLearning/']
+        models_data: dict[dict, list, list, list, list] = stocks_json['collections']
+        for i in range(1, len(models_data)):
+            collection_text = 'collection' + str(str(i)) + '/'
+            path = basic_path + collection_text
+
+            # save closing price table
+            closing_prices_table = helpers.convert_data_stream_to_pd(
+                get_file_from_google_drive(path + f'closing_prices' + '.csv'))
+            closing_prices_table.to_csv(settings.DATASET_LOCATION + collection_text + f'closing_prices.csv', index=True,
+                                        header=True)
+
+            # update last updated txt files
+            last_update_closing_price_date = get_file_from_google_drive(path + f'lastUpdatedClosingPrice' + '.txt').getvalue().decode('utf-8')
+            with open(settings.DATASET_LOCATION + collection_text + "lastUpdatedClosingPrice.txt", "w") as file:
+                file.write(last_update_closing_price_date)
+            last_update_df_tables_date = get_file_from_google_drive(path + f'lastUpdatedDftables' + '.txt').getvalue().decode('utf-8')
+            with open(settings.DATASET_LOCATION + collection_text + "lastUpdatedDftables.txt", "w") as file:
+                file.write(last_update_df_tables_date)
+
+            # update df tables
+            for sub_dir in machine_learning_opt_dir:
+                df_dir = path + sub_dir
+                csv_files = google_drive_instance.get_csv_files(df_dir)
+                for df_table in csv_files:
+                    data = df_table["data"]
+                    df_table_name = df_table["name"]
+                    data = helpers.convert_data_stream_to_pd(data)
+                    data.to_csv(settings.DATASET_LOCATION + collection_text + sub_dir + df_table_name,
+                                                index=True,
+                                                header=True)
+
         with open(settings.DATASET_LOCATION + "last_updated_google_drive.txt", "w") as file:
             file.write(formatted_date_today)
-
-
-
-

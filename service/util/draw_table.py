@@ -171,3 +171,4 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
             )
     # Save the image
     image.save(f"{path} intersection.png")
+    # TODO image.save(f"{path}.png")

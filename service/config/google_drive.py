@@ -1,6 +1,7 @@
 # google drive
 import base64
 import io
+import os
 from PIL import Image
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -44,7 +45,7 @@ class GoogleDriveInstance:
                 request = self.service.files().get_media(fileId=file['id'])
                 image_data = request.execute()
 
-    def upload_file(self, file_path, num_of_elements):
+    def upload_file(self, file_path, num_of_elements=2):
         folder_id = MAIN_FOLDER_ID
         file_name = file_path.split('/')[-1]
 
@@ -66,8 +67,6 @@ class GoogleDriveInstance:
     def find_file_id_by_path_name(self, file_path):
         parent_folder_id = MAIN_FOLDER_ID
         folders = file_path.split('/')
-        # Initialize the parent folder ID as the root folder ID
-
         # Iterate through the folder names and find the corresponding folder IDs
         for folder_name in folders[:-1]:
             query = (f"'{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' "
@@ -128,11 +127,23 @@ class GoogleDriveInstance:
             print('No PNG files found.')
         else:
             for file in files:
-                """request = self.service.files().get_media(fileId=file['id'])
-                image_data = request.execute()
-                images_list.append(image_data)"""
                 images_list.append({'name': file['name'], 'data': self.get_file_by_id(file['id'])})
 
             return images_list
+
+    def get_csv_files(self, parent_dir):
+        parent_id = self.find_file_id_by_path_name(os.path.dirname(parent_dir))
+        query = f"'{parent_id}' in parents and mimeType='text/csv'"
+        results = self.service.files().list(q=query).execute()
+        files = results.get('files', [])
+        csv_files_list = []
+
+        if not files:
+            print('No CSV files found.')
+        else:
+            for file in files:
+                csv_files_list.append({'name': file['name'], 'data': self.get_file_by_id(file['id'])})
+
+            return csv_files_list
 
 
