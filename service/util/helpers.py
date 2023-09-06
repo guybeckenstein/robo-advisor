@@ -30,10 +30,12 @@ from service.util import tase_interaction
 from PIL import Image
 
 
+
+"""
 # lstm imports
 import seaborn as sns
-"""from tensorflow import keras
-
+from tensorflow import keras
+from functools import reduce
 from tensorflow.keras.layers import Bidirectional, Dropout, Activation, Dense, LSTM,BatchNormalization,Flatten,Dropout,Conv2D
 from tensorflow.compat.v1.keras.layers import CuDNNLSTM
 from tensorflow.keras.models import Sequential
@@ -43,6 +45,7 @@ from keras import regularizers
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error
 from keras.optimizers import Adam
+from pylab import rcParams
 import shap"""
 
 # Global variables
