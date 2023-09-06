@@ -1,8 +1,10 @@
+import os
 import textwrap
 import platform
 
 from PIL import Image, ImageDraw, ImageFont
 
+from service.config import settings
 from service.util import helpers
 
 # Global constants

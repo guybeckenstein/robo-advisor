@@ -561,6 +561,17 @@ def plot_investments_history(login_id, investments_list) -> plt:  # from json fi
         description = f'Date:{purchase_date}, Status:{status}, Model:{mode}'
         descriptions.append(description)
 
+    curr_user_directory = settings.USER_IMAGES + login_id
+    try:
+        os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+
+    try:
+        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+
     draw_table.draw_all_and_save_as_png(
         file_name=file_name,
         symbols=[f'{i + 1}' for i in range(len(investments_list))],
@@ -587,6 +598,17 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
             values.append(stocks_weights[i] * investment_amount)
         description = f'{currency}, {helpers.get_stocks_descriptions([stock])[1:][0]}'
         descriptions.append(description)
+
+    curr_user_directory = settings.USER_IMAGES + login_id
+    try:
+        os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+
+    try:
+        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
+    except FileExistsError:  # Ignore the exception
+        pass
     draw_table.draw_all_and_save_as_png(
         file_name=file_name,
         symbols=stocks_symbols,
@@ -675,10 +697,10 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
     models_data = helpers.get_collection_json_data()
-    if is_machine_learning:  # TODO maybe remove
+    """if is_machine_learning:  # TODO maybe remove
         weighted_sum = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
-        )[0][0]
+        )[0][0]"""
     yield_column: str = "yield_" + str(risk_level)
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
@@ -766,8 +788,6 @@ def show_investments_from_json_file(login_name: str):
     print("Investments:")
     for investment in investments_list:
         print(investment)
-
-    # TODO - plot graph of investments and send in email
 
 
 # console functions
