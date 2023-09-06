@@ -34,10 +34,13 @@ jobs:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
 
+    - name: Remove Docker volumes
+      run: |
+        docker system prune
+
     - name: Build and Run Docker Containers
       run: |
         docker-compose up -d
-      working-directory: ./  # Use root directory as the working directory
 
     - name: Run Flake8 Linter, and Test with PyTest
       run: |
