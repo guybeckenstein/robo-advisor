@@ -34,4 +34,8 @@ RUN sed -i 's/\r$//g' /usr/src/app/entrypoint.sh
 RUN chmod a+x /usr/src/app/entrypoint.sh
 
 # run entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+# ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+
+RUN python manage.py flush --no-input
+RUN python manage.py makemigrations
+RUN python manage.py migrate
