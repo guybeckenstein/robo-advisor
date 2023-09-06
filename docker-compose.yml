@@ -19,6 +19,11 @@ services:
     networks:
       - web_network
   web:
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+       - db:db
     build:
       context: .
       dockerfile: Dockerfile
@@ -42,11 +47,6 @@ services:
       - .:/usr/src/app/
     networks:
       - web_network
-    depends_on:
-      db:
-        condition: service_healthy
-    links:
-       - db:db
 
 volumes:
   postgres_data:
