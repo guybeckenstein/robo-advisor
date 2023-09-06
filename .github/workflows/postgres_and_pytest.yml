@@ -15,7 +15,7 @@ jobs:
         sudo apt-get install python3-dev libyaml-dev
     - name: Install docker-compose
       run: |
-        pip install drf-spectacular==0.26.4 pyyaml~=6.0 docker-compose
+        pip install drf-spectacular==0.26.4 pyyaml>=5.1 docker-compose
     # Linter
     - name: Run Flake8
       run: |
