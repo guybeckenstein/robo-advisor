@@ -110,14 +110,14 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     f'<img src="{first_graph}">'
                                                     f'</div>')
         second_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/three_portfolios.png"
-        three_graphs = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
+        third_graphs = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
         self.fields['answer_3'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #3: What is your preferable graph?'
             '</span>'
             '<div class="capital-market-form-label capital-market-form-img position-relative">'
             f'<img class="capital-market-form-img" id="capital-market-img" data-second-graph="{second_graph}"'
-            f'data-three-graph="{three_graphs}" src="{second_graph}">'
+            f'data-third-graph="{third_graphs}" src="{second_graph}">'
             '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
             '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
             '<button type="button" class="capital-market-carousel carousel-prev" aria-label="" style="left: 0;">'

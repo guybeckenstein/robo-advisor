@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const nextButton = document.querySelector('.capital-market-carousel.carousel-next');
   const prevButtonSvg = prevButton.querySelector('svg.switch-img');
   const nextButtonSvg = nextButton.querySelector('svg.switch-img');
-  const images = [imgElement.getAttribute('data-second-graph'), imgElement.getAttribute('data-three-graph')];
+  const images = [imgElement.getAttribute('data-second-graph'), imgElement.getAttribute('data-third-graph')];
   let currentImageIndex = 0;
 
   // Initialize values

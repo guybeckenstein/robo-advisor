@@ -5,24 +5,23 @@ import pytz
 
 from allauth.account.views import SignupView, LoginView
 from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
-from crispy_forms.utils import render_crispy_form
 from django import forms
 from django.contrib.auth import logout, login
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import BadRequest
 from django.core.files.storage import FileSystemStorage
-from django.db.models import QuerySet
-from django.http import Http404, JsonResponse
+from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
-from django.views.generic import FormView
 
 from core.models import QuestionnaireA, QuestionnaireB
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_http_methods
+
+from core.views import make_investments_inactive
 from investment.models import Investment
 from service.util import web_actions, data_management
 from accounts import forms as account_forms
@@ -306,7 +305,7 @@ def profile_investor(request):
                 instance=investor_user,
             )
             if form.is_valid():
-                investments = Investment.objects.filter(investor_user=investor_user)
+                investments: Investment = Investment.objects.filter(investor_user=investor_user)
                 if len(investments) > 0:
                     if int(old_collection_number) != int(
                             form.cleaned_data['stocks_collection_number']):
@@ -375,11 +374,9 @@ def image_upload(request):
 def update_data(form, investor_user, request, investments):
     questionnaire_a: QuestionnaireA = get_object_or_404(QuestionnaireA, user=request.user)
     questionnaire_b: QuestionnaireB = get_object_or_404(QuestionnaireB, user=request.user)
-    (
-        annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change,
-        monthly_change,
-        risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change,
-        portfolio) = web_actions.create_portfolio_and_get_data(
+    (annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
+     risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change,
+     portfolio) = web_actions.create_portfolio_and_get_data(
         answers_sum=questionnaire_b.answers_sum,
         stocks_collection_number=investor_user.stocks_collection_number,
         questionnaire_a=questionnaire_a,
@@ -387,26 +384,24 @@ def update_data(form, investor_user, request, investments):
     affected_investments: int = 0
     if len(investments) > 0:
         # add "robot" investment as one investment with amount of total investments + profit
-        data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio,
-                                                                     investments)
-        for investment in investments:
-            if investment.make_investment_inactive() is False:
-                # In this case we should not continue iterating over the new-to-old-sorted
-                # investments
-                break
-            else:
-                if investment.mode == Investment.Mode.USER:
-                    affected_investments += 1
-                investment.save()
+        data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio, investments)
+        # All investments.STATUS are changed to INACTIVE
+        make_investments_inactive(investments=investments)
 
         if affected_investments == 0:
-            message = 'Your account details have been updated successfully.'
+            message = 'Your account details have been updated successfully.' \
+                      'You must complete the two forms so changes will be made over your' \
+                      "investments and stocks' collection number. Otherwise, it won't change data."
         elif affected_investments == 1:
             message = 'Your account details have been updated successfully.\n' \
-                      'A single investment is affected by this, and became inactive.'
+                      'A single investment is affected by this, and became inactive.\n' \
+                      'You must complete the two forms so changes will be made over your' \
+                      "investments and stocks' collection number. Otherwise, it won't change data."
         else:
             message = 'Your account details have been updated successfully.\n' \
-                      f'{affected_investments} investments are affected by this, and became inactive.'
+                      f'{affected_investments} investments are affected by this, and became inactive.' \
+                      'You must complete the two forms so changes will be made over your' \
+                      "investments and stocks' collection number. Otherwise, it won't change data."
 
     else:
         message = 'Your account details have been updated successfully.\n' \

@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from numbers import Number
 
 from crispy_forms.utils import render_crispy_form
@@ -11,6 +12,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django_htmx.http import HttpResponseClientRedirect
 
+from investment.models import Investment
 from service.util import web_actions
 from service.util import data_management
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
@@ -236,9 +238,13 @@ def capital_market_investment_preferences_form(request):
             investor_user.save()
             # Frontend
             web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
+            investments: QuerySet[Investment] = Investment.objects.filter(investor_user=investor_user)
+            # add "robot" investment as one investment with amount of total investments + profit
+            data_management.changing_portfolio_investments_treatment_web(investor_user, portfolio, investments)
+            # All investments.STATUS are changed to INACTIVE
+            make_investments_inactive(investments)
             if request.htmx is not None:
                 return HttpResponseClientRedirect(reverse('profile_portfolio'))
-            # return redirect('profile_portfolio')
 
         else:  # CREATE and UPDATE
             context = {
@@ -250,3 +256,16 @@ def capital_market_investment_preferences_form(request):
             return HttpResponse(form_html)
     else:
         raise Http404
+
+
+def make_investments_inactive(investments: QuerySet[Investment]) -> None:
+    affected_investments: int = 0
+    for investment in investments:
+        if investment.make_investment_inactive() is False:
+            # In this case we should not continue iterating over the new-to-old-sorted
+            # investments
+            break
+        else:
+            if investment.mode == Investment.Mode.USER:
+                affected_investments += 1
+            investment.save()
