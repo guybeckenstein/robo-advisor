@@ -2,6 +2,7 @@ import codecs
 import csv
 import datetime
 import io
+import requests
 from datetime import datetime as data_time, timedelta
 import json
 import math
@@ -11,7 +12,8 @@ from bidi import algorithm as bidi_algorithm
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib import pyplot as plt
+from functools import reduce
+from matplotlib import pyplot as plt, rcParams
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -26,6 +28,22 @@ from service.impl.sector import Sector
 from service.util import tase_interaction
 
 from PIL import Image
+
+
+# lstm imports
+import seaborn as sns
+"""from tensorflow import keras
+
+from tensorflow.keras.layers import Bidirectional, Dropout, Activation, Dense, LSTM,BatchNormalization,Flatten,Dropout,Conv2D
+from tensorflow.compat.v1.keras.layers import CuDNNLSTM
+from tensorflow.keras.models import Sequential
+from sklearn.metrics import mean_squared_error
+import tensorflow as tf
+from keras import regularizers
+from tensorflow.keras.callbacks import EarlyStopping
+from sklearn.metrics import mean_squared_error
+from keras.optimizers import Adam
+import shap"""
 
 # Global variables
 SINGLE_DAY: int = 86400
@@ -177,7 +195,7 @@ class Analyze:
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
         return df, forecast_with_historical_returns_annual, expected_returns
 
-    def gbm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+    def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
 
         df.index = pd.to_datetime(self._table_index)
@@ -204,6 +222,498 @@ class Analyze:
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df,
                                                                                            forecast_out=forecast_out)
         return df, forecast_with_historical_returns_annual, expected_returns
+    def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+        np.random.seed(1)
+# Global Variables
+        start_date = "2009-12-01"
+        end_date = "2023-08-20"
+        predicted_feature = "SPY"
+        forecast_col = 'ADJ_PCT_change_' + predicted_feature
+        days = 72
+        shap_days = 1
+# Tickers Data
+        df = yf.download(
+            ["SPY", "XLP", "XLF", "XLC", "XLE", "XLI", "XLK", "XLY", "XLB", "XLU", "QQQ", "IEI", "GLD", "SGOV", "TIP",
+             "RLY"], start=start_date, end=end_date)
+
+        # Fetching the Adjusted Close prices for all tickers
+        adj_close_df = df['Adj Close']
+
+        spy_adjusted_close = adj_close_df[predicted_feature]
+
+        """tickers_data = []
+        for ticker, data in df.groupby(level=1, axis=1):
+            data.columns = data.columns.droplevel(1)
+            data['ADJ_PCT_change'] = data['Adj Close'].pct_change()
+            data['Normalized_Daily_Price'] = (data['High'] - data['Low']) / data['Low']
+            data = data[['ADJ_PCT_change', 'Normalized_Daily_Price']]
+            data.columns = [f"{col}_{ticker}" for col in data.columns]
+
+            data = data.reset_index()
+
+            tickers_data.append(data)
+
+        df_final = reduce(lambda left, right: pd.merge(left, right, on='Date'), tickers_data)
+
+        tickers_df = df_final.copy()
+
+        forecast_col = 'ADJ_PCT_change_' + predicted_feature
+        df_final.fillna(value=-0, inplace=True)
+        forecast_out = int(math.ceil(0.01 * len(df_final)))
+        df_final['label'] = df_final[forecast_col].shift(-forecast_out)
+
+        df_final = df_final.dropna(subset=['label'])
+        df_final = df_final[df_final['label'] != 0.0]
+        # df_final=df_final.drop(forecast_col,axis=1)
+        # print(df_final.head())
+        df_final.to_csv('Out.csv')
+
+        # show df_final
+        df_final.head()
+
+        # show spy_adjusted_close_df
+        spy_adjusted_close_df = pd.DataFrame(spy_adjusted_close)
+        spy_adjusted_close_df
+
+# montly graph
+        df_final['Year'] = df_final['Date'].dt.year
+        df_final['Month'] = df_final['Date'].dt.month
+        df_monthly = df_final.groupby(['Year', 'Month']).apply(lambda x: ((1 + x['label'].mean()) ** 21 - 1) * 100)
+        df_monthly.plot(figsize=(10, 6))
+        plt.title('Monthly Return')
+        plt.ylabel('Return (%)')
+        plt.xlabel('Year, Month')
+        plt.show()
+
+        df_annualized = df_final.groupby('Year').apply(lambda x: ((1 + x['label'].mean()) ** 254 - 1) * 100)
+        df_annualized.plot(figsize=(10, 6))
+        plt.title('Annualized Return')
+        plt.ylabel('Return (%)')
+        plt.xlabel('Year')
+        plt.show()
+
+# Drop Weekends and Fill Nan
+        def fillna_custom(df):
+            for col in df.columns:
+                not_nan_indices = df[col].dropna().index
+                for i in df[col].index:
+                    if pd.isna(df.at[i, col]):
+                        previous_indices = not_nan_indices[not_nan_indices < i]
+                        next_indices = not_nan_indices[not_nan_indices > i]
+                        if previous_indices.empty:
+                            df.at[i, col] = df.at[next_indices[0], col]
+                        elif next_indices.empty:
+                            df.at[i, col] = df.at[previous_indices[-1], col]
+                        else:
+                            df.at[i, col] = (df.at[previous_indices[-1], col] + df.at[next_indices[0], col]) / 2
+            return df
+
+        # Count the number of zeroes in each row
+        zero_counts = (df_final == 0.0).sum(axis=1)
+
+        df_final = df_final.drop(['Month', 'Year'], axis=1)
+        # Filter rows with fewer or equal to 5 zeroes
+        df_final = df_final[zero_counts <= 5]
+        df_final = fillna_custom(df_final)
+
+        # show df_final
+        df_final
+
+# Graphs
+        rcParams['figure.figsize'] = 14, 8
+        sns.set(style='whitegrid', palette='muted', font_scale=1.5)
+
+        # data plot
+        ax = df_final.plot(x='Date', y='label');
+        ax.set_xlabel('Year')
+
+        ax.set_ylabel('Price')
+        ax.set_title('S&P 500 Price Over Time')
+
+# price by years
+        # Extract the year from the 'Date' column and create a new 'Year' column
+        tickers_df['Year'] = tickers_df['Date'].dt.year
+
+        # Create boxplot
+        plt.figure(figsize=(20, 10))  # Optional, for adjusting figure size
+        sns.boxplot(x='Year', y=forecast_col, data=tickers_df)
+        plt.title('S&P 500 Price by Year')
+        plt.show()
+# price by years with lables
+        tickers_df = tickers_df.drop(['Date', 'Year', forecast_col], axis=1)
+
+        # Selecting only columns that start with 'ADJ_PCT_change_'
+        columns_to_plot = [col for col in tickers_df.columns if col.startswith('ADJ_PCT_change_')]
+
+        # Melting the dataframe to have a format suitable for boxplots for multiple columns
+        df_melted = pd.melt(tickers_df, value_vars=columns_to_plot)
+
+        # Plotting boxplot using seaborn
+        plt.figure(figsize=(20, 10))
+        sns.boxplot(x="variable", y="value", data=df_melted)
+        plt.xlabel('ticker')
+        plt.title('Adjusted Percentage Change by Ticker')
+        plt.xticks(rotation=90)  # Rotate x-axis labels for better readability if they're long
+        plt.show()
+
+# Add unemployment rate and Consumer Price Index maybe not relevant
+        # Your API key from the BLS website goes here
+        api_key = "9b57d771cf414aa49a022707be95e269"
+
+        # Series ID for the Consumer Price Index for All Urban Consumers: All Items
+        cpi_series_id = "CUUR0000SA0"
+
+        # Series ID for the Unemployment Rate
+        unemployment_series_id = "LNS14000000"
+
+        headers = {"Content-type": "application/json"}
+
+        data = json.dumps({
+            "seriesid": [cpi_series_id, unemployment_series_id],
+            "startyear": start_date[:4],
+            "endyear": end_date[:4],
+            "registrationKey": api_key
+        })
+        # U.S. BUREAU OF LABOR STATISTICS website
+        response = requests.post("https://api.bls.gov/publicAPI/v2/timeseries/data/", data=data, headers=headers)
+        response_data = json.loads(response.text)
+        response_data
+        # Extract the series data
+        series_data = response_data['Results']['series']
+
+        # Initialize empty lists to store the extracted data
+        cpi_data = []
+        unemployment_data = []
+
+        # Extract data for CPI and unemployment rate separately
+        for series in series_data:
+            series_id = series['seriesID']
+            series_data = series['data']
+            for data in series_data:
+                year = int(data['year'])
+                period = data['period']
+                period_name = data['periodName']
+                value = float(data['value'])
+                if series_id == 'CUUR0000SA0':
+                    cpi_data.append({'year': year, 'period': period, 'periodName': period_name, 'CPI': value})
+                elif series_id == 'LNS14000000':
+                    unemployment_data.append(
+                        {'year': year, 'period': period, 'periodName': period_name, 'unemployment_rate': value})
+
+        # Create DataFrames from the extracted data
+        df_cpi = pd.DataFrame(cpi_data)
+        df_unemployment = pd.DataFrame(unemployment_data)
+
+        # Merge the two DataFrames based on the 'year' and 'period' columns
+        inflation_and_unemployment_data = pd.merge(df_cpi, df_unemployment, on=['year', 'period', 'periodName'],
+                                                   how='outer').rename(columns={'period': 'month'})
+        inflation_and_unemployment_data['month'] = inflation_and_unemployment_data['month'].str.replace('M', '').astype(
+            int)
+
+        inflation_and_unemployment_data['date'] = pd.to_datetime(
+            inflation_and_unemployment_data[['year', 'month']].assign(day=1))
+        df_final['temp_date'] = df_final['Date'].apply(lambda dt: dt.replace(day=1))
+
+        merged_df = pd.merge(df_final, inflation_and_unemployment_data, left_on='temp_date', right_on='date',
+                             how='left').drop(['temp_date', 'date', 'year', 'month',
+                                               'periodName'], axis=1)
+        merged_df
+
+# Add interest rate
+        # Set your FRED API key
+        api_key = "5391d650f6bc47fe6d288fd9b7b7b366"
+
+        # Define the series ID for interest rates
+        interest_rate_series_id = "DGS10"  # Example: 10-year Treasury constant maturity rate
+
+        # The Economic Research Division of the Federal Reserve Bank of St. Louis website
+        interest_rate_url = f"https://api.stlouisfed.org/fred/series/observations?series_id={interest_rate_series_id}&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}"
+
+        try:
+            # Send a GET request to the FRED API for interest rates
+            interest_rate_response = requests.get(interest_rate_url)
+
+            # Check if the request was successful
+            if interest_rate_response.status_code == 200:
+                interest_rate_data = interest_rate_response.json()
+
+                # Extract historical interest rate observations
+                interest_rate_observations = interest_rate_data["observations"]
+
+                # Create an empty DataFrame
+                df_interest_rates = pd.DataFrame(columns=["Date", "Interest Rate"])
+
+                # Populate the DataFrame with the interest rate data
+                for observation in interest_rate_observations:
+                    date = observation["date"]
+                    value = observation["value"]
+                    df_interest_rates = df_interest_rates._append({"Date": date, "Interest Rate": value},
+                                                                 ignore_index=True)
+
+            else:
+                print("Error occurred while fetching interest rate data from the API.")
+        except requests.exceptions.RequestException as e:
+            print("An error occurred:", e)
+
+        df_interest_rates['Date'] = pd.to_datetime(df_interest_rates["Date"])
+
+        merged_df = pd.merge(merged_df, df_interest_rates, left_on='Date', right_on='Date', how='left')
+
+        merged_df
+
+# Add GDP growth
+        # Define the series ID for GDP growth rate
+        gdp_growth_rate_series_id = "A191RL1Q225SBEA"
+
+        # The Economic Research Division of the Federal Reserve Bank of St. Louis website
+        gdp_growth_rate_url = f"https://api.stlouisfed.org/fred/series/observations?series_id={gdp_growth_rate_series_id}&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}"
+
+        try:
+            # Send a GET request to the FRED API for GDP growth rate
+            gdp_growth_rate_response = requests.get(gdp_growth_rate_url)
+
+            # Check if the request was successful
+            if gdp_growth_rate_response.status_code == 200:
+                gdp_growth_rate_data = gdp_growth_rate_response.json()
+
+                # Extract historical GDP growth rate observations
+                gdp_growth_rate_observations = gdp_growth_rate_data["observations"]
+
+                # Create an empty DataFrame
+                df_gdp_growth_rate = pd.DataFrame(columns=["Date", "GDP Growth Rate"])
+
+                # Populate the DataFrame with the GDP growth rate data
+                for observation in gdp_growth_rate_observations:
+                    date = observation["date"]
+                    value = float(observation["value"])
+                    df_gdp_growth_rate = df_gdp_growth_rate._append({"Date": date, "GDP Growth Rate": value},
+                                                                   ignore_index=True)
+
+                # Convert "Date" column to datetime format
+                df_gdp_growth_rate["Date"] = pd.to_datetime(df_gdp_growth_rate["Date"])
+
+            else:
+                print("Error occurred while fetching GDP growth rate data from the API.")
+        except requests.exceptions.RequestException as e:
+            print("An error occurred:", e)
+        # Join the data using the available GDP growth observations
+        joined_df = pd.merge_asof(merged_df, df_gdp_growth_rate, on="Date", direction="backward")
+
+        # Perform data alignment and fill missing values
+        joined_df["GDP Growth Rate"] = joined_df["GDP Growth Rate"].ffill()
+        joined_df
+
+# Fill NA Values
+        zero_mask_columns = joined_df.eq('.').any(axis=0)
+
+        # Convert the column to numeric, treating '.' as NaN
+        joined_df['Interest Rate'] = pd.to_numeric(joined_df['Interest Rate'], errors='coerce')
+
+        # Find the indices of '.' values
+        dot_indices = joined_df.index[joined_df['Interest Rate'].isna()]
+
+        # Replace '.' values with the average of the previous and next rows
+        for idx in dot_indices:
+            prev_value = joined_df.at[idx - 1, 'Interest Rate']
+            average = prev_value
+            joined_df.at[idx, 'Interest Rate'] = average
+
+# Confusion Matrix
+        sns.set(font_scale=0.7)  # Decrease font size
+        plt.figure(figsize=(20, 12))
+
+        # Calculate correlation matrix and round to 3 decimal places
+        correlation_matrix = joined_df.rename(columns={'label': forecast_col}).corr().round(3)
+
+        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
+        plt.show()
+
+# Scaling
+        cols_to_scale = ['CPI', 'unemployment_rate', 'Interest Rate', 'GDP Growth Rate']
+        joined_df[cols_to_scale] /= 100
+        joined_df[['CPI', 'unemployment_rate']] /= 30
+        joined_df[['GDP Growth Rate']] /= 90
+        scaled_data = joined_df
+
+        # all tickers columns
+        tickers_cols_to_scale = scaled_data.columns.drop(['label', 'Date'] + cols_to_scale)
+        scaled_data[tickers_cols_to_scale] *= 100
+        scaled_data
+
+# Sliding Window
+        scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
+        scaled_data = scaled_data[scaled_data['label'] != 0]
+        scaled_data
+
+
+        scaled_data.to_csv('Final-Runung.csv')
+
+        seq_len = days
+
+
+        # train , takes time
+        # Convert dataframe into array of sequences for LSTM
+        X, y = [], []
+        scaled_data = scaled_data.set_index('Date')
+        input_features = list(scaled_data.columns)
+        input_features.remove('label')
+
+        output_feature = ['label']
+        for i in range(seq_len, len(scaled_data) - seq_len):
+            X.append(scaled_data[input_features].iloc[i - seq_len:i].values)
+            y.append(scaled_data[output_feature].iloc[i])
+        scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
+        X, y = np.array(X), np.array(y)
+
+        # Split data into train and test sets
+        X_train, X_test = X[:int(X.shape[0] * 0.85)], X[int(X.shape[0] * 0.85):]
+        y_train, y_test = y[:int(y.shape[0] * 0.85)], y[int(y.shape[0] * 0.85):]
+
+        # Reshape input to be 3D [samples, timesteps, features]
+        X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], len(input_features)))
+        X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], len(input_features)))
+
+# Model
+        tf.compat.v1.disable_v2_behavior()
+
+        dropout = 0.2
+
+        model = Sequential()
+
+        model.add(LSTM(units=days, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
+        model.add(BatchNormalization())
+        model.add(Dropout(rate=dropout))
+
+        model.add(LSTM(units=days, return_sequences=True))
+        model.add(BatchNormalization())
+        model.add(Dropout(rate=dropout))
+
+        model.add(LSTM(units=days, return_sequences=False))
+        model.add(BatchNormalization())
+        model.add(Dropout(rate=dropout))
+
+        model.add(Flatten())
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(32, activation='relu'))
+        model.add(Dense(16, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
+        model.add(Dense(units=1))
+
+
+        # takes long time
+        # create an early stopping callback
+        early_stopping = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=50)
+
+        opt = Adam(lr=0.001, clipvalue=1.0)
+
+        model.compile(loss='mse', optimizer=opt)
+
+        # Train the model
+        model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.15,
+                  callbacks=[early_stopping])  # add the early stopping callback here)
+
+        # Predict on the test data
+        predictions = model.predict(X_test)
+        predictions = [x for x in predictions]
+        # predictions['Date'] = date_column
+        # Evaluate model performance
+        mse = mean_squared_error(y_test, predictions)
+        print('Test MSE error: ', mse)
+
+# Results
+# Adjusted percentage change prediction
+        date_values = scaled_data.index
+
+        scaled_data['Forecast'] = np.nan
+
+        last_date = scaled_data.iloc[-1].name
+        last_unix = last_date.timestamp()
+        one_day = 86400
+        next_unix = last_unix + one_day
+
+        predictions = np.concatenate(predictions)
+
+        for i in predictions:
+            next_date = datetime.datetime.fromtimestamp(next_unix)
+            next_unix += 86400
+            scaled_data.loc[next_date] = [np.nan for _ in range(len(scaled_data.columns) - 1)] + [i]
+
+        # daily change and forecast
+        scaled_data['label'].plot()
+        scaled_data['Forecast'].plot()
+        plt.legend(loc=4)
+        plt.xlabel('Date')
+        plt.ylabel('S&P 500 Adjusted Precentage Change')
+        plt.show()
+
+        predictions_df = pd.DataFrame(predictions)
+        predictions_df.to_csv('predictions.csv')
+
+# Closing Price Prediction
+        spy_adjusted_close = spy_adjusted_close.dropna()
+        last_price = spy_adjusted_close.iloc[-1]
+
+        spy_forecast_price = []
+        for i in list(predictions):
+            current_val = (1 + i) * last_price
+
+            last_price = current_val
+            # print(last_price)
+            spy_forecast_price.append(last_price)
+        print(((1 + df_final['ADJ_PCT_change_SPY'].mean()) ** 254 - 1) * 100)
+        # print(((1+df_final['ADJ_PCT_change_SPY'].std())*(254**0.5)))
+        realchancg = scaled_data['Forecast'].mean()
+        print((1 + realchancg) ** 254 - 1)
+
+        # plot only forecast closing price graph
+        new_dates = scaled_data.dropna(subset='Forecast').index
+
+        new_spy_forecast_price = pd.Series(spy_forecast_price, index=new_dates)
+
+        fig, ax = plt.subplots(figsize=(14, 5))
+
+        # Plot the actual and predicted values
+        ax.plot(new_spy_forecast_price, label='Predictions')
+
+        # Format the x-axis to display only month and year
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=5))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+
+        ax.set_title('S&P 500 Closing Price Prediction')
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Price')
+
+
+# shap          takes too long time
+        # Initialize JS visualization code
+        shap.initjs()
+
+        feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
+
+        # Define a predict function wrapper to handle 3D input
+        def lstm_predict_wrapper(x):
+            x = x.reshape((x.shape[0], seq_len, len(input_features)))  # Reshape to [samples, timesteps, features]
+            return model.predict(x)
+
+        # Create a 2D version of your test data for SHAP
+        X_test_2d = X_test.reshape((X_test.shape[0], X_test.shape[1] * X_test.shape[2]))
+
+        # Compute SHAP values for the first 100 test samples
+        # Note: SHAP can be slow, so you might want to compute it for a subset of your data first
+        explainer = shap.KernelExplainer(lstm_predict_wrapper, shap.sample(X_test_2d, shap_days))
+        shap_values = explainer.shap_values(X_test_2d[:shap_days])
+
+        # Convert shap_values to numpy array
+        shap_values_array = np.array([np.array(vals) for vals in shap_values])
+
+        # Reshape shap_values_array into (n_samples, seq_len, n_features)
+        shap_values_reshaped = shap_values_array.reshape(-1, seq_len, len(input_features))
+
+        # Sum shap_values over the seq_len dimension
+        aggregated_shap_values = shap_values_reshaped.sum(axis=1)
+
+        # Create a summary plot of the aggregated SHAP values
+        shap.summary_plot(aggregated_shap_values, feature_names=input_features)
+"""
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
         df, forecast_out = self.get_final_dataframe()
@@ -262,33 +772,6 @@ class Analyze:
                 yhat.pct_change().mean()))) - 1) * 100
 
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
-
-    def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        df, forecast_out = self.get_final_dataframe()
-
-        # ARIMA requires datetime index for time series data
-        df.index = pd.to_datetime(self._table_index, format='%Y-%m-%d')
-
-        # Perform ARIMA forecasting
-        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=True, stepwise=False)
-        forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
-
-        df['Forecast'] = np.nan
-        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast
-
-        # Add dates
-        last_date = df.iloc[-1].name
-        last_unix: pd.Timestamp = last_date.timestamp()
-        next_unix: float = last_unix + SINGLE_DAY
-
-        for i in forecast:
-            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
-            next_unix += SINGLE_DAY
-            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
-
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
-        return df, forecast_with_historical_returns_annual, expected_returns
-
     def get_final_dataframe(self) -> tuple[pd.DataFrame, int]:
         df: pd.DataFrame = pd.DataFrame({})
         df['Col'] = self._returns_stock
@@ -368,7 +851,7 @@ def update_daily_change_with_machine_learning(
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
                 df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
-                df, annual_return_with_forecast, excepted_returns = analyze.gbm_model()
+                df, annual_return_with_forecast, excepted_returns = analyze.lstm_model()
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
                 df, annual_return_with_forecast, excepted_returns, plt = analyze.prophet_model()
             else:

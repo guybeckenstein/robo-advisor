@@ -140,7 +140,7 @@ class HtmxLoginView(LoginView):
                 current: datetime.datetime = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
                 if (current - last_login).days > 0:
                     web_actions.save_three_user_graphs_as_png(user=user)
-                    data_management.update_files_from_google_drive()
+                    # data_management.update_files_from_google_drive()
                     """
                     Dataset and static images are updated daily, only when the date of the last update is different from today,
                     """

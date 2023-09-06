@@ -15,8 +15,7 @@ class DynamicSiteIDMiddleware:
 
     def __call__(self, request):
         try:
-            current_site = Site.objects.get(domain=request.get_host())
-            settings.SITE_ID = current_site.id
+            settings.SITE_ID = Site.objects.first().id
         except Site.DoesNotExist:
             settings.SITE_ID = 1
 

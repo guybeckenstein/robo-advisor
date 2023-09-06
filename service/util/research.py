@@ -69,7 +69,7 @@ def forecast_specific_stock(stock: str, machine_learning_model: str, models_data
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
         df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
-        df, annual_return_with_forecast, excepted_returns = analyze.gbm_model()
+        df, annual_return_with_forecast, excepted_returns = analyze.lstm_model()
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
         df, annual_return_with_forecast, excepted_returns, plt = analyze.prophet_model()
     else:
