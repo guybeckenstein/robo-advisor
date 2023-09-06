@@ -23,8 +23,6 @@ else:
     ]
 
 
-
-
 def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
                              header_text, percent_mode: bool = True) -> None:
     """
@@ -162,10 +160,12 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
             draw.rectangle([(x0, y0), (x1, y1 + cell_height)], outline="black", fill="white")
 
             # Calculate y-coordinate for multiline text
-            y_text = y0 + (cell_height - len(lines) * (VALUE_FONT_SIZE + 4)) / 2  # Adjust the y-coordinate for centering
+            y_text = y0 + (cell_height - len(lines) * (VALUE_FONT_SIZE + 4)) / 2  # Adjusts y-coordinate for centering
 
             # Draw multiline text
             multiline_text = "\n".join(lines)
-            draw.multiline_text((x0 + 5, y_text), multiline_text, font=value_font, fill="black", align="center", spacing=4)
+            draw.multiline_text(
+                (x0 + 5, y_text), multiline_text, font=value_font, fill="black", align="center", spacing=4
+            )
     # Save the image
     image.save(f"{path} intersection.png")

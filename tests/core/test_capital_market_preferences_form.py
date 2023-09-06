@@ -20,7 +20,7 @@ class TestPreferencesForm:
     # TEMPLATES
     template_1: str = 'core/capital_market_algorithm_preferences_form.html'
     template_2: str = 'core/capital_market_investment_preferences_form.html'
-    
+
     class TestCapitalMarketAlgorithmPreferencesForm:
         def test_successful_get_request_as_logged_user_without_questionnaire_a(self, client: Client,
                                                                                user_factory: Callable):
