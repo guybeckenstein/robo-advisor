@@ -13,5 +13,5 @@ if __name__ == '__main__':
     research.save_stocks_intersection_to_csv()  # save stocks intersection to csv file
     research.get_all_best_stocks(settings.RESEARCH_FILTERS)  # filters stocks and save top stocks images
     research.update_stocks_names_tables()  # update stocks names tables
-    # TODO upload to google drive
+    # TODO upload stocks.json to google drive
     research.update_collections_file()  # update stocks.json file according to the new stocks intersection

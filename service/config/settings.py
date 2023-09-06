@@ -7,6 +7,7 @@ MACHINE_LEARNING_MODEL: list = ['Linear Regression', 'ARIMA', 'Gradient Boosting
 LEVEL_OF_RISK_LIST: list = ["low", "medium", "high"]
 CURRENCY_LIST = ['₪', '$', '€']
 FILE_ACCESS_TYPE = ["google_drive", "local"]
+FILE_ACCESS_SELECTED = FILE_ACCESS_TYPE[1]
 NUM_OF_YEARS_HISTORY = 10  # the number of history years data - default
 BASE_SERVICE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
 DJANGO_DIR = BASE_SERVICE_DIR

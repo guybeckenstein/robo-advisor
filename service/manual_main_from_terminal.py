@@ -20,6 +20,7 @@ if __name__ == '__main__':
     user_id: int = 1
     user_name: int = 'yarden'  # data_management.get_name()
     data_changed = False
+    data_management.update_files_from_google_drive()
 
     while selection != exit_loop_operation:
 
@@ -168,5 +169,5 @@ if __name__ == '__main__':
 
         data_management.show_main_menu()
         selection = data_management.get_menu_choice()
-    # TODO
+    # TODO upload users.json to google drive
     #data_management.upload_file_to_google_drive(settings.USERS_JSON_NAME +".json", 2)

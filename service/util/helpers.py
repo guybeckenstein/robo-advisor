@@ -693,15 +693,15 @@ def get_sectors_names_list() -> list[str]:
     return sectors_list
 
 
-def get_collection_json_data(google_drive_source=False) -> dict[
+def get_collection_json_data() -> dict[
     dict[str, str, str, str, str, str],
     list[dict[list[object], float, float, int]],
     list[dict[list[object], float, float, int]],
     list[dict[list[object], float, float, int]],
     list[dict[list[object], float, float, int]]
 ]:
-    if google_drive_source:
-        return convert_data_stream_to_json(google_drive_source)['collections']
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+        return convert_data_stream_to_json()['collections']
     else:
         return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 

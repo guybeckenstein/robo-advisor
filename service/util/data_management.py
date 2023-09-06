@@ -32,27 +32,30 @@ django.setup()
 from accounts.models import InvestorUser
 
 google_drive_instance = google_drive.GoogleDriveInstance()
+today = datetime.date.today()
+formatted_date_today = today.strftime("%Y-%m-%d")
 
 
 ######################################################################################
 # update dataset tables
 def update_all_tables(num_of_years_history, is_daily_running=True):  # build DB for withdraw
-    today = datetime.date.today()
-    formatted_date = today.strftime("%Y-%m-%d")
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     for i in range(1, len(models_data)):
         curr_collection = models_data[str(i)][0]
         stocks_symbols = curr_collection['stocksSymbols']
         path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + str(str(i)) + '/'  # where to save the datasets
-        update_closing_prices_tables(formatted_date, stocks_symbols, num_of_years_history, path, is_daily_running)
-        update_data_frame_tables(formatted_date, curr_collection, path, models_data, str(i),
+        update_closing_prices_tables(stocks_symbols, num_of_years_history, path, is_daily_running)
+        update_data_frame_tables(curr_collection, path, models_data, str(i),
                                  is_daily_running)
 
 
-def update_closing_prices_tables(formatted_date_today, stocks_symbols, num_of_years_history, path, is_daily_running):
-    # TODO get last_updated_date_closing_prices from google drive
-    with open(path + "lastUpdatedClosingPrice.txt", "r") as file:
-        last_updated_date_closing_prices = file.read().strip()
+def update_closing_prices_tables(stocks_symbols, num_of_years_history, path, is_daily_running):
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+        pass
+        # TODO - get from google drive
+    else:
+        with open(path + "lastUpdatedClosingPrice.txt", "r") as file:
+            last_updated_date_closing_prices = file.read().strip()
 
     if last_updated_date_closing_prices != formatted_date_today or not is_daily_running:
         helpers.convert_data_to_tables(path, settings.CLOSING_PRICES_FILE_NAME,
@@ -65,17 +68,19 @@ def update_closing_prices_tables(formatted_date_today, stocks_symbols, num_of_ye
 
 
 
-def update_data_frame_tables(formatted_date_today, collection_json_data, path,
+def update_data_frame_tables(collection_json_data, path,
                              models_data: dict[dict, list, list, list, list], collection_num,
                              is_daily_running: bool = True):
     stocks_symbols = collection_json_data['stocksSymbols']
-
-    # TODO get last_updated_date_closing_prices from google drive
-    with open(path + "lastUpdatedDftables.txt", "r") as file:
-        last_updated_df_tables = file.read().strip()
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+        # TODO get last_updated_date_closing_prices from google drive
+        pass
+    else:
+        with open(path + "lastUpdatedDftables.txt", "r") as file:
+            last_updated_df_tables = file.read().strip()
     if last_updated_df_tables != formatted_date_today or not is_daily_running:
         sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
-        closing_prices_table = get_closing_prices_table(path, google_drive_source=True)
+        closing_prices_table = get_closing_prices_table(path)
         pct_change_table = closing_prices_table.pct_change()
 
         # Without machine learning - Markowitz, Gini, With machine learning - Markowitz, Gini
@@ -226,14 +231,13 @@ def get_investment_format(investment_amount, entered_as_an_automatic_investment)
 
 
 def add_new_investment(user_id, investment_amount, entered_as_an_automatic_investment=False
-                       ,google_drive_source=False, investments: list = []) -> dict:
+                       , investments: list = []) -> dict:
     if investment_amount < 0:
         return None
     new_investment = get_investment_format(investment_amount, entered_as_an_automatic_investment)
 
     try:
-        # TODO get from google drive
-        investments = get_user_investments_from_json_file(user_id, google_drive_source)  # from json file
+        investments = get_user_investments_from_json_file(user_id)  # from json file
     except KeyError:
         investments = []
     except ValueError:
@@ -274,9 +278,8 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     path = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR + stocks_collection_number + '/'
     sectors_data = get_json_data(settings.SECTORS_JSON_NAME)
     sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(path, google_drive_source=True)
-    df = get_three_levels_df_tables(is_machine_learning, settings.MODEL_NAME[model_option], path,
-                                    google_drive_source=True)
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(path)
+    df = get_three_levels_df_tables(is_machine_learning, settings.MODEL_NAME[model_option], path)
     three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option])
     best_stocks_weights_column = helpers.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
                                                                  closing_prices_table.pct_change())
@@ -291,9 +294,9 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
 
 
 # Tables according to stocks symbols
-def get_closing_prices_table(path, google_drive_source=False) -> pd.DataFrame:
+def get_closing_prices_table(path) -> pd.DataFrame:
     # closing_prices_table: pd.DataFrame = pd.read_csv(filepath_or_buffer=f'{path}closing_prices.csv', index_col=0)
-    if google_drive_source:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
         closing_price_path = helpers.get_sorted_path(path + f'closing_prices', num_of_last_elements=3)
         closing_prices_table = helpers.convert_data_stream_to_pd(
             get_file_from_google_drive(closing_price_path + '.csv'))
@@ -310,21 +313,18 @@ def get_closing_prices_table(path, google_drive_source=False) -> pd.DataFrame:
     return closing_prices_table
 
 
-def get_three_levels_df_tables(is_machine_learning: int, model_name, collection_path: str,
-                               google_drive_source: bool = False) -> list[pd.DataFrame]:
+def get_three_levels_df_tables(is_machine_learning: int, model_name, collection_path: str) -> list[pd.DataFrame]:
     """
     Get the three level df tables according to machine learning option and model name
     """
     three_levels_df_tables: list[pd.DataFrame] = [
-        get_df_table(is_machine_learning, model_name, risk, collection_path,
-                     google_drive_source) for risk in settings.LEVEL_OF_RISK_LIST
+        get_df_table(is_machine_learning, model_name, risk, collection_path) for risk in settings.LEVEL_OF_RISK_LIST
     ]
 
     return three_levels_df_tables
 
 
-def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, collection_path: str,
-                 google_drive_source: bool) -> pd.DataFrame:
+def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, collection_path: str) -> pd.DataFrame:
     """
     get specific df table from csv file according to machine learning option, model name and level of risk
     """
@@ -332,7 +332,7 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, colle
         collection_path += settings.MACHINE_LEARNING_LOCATION
     else:
         collection_path += settings.NON_MACHINE_LEARNING_LOCATION
-    if google_drive_source:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
         google_drive_table_path = helpers.get_sorted_path(f'{collection_path}{model_name}_df_{level_of_risk}', num_of_last_elements=4)
         df: pd.DataFrame = helpers.convert_data_stream_to_pd(
             get_file_from_google_drive(google_drive_table_path + '.csv'))
@@ -472,7 +472,7 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
         model_name = settings.MODEL_NAME[model_name]
 
     three_levels_df_tables: list[pd.DataFrame] = [
-        get_df_table(is_machine_learning, model_name, risk, closing_prices_table_path, google_drive_source=True)
+        get_df_table(is_machine_learning, model_name, risk, closing_prices_table_path)
         for risk in settings.LEVEL_OF_RISK_LIST
     ]
 
@@ -714,7 +714,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
 
     path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{stocks_collection_number}/'
 
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path, google_drive_source=True)
+    closing_prices_table: pd.DataFrame = get_closing_prices_table(path=path)
     portfolio: Portfolio = Portfolio(
         stocks_symbols, sectors, risk_level, total_investment_amount, stat_model_name, is_machine_learning,
     )
@@ -738,8 +738,8 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     return user
 
 
-def save_investment_to_json_File(user_id, investments, google_drive_source=False):
-    if google_drive_source:
+def save_investment_to_json_File(user_id, investments):
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
         stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
         json_data = helpers.convert_data_stream_to_json(
             get_file_from_google_drive(stocks_json_path + '.json'))
@@ -756,8 +756,8 @@ def save_investment_to_json_File(user_id, investments, google_drive_source=False
         json.dump(json_data, file, indent=4)
 
 
-def get_user_investments_from_json_file(user_id, google_drive_source):
-    if google_drive_source:
+def get_user_investments_from_json_file(user_id):
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
         stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
         json_data = helpers.convert_data_stream_to_json(
             get_file_from_google_drive(stocks_json_path + '.json'))
@@ -940,22 +940,28 @@ def update_files_from_google_drive():
         print("instance none")
         return
 
-    # update stocks.json
-    stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)
-    stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
-    # save stocks.json to local
-    helpers.save_json_data(settings.STOCKS_JSON_NAME, stocks_json)
+    with open(settings.DATASET_LOCATION + "last_updated_google_drive.txt", "r") as file:
+        last_updated_date = file.read().strip()
+    if last_updated_date != formatted_date_today:
+        # update stocks.json
+        stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)
+        stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
+        # save stocks.json to local
+        helpers.save_json_data(settings.STOCKS_JSON_NAME, stocks_json)
 
-    # update users.json
-    stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
-    stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
-    # save users.json to local
-    helpers.save_json_data(settings.USERS_JSON_NAME, stocks_json)
+        # update users.json
+        stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
+        stocks_json = helpers.convert_data_stream_to_json(get_file_from_google_drive(stocks_json_path + '.json'))
+        # save users.json to local
+        helpers.save_json_data(settings.USERS_JSON_NAME, stocks_json)
 
-    png_files = google_drive_instance.get_all_png_files()
-    for img in png_files:
-        image = Image.open(img["data"])
-        image.save(f'{settings.RESEARCH_TOP_STOCKS_IMAGES}/{img["name"]}', "PNG")
+        png_files = google_drive_instance.get_all_png_files()
+        for img in png_files:
+            image = Image.open(img["data"])
+            image.save(f'{settings.RESEARCH_TOP_STOCKS_IMAGES}/{img["name"]}', "PNG")
+
+        with open(settings.DATASET_LOCATION + "last_updated_google_drive.txt", "w") as file:
+            file.write(formatted_date_today)
 
 
 
