@@ -26,29 +26,59 @@ jobs:
       run: |
         pip install drf-spectacular==0.26.4 pyyaml==5.3.1 docker-compose
 
-    - name: Set SECRET_KEY environment variable
+    - name: Set all environment variables
       run: |
         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
         echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
-        cat .env
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
 
+    - name: psycopg2 prerequisites
+      run: | 
+        sudo apt-get install libpq-dev
+
+    - uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '11'
+
+    - name: Remove Docker volumes
+      run: |
+        docker system prune
+        sudo systemctl start postgresql.service
+        sudo kill -9 $(sudo lsof -t -i:5432)
+
     - name: Build and Run Docker Containers
       run: |
         docker-compose up -d
-      working-directory: ./  # Use root directory as the working directory
 
-    - name: Run Docker Container, Flake8 Linter, and Test with PyTest
+    - name: Run Flake8 Linter, and Test with PyTest
       run: |
-        docker-compose exec web bash -c "
-          echo 'Starting container...'
-          ./entrypoint.sh
-          echo 'Container finished.'
-          flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
+        docker-compose exec -T web bash -c "flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv ."
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        POSTGRES_HOST: db
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: robo_advisor
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        DATABASE: postgres
+
+    - name: Test with PyTest
+      run: |
+        docker-compose exec -T web bash -c "
+          python manage.py flush --no-input
+          python manage.py makemigrations
+          python manage.py migrate
           pytest -s -v
         "
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        POSTGRES_HOST: db
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: robo_advisor
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        DATABASE: postgres

@@ -5,6 +5,11 @@ services:
     image: postgres:15.3
     container_name: Postgres_Container
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     environment:
       - POSTGRES_DB=robo_advisor
       - POSTGRES_USER=postgres
@@ -14,6 +19,11 @@ services:
     networks:
       - web_network
   web:
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+       - db:db
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,23 +33,20 @@ services:
     ports:
       - '8000:8000'
     environment:
-    - DEBUG=1
-    - POSTGRES_HOST=db
-    - POSTGRES_PORT=5432
-    - POSTGRES_DB=robo_advisor
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    - DATABASE=postgres
-    - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-    - CSRF_TRUSTED_ORIGINS=http://localhost:1337
+      - DEBUG=1
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=robo_advisor
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - DATABASE=postgres
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
     env_file:
       - .env.oauth
     volumes:
       - .:/usr/src/app/
     networks:
       - web_network
-    depends_on:
-      - db
 
 volumes:
   postgres_data:

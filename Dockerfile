@@ -27,8 +27,3 @@ RUN mkdir -p /usr/src/app/fonts
 
 # Copy the 'fonts' directory from your project into the container
 COPY static/fonts/ /usr/src/app/static/fonts/
-
-# Run Django commands
-RUN python manage.py flush --no-input
-RUN python manage.py makemigrations
-RUN python manage.py migrate
