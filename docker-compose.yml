@@ -45,7 +45,8 @@ services:
     networks:
       - web_network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     links:
        - db:db
 

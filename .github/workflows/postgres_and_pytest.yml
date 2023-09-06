@@ -44,6 +44,7 @@ jobs:
     - name: Remove Docker volumes
       run: |
         docker system prune
+        sudo systemctl start postgresql.service
 
     - name: Build and Run Docker Containers
       run: |
@@ -65,9 +66,9 @@ jobs:
     - name: Test with PyTest
       run: |
         docker-compose exec web bash -c "
-          echo 'Starting container...'
-          ./entrypoint.sh
-          echo 'Container finished.'
+          python manage.py flush --no-input
+          python manage.py makemigrations
+          python manage.py migrate
           pytest -s -v
         "
       env:
