@@ -7,7 +7,6 @@ services:
     restart: always
     ports:
       - '5432:5432'
-      # needed because the postgres container does not provide a healthcheck
     healthcheck:
       test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
       interval: 10s
@@ -47,6 +46,8 @@ services:
       - web_network
     depends_on:
       - db
+    links:
+       - db:db
 
 volumes:
   postgres_data:
