@@ -26,10 +26,11 @@ jobs:
       run: |
         pip install drf-spectacular==0.26.4 pyyaml==5.3.1 docker-compose
 
-    - name: Set SECRET_KEY environment variable
+    - name: Set all environment variables
       run: |
         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
         echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
+        echo "POSTGRES_HOST=db" >> .env
         cat .env
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
