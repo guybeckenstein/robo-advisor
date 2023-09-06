@@ -19,8 +19,7 @@ jobs:
     - name: Install docker-compose
       run: |
         pip install drf-spectacular==0.26.4 pyyaml==5.3.1 docker-compose
-    # Linter
-    - name: Run Flake8
+    - name: Run Flake8 Linter
       run: |
         docker-compose run --rm web sh -c "flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv ."
       env:
