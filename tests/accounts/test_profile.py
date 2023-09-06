@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from accounts.models import CustomUser, InvestorUser
 from service.util import data_management
-from app.tests import helper_methods
+from tests import helper_methods
 
 # Global constant variables
 DASHBOARD: str = "'s Dashboard"
@@ -17,6 +17,8 @@ ATTRIBUTES: list[str] = ['Account', 'Investor', 'Portfolio', 'Capital Market Pre
 
 @pytest.mark.django_db
 class TestProfile:
+    capital_market_algorithm_preferences_template: str = 'core/capital_market_algorithm_preferences_form.html'
+
     class TestProfileMain:
         def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
             response, user = helper_methods.successful_get_request_as_logged_user(
@@ -60,7 +62,7 @@ class TestProfile:
             helper_methods.assert_attributes_and_values(response, attributes_and_values=[
                 ('First name', user.first_name),
                 ('Last name', user.last_name),
-                ('Phone number', f'0{phone_number[4]}-{phone_number[5:8]}-{phone_number[8:]}'),
+                ('Phone number', phone_number),
                 ('submit-id-submit', 'Save')
             ])
 
@@ -135,7 +137,9 @@ class TestProfile:
                 client, 'profile_investor', data=data, status_code=302
             )
             response: TemplateResponse = client.get(reverse('capital_market_algorithm_preferences_form'))
-            helper_methods.assert_successful_status_code_for_get_request(response, template_src='core/form.html')
+            helper_methods.assert_successful_status_code_for_get_request(
+                response, template_src=TestProfile.capital_market_algorithm_preferences_template
+            )
             helper_methods.assert_attributes(response, attributes=[
                 "alert alert-info",
                 "Your account details have been updated successfully.",
@@ -168,7 +172,9 @@ class TestProfile:
                 client, 'profile_investor', data=data, status_code=302
             )
             response: TemplateResponse = client.get(reverse('capital_market_algorithm_preferences_form'))
-            helper_methods.assert_successful_status_code_for_get_request(response, template_src='core/form.html')
+            helper_methods.assert_successful_status_code_for_get_request(
+                response, template_src=TestProfile.capital_market_algorithm_preferences_template
+            )
             helper_methods.assert_attributes(response, attributes=[
                 "alert alert-success",
                 "Your account details have been updated successfully.",

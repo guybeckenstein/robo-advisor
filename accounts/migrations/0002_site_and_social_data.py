@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 import environ
 from allauth.socialaccount.models import SocialApp
@@ -16,9 +15,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env()
 env.read_env(os.path.join(BASE_DIR, '../../.env.oauth'))
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 class Migration(migrations.Migration):
     dependencies = [
@@ -28,7 +24,10 @@ class Migration(migrations.Migration):
 
     def generate_site_data(apps, schema_editor):
         site_data: list[tuple] = [
-            ('http://127.0.0.1:8000/', 'RoboAdvisor',),
+            (
+                f'http://{env("WEB_DOMAIN", default="localhost")}:8000/',
+                'RoboAdvisor',
+            ),
         ]
         with transaction.atomic():
             for domain, name in site_data:

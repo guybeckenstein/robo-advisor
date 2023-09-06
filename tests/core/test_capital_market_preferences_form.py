@@ -11,16 +11,21 @@ from accounts.models import CustomUser, InvestorUser
 from core.models import QuestionnaireA, QuestionnaireB
 from tests import helper_methods
 
-URLS: list[str, str] = ['capital_market_algorithm_preferences_form', 'capital_market_investment_preferences_form']
-
 
 @pytest.mark.django_db
 class TestPreferencesForm:
+    # URLS
+    url_1: str = 'capital_market_algorithm_preferences_form'
+    url_2: str = 'capital_market_investment_preferences_form'
+    # TEMPLATES
+    template_1: str = 'core/capital_market_algorithm_preferences_form.html'
+    template_2: str = 'core/capital_market_investment_preferences_form.html'
+    
     class TestCapitalMarketAlgorithmPreferencesForm:
         def test_successful_get_request_as_logged_user_without_questionnaire_a(self, client: Client,
                                                                                user_factory: Callable):
             response, _ = helper_methods.successful_get_request_as_logged_user(
-                client, user_factory, url_name=URLS[0], template_src='core/form.html'
+                client, user_factory, url_name=TestPreferencesForm.url_1, template_src=TestPreferencesForm.template_1
             )
             # Assert attributes
             helper_methods.assert_attributes(response, attributes=[
@@ -35,18 +40,18 @@ class TestPreferencesForm:
                                                                             user_factory: Callable,
                                                                             questionnaire_a_factory: Callable):
             TestPreferencesForm.sign_in(client, user_factory, questionnaire_a_factory)
-            response: TemplateResponse = client.get(reverse(URLS[0]))
+            response: TemplateResponse = client.get(reverse(TestPreferencesForm.url_1))
             # Assert attributes
             helper_methods.assert_attributes(response, attributes=[
                 'Update your capital market algorithm preferences form', 'Update',
                 'Capital Market Preferences Form - Algorithms',
                 'Question #1: Would you like to use machine learning algorithms for stock market investments?',
                 'Question #2: Which statistic model would you like to use for stock market investments?',
-                # 'div_id_ml_answer', 'div_id_model_answer',
+                'div_id_ml_answer', 'div_id_model_answer',
             ])
 
         def test_redirection_get_request_as_guest(self, client):
-            helper_methods.redirection_get_request_as_guest(client, url_name=URLS[0])
+            helper_methods.redirection_get_request_as_guest(client, url_name=TestPreferencesForm.url_1)
 
         def test_form_successful_post_request(self, client: Client, user_factory: Callable,
                                               questionnaire_a_factory: Callable):
@@ -59,11 +64,11 @@ class TestPreferencesForm:
                 'model_answer': '1',
             }
             # Testing we are redirected and the new user form is within the DB
-            helper_methods.post_request(client, url_name=URLS[0], data=data, status_code=302)
+            helper_methods.post_request(client, url_name=TestPreferencesForm.url_1, data=data, status_code=200)
             assert QuestionnaireA.objects.get(user=user) is not None
             # GET request to Investment Preferences form
             response: TemplateResponse = helper_methods.successful_get_request_as_guest(
-                client, url_name=URLS[1], template_src='core/form.html'
+                client, url_name=TestPreferencesForm.url_2, template_src=TestPreferencesForm.template_2
             )
             questionnaire_a: QuestionnaireA = QuestionnaireA.objects.get(user=user)
             ml_answer: int = questionnaire_a.ml_answer
@@ -79,7 +84,9 @@ class TestPreferencesForm:
             # Testing the user form is not within the DB
             with pytest.raises(ObjectDoesNotExist):
                 QuestionnaireA.objects.get(user=user)
-            response: TemplateResponse = helper_methods.post_request(client, url_name=URLS[0], data={}, status_code=200)
+            response: TemplateResponse = helper_methods.post_request(
+                client, url_name=TestPreferencesForm.url_1, data={}, status_code=200
+            )
             # Checking we are in the same template
             template = Template(response.content.decode('utf-8'))
             context = Context(response.context)
@@ -96,9 +103,9 @@ class TestPreferencesForm:
             _, questionnaire_a = TestPreferencesForm.sign_in(client, user_factory, questionnaire_a_factory)
             ml_answer: int = questionnaire_a.ml_answer
             model_answer: int = questionnaire_a.model_answer
-            response: TemplateResponse = client.get(reverse(URLS[1]))
+            response: TemplateResponse = client.get(reverse(TestPreferencesForm.url_2))
             helper_methods.assert_successful_status_code_for_get_request(
-                response=response, template_src='core/form.html'
+                response=response, template_src=TestPreferencesForm.template_2
             )
             # Assert attributes
             helper_methods.assert_attributes(response, attributes=[
@@ -113,9 +120,9 @@ class TestPreferencesForm:
             questionnaire_b_factory(user=user)
             ml_answer: int = questionnaire_a.ml_answer
             model_answer: int = questionnaire_a.model_answer
-            response: TemplateResponse = client.get(reverse(URLS[1]))
+            response: TemplateResponse = client.get(reverse(TestPreferencesForm.url_2))
             helper_methods.assert_successful_status_code_for_get_request(
-                response=response, template_src='core/form.html'
+                response=response, template_src=TestPreferencesForm.template_2
             )
             # Assert attributes
             helper_methods.assert_attributes(response, attributes=[
@@ -136,13 +143,15 @@ class TestPreferencesForm:
             ])
 
         def test_redirection_get_request_as_guest(self, client):
-            helper_methods.redirection_get_request_as_guest(client, url_name=URLS[1])
+            helper_methods.redirection_get_request_as_guest(client, url_name=TestPreferencesForm.url_2)
 
         def test_page_not_found_get_request_as_logged_user(self, client: Client, user_factory: Callable):
             """
             We expect to get 4xx response code, because there is no instance of `QuestionnaireA`
             """
-            helper_methods.page_not_found_get_request_as_logged_user(client, user_factory, url_name=URLS[1])
+            helper_methods.page_not_found_get_request_as_logged_user(
+                client, user_factory, url_name=TestPreferencesForm.url_2
+            )
 
         def test_form_successful_post_request(self, client: Client, user_factory: Callable,
                                               questionnaire_a_factory: Callable):
@@ -151,7 +160,7 @@ class TestPreferencesForm:
                 QuestionnaireB.objects.get(user=user)
             data = {f'answer_{i}': '3' for i in range(1, 4)}
             # Testing we are redirected
-            helper_methods.post_request(client, url_name=URLS[1], data=data, status_code=302)
+            helper_methods.post_request(client, url_name=TestPreferencesForm.url_2, data=data, status_code=200)
             # Testing the new user form is within the DB
             assert QuestionnaireB.objects.get(user=user) is not None
 
@@ -160,7 +169,9 @@ class TestPreferencesForm:
             user, _ = TestPreferencesForm.sign_in(client, user_factory, questionnaire_a_factory)
             with pytest.raises(ObjectDoesNotExist):
                 QuestionnaireB.objects.get(user=user)
-            response: TemplateResponse = helper_methods.post_request(client, url_name=URLS[1], data={}, status_code=200)
+            response: TemplateResponse = helper_methods.post_request(
+                client, url_name=TestPreferencesForm.url_2, data={}, status_code=200
+            )
             # Checking we are in the same template
             template = Template(response.content.decode('utf-8'))
             context = Context(response.context)
@@ -210,17 +221,19 @@ class TestPreferencesForm:
                 'model_answer': '1',
             }
             # Testing we are redirected and the new user form is within the DB
-            helper_methods.post_request(client, url_name=URLS[0], data=data1, status_code=302)
+            helper_methods.post_request(client, url_name=TestPreferencesForm.url_1, data=data1, status_code=200)
             assert QuestionnaireA.objects.get(user=user) is not None
             # GET request to Investment Preferences form
-            helper_methods.successful_get_request_as_guest(client, url_name=URLS[1], template_src='core/form.html')
+            helper_methods.successful_get_request_as_guest(
+                client, url_name=TestPreferencesForm.url_2, template_src=TestPreferencesForm.template_2
+            )
             if create:
                 with pytest.raises(ObjectDoesNotExist):
                     QuestionnaireB.objects.get(user=user)
             data2: dict[str, str, str] = {f'answer_{i}': '3' for i in range(1, 4)}
             # Testing we are redirected
             helper_methods.post_request(
-                client, url_name=URLS[1], data=data2, status_code=302
+                client, url_name=TestPreferencesForm.url_2, data=data2, status_code=200
             )
             # Testing the new user form is within the DB
             assert QuestionnaireB.objects.get(user=user) is not None

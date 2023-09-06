@@ -17,9 +17,8 @@
 {% block profile_account_functions %}
   <form action="{% url 'profile_account_details' %}" method="post">
     {{ form | crispy }}
-    <button type="submit" class="btn btn-dark"> Submit </button>
+    <button id="submit-id-submit" type="submit" class="btn btn-dark">
+      Save
+    </button>
   </form>
-
-
-
 {% endblock %}

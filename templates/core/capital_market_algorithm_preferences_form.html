@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extrahead %}
+<style>
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 500ms ease-in;
+}
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
+</style>
+{% endblock extrahead %}
+
+{% block content %}
+  <div class="content card mx-auto w-75">
+    <div class="row justify-content-center p-3">
+      <div class="border border-light-subtle" style="background-color: #fafafa; width: 98%;">
+        <form hx-post="{% url 'capital_market_algorithm_preferences_form' %}" hx-replace-url="true" hx-indicator="#spinner">
+          {% crispy form %}
+          <button type="submit" class="btn btn-primary">
+            Submit
+            <img id="spinner" class="htmx-indicator" src="{% static 'img/bars.svg' %}">
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

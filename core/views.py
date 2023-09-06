@@ -7,6 +7,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django_htmx.http import HttpResponseClientRedirect
 
@@ -37,7 +38,7 @@ def administrative_tools_form(request):
             'title': 'Administrative Tools',
             'form': AdministrativeToolsForm(initial=models_data),
         }
-        return render(request, 'core/administrative_tool_form.html', context=context)
+        return render(request, 'core/administrative_tools_form.html', context=context)
     elif request.method == 'POST':
         form = AdministrativeToolsForm(request.POST)
         if form.is_valid():  # CREATE and UPDATE
@@ -86,27 +87,26 @@ def capital_market_algorithm_preferences_form(request):
                 'form': AlgorithmPreferencesForm(form_type='create'),
                 'form_type': 'create',
             }
-            return render(request, 'core/form.html', context=context)
+            return render(request, 'core/capital_market_algorithm_preferences_form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
                 'form': AlgorithmPreferencesForm(form_type='update', instance=preferences),
                 'form_type': 'update',
             }
-            return render(request, 'core/form.html', context=context)
+            return render(request, 'core/capital_market_algorithm_preferences_form.html', context=context)
     elif request.method == 'POST':
         if preferences is None:  # CREATE
             form = AlgorithmPreferencesForm(request.POST)
         else:  # UPDATE
             form = AlgorithmPreferencesForm(request.POST, instance=preferences)
-
-        if form.is_valid():  # CREATE and UPDATE
+        # CREATE AND UPDATE
+        if form.is_valid():
             form.instance.user = request.user
             form.save()
-            if request.htmx:
-                return HttpResponseClientRedirect("/form/2/")
-
-        else:  # CREATE and UPDATE
+            if request.htmx is not None:
+                return HttpResponseClientRedirect(reverse('capital_market_investment_preferences_form'))
+        else:
             context = {
                 'title': 'Update Filled Form',
                 'form': form,
@@ -150,7 +150,7 @@ def capital_market_investment_preferences_form(request):
                 'form_type': 'create',
             }
 
-            return render(request, 'core/form2.html', context=context)
+            return render(request, 'core/capital_market_investment_preferences_form.html', context=context)
         else:  # UPDATE
             context = {
                 'title': 'Update Filled Form',
@@ -162,7 +162,7 @@ def capital_market_investment_preferences_form(request):
                 ),
                 'form_type': 'update',
             }
-            return render(request, 'core/form2.html', context=context)
+            return render(request, 'core/capital_market_investment_preferences_form.html', context=context)
 
     elif request.method == 'POST':
         if questionnaire_b is None:  # CREATE
@@ -235,8 +235,8 @@ def capital_market_investment_preferences_form(request):
                 )
             # Frontend
             web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
-            if request.htmx:
-                return HttpResponseClientRedirect("/profile/portfolio/")
+            if request.htmx is not None:
+                return HttpResponseClientRedirect(reverse('profile_portfolio'))
             # return redirect('profile_portfolio')
 
         else:  # CREATE and UPDATE

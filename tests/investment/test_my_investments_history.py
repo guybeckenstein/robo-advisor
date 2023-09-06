@@ -10,13 +10,12 @@ from accounts.models import CustomUser, InvestorUser
 from investment.models import Investment
 from tests import helper_methods
 
-# Global constant variables
-DASHBOARD: str = "'s Investments Page"
-ATTRIBUTES: list[str] = ['Investments History', 'Discover Stocks', 'Top Stocks']
-
 
 @pytest.mark.django_db
 class TestInvestmentsMyInvestmentsHistory:
+    dashboard: str = "'s Investments Page"
+    attributes: list[str] = ['Investments History', 'Discover Stocks', 'Top Stocks']
+
     def test_successful_get_request_as_logged_user_without_investor_user(self, client: Client, user_factory: Callable):
         response, user = helper_methods.successful_get_request_as_logged_user(
             client,
@@ -24,8 +23,8 @@ class TestInvestmentsMyInvestmentsHistory:
             url_name='my_investments_history',
             template_src='investment/my_investments_history.html'
         )
-        helper_methods.assert_attributes(response, attributes=ATTRIBUTES + [
-            'My Investments History', f'{user.first_name}{DASHBOARD}', 'Please fill the form for more information'
+        helper_methods.assert_attributes(response, attributes=self.attributes + [
+            'My Investments History', f'{user.first_name}{self.dashboard}', 'Please fill the form for more information'
         ])
 
     def test_successful_get_request_as_logged_user_with_investor_user(
@@ -37,20 +36,19 @@ class TestInvestmentsMyInvestmentsHistory:
         helper_methods.assert_successful_status_code_for_get_request(
             response, template_src='investment/my_investments_history.html'
         )
-        helper_methods.assert_attributes(response, attributes=ATTRIBUTES + [
-            'My Investments History', f'{user.first_name}{DASHBOARD}',
+        helper_methods.assert_attributes(response, attributes=self.attributes + [
+            'My Investments History', f'{user.first_name}{self.dashboard}',
             'Amount To Invest', 'Add Amount', 'Invest', 'No results!'
         ])
         # Adding investment to database
         amount: int = 10
         investment: Investment = investment_factory(investor_user=investor_user, amount=amount)
-        response: TemplateResponse = client.get(reverse('my_investments_history'))
+        response: TemplateResponse = client.get(reverse('add_investment'))
         helper_methods.assert_successful_status_code_for_get_request(
-            response, template_src='investment/my_investments_history.html'
+            response, template_src='investment/add_investment.html'
         )
-        helper_methods.assert_attributes(response, attributes=ATTRIBUTES + [
-            'My Investments History', f'{user.first_name}{DASHBOARD}', str(amount),
-            investment.date.astimezone(pytz.timezone('Asia/Jerusalem')).strftime("%B %d, %Y"), 'Active'.upper()
+        helper_methods.assert_attributes(response, attributes=[
+            amount, investment.date.astimezone(pytz.timezone('Asia/Jerusalem')).strftime("%B %#d, %Y"), 'Active'.upper()
         ])
 
     def test_post_request(self, client: Client, user_factory: Callable, investor_user_factory: Callable):

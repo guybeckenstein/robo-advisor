@@ -1,5 +1,8 @@
 from typing import Callable
 import traceback
+import os
+
+import environ
 
 import pytest
 from django.template.response import TemplateResponse
@@ -9,8 +12,16 @@ from django.urls import reverse
 from accounts.models import CustomUser
 from tests import helper_methods
 
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Load and read .env file
+# OS environment variables take precedence over variables from .env
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, '../../.env.oauth'))
+
 # Global const variables
-RESET_LINK_URL = 'http://localhost:8000/accounts/password/reset/key/1-111111/'
+RESET_LINK_URL = f'http://{env("WEB_DOMAIN", default="localhost")}:8000/accounts/password/reset/key/1-111111/'
 
 
 @pytest.mark.django_db

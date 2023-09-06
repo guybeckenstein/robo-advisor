@@ -66,8 +66,7 @@ def add_investment_view(request):
             stocks_symbols = investor_user.stocks_symbols
 
             # save image
-            data_management.view_investment_report(str(request.user.id), amount,
-                                                   stocks_weights, stocks_symbols)
+            data_management.view_investment_report(str(request.user.id), amount, stocks_weights, stocks_symbols)
 
             # send report to user in email
             subject = 'Investment Report - Robot Advisor'

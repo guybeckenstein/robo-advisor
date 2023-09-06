@@ -6,7 +6,7 @@
 FROM python:3.11.4-slim-buster as builder
 
 # Install netcat
-RUN apt-get update && apt-get install -y netcat
+RUN apt-get update && apt-get install -y netcat && apt-get install -y locales
 
 # set work directory
 WORKDIR /usr/src/app
@@ -14,6 +14,9 @@ WORKDIR /usr/src/app
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
 # install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends gcc

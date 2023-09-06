@@ -1,4 +1,5 @@
 import textwrap
+import platform
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -8,6 +9,20 @@ from service.util import helpers
 CELL_WIDTH: list[int, int, int] = [200, 105, 1255]
 CELL_HEIGHT = 40
 TABLE_PADDING = 10
+if platform.system() == 'Windows':
+    FONTS: list[str, str, str] = [
+        'arialbd.ttf',
+        'ariali.ttf',
+        'arial.ttf',
+    ]
+else:
+    FONTS: list[str, str, str] = [
+        '/usr/src/app/static/fonts/arialbd.ttf',
+        '/usr/src/app/static/fonts/ariali.ttf',
+        '/usr/src/app/static/fonts/arial.ttf',
+    ]
+
+
 
 
 def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
@@ -36,7 +51,7 @@ def _create_blank_image(num_rows: int) -> tuple[Image, ImageDraw]:
 
 
 def _draw_table_header(draw: ImageDraw, header_text: ImageFont.truetype) -> None:
-    header_font = ImageFont.truetype("arialbd.ttf", size=26)
+    header_font = ImageFont.truetype(font=FONTS[0], size=26)
     # header_text: list[str, str, str] = ['Stock', 'Weight', 'Description']
     for col_idx in range(len(CELL_WIDTH)):
         x0: int = _calculate_cumulative_col_offset(col_idx) + TABLE_PADDING
@@ -55,7 +70,7 @@ def _draw_table_rows(num_rows: int, symbols: list[str], values: list[float], des
         _calculate_cumulative_col_offset(2) + TABLE_PADDING,
     ]
     x1: list[int, int, int] = [x0[0] + CELL_WIDTH[0], x0[1] + CELL_WIDTH[1], x0[2] + CELL_WIDTH[2]]
-    row_font = ImageFont.truetype("ariali.ttf", size=26)
+    row_font = ImageFont.truetype(font=FONTS[1], size=26)
     for row_idx, (symbol, weight, description) in enumerate(zip(symbols, values, descriptions)):
         y0: int = (row_idx + 1) * CELL_HEIGHT + TABLE_PADDING
         y1: int = y0 + CELL_HEIGHT
@@ -93,8 +108,8 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
     TITLE_FONT_SIZE = 18
     VALUE_FONT_SIZE = 22
     # Load title and value fonts with the specified sizes
-    title_font = ImageFont.truetype("arial.ttf", size=TITLE_FONT_SIZE)
-    value_font = ImageFont.truetype("arial.ttf", size=VALUE_FONT_SIZE)
+    title_font = ImageFont.truetype(font=FONTS[2], size=TITLE_FONT_SIZE)
+    value_font = ImageFont.truetype(font=FONTS[2], size=VALUE_FONT_SIZE)
 
     # Calculate image dimensions based on the number of rows and columns
     num_rows = min(num_of_stocks_showing, len(intersection_data)) + 1

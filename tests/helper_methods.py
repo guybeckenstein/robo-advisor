@@ -67,10 +67,10 @@ def login_user(client: Client, user_factory: Callable) -> CustomUser:
     return user
 
 
-def assert_attributes(response: TemplateResponse, attributes: list[str]) -> None:
+def assert_attributes(response: TemplateResponse, attributes: list[int | str]) -> None:
     content: str = response.content.decode()
     for attribute in attributes:
-        assert attribute in content
+        assert str(attribute) in content
 
 
 def assert_attributes_and_values(response: TemplateResponse, attributes_and_values: list[tuple[str, object]]) -> None:
