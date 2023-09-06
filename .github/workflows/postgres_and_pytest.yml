@@ -1,27 +1,39 @@
 name: PostgreSQL, PyTest & Flake8
 on: pull_request
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
+
     - name: Pre-installation of docker-compose
       run: |
         sudo apt-get install python3-dev libyaml-dev
+
     - name: Upgrade pip
       run: |
         pip install --upgrade pip
+
     - name: Install docker-compose
       run: |
         pip install drf-spectacular==0.26.4 pyyaml==5.3.1 docker-compose
+
+    - name: Build and Run Docker Containers
+      run: |
+        docker-compose up -d
+      working-directory: ./  # Use root directory as the working directory
+      
     - name: Run Docker Container, Flake8 Linter, and Test with PyTest
       run: |
-        docker-compose run --rm web -c "
+        docker-compose exec web bash -c "
           echo 'Starting container...'
           ./entrypoint.sh
           echo 'Container finished.'
