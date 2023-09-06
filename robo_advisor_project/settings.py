@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY", default='django-insecure-2f(wsgq6o$nmh&m@$7=jw5pldw^cyn%u44m+e34z7hss&($rl&')
+SECRET_KEY = env("SECRET_KEY", ValueError)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(env("DEBUG", default=True))
@@ -349,7 +349,7 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_HOST_USER = "apikey"
-EMAIL_HOST_PASSWORD = env('SENDGRID_API_KEY')
+EMAIL_HOST_PASSWORD = env('SENDGRID_API_KEY', ValueError)
 DEFAULT_FROM_EMAIL = 'noreply.robo.advisor@gmail.com'
 
 EMAIL_PORT = 587
