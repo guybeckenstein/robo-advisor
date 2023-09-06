@@ -54,7 +54,7 @@ jobs:
 
     - name: Run Flake8 Linter, and Test with PyTest
       run: |
-        docker-compose exec web bash -c "flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv ."
+        docker-compose exec -T web bash -c "flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv ."
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
@@ -67,7 +67,7 @@ jobs:
 
     - name: Test with PyTest
       run: |
-        docker-compose exec web bash -c "
+        docker-compose exec -T web bash -c "
           python manage.py flush --no-input
           python manage.py makemigrations
           python manage.py migrate
