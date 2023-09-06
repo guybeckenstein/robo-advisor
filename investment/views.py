@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import InvestorUser
 from django.views.decorators.http import require_http_methods
 
-from investment.forms import InvestmentForm
+from investment.forms import InvestmentsHistoryForm
 from investment.models import Investment
 
 from service.config import settings
@@ -28,13 +28,13 @@ def investments_list_view(request):
             'is_form_filled': is_form_filled,
             'title': 'Investments',
             'is_investments_view': False,
-            'form': InvestmentForm,
+            'form': InvestmentsHistoryForm,
         }
     else:
         context = {
             'is_form_filled': is_form_filled,
             'title': 'Investments',
-            'form': InvestmentForm,
+            'form': InvestmentsHistoryForm,
         }
     return render(request, 'investment/my_investments_history.html', context=context)
 
@@ -134,7 +134,7 @@ def _check_if_preferences_form_is_filled(request):
 
 
 def check_positive_number(request):
-    form = InvestmentForm(request.GET)
+    form = InvestmentsHistoryForm(request.GET)
     context = {
         'field': as_crispy_field(form['amount']),
         'valid': not form['amount'].errors

@@ -13,16 +13,16 @@
 {#      My Investments History#}
 {#    </h1>#}
 {#    {% if is_form_filled %}#}
-{#      <form  class="mb-4" hx-post="{% url 'add_investment' %}">#}
+{#      <form class="mb-4" hx-post="{% url 'add_investment' %}">#}
 {#        {% csrf_token %}#}
 {##}
-{#          <label class="input-group-text" for="id_amount">#}
+{#          <label for="id_amount" >#}
 {#            Amount To Invest#}
 {#          </label>#}
 {#          <div class="row">#}
 {#              <div class="col-md-12">#}
 {#                     {{ form | crispy }}#}
-{#                    <button class="btn btn-outline-dark">#}
+{#                    <button class="btn btn-outline-dark" style="position: absolute; top: 111px; height: 38px; right: 48px; border-radius: 0px 5px 5px 0px;">#}
 {#            Invest#}
 {#          </button>#}
 {##}
@@ -66,7 +66,7 @@
 
             {{ form | crispy }}
 
-          <button class="btn btn-outline-dark">
+          <button class="btn btn-outline-dark" style="position: absolute; top: 111px; height: 38px; right: 48px; border-radius: 0px 5px 5px 0px;">
             Invest
           </button>
 
