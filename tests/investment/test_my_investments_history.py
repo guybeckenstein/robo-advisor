@@ -48,7 +48,9 @@ class TestInvestmentsMyInvestmentsHistory:
             response, template_src='investment/add_investment.html'
         )
         helper_methods.assert_attributes(response, attributes=[
-            amount, investment.date.astimezone(pytz.timezone('Asia/Jerusalem')).strftime("%B %#d, %Y"), 'Active'.upper()
+            amount,
+            ' '.join(investment.date.astimezone(pytz.timezone('Asia/Jerusalem')).strftime("%B %#d, %Y").split(' 0')),
+            'Active'.upper()
         ])
 
     def test_post_request(self, client: Client, user_factory: Callable, investor_user_factory: Callable):
