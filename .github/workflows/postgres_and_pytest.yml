@@ -22,7 +22,7 @@ jobs:
     - name: Run Docker Container
       run: |
         docker-compose run sh -c "sudo echo 'Starting container...'; ./entrypoint.sh; echo 'Container finished.'"
-      with:
+      env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
     - name: Run Flake8 Linter
