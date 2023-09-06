@@ -19,15 +19,16 @@ jobs:
     - name: Install docker-compose
       run: |
         pip install drf-spectacular==0.26.4 pyyaml>=5.1 docker-compose
-    - name: Run Flake8 Linter
+    # Linter
+    - name: Run Flake8
       run: |
         docker-compose run --rm app sh -c "flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv ."
-      with:
+      env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
     - name: Test with PyTest
       run: |
         docker-compose run --rm app sh -c "pytest -s -v"
-      with:
+      env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
