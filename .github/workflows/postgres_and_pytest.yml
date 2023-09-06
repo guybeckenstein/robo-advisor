@@ -26,11 +26,19 @@ jobs:
       run: |
         pip install drf-spectacular==0.26.4 pyyaml==5.3.1 docker-compose
 
+    - name: Set SECRET_KEY environment variable
+      run: |
+        echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+        echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+
     - name: Build and Run Docker Containers
       run: |
         docker-compose up -d
       working-directory: ./  # Use root directory as the working directory
-      
+
     - name: Run Docker Container, Flake8 Linter, and Test with PyTest
       run: |
         docker-compose exec web bash -c "
