@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:15.3
     container_name: Postgres_Container
-    restart: always
+    restart: unless-stopped
     ports:
       - '5432:5432'
     healthcheck:

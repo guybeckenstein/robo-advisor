@@ -34,6 +34,13 @@ jobs:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
 
+    - name: psycopg2 prerequisites
+      run: sudo apt-get install libpq-dev
+      
+    - uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '11'
+
     - name: Remove Docker volumes
       run: |
         docker system prune
