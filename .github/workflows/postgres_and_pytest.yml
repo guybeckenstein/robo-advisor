@@ -35,7 +35,8 @@ jobs:
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
 
     - name: psycopg2 prerequisites
-      run: sudo apt-get install libpq-dev
+      run: | 
+        sudo apt-get install libpq-dev
 
     - uses: harmon758/postgresql-action@v1
       with:
@@ -45,6 +46,7 @@ jobs:
       run: |
         docker system prune
         sudo systemctl start postgresql.service
+        sudo kill -9 $(sudo lsof -t -i:5432)
 
     - name: Build and Run Docker Containers
       run: |
