@@ -36,7 +36,7 @@ jobs:
 
     - name: psycopg2 prerequisites
       run: sudo apt-get install libpq-dev
-      
+
     - uses: harmon758/postgresql-action@v1
       with:
         postgresql version: '11'
