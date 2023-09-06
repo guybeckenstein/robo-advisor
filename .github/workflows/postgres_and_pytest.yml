@@ -1,54 +1,54 @@
 name: PostgreSQL, PyTest & Flake8
 on: pull_request
+
 jobs:
-  # Label of the container job
-  setup-database:
-    # Containers must run in Linux based operating systems
-    name: Setup PostgreSQL Database, check code with Flake8, and run the application's tests with PyTest
+  build:
     runs-on: ubuntu-latest
 
-    services:  # Service containers to run with `container-job`
-      postgres:  # Label used to access the service container
-        image: postgres:latest  # Docker Hub image
-        ports:
-          - 5432:5432  # Opens TCP port 5432 on the host and service container
-        env:  # Provide the password for postgres
-          POSTGRES_PASSWORD: password
-        options: >-  # Set health checks to wait until postgres has started
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Create Python 3.11 virtual environment
-        run: python3.11 -m venv venv
-      - name: Activate the virtual environment
-        run: source venv/bin/activate
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        # Linter
-      - name: Run Flake8
-        run: python -m flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
-      - name: Create PostgreSQL Database
-        run: |
-          export PGPASSWORD=password
-          psql -h localhost -U postgres -c "CREATE DATABASE robo_advisor"
-      - name: Run Migrations
-        run: python manage.py migrate --noinput
-        env:
-          POSTGRES_PASSWORD: password
-          POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
-          POSTGRES_PORT: 5432  # The default PostgreSQL port
-        # Tests
-      - name: Run PyTest
-        run: python -m pytest -v
-        env:
-          POSTGRES_PASSWORD: password
-          POSTGRES_HOST: postgres  # The hostname used to communicate with the PostgreSQL service container
-          POSTGRES_PORT: 5432  # The default PostgreSQL port
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Pre-installation of docker-compose
+      run: |
+        sudo apt-get install python3-dev libyaml-dev
+
+    - name: Upgrade pip
+      run: |
+        pip install --upgrade pip
+
+    - name: Install docker-compose
+      run: |
+        pip install drf-spectacular==0.26.4 pyyaml==5.3.1 docker-compose
+
+    - name: Set all environment variables
+      run: |
+        echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+        echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
+        echo "POSTGRES_HOST=db" >> .env
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+
+    - name: Build and Run Docker Containers
+      run: |
+        docker-compose up -d
+      working-directory: ./  # Use root directory as the working directory
+
+    - name: Run Docker Container, Flake8 Linter, and Test with PyTest
+      run: |
+        docker-compose exec web bash -c "
+          echo 'Starting container...'
+          ./entrypoint.sh
+          echo 'Container finished.'
+          flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
+          pytest -s -v
+        "
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}

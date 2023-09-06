@@ -18,16 +18,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY", default='django-insecure-2f(wsgq6o$nmh&m@$7=jw5pldw^cyn%u44m+e34z7hss&($rl&')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(env("DEBUG", default=True))
+DEBUG = bool(os.environ.get('DEBUG', True))
 # DEBUG = True
 
 # ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS", default='localhost 127.0.0.1 [::1]').split(" ")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", 'localhost 127.0.0.1 [::1]').split(" ")
 
-SITE_ID = 2
+SITE_ID: int = None
 # Application definition
 INSTALLED_APPS = [
     # Third party apps
@@ -100,6 +100,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_htmx.middleware.HtmxMiddleware",
+    "accounts.middleware.DynamicSiteIDMiddleware",
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -126,18 +127,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS", default='*').split(" ")
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:8000').split(" ")
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB', default='robo_advisor'),
-        'USER': env('POSTGRES_USER', default='postgres'),
-        'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': env('POSTGRES_HOST', default='localhost'),
-        'PORT': int(env('POSTGRES_PORT', default=5432)),
+        'NAME': os.environ.get('POSTGRES_DB', 'robo_advisor'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': 'db',
+        'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
 
@@ -348,7 +349,7 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_HOST_USER = "apikey"
-EMAIL_HOST_PASSWORD = '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'
+EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = 'noreply.robo.advisor@gmail.com'
 
 EMAIL_PORT = 587

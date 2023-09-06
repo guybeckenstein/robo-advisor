@@ -487,7 +487,8 @@ def get_sectors_data_from_file():
 def set_sectors(stocks_symbols: list[object]) -> list[Sector]:
     """
     For each stock symbol, it checks for which sector does it belong.
-    :return: It returns a list of sectors.json.json with the relevant stocks within each sector. Subset of the stock symbol
+    :return: It returns a list of sectors.json.json with the relevant stocks within each sector.
+    Subset of the stock symbol
     """
     sectors: list = []
     sectors_data: [list[dict[str, str, list[object]]]] = get_sectors_data_from_file()

@@ -100,7 +100,8 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     '</span>')
         ml_answer: int = questionnaire_a.ml_answer
         model_answer: int = questionnaire_a.model_answer
-        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'  # Sub folder for current user to fetch its relevant graphs
+        # Sub folder for current user to fetch its relevant graphs
+        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
         self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
                                                     'Question #2: Which distribution do you prefer?'

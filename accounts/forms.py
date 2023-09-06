@@ -117,9 +117,9 @@ class AccountMetadataForm(forms.ModelForm):
         fields = ('email', 'first_name', 'last_name', 'phone_number', 'date_joined')
 
 
-class UpdateUserNameAndPhoneNumberForm(forms.ModelForm):
+class UpdateAccountDetailsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(UpdateUserNameAndPhoneNumberForm, self).__init__(*args, **kwargs)
+        super(UpdateAccountDetailsForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             Layout(
@@ -128,7 +128,6 @@ class UpdateUserNameAndPhoneNumberForm(forms.ModelForm):
                 'phone_number',
             ),
             HTML('<hr>'),
-            # FormActions(Submit('submit', 'Save', css_class='btn-dark')),
         )
 
     class Meta:

@@ -5,27 +5,26 @@
   <div class="content card mx-auto w-75">
     <div class="row justify-content-center p-3">
       <div class="border border-light-subtle" style="background-color: #fafafa; width: 98%;">
-{#        <form id="login-form" action="{% url 'account_login' %}" method="post">#}
+{#      <form id="login-form" action="{% url 'account_login' %}" method="post">#}
           <!-- Header -->
           <h2 class="my-4 text-center">
             Login
           </h2>
           <!-- Main Content -->
-{#          {{ form | crispy }}#}
-            <form method="post" action="{% url 'account_login' %}">
-                  {{ form|as_crispy_errors }}
-    {% csrf_token %}
-    <div id="login-form">
+{#        {{ form | crispy }}#}
+          <form method="post" action="{% url 'account_login' %}">
+            {{ form|as_crispy_errors }}
+            {% csrf_token %}
+            <div id="login-form">
             {{ form.login|as_crispy_field }}
-        <div id="email-validation"></div>
-        {{ form.password|as_crispy_field }}
-        {{ form.remember|as_crispy_field }}
-
-    </div>
-          <button type="submit" class="btn btn-primary">
-            Login
-          </button>
-            </form>
+              <div id="email-validation"></div>
+              {{ form.password|as_crispy_field }}
+              {{ form.remember|as_crispy_field }}
+            </div>
+            <button type="submit" class="btn btn-primary">
+              Login
+            </button>
+          </form>
           <div class="p-2">
             <small class="text-muted">
               <a href="{% url 'account_reset_password' %}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">

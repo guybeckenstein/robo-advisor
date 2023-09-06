@@ -245,9 +245,9 @@ def profile_account(request):
 @require_http_methods(["GET", "POST"])
 def profile_account_details(request):
     if request.method == 'GET':
-        form: forms.ModelForm = account_forms.UpdateUserNameAndPhoneNumberForm(instance=request.user)
+        form: forms.ModelForm = account_forms.UpdateAccountDetailsForm(instance=request.user)
     elif request.method == 'POST':
-        form: forms.ModelForm = account_forms.UpdateUserNameAndPhoneNumberForm(request.POST, instance=request.user)
+        form: forms.ModelForm = account_forms.UpdateAccountDetailsForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your account details have been updated successfully.')

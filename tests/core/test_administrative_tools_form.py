@@ -14,7 +14,7 @@ class TestAdministrativeToolsForm:
     def test_successful_get_request_as_admin(self, client: Client, superuser_factory: Callable):
         response, _ = helper_methods.successful_get_request_as_admin(
             client, superuser_factory, url_name='administrative_tools_form',
-            template_src='core/administrative_tool_form.html'
+            template_src='core/administrative_tools_form.html'
         )
         models_data: dict[Number] = data_management.get_models_data_from_collections_file()
         # Assert attributes

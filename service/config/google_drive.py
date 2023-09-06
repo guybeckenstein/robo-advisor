@@ -70,7 +70,8 @@ class GoogleDriveInstance:
 
         # Iterate through the folder names and find the corresponding folder IDs
         for folder_name in folders[:-1]:
-            query = f"'{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and name='{folder_name}'"
+            query = (f"'{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' "
+                     f"and name='{folder_name}'")
             folder_results = self.service.files().list(q=query).execute()
             folder_items = folder_results.get('files', [])
 
