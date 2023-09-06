@@ -48,6 +48,12 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        POSTGRES_HOST: db
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: robo_advisor
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        DATABASE: postgres
 
     - name: Test with PyTest
       run: |
@@ -60,3 +66,9 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        POSTGRES_HOST: db
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: robo_advisor
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        DATABASE: postgres
