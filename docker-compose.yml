@@ -5,6 +5,14 @@ services:
     image: postgres:15.3
     container_name: Postgres_Container
     restart: always
+    ports:
+      - '5432:5432'
+      # needed because the postgres container does not provide a healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     environment:
       - POSTGRES_DB=robo_advisor
       - POSTGRES_USER=postgres
