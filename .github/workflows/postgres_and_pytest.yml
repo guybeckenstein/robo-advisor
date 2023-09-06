@@ -39,10 +39,16 @@ jobs:
         docker-compose up -d
       working-directory: ./  # Use root directory as the working directory
 
-    - name: Run Docker Container, Flake8 Linter, and Test with PyTest
+    - name: Run Flake8 Linter, and Test with PyTest
+      run: |
+        docker-compose exec web bash -c "flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv ."
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+
+    - name: Test with PyTest
       run: |
         docker-compose exec web bash -c "
-          flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv .
           echo 'Starting container...'
           ./entrypoint.sh
           echo 'Container finished.'
