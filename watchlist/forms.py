@@ -63,4 +63,5 @@ class DiscoverStocksForm(forms.Form):
                 '</div>'
             ),
         )
+        # TODO : add static/img/spiner1 img for wating
         self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
