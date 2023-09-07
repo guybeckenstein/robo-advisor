@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Call the function for each element you want to target
     const classesArray = [
         'israel-stocks-indexes', 'israel-general-bonds-indexes', 'israel-government-bonds-indexes', 'us-stocks-indexes',
-        'us-bonds-indexes', 'us-commodity-indexes', 'israel-stocks', 'all',
+        'us-bonds-indexes', 'us-commodity-indexes', 'us-stocks', 'israel-stocks', 'all',
     ];
     classesArray.forEach((className) => {
         initializeCarousel(className);
