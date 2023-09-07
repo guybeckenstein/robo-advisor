@@ -238,7 +238,7 @@ svg {
 	fill: white;
 }
 
-.capital-market-disabled-button {
+.disabled-button {
     width: 32px;
     height: 32px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 1);
@@ -248,8 +248,20 @@ svg {
     opacity: 0.5;
 }
 
-.capital-market-carousel {
+.carousel {
     border: 0px none;
     background: none;
     position: absolute;
+}
+
+.iframe-link {
+    text-decoration: none;
+	color: black;
+    transition: 0.3s;
+	display: inline;
+}
+
+.iframe-link:hover {
+	color: rgb(50, 50, 250);
+	border-bottom: 1px solid rgb(50, 50, 250);
 }

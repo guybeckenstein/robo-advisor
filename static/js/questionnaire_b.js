@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   const imgElement = document.getElementById('capital-market-img');
-  const prevButton = document.querySelector('.capital-market-carousel.carousel-prev');
-  const nextButton = document.querySelector('.capital-market-carousel.carousel-next');
+  const prevButton = document.querySelector('.carousel.carousel-prev');
+  const nextButton = document.querySelector('.carousel.carousel-next');
   const prevButtonSvg = prevButton.querySelector('svg.switch-img');
   const nextButtonSvg = nextButton.querySelector('svg.switch-img');
   const images = [imgElement.getAttribute('data-second-graph'), imgElement.getAttribute('data-three-graph')];
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Initialize values
   prevButton.disabled = true; // Initialized value is disabled
-  prevButtonSvg.classList.add('capital-market-disabled-button');
+  prevButtonSvg.classList.add('disabled-button');
   prevButtonSvg.classList.remove('switch-img');
 
   prevButton.addEventListener('click', () => {
@@ -34,18 +34,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add or remove the opacity style based on the disabled state
     if (prevButton.disabled) {
-      prevButtonSvg.classList.add('capital-market-disabled-button');
+      prevButtonSvg.classList.add('disabled-button');
       prevButtonSvg.classList.remove('switch-img');
     } else {
-      prevButtonSvg.classList.remove('capital-market-disabled-button');
+      prevButtonSvg.classList.remove('disabled-button');
       prevButtonSvg.classList.add('switch-img');
     }
 
     if (nextButton.disabled) {
-      nextButtonSvg.classList.add('capital-market-disabled-button');
+      nextButtonSvg.classList.add('disabled-button');
       nextButtonSvg.classList.remove('switch-img');
     } else {
-      nextButtonSvg.classList.remove('capital-market-disabled-button');
+      nextButtonSvg.classList.remove('disabled-button');
       nextButtonSvg.classList.add('switch-img');
     }
   }

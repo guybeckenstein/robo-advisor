@@ -80,7 +80,7 @@ class ThreePortfolios:
     def main_plot(pct_change_table: pd.DataFrame) -> tuple[list[str, str, str], list[str, str, str]]:
         plt.xlabel("Date")
         plt.ylabel("Returns Percentage")
-        plt.title("Three Best Portfolios(BackTest)", fontsize=20, fontweight="bold")
+        plt.title("Three Best Portfolios (Backtesting)", fontsize=20, fontweight="bold")
         labels: list[str, str, str] = ['Safest', 'Sharpe', 'Max Returns']
         colors: list[str, str, str] = ['orange', 'green', 'red']
         labels_len: int = len(labels)

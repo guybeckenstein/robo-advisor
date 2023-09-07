@@ -2,6 +2,10 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block extra_js %}
+  <script src="{% static 'js/questionnaire_b.js' %}"></script>
+{% endblock %}
+
 {% block extrahead %}
   <style>
   .htmx-indicator {

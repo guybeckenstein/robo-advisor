@@ -2,7 +2,7 @@
     "sectorsList": {
         "result": [
             {
-                "name": "Israel stocks indexes",
+                "name": "Israel Stocks Indexes",
                 "taseSector": "מניות ישראל מדדים",
                 "stocks": [
                     1,
@@ -41,7 +41,7 @@
                 ]
             },
             {
-                "name": "Israel general bonds indexes",
+                "name": "Israel General Bonds Indexes",
                 "taseSector": "אגרות חוב כללי - ישראל מדדים",
                 "stocks": [
                     601,
@@ -57,7 +57,7 @@
                 ]
             },
             {
-                "name": "Israel government bonds indexes",
+                "name": "Israel Government Bonds Indexes",
                 "taseSector": "אגרות חוב ממשלתי - ישראל מדדים",
                 "stocks": [
                     700,
@@ -77,7 +77,7 @@
                 ]
             },
             {
-                "name": "US stocks indexes",
+                "name": "US Stocks Indexes",
                 "taseSector": "מניות - ארהב מדדים",
                 "stocks": [
                     "SPY",
@@ -109,7 +109,7 @@
                 ]
             },
             {
-                "name": "US bonds indexes",
+                "name": "US Bonds Indexes",
                 "taseSector": "אגרות חוב כללי - ארהב מדדדים",
                 "stocks": [
                     "LQD",
@@ -137,7 +137,7 @@
                 ]
             },
             {
-                "name": "US commodity indexes",
+                "name": "US Commodity Indexes",
                 "taseSector": "סחורות - ארהב מדדים",
                 "stocks": [
                     "GLD",
@@ -146,7 +146,7 @@
                 ]
             },
             {
-                "name": "Israel stocks",
+                "name": "Israel Stocks",
                 "stocks": [
                     1099456,
                     1125400,
@@ -543,7 +543,7 @@
                 "taseSector": "מניות ישראל"
             },
             {
-                "name": "US stocks",
+                "name": "US Stocks",
                 "stocks": [
                     "A",
                     "AA",

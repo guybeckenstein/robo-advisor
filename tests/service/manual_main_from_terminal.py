@@ -103,13 +103,13 @@ class TestManualMainFromTerminal:
 
     def test_top_stock_sector(self):
         filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
-        sector_name = "US stocks"
+        sector_name = "US Stocks"
         intersection = research.get_stocks_stats(sector_name)
         sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
             intersection, filters
         )
         data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name, research.labels)
-        prefix_str = 'top_stocks_'
+        prefix_str = 'Top Stocks - '
 
         if self.show_result:
             data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}.png')
