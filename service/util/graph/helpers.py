@@ -74,6 +74,8 @@ class MarkowitzAndGini:
                 )
 
 
+
+
 class ThreePortfolios:
 
     @staticmethod
@@ -95,7 +97,6 @@ class ThreePortfolios:
             )
         plt.legend(frameon=True, facecolor='white')  # Adjust legend background color
         return labels, colors
-
     @staticmethod
     def sub_plots(colors: list[str, str, str], labels: list[str, str, str], max_returns_portfolio, sharpe_portfolio,
                   min_variance_portfolio, sectors, three_best_sectors_weights):
@@ -134,8 +135,6 @@ class ThreePortfolios:
                     x=x, y=0.28, s=f"{fig_text_data['name'][i]} Portfolio:", fontsize=14,
                     fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
                 )
-
-
 class EstimatedYield:
     @staticmethod
     def get_stocks_as_str(sectors: list[Sector]) -> str:

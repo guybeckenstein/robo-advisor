@@ -102,7 +102,7 @@ def bb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
 
 
 def three_portfolios_graph(max_returns_portfolio, sharpe_portfolio, min_variance_portfolio, three_best_sectors_weights,
-                           sectors: list[Sector], pct_change_table: pd.DataFrame) -> plt:
+                           sectors: list[Sector], pct_change_table: pd.DataFrame) -> plt: # second graph
     plt.figure()  # Create a new plot instance
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     plt.style.use(SEABORN_STYLE)
@@ -117,7 +117,7 @@ def three_portfolios_graph(max_returns_portfolio, sharpe_portfolio, min_variance
     return plt
 
 
-def portfolio_distribution(yields) -> plt:
+def portfolio_distribution(yields) -> plt:  # first graph
     plt.figure()  # Creates a new plot instance
     plt.subplots(figsize=FIG_SIZE1)
     plt.subplots_adjust(bottom=BOTTOM)
