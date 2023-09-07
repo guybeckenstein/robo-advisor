@@ -31,7 +31,9 @@
         </tr>
         <tr>
           <th scope="row">
-           <a href="{{ overview }}" target="_blank">Overview</a>
+           <a href="{{ overview }}" class="iframe-link" target="_blank">
+             Overview
+           </a>
           </th>
           <td>
             <iframe src="{{ overview }}" width="100%" height="1000" frameborder="0"></iframe>
@@ -39,7 +41,9 @@
         </tr>
       <tr>
           <th scope="row">
-            <a href="{{ conversation }}" target="_blank">Conversation</a>
+            <a href="{{ conversation }}" class="iframe-link" target="_blank">
+              Conversation
+            </a>
           </th>
           <td>
             <iframe src="{{ conversation }}" width="100%" height="1000" frameborder="0" ></iframe>
@@ -47,7 +51,9 @@
         </tr>
       <tr>
           <th scope="row">
-            <a href="{{ more_statistics }}" target="_blank">More statistics</a>
+            <a href="{{ more_statistics }}" class="iframe-link" target="_blank">
+              More Statistics
+            </a>
           </th>
           <td>
             <iframe src="{{ more_statistics }}" width="100%" height="1000" frameborder="0"></iframe>
@@ -59,19 +65,18 @@
 </div>
 
 <script>
-function loadExternalSiteContent(url, targetId) {
+  function loadExternalSiteContent(url, targetId) {
     const targetElement = document.getElementById(targetId);
-
     fetch(url)
-        .then(response => response.text())
-        .then(html => {
-            targetElement.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error loading external site content:', error);
-        });
-}
+      .then(response => response.text())
+      .then(html => {
+        targetElement.innerHTML = html;
+      })
+      .catch(error => {
+        console.error('Error loading external site content:', error);
+      });
+  }
 
-// Call the function to load the conversation content
-loadExternalSiteContent('{{ conversation }}', 'conversation-content');
+  // Call the function to load the conversation content
+  loadExternalSiteContent('{{ conversation }}', 'conversation-content');
 </script>

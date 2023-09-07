@@ -8,7 +8,7 @@
     <a href="{% url 'profile_main' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
       <span class="fs-4">{{ user.first_name }}'s Dashboard</span>
     </a>
-    <hr>
+    <hr style="margin-top: 40px; color: rgb(222, 226, 230);">
     {% block profile_navbar %}
       <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">
@@ -47,7 +47,7 @@
         <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
           Account Details
         </h1>
-        <hr>
+        <div style="margin-top: 40px; margin-bottom: 30px; color: width: 100%; display: block; border-top: 1px solid rgb(222, 226, 230);"></div>
         {% crispy form %}
       </div>
     {% endblock %}

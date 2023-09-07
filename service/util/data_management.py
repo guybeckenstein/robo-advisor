@@ -144,7 +144,7 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
         stock_sectors = helpers.setStockSectors(stocks_symbols, sectors)
         filtered_stocks = []
         for i in range(len(stock_sectors)):
-            if stock_sectors[i] != "US commodity indexes":
+            if stock_sectors[i] != "US Commodity Indexes":
                 filtered_stocks.append(stocks_symbols[i])
             else:
                 closing_prices_table = closing_prices_table.drop(stocks_symbols[i], axis=1)
@@ -180,7 +180,7 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
     if settings.LEVEL_OF_RISK_LIST[risk_level - 1] == "low":
         # drop from stocks_symbols the stocks that are in US commodity indexes sector
         stocks_symbols = helpers.drop_stocks_from_specific_sector(
-            stocks_symbols, helpers.set_stock_sectors(stocks_symbols, sectors), sector_name="US commodity indexes"
+            stocks_symbols, helpers.set_stock_sectors(stocks_symbols, sectors), sector_name="US Commodity Indexes"
         )
 
     portfolio = Portfolio(

@@ -134,10 +134,10 @@ if __name__ == '__main__':
                 intersection, filters)
             data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name,
                                                  research.labels)
-            prefix_str = 'top_stocks_'
+            prefix_str = 'Top Stocks - '
 
             # show result
-            data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}.png')
+            data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name} (Graphs).png')
 
         elif selection == 7:  # plot stat model graph(scatter points)
 

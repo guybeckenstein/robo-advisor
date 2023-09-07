@@ -23,12 +23,12 @@
                     "OIL"
                 ],
                 "sectorsNames": [
-                    "Israel stocks indexes",
-                    "Israel general bonds indexes",
-                    "Israel government bonds indexes",
-                    "US stocks indexes",
-                    "US bonds indexes",
-                    "US commodity indexes"
+                    "Israel Stocks Indexes",
+                    "Israel General Bonds Indexes",
+                    "Israel Government Bonds Indexes",
+                    "US Stocks Indexes",
+                    "US Bonds Indexes",
+                    "US Commodity Indexes"
                 ],
                 "sectorsWeights": [
                     0.11328709422494139,
@@ -124,12 +124,12 @@
                     "GLD"
                 ],
                 "sectorsNames": [
-                    "Israel stocks indexes",
-                    "Israel general bonds indexes",
-                    "Israel government bonds indexes",
-                    "US stocks indexes",
-                    "US bonds indexes",
-                    "US commodity indexes"
+                    "Israel Stocks Indexes",
+                    "Israel General Bonds Indexes",
+                    "Israel Government Bonds Indexes",
+                    "US Stocks Indexes",
+                    "US Bonds Indexes",
+                    "US Commodity Indexes"
                 ],
                 "sectorsWeights": [
                     0.15886145094492798,
@@ -195,12 +195,12 @@
                     "OIL"
                 ],
                 "sectorsNames": [
-                    "Israel stocks",
-                    "Israel general bonds",
-                    "Israel government bonds",
-                    "US stocks",
-                    "US bonds",
-                    "US commodity"
+                    "Israel Stocks",
+                    "Israel General Bonds",
+                    "Israel Government Bonds",
+                    "US Stocks",
+                    "US Bonds",
+                    "US Commodity"
                 ],
                 "sectorsWeights": [
                     0.1523574543937997,
@@ -260,12 +260,12 @@
                     "OIL"
                 ],
                 "sectorsNames": [
-                    "Israel stocks indexes",
-                    "Israel general bonds indexes",
-                    "Israel government bonds indexes",
-                    "US stocks indexes",
-                    "US bonds indexes",
-                    "US commodity indexes"
+                    "Israel Stocks Indexes",
+                    "Israel General Bonds Indexes",
+                    "Israel Government Bonds Indexes",
+                    "US Stocks Indexes",
+                    "US Bonds Indexes",
+                    "US Commodity Indexes"
                 ],
                 "sectorsWeights": [
                     0.056608746509540196,

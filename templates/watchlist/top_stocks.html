@@ -2,6 +2,10 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block extra_js %}
+  <script src="{% static 'js/top_stocks.js' %}"></script>
+{% endblock %}
+
 {% block top_stocks_link %}
   <a href="{% url 'top_stocks' %}" class="nav-link active">
     Top Stocks
@@ -14,14 +18,26 @@
     <h1 style="font-size: 36px; text-align: center; font-weight: 800; padding: 10px 0;">
       Top stocks
     </h1>
-    <hr>
+    <div style="margin-top: 40px; margin-bottom: 30px; color: width: 100%; display: block; border-top: 1px solid rgb(222, 226, 230);"></div>
     {% if top_stocks %}
       {% for top_stock in top_stocks %}
-        <figure class="figure">
-          <img src="{% static top_stock.img_src %}" class="figure-img img-fluid rounded" alt="{{ top_stock.img_alt }}">
+        <figure class="figure position-relative">
+          <img src="{% static 'img/research/' %}Top Stocks - {{ top_stock.sector|urlencode }} (Graphs).png" id="{{ top_stock.class_name }}-img" class="figure-img img-fluid rounded" alt="{{ top_stock.sector }} - Sector Image (Graphs)">
           <figcaption class="figure-caption">
-            {{ top_stock.sector_name }}
+            {{ top_stock.sector }}
           </figcaption>
+          <div class="position-absolute top-50" style="height: 10%; width: 100%;">
+            <button type="button" class="carousel {{ top_stock.class_name }}-prev" aria-label="" style="left: 0;">
+              <svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">
+                <path d="M73.7 96a4 4 0 0 1-2.9-1.2L40 64l30.8-30.8a4 4 0 0 1 5.7 5.6L51.3 64l25.2 25.2a4 4 0 0 1-2.8 6.8z"></path>
+              </svg>
+            </button>
+            <button type="button" class="carousel {{ top_stock.class_name }}-next" aria-label="" style="right: 0;">
+              <svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">
+                <path d="M54.3 96a4 4 0 0 1-2.8-6.8L76.7 64 51.5 38.8a4 4 0 0 1 5.7-5.6L88 64 57.2 94.8a4 4 0 0 1-2.9 1.2z"></path>
+              </svg>
+            </button>
+          </div>
         </figure>
       {% endfor %}
     {% endif %}

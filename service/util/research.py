@@ -199,7 +199,7 @@ def download_data_for_research(num_of_years_history: int) -> None:
     # creates
 
 
-def get_stocks_stats(sector="US stocks indexes") -> list:
+def get_stocks_stats(sector: str = "US Stocks Indexes") -> list:
     """
     sector: str
         A single sector name
@@ -241,9 +241,9 @@ def save_top_stocks_img_to_db(top_stocks: list, intersection_data, sector_name: 
     data_management.plot_research_graphs(top_stocks, intersection_data, sector_name, labels)
     # Correct way to change value of a stock and its instance
     top_stock: TopStock = TopStock.objects.filter(sector_name=sector_name).first()  # Gets a stock from a certain sector
-    prefix_str = "Top Stocks"
+    prefix_str = "Top Stocks - "
     # top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str} {sector_name}.png'
-    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str} {sector_name} intersection.png'
+    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str} {sector_name} (Table).png'
     top_stock.save()
 
 
@@ -268,22 +268,21 @@ def make_intersection(all_data):
     return intersection
 
 
-def sort_good_stocks(all_data_lists, filters=None):
+def sort_good_stocks(all_data_lists, filters=None) -> tuple:
     """
     Filtering and organizing the selected stocks
     """
     if filters is not None:
         (minCap, maxCap, minAnnualReturns, maxAnnualVolatility, minAnnualSharpe, top_stocks_numbers,
          min_list_occurrences_intersections) = filters
-        minFiltersList = [0, 0, 1,
-                          minAnnualReturns, 0, minAnnualSharpe,
-                          minAnnualReturns / 12, 0, minAnnualSharpe / 12,
-                          minAnnualReturns, 0, minAnnualSharpe]
-
-        maxFiltersList = [12000, 50, 500,
-                          2000, maxAnnualVolatility, 500,
-                          200, maxAnnualVolatility / 12, 500,
-                          2000, maxAnnualVolatility, 500]
+        min_filters_list: list = [
+            0, 0, 1, minAnnualReturns, 0, minAnnualSharpe, minAnnualReturns / 12, 0, minAnnualSharpe / 12,
+            minAnnualReturns, 0, minAnnualSharpe
+        ]
+        max_filters_list: list = [
+            12000, 50, 500, 2000, maxAnnualVolatility, 500, 200, maxAnnualVolatility / 12, 500, 2000,
+            maxAnnualVolatility, 500
+        ]
     else:
         min_list_occurrences_intersections = 0.0
         top_stocks_numbers = 5000
@@ -292,7 +291,7 @@ def sort_good_stocks(all_data_lists, filters=None):
     all_data_sorted = []
     for i in range(len(all_data_lists)):
         if filters is not None:
-            filters = [minFiltersList[i], maxFiltersList[i]]
+            filters = [min_filters_list[i], max_filters_list[i]]
         all_data_sorted.append(get_sorted_list_by_parameters(all_data_lists[i],
                                                              ascending=ascending_list[i],
                                                              filters=filters,

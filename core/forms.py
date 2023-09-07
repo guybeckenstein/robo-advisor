@@ -110,31 +110,29 @@ class InvestmentPreferencesForm(forms.ModelForm):
                                                     f'<img src="{first_graph}">'
                                                     f'</div>')
         second_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/three_portfolios.png"
-        third_graphs = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
+        three_graphs = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
         self.fields['answer_3'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #3: What is your preferable graph?'
             '</span>'
             '<div class="capital-market-form-label capital-market-form-img position-relative">'
             f'<img class="capital-market-form-img" id="capital-market-img" data-second-graph="{second_graph}"'
-            f'data-third-graph="{third_graphs}" src="{second_graph}">'
+            f'data-third-graph="{three_graphs}" src="{second_graph}">'
             '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
-            '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
-            '<button type="button" class="capital-market-carousel carousel-prev" aria-label="" style="left: 0;">'
+            '<button type="button" class="carousel carousel-prev" aria-label="" style="left: 0;">'
             '<svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">'
             '<path d="M73.7 96a4 4 0 0 1-2.9-1.2L40 64l30.8-30.8a4 4 0 0 1 '
             '5.7 5.6L51.3 64l25.2 25.2a4 4 0 0 1-2.8 6.8z">'
             '</path>'
             '</svg>'
             '</button>'
-            '<button type="button" class="capital-market-carousel carousel-next" aria-label="" style="right: 0;">'
+            '<button type="button" class="carousel carousel-next" aria-label="" style="right: 0;">'
             '<svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">'
             '<path d="M54.3 96a4 4 0 0 1-2.8-6.8L76.7 64 51.5 38.8a4 4 0 0 1 '
             '5.7-5.6L88 64 57.2 94.8a4 4 0 0 1-2.9 1.2z">'
             '</path>'
             '</svg>'
             '</button>'
-            '</div>'
             '</div>'
         )
 

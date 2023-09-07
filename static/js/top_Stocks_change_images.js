@@ -1,56 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const imgElement = document.getElementById('capital-market-img');
-  const prevButton = document.querySelector('.capital-market-carousel.carousel-prev');
-  const nextButton = document.querySelector('.capital-market-carousel.carousel-next');
-  const prevButtonSvg = prevButton.querySelector('svg.switch-img');
-  const nextButtonSvg = nextButton.querySelector('svg.switch-img');
-  const images = [imgElement.getAttribute('data-second-graph'), imgElement.getAttribute('data-third-graph')];
-  let currentImageIndex = 0;
+    const image = document.getElementById('capital-market-swapped');
+    if (image) {
+        const images = [
+        'C:/src/github.com/guybeckenstein/robo-advisor/static/img/research/Top Stocks All intersection.png',
+        'C:/src/github.com/guybeckenstein/robo-advisor/static/img/research/top_stocks_US stocks.png'
+        ];
+        let imageId = 0;
 
-  // Initialize values
-  prevButton.disabled = true; // Initialized value is disabled
-  prevButtonSvg.classList.add('capital-market-disabled-button');
-  prevButtonSvg.classList.remove('switch-img');
-
-  prevButton.addEventListener('click', () => {
-    if (currentImageIndex > 0) {
-      currentImageIndex--;
-      updateImageDisplay();
+        setInterval(function() {
+            image.src = images[imageId % images.length];
+            imageId++;
+        }, 800);
     }
-  });
-
-  nextButton.addEventListener('click', () => {
-    if (currentImageIndex < images.length - 1) {
-      currentImageIndex++;
-      updateImageDisplay();
-    }
-  });
-
-  function updateImageDisplay() {
-    imgElement.src = images[currentImageIndex];
-
-    prevButton.disabled = currentImageIndex === 0;
-    nextButton.disabled = currentImageIndex === images.length - 1;
-
-    // Add or remove the opacity style based on the disabled state
-    if (prevButton.disabled) {
-      prevButtonSvg.classList.add('capital-market-disabled-button');
-      prevButtonSvg.classList.remove('switch-img');
-    } else {
-      prevButtonSvg.classList.remove('capital-market-disabled-button');
-      prevButtonSvg.classList.add('switch-img');
-    }
-
-    if (nextButton.disabled) {
-      nextButtonSvg.classList.add('capital-market-disabled-button');
-      nextButtonSvg.classList.remove('switch-img');
-    } else {
-      nextButtonSvg.classList.remove('capital-market-disabled-button');
-      nextButtonSvg.classList.add('switch-img');
-    }
-  }
-
-  // Initial image display
-  updateImageDisplay();
 });
-

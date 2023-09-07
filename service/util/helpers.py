@@ -72,7 +72,7 @@ def get_best_weights_column(stocks_symbols, sectors_list, optional_portfolios, p
     medium = np.dot(optional_portfolios[1].iloc[0][3:], pct_change_table.T)
     pct_change_table_low = pct_change_table.copy()
     for i in range(len(stock_sectors)):
-        if stock_sectors[i] == "US commodity indexes":
+        if stock_sectors[i] == "US Commodity Indexes":
             pct_change_table_low = pct_change_table_low.drop(stocks_symbols[i], axis=1)
     low = np.dot(optional_portfolios[0].iloc[0][3:], pct_change_table_low.T)
     return [low, medium, high]

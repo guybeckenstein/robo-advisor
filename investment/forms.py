@@ -5,11 +5,16 @@ from django.urls import reverse_lazy
 from investment.models import Investment
 
 
-class InvestmentForm(forms.ModelForm):
+class InvestmentsHistoryForm(forms.ModelForm):
     amount = forms.IntegerField(
         validators=[MinValueValidator(1)],
         label='Amount To Invest',
-        widget=forms.TextInput(attrs={'placeholder': 'Add Amount'})
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Add Amount',
+                'style': 'border-radius: 5px 0px 0px 5px; width: 830px;'
+            }
+        )
     )
 
     class Meta:
