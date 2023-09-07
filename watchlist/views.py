@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -98,8 +100,19 @@ def chosen_stock(request):
 @login_required
 def top_stocks(request):
     top_stocks: QuerySet[TopStock] = TopStock.objects.all()
+    top_stocks_list: list[dict] = list()
+    for stock in top_stocks:
+        if stock.sector_name == 'All':
+            continue
+        top_stocks_list.append(
+            {
+                'class_name': stock.sector_name.lower().replace(' ', '-'),
+                'sector': stock.sector_name,
+            }
+        )
+
     context = {
-        'top_stocks': top_stocks,
+        'top_stocks': top_stocks_list,
         'title': 'Top Stocks',
     }
     return render(request, 'watchlist/top_stocks.html', context=context)

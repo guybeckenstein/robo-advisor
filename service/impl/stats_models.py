@@ -82,17 +82,17 @@ class StatsModels:
                 num_portfolios *= 2
             # Calculate the percentage of stocks in the "Commodity" sector
             commodity_percentage = np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity indexes"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US Commodity Indexes"]
             )
             israeli_stocks_percentage = np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks indexes"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel Stocks Indexes"]
             ) + np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel Stocks"]
             )
             us_stocks_percentage = np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks indexes"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US Stocks Indexes"]
             ) + np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US Stocks"]
             )
 
             if commodity_percentage > max_percent_commodity:
@@ -163,16 +163,16 @@ class StatsModels:
                 num_portfolios *= 2
             # Calculate the percentage of stocks in the "Commodity" sector
             commodity_percentage = np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US commodity indexes"])
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US Commodity Indexes"])
             israeli_stocks_percentage = np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks indexes"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel Stocks Indexes"]
             ) + np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel stocks"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "Israel Stocks"]
             )
             us_stocks_percentage = np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks indexes"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US Stocks Indexes"]
             ) + np.sum(
-                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US stocks"]
+                [weights[i] for i in range(num_assets) if self._stock_sectors[i] == "US Stocks"]
             )
 
             if commodity_percentage > max_percent_commodity:

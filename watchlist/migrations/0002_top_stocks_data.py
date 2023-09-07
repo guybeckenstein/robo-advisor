@@ -17,15 +17,12 @@ class Migration(migrations.Migration):
                 team_member = TopStock(
                     id=i + 1,
                     sector_name=sector_name,
-                    img_src=f'{settings.RESEARCH_TOP_STOCKS_IMAGES}Top Stocks {sector_name}.png',
-                    img_alt=f'{sector_name} Sector Image',
+                    sector_as_variable=sector_name.lower().replace(' ', '-')
                 )
                 team_member.save()
             team_member = TopStock(
                 id=i + 1,
                 sector_name='All',
-                img_src=f'{settings.RESEARCH_TOP_STOCKS_IMAGES}Top Stocks All.png',
-                img_alt='All Sector Image',
             )
             team_member.save()
 

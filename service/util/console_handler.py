@@ -98,16 +98,16 @@ def get_collection_number(stocks: list[object]) -> str:
     return str(collection_number)
 
 
-def get_sector_name_from_user(sectors_list) -> int:
+def get_sector_name_from_user(sectors: list) -> int:
     print("Please select one of the following options:")
-    for i, option in enumerate(sectors_list):
+    for i, option in enumerate(sectors):
         print(f"{i + 1} - {option}")
         print()
 
-    choice = int(input("Enter your selection: "))
-    while choice < 1 or choice > len(sectors_list):
+    choice: int = int(input("Enter your selection: "))
+    while choice < 1 or choice > len(sectors):
         print("Please enter a valid option.")
-        choice = int(input("Enter your selection: "))
+        choice: int = int(input("Enter your selection: "))
 
     return choice
 

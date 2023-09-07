@@ -1,9 +1,8 @@
-from typing import Callable
-
 import pytest
 from django.db.models import QuerySet
 from django.test import Client
 
+from service.config import settings
 from tests import helper_methods
 
 from watchlist.models import TopStock
@@ -14,7 +13,7 @@ DASHBOARD: str = "'s Investments Page"
 
 @pytest.mark.django_db
 class TestTopStocks:
-    def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
+    def test_successful_get_request_as_logged_user(self, client: Client, user_factory: callable):
         response, user = helper_methods.successful_get_request_as_logged_user(
             client, user_factory, url_name='top_stocks', template_src='watchlist/top_stocks.html'
         )
@@ -24,7 +23,9 @@ class TestTopStocks:
         top_stocks: QuerySet[TopStock] = TopStock.objects.all()
         for top_stock in top_stocks:
             assert top_stock.sector_name in response.content.decode()
-            assert f"static{top_stock.img_src.split('static')[1].replace(' ', '%20')}" in response.content.decode()
+            base_dir: str = settings.RESEARCH_TOP_STOCKS_IMAGES
+            image_name: str = f"{base_dir}Top Stocks - {top_stock.sector_name}".split('research')[1][1:]
+            assert image_name.replace(' ', '%20') in response.content.decode()
 
     def test_redirection_get_request_as_guest(self, client: Client):
         helper_methods.redirection_get_request_as_guest(client, url_name='top_stocks')
