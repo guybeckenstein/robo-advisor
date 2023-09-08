@@ -10,15 +10,8 @@ from util import data_management, research
 from config import settings
 
 if __name__ == '__main__':
-    # keep collection 1 as it is
-    data_management.upload_file_to_google_drive(settings.USERS_JSON_NAME + "json")
+    data_management.upload_file_to_google_drive(settings.USERS_JSON_NAME + ".json", 2)
     data_management.update_all_tables(settings.NUM_OF_YEARS_HISTORY, is_daily_running=True)
-
-    # update from other reasons like chainging the number of years in history or changing the stocks collections
-    # data_management.update_all_tables(settings.NUM_OF_YEARS_HISTORY, is_daily_running=False)
-
-    # only the stocks weight and stocks symbols
-    # call save graphs or save directly or add txt file with last updated images
 
 
 

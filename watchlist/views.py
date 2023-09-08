@@ -102,8 +102,6 @@ def top_stocks(request):
     top_stocks: QuerySet[TopStock] = TopStock.objects.all()
     top_stocks_list: list[dict] = list()
     for stock in top_stocks:
-        if stock.sector_name == 'All':
-            continue
         top_stocks_list.append(
             {
                 'class_name': stock.sector_name.lower().replace(' ', '-'),

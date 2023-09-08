@@ -2,9 +2,9 @@
 import pandas as pd
 import sys
 import os
+import subprocess
 
 from service.util import helpers
-
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(project_root)
 
@@ -14,12 +14,21 @@ from config import settings
 
 if __name__ == '__main__':
 
+    # Specify the path to your batch file
+    # batch_file_path = rf'{project_root}/../get_data_from_google_drive.bat'
+
     data_management.show_main_menu()
     selection = data_management.get_menu_choice()
     exit_loop_operation = 8
     user_id: int = 1
     user_name: int = 'yarden'  # data_management.get_name()
     data_changed = False
+
+
+
+
+
+
     if settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
         data_management.update_files_from_google_drive()
 
@@ -160,7 +169,9 @@ if __name__ == '__main__':
                 settings.GRAPH_IMAGES + sub_folder + 'all_options' + '.png')
 
         elif selection == 9:  # dynamic commands for programmers
-            all_data_tuple, intersection = research.get_all_best_stocks(settings.RESEARCH_FILTERS)
+            # data_management.upload_file_to_google_drive(settings.DATASET_LOCATION + "stocks.json", 2)
+            # all_data_tuple, intersection, unified_intersection_data_tuple = research.get_all_best_stocks(settings.RESEARCH_FILTERS)
+            # research.upload_top_stocks_to_google_drive()
             data_management.update_files_from_google_drive()
             # helpers.AwsInstance().connect_to_s3()
 

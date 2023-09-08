@@ -61,9 +61,9 @@ def update_closing_prices_tables(stocks_symbols, num_of_years_history, path, is_
         helpers.convert_data_to_tables(path, settings.CLOSING_PRICES_FILE_NAME,
                                        stocks_symbols,
                                        num_of_years_history, save_to_csv=True)
-        google_drive_instance.upload_file(path + settings.CLOSING_PRICES_FILE_NAME + ".csv")
+        upload_file_to_google_drive(path + settings.CLOSING_PRICES_FILE_NAME + ".csv", 3)
 
-        google_drive_instance.upload_file(path + "lastUpdatedClosingPrice.txt", 3)
+        upload_file_to_google_drive(path + "lastUpdatedClosingPrice.txt", 3)
         with open(path + "lastUpdatedClosingPrice.txt", "w") as file:
             file.write(formatted_date_today)
 
@@ -99,7 +99,7 @@ def update_data_frame_tables(collection_json_data, path,
                 path=path, models_data=models_data, collection_num=collection_num
             )
 
-        google_drive_instance.upload_file(path + "lastUpdatedDftables.txt", 3)
+        upload_file_to_google_drive(path + "lastUpdatedDftables.txt", 3)
         with open(path + "lastUpdatedDftables.txt", "w") as file:
             file.write(formatted_date_today)
 
@@ -165,7 +165,7 @@ def update_specific_data_frame_table(is_machine_learning, model_name, stocks_sym
         max_percent_stocks=max_percent_stocks,
     )
     df: pd.DataFrame = stats_models.df
-    google_drive_instance.upload_file(locationForSaving + model_name + '_df_' + risk_level + '.csv')
+    upload_file_to_google_drive(locationForSaving + model_name + '_df_' + risk_level + '.csv', 4)
     df.to_csv(locationForSaving + model_name + '_df_' + risk_level + '.csv')
     print(f'Updated DataFrame -> (ML - {is_machine_learning}; Model Name - {model_name}; Risk Level - {risk_level})')
 
@@ -304,7 +304,7 @@ def get_closing_prices_table(path) -> pd.DataFrame:
     else:
         closing_prices_table: pd.DataFrame = pd.read_csv(filepath_or_buffer=f'{path}closing_prices.csv', index_col=0)
     # Check if there's a key with a numeric value in the table
-    numeric_keys: list[str] = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
+        numeric_keys: list[str] = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
     if len(numeric_keys) > 0:
         closing_prices_table = closing_prices_table.iloc[1:]
     else:
@@ -505,9 +505,13 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
 
 
 def plot_research_graphs(data_tuple_list: list, intersection_data, sector_name: str, labels: list[str]) -> None:
-    prefix_str = "Top Stocks"
-    path = f'{settings.RESEARCH_IMAGES}{prefix_str} {sector_name}'
-    draw_table._draw_research_table(path, data_tuple_list, intersection_data, labels)
+    prefix_str = "Top Stocks - "
+    path = f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}'
+    draw_table._draw_research_table(path, intersection_data, labels)
+
+    colors = ["lightgray", "red", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green",
+              "green", "green"]
+    draw_table._draw_research_table(path, data_tuple_list, labels, False, "(Graphs)",  colors)
 
 
 def save_user_portfolio(user: User) -> None:
@@ -929,7 +933,7 @@ def get_score_by_answer_from_user(string_to_show: str) -> int:
 
 
 def upload_file_to_google_drive(file_path, num_of_elements):
-    google_drive_instance.upload_file(helpers.get_sorted_path(file_path, num_of_elements), num_of_elements)
+    google_drive_instance.upload_file(file_path, helpers.get_sorted_path(file_path, num_of_elements))
 
 
 def get_file_from_google_drive(file_path):

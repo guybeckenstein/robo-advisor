@@ -27,6 +27,7 @@ labels = [
 ]
 ascending_list = [False, True, False, False, True, False, False, True, False, False, True, False]
 row_selected = [0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, 0]
+groups: list = ["all", "annual_return", "volatility", "sharpe"]
 
 
 def save_user_specific_stock(stock: str, operation: str, plt_instance: plt) -> None:
@@ -237,16 +238,6 @@ def save_stocks_intersection_to_csv():
     unified_intersection_data.to_csv(settings.RESEARCH_LOCATION + 'unified_intersection.csv')
 
 
-def save_top_stocks_img_to_db(top_stocks: list, intersection_data, sector_name: str):
-    data_management.plot_research_graphs(top_stocks, intersection_data, sector_name, labels)
-    # Correct way to change value of a stock and its instance
-    top_stock: TopStock = TopStock.objects.filter(sector_name=sector_name).first()  # Gets a stock from a certain sector
-    prefix_str = "Top Stocks - "
-    # top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str} {sector_name}.png'
-    top_stock.img_src = f'{settings.RESEARCH_TOP_STOCKS_IMAGES}{prefix_str} {sector_name} (Table).png'
-    top_stock.save()
-
-
 def get_sorted_list_by_parameters(data_frame, ascending=False, filters=None,
                                   top_stocks_numbers=5000) -> list:
     """
@@ -260,12 +251,52 @@ def get_sorted_list_by_parameters(data_frame, ascending=False, filters=None,
     return data_frame.sort_values(ascending=ascending).head(top_stocks_numbers)
 
 
-def make_intersection(all_data):
-    intersection = pd.concat(all_data, axis=1, join='inner')
+def make_intersection(data, df_columns=labels):
+    intersection = pd.concat(data, axis=1, join='inner')
     # Rename columns using the labels list
-    intersection.columns = labels
+    intersection.columns = df_columns
 
     return intersection
+
+
+def make_intersection_by_group(all_data_sorted, group_name, min_list_occurrences_intersections,
+                               intersection_without_filters):
+    if group_name == groups[0]:
+        data_sorted = all_data_sorted
+        intersection_with_filters = make_intersection(all_data_sorted)
+        df_columns = labels
+    elif group_name == groups[1]:  # annual
+        data_sorted = [all_data_sorted[0], all_data_sorted[3], all_data_sorted[6], all_data_sorted[9]]
+        df_columns = [labels[0], labels[3], labels[6], labels[9]]
+        intersection_with_filters = make_intersection(data_sorted, df_columns)
+    elif group_name == groups[2]:  # volatility
+        data_sorted = [all_data_sorted[1], all_data_sorted[4], all_data_sorted[7], all_data_sorted[10]]
+        df_columns = [labels[1], labels[4], labels[7], labels[10]]
+        intersection_with_filters = make_intersection(data_sorted, df_columns)
+    elif group_name == groups[3]:  # sharpe
+        data_sorted = [all_data_sorted[2], all_data_sorted[5], all_data_sorted[8], all_data_sorted[11]]
+        df_columns = [labels[2], labels[5], labels[8], labels[11]]
+        intersection_with_filters = make_intersection(data_sorted, df_columns)
+
+    intersection_without_filters = intersection_without_filters[df_columns]
+
+    if intersection_with_filters.empty:
+        # Flatten all the lists into a single list of indexes
+        all_indexes = list(set(item for sublist in data_sorted for item in sublist.index))
+        # Calculate the minimum number of lists that an index should appear in
+        min_list_occurrences = int(min_list_occurrences_intersections * len(data_sorted))
+        # Filter out indexes that appear in at least min_occurrences lists
+        # Create a new DataFrame using the desired indexes
+        num_of_lists = len(data_sorted)
+        while num_of_lists >= min_list_occurrences:
+            relevant_indexes = [index for index in all_indexes if
+                                sum(index in sublist.index for sublist in data_sorted) >= num_of_lists]
+            intersection_with_filters = intersection_without_filters.loc[relevant_indexes]
+            if not intersection_with_filters.empty:
+                break
+            num_of_lists -= 1
+
+    return intersection_with_filters
 
 
 def sort_good_stocks(all_data_lists, filters=None) -> tuple:
@@ -276,12 +307,12 @@ def sort_good_stocks(all_data_lists, filters=None) -> tuple:
         (minCap, maxCap, minAnnualReturns, maxAnnualVolatility, minAnnualSharpe, top_stocks_numbers,
          min_list_occurrences_intersections) = filters
         min_filters_list: list = [
-            0, 0, 1, minAnnualReturns, 0, minAnnualSharpe, minAnnualReturns / 12, 0, minAnnualSharpe / 12,
-            minAnnualReturns, 0, minAnnualSharpe
+            0, 0, 0.5, minAnnualReturns, -10, minAnnualSharpe, minAnnualReturns / 12, -10, minAnnualSharpe,
+            minAnnualReturns, -10, minAnnualSharpe
         ]
         max_filters_list: list = [
-            12000, 50, 500, 2000, maxAnnualVolatility, 500, 200, maxAnnualVolatility / 12, 500, 2000,
-            maxAnnualVolatility, 500
+            2000, 50, 100, 200, maxAnnualVolatility, 30, 200, maxAnnualVolatility / 12, 30, 200,
+            maxAnnualVolatility, 30
         ]
     else:
         min_list_occurrences_intersections = 0.0
@@ -289,6 +320,7 @@ def sort_good_stocks(all_data_lists, filters=None) -> tuple:
 
     # sort values and filters
     all_data_sorted = []
+    intersection_groups_list = []
     for i in range(len(all_data_lists)):
         if filters is not None:
             filters = [min_filters_list[i], max_filters_list[i]]
@@ -298,24 +330,23 @@ def sort_good_stocks(all_data_lists, filters=None) -> tuple:
                                                              top_stocks_numbers=top_stocks_numbers))
 
     intersection_without_filters = make_intersection(all_data_lists)
-    intersection_with_filters = make_intersection(all_data_sorted)
-    if intersection_with_filters.empty:
-        # Flatten all the lists into a single list of indexes
-        all_indexes = list(set(item for sublist in all_data_sorted for item in sublist.index))
-        # Calculate the minimum number of lists that an index should appear in
-        min_list_occurrences = int(min_list_occurrences_intersections * len(all_data_sorted))
-        # Filter out indexes that appear in at least min_occurrences lists
-        # Create a new DataFrame using the desired indexes
-        num_of_lists = len(all_data_sorted)
-        while num_of_lists >= min_list_occurrences:
-            relevant_indexes = [index for index in all_indexes if
-                                sum(index in sublist.index for sublist in all_data_sorted) >= num_of_lists]
-            intersection_with_filters = intersection_without_filters.loc[relevant_indexes]
-            if not intersection_with_filters.empty:
-                break
-            num_of_lists -= 1
+    # makes intersections per groups
+    for group_name in groups:
+        intersection_groups_list.append(make_intersection_by_group(all_data_sorted, group_name,
+                                                                   min_list_occurrences_intersections,
+                                                                   intersection_without_filters))
 
-    return all_data_sorted, intersection_with_filters, intersection_without_filters
+    return intersection_groups_list[1:], intersection_groups_list[0], intersection_without_filters
+
+
+def make_union_of_intersection_groups(data_tuple_list):
+    annual_returns_intersection_data = data_tuple_list[0].sort_values(by=labels[6], ascending=ascending_list[6]).head(3)
+    volatility_intersection_data = data_tuple_list[1].sort_values(by=labels[7], ascending=ascending_list[7]).head(3)
+    sharpe_intersection_data = data_tuple_list[2].sort_values(by=labels[8], ascending=ascending_list[8]).head(3)
+    resulting_dataframe = pd.concat(
+        [annual_returns_intersection_data, volatility_intersection_data, sharpe_intersection_data])
+
+    return resulting_dataframe
 
 
 def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval="Y"):
@@ -324,7 +355,7 @@ def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval=
     """
     if is_forecast_mode:
         returns_annual_forecast = (((1 + data_pct_change.mean()) ** 254) - 1) * 100
-        volatility_annual_forecast = (data_pct_change.std() * np.sqrt(254)) * 100
+        volatility_annual_forecast = data_pct_change.std() * np.sqrt(254) * 100
         sharpe_annual_forecast = returns_annual_forecast / volatility_annual_forecast
 
         return returns_annual_forecast, volatility_annual_forecast, sharpe_annual_forecast
@@ -332,7 +363,7 @@ def calculate_stats_of_stocks(data_pct_change, is_forecast_mode=False, interval=
 
         if interval == "TOTAL":
             profit_return = ((data_pct_change + 1).prod() - 1) * 100
-            volatility = data_pct_change.std() * np.sqrt(254) * 100
+            volatility = data_pct_change.std() * 100
             sharpe = profit_return / volatility
         else:
             profit_return = ((data_pct_change + 1).resample(interval).prod() - 1) * 100
@@ -354,18 +385,36 @@ def get_all_best_stocks(filters):
     sectors_list = helpers.get_sectors_names_list()
     all_stats_data_list_of_lists = []
     unified_intersection_data = pd.DataFrame()
+    unified_intersection_data_tuple = pd.DataFrame()
+    annual_returns_intersection_data = pd.DataFrame()
+    volatility_intersection_data = pd.DataFrame()
+    sharpe_intersection_data = pd.DataFrame()
+
     for sector_name in sectors_list:
         all_data_lists = get_stocks_stats(sector_name)
+        all_stats_data_list_of_lists.append(all_data_lists)
+
         sorted_data_tuple, intersection_with_filters, intersection_without_filters = sort_good_stocks(
             all_data_lists, filters)
-        save_top_stocks_img_to_db(sorted_data_tuple, intersection_with_filters, sector_name)
-        all_stats_data_list_of_lists.append(all_data_lists)
+
         # Concatenate the current DataFrame with the unified DataFrame along columns
+        annual_returns_intersection_data = pd.concat([annual_returns_intersection_data, sorted_data_tuple[0]])
+        volatility_intersection_data = pd.concat([volatility_intersection_data, sorted_data_tuple[1]])
+        sharpe_intersection_data = pd.concat([sharpe_intersection_data, sorted_data_tuple[2]])
+
+        sorted_data_tuple = make_union_of_intersection_groups(sorted_data_tuple)
+        data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name, labels)
+
         unified_intersection_data = pd.concat([unified_intersection_data, intersection_with_filters])
+        unified_intersection_data_tuple = pd.concat([unified_intersection_data_tuple, sorted_data_tuple])
 
-    save_top_stocks_img_to_db(all_stats_data_list_of_lists, unified_intersection_data, "All")
+    sorted_data_tuple = make_union_of_intersection_groups([annual_returns_intersection_data, volatility_intersection_data,
+                                                           sharpe_intersection_data])
 
-    return all_stats_data_list_of_lists, unified_intersection_data
+    data_management.plot_research_graphs(sorted_data_tuple, unified_intersection_data, "All", labels)
+
+    return all_stats_data_list_of_lists, unified_intersection_data, [annual_returns_intersection_data, volatility_intersection_data,
+                                                           sharpe_intersection_data]
 
 
 def get_stocks_data_for_research_by_group(sector_name: str) -> pd.DataFrame:
@@ -407,8 +456,53 @@ def get_top_stocks_by_label_and_sector(sector_name: str = "unified", label: str 
     return intersection_table.sort_values(by=label, ascending=ascending).head(top_stocks_numbers)
 
 
-def update_collections_file():  # update stocks.json file with the new stocks according to the research
-    return None
+def update_collections_file(all_stats_data_list_of_lists, unified_intersection_data, unified_intersection_data_tuple):  # update stocks.json file with the new stocks according to the research
+    # get best of bests
+    best_stocks_intersections = []
+    for i in range(len(labels)):
+        best_stocks_intersections.append(list(unified_intersection_data.sort_values(by=labels[i], ascending=ascending_list[i]).head(10).index))
+    # get intersection stocks
+    best_forecast_return_intersection = list(unified_intersection_data_tuple[0].sort_values(by=labels[9], ascending=ascending_list[9]).head(10).index)
+    safest_stocks_intersection = list(unified_intersection_data_tuple[1].sort_values(by=labels[10], ascending=ascending_list[10]).head(10).index)
+    sharpe_stocks_intersection = list(
+        unified_intersection_data_tuple[2].sort_values(by=labels[11], ascending=ascending_list[11]).head(10).index)
+
+    # get best of specifc value
+    all_stats_data_list_of_lists[0][4].sort_values(ascending=False).head(3).index
+    top_indexes_annual_return = []
+    top_indexes_annual_sharpe = []
+    top_indexes_monthly_return = []
+    top_stocks_annual_return = []
+    top_stocks_annual_sharpe = []
+    top_stocks_monthly_return = []
+    top_stocks_volatility = []
+    intersection_stocks = []
+    for i, sub_list in enumerate(all_stats_data_list_of_lists[0:6]):
+        top_indexes_annual_return += list(sub_list[3].sort_values(ascending=ascending_list[4]).head(2).index)
+        top_indexes_annual_sharpe += list(sub_list[5].sort_values(ascending=ascending_list[5]).head(2).index)
+        top_indexes_monthly_return += list(sub_list[6].sort_values(ascending=ascending_list[6]).head(2).index)
+
+    for i, sub_list in enumerate(all_stats_data_list_of_lists[6:8]):
+        top_stocks_annual_return += list(sub_list[3].sort_values(ascending=ascending_list[3]).head(30).index)
+        top_stocks_annual_sharpe += list(sub_list[5].sort_values(ascending=ascending_list[5]).head(30).index)
+        top_stocks_volatility += list(sub_list[4].sort_values(ascending=ascending_list[4]).head(30).index)
+        top_stocks_monthly_return += list(sub_list[6].sort_values(ascending=ascending_list[6]).index)
+
+    # save to collections file
+        # Find the intersection of the four lists
+    intersection_stocks = list(set((top_stocks_annual_return + top_stocks_monthly_return + top_stocks_annual_sharpe)))
+    intersection_stocks = list(set(intersection_stocks) & set(top_stocks_volatility))
+    collections_file = helpers.get_json_data(settings.DATASET_LOCATION + "stocks")
+
+    collections_file['collections']['2'][0]["stocksSymbols"] = list(set(top_indexes_annual_return +top_indexes_annual_sharpe))
+    # collections_file['collections']['3'][0]["stocksSymbols"] = list(set(top_indexes_monthly_return + top_indexes_annual_sharpe))
+    # collections_file['collections']['4'][0]["stocksSymbols"] = list(unified_intersection_data.sort_values(by=labels[3], ascending=False).head(5).sort_values(by=labels[4], ascending=True).keys().values)
+
+    # save collection file
+    helpers.save_json_data(settings.DATASET_LOCATION + "stocks", collections_file)
+
+    # upload to google drive
+    data_management.upload_file_to_google_drive(settings.DATASET_LOCATION + "stocks.json", 2)
 
 
 def update_stocks_names_tables():  # update stocks tables with the new stocks according to the research
@@ -431,3 +525,13 @@ def update_stocks_names_tables():  # update stocks tables with the new stocks ac
     helpers.save_json_data(settings.SECTORS_JSON_NAME, sectors_json_file)
     # Save the updated all_basics_data DataFrame back to CSV
     all_basics_data.to_csv(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv", index=False)
+
+
+def upload_top_stocks_to_google_drive():
+    # update top stocks images
+    sectors_names = helpers.get_sectors_names_list()
+    sectors_names.append("All")
+    prefix_str = 'Top Stocks - '
+    for sector_name in sectors_names:
+        data_management.upload_file_to_google_drive(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name} (Graphs).png', 2)
+        data_management.upload_file_to_google_drive(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name} (Table).png', 2)

@@ -1,7 +1,9 @@
 import os
 import textwrap
 import platform
+import pandas as pd
 
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 from service.config import settings
@@ -92,8 +94,12 @@ def _calculate_cumulative_col_offset(col_idx: int) -> int:
     return res_sum
 
 
-def _draw_research_table(path, data_tuple_list, intersection_data, labels):
-    intersection_data = intersection_data.sort_values(by="Total Return Percentage", ascending=False).head(10)
+def _draw_research_table(path, intersection_data, labels, sort_by_option=True, ending_file_name="(Table)", colors=None):
+    if sort_by_option:
+        intersection_data = intersection_data.sort_values(by=labels[0], ascending=False).head(10)
+    if colors is None:
+        colors = ["lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray",
+                  "lightgray", "lightgray", "lightgray", "lightgray", "lightgray"]
     num_of_stocks_showing = 10
     descriptions = helpers.get_stocks_descriptions(intersection_data.index.values)[1:]
 
@@ -105,7 +111,7 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
     CELL_HEIGHT = 90
     TABLE_PADDING = 10
     # Define font sizes for titles and values
-    TITLE_FONT_SIZE = 18
+    TITLE_FONT_SIZE = 20
     VALUE_FONT_SIZE = 22
     # Load title and value fonts with the specified sizes
     title_font = ImageFont.truetype(font=FONTS[2], size=TITLE_FONT_SIZE)
@@ -128,7 +134,7 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
         y0 = 0
         x1 = (col_idx + 1) * CELL_WIDTH + TABLE_PADDING
         y1 = CELL_HEIGHT
-        draw.rectangle([(x0, y0), (x1, y1)], outline="black", fill="lightgray")
+        draw.rectangle([(x0, y0), (x1, y1)], outline="black", fill=colors[col_idx])
 
         # Wrap header text and calculate height
         lines = textwrap.wrap(header, width=10)  # Adjust the width as needed
@@ -142,9 +148,7 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
 
     # Draw data rows
     for row_idx in range(num_rows - 1):
-        # stock_name = intersection_data.index[row_idx]
         y0 = (row_idx + 1) * CELL_HEIGHT + TABLE_PADDING
-        # x0_stock = 0  # x-coordinate for the "Stock" column
 
         for col_idx, col_name in enumerate(column_headers):
             if col_name == "Stock":
@@ -156,10 +160,16 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
             x1 = (col_idx + 1) * CELL_WIDTH + TABLE_PADDING
 
             # Wrap text and calculate height
+            if str(value) == 'nan':
+                value = ""
             lines = textwrap.wrap(str(value), width=15)  # Adjust the width as needed
             cell_height = len(lines) * (VALUE_FONT_SIZE + 4)  # Adjust the line spacing
 
-            draw.rectangle([(x0, y0), (x1, y1 + cell_height)], outline="black", fill="white")
+            #cell_height = 0
+            if str(value) != 'nan':
+                draw.rectangle([(x0, y0), (x1, y1 + cell_height)], outline="black", fill=colors[col_idx])
+            else:
+                draw.rectangle([(x0, y0), (x1, y1 + cell_height)], outline="black", fill="white")
 
             # Calculate y-coordinate for multiline text
             y_text = y0 + (cell_height - len(lines) * (VALUE_FONT_SIZE + 4)) / 2  # Adjusts y-coordinate for centering
@@ -169,6 +179,17 @@ def _draw_research_table(path, data_tuple_list, intersection_data, labels):
             draw.multiline_text(
                 (x0 + 5, y_text), multiline_text, font=value_font, fill="black", align="center", spacing=4
             )
-    # Save the image
-    image.save(f"{path} intersection.png")
-    # TODO image.save(f"{path}.png")
+    # Save the image Table
+    image.save(f"{path} {ending_file_name}" + ".png")
+
+def _draw_research_graph(path, data_tuple_list, labels):
+    annual_returns_intersection_data = data_tuple_list[0].sort_values(by=labels[3], ascending=True).head(3)
+    annual_returns_descriptions = helpers.get_stocks_descriptions(annual_returns_intersection_data.index.values)[1:]
+    volatility_intersection_data = data_tuple_list[1].sort_values(by=labels[7], ascending=False).head(3)
+    volatility_descriptions = helpers.get_stocks_descriptions(volatility_intersection_data.index.values)[1:]
+    sharpe_intersection_data = data_tuple_list[2].sort_values(by=labels[11], ascending=False).head(3)
+    sharpe_descriptions = helpers.get_stocks_descriptions(sharpe_intersection_data.index.values)[1:]
+    resulting_dataframe = pd.concat([annual_returns_intersection_data, volatility_intersection_data, sharpe_intersection_data])
+    colors = ["lightgray", "red", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green"]
+    _draw_research_table(path, resulting_dataframe, labels, sort_by_option=False, ending_file_name="(Graphs)", colors=colors)
+

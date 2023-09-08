@@ -41,7 +41,7 @@ def get_machine_learning_option() -> int:
 
 def get_machine_learning_mdoel() -> int:
     print("choose machine learning model:\n 1 - Linear Regression\n"
-          " 2 - ARIMA\n 3 - Gradient Boosting Regressor\n 4- Prophet\n")
+          " 2 - ARIMA\n 3 - Lstm\n 4- Prophet\n")
     model_option = int(input())
     while model_option <= 0 or model_option >= 5:
         print("Please enter option between 1 to 4")

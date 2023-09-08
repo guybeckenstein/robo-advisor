@@ -45,26 +45,32 @@ class GoogleDriveInstance:
                 request = self.service.files().get_media(fileId=file['id'])
                 image_data = request.execute()
 
-    def upload_file(self, file_path, num_of_elements=2):
-        folder_id = MAIN_FOLDER_ID
-        file_name = file_path.split('/')[-1]
-
-        # Check if a file with the same name exists in the folder
-        existing_file_id = self.find_file_id_by_path_name(file_path)
-
-        if existing_file_id:
-            self.service.files().delete(fileId=existing_file_id).execute()
-
+    def upload_file(self, full_file_path, short_file_path):
+        folder_id = self.find_file_id_by_path_name(short_file_path, folder_type=True)
+        file_name = short_file_path.split('/')[-1]
+        media = MediaFileUpload(full_file_path, resumable=True)
         file_metadata = {
             'name': file_name,
-            'parents': [folder_id]
         }
 
-        # Upload the file
-        media = MediaFileUpload(file_path, resumable=True)
-        file = self.service.files().create(body=file_metadata, media_body=media).execute()
+        # Check if a file with the same name exists in the folder
+        existing_file_id = self.find_file_id_by_path_name(short_file_path)
 
-    def find_file_id_by_path_name(self, file_path):
+        if existing_file_id:
+
+            self.service.files().update(
+                body=file_metadata, media_body=media, fileId=existing_file_id,
+                addParents=folder_id  # Add the new parent folder
+            ).execute()
+        else:
+            # Create the file and specify the parent folder using addParents
+            file_metadata['parents'] = [folder_id]
+            file = self.service.files().create(
+                body=file_metadata, media_body=media, fields='id',
+                supportsAllDrives=True
+            ).execute()
+
+    def find_file_id_by_path_name(self, file_path, folder_type=False):
         parent_folder_id = MAIN_FOLDER_ID
         folders = file_path.split('/')
         # Iterate through the folder names and find the corresponding folder IDs
@@ -80,6 +86,9 @@ class GoogleDriveInstance:
             # Update the parent_folder_id with the ID of the found folder
             parent_folder_id = folder_items[0]['id']
         # Check if a file with the same name exists in the folder
+
+        if folder_type:
+            return parent_folder_id
 
         # Search for the file by its name within the parent folder
         file_name = folders[-1]
