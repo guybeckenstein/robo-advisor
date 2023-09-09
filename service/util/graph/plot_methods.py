@@ -169,12 +169,12 @@ def portfolio_distribution(yields) -> plt:  # first graph
 
             # Content figtext
             plt.figtext(
-                x=x, y=y_content, s=s_content, bbox=bbox, fontsize=content_fontsize, style=STYLE, ha=HA, va=VA,
+                x=x, y=y_content, s=s_content, bbox=bbox, fontsize=content_fontsize, style=STYLE, ha=HA, multialignment='left', va=VA,
                 fontname=FONT_NAME, wrap=WRAP,
             )
             # Header figtext
             plt.figtext(
-                x=x, y=y_header, s=f'{s_params[i]} Risk', fontsize=header_fontsize, fontweight=FONT_WEIGHT,
+                x=x, y=y_header, s=f'{s_params[i]}', fontsize=header_fontsize, fontweight=FONT_WEIGHT,
                 ha=HA, fontname=FONT_NAME, wrap=WRAP,
             )
 

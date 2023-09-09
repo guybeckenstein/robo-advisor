@@ -128,7 +128,7 @@ class ThreePortfolios:
                 )
                 bbox: dict = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}
                 plt.figtext(
-                    x=x, y=0.15, s=s, bbox=bbox, fontsize=10, style=STYLE, ha=HA, va=VA,
+                    x=x, y=0.15, s=s, bbox=bbox, fontsize=10, style=STYLE, ha=HA, multialignment='left', va=VA,
                     fontname=FONT_NAME, wrap=WRAP,
                 )
                 plt.figtext(
