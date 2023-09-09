@@ -63,7 +63,7 @@ class MarkowitzAndGini:
                       f"Sharpe Ratio: {str(round(portfolios[i][2], 2))}\n"
                       "     Weights\n"
                       f"{stocks[i]}",
-                    bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=10, style=STYLE, ha=HA, va=VA,
+                    bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=10, style=STYLE, ha=HA, multialignment='left', va=VA,
                     fontname=FONT_NAME,
                     wrap=WRAP,
                 )

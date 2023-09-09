@@ -214,7 +214,7 @@ def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float
               f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
               "    Weights\n"  # Label text without underlining
               f"{stocks_str.strip()}",
-            bbox=dict(facecolor="0.8", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, va=VA, fontname=FONT_NAME,
+            bbox=dict(facecolor="0.8", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, multialignment='left', va=VA, fontname=FONT_NAME,
             wrap=WRAP,
         )
     return plt
