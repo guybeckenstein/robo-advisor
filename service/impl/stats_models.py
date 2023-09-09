@@ -121,13 +121,13 @@ class StatsModels:
 
         # extend original dictionary to accommodate each ticker and weight in the portfolio
         for counter, symbol in enumerate(stocks_names):
-            portfolio[symbol + " Weight"] = [Weight[counter] for Weight in stock_weights]
+            portfolio[f"{symbol} Weight"] = [Weight[counter] for Weight in stock_weights]
 
         # make a nice dataframe of the extended dictionary
         df = pd.DataFrame(portfolio)
 
         # get better labels for desired arrangement of columns
-        column_order = ["Returns", "Volatility", "Sharpe Ratio"] + [stock + " Weight" for stock in stocks_names]
+        column_order = ["Returns", "Volatility", "Sharpe Ratio"] + [f"{stock} Weight" for stock in stocks_names]
         # reorder dataframe columns
         self._df = df[column_order]
 
@@ -215,13 +215,13 @@ class StatsModels:
 
             # extend original dictionary to accommodate each ticker and weight in the portfolio
             for counter, symbol in enumerate(stocks_names):
-                portfolio[symbol + ' Weight'] = [Weight[counter] for Weight in stock_weights]
+                portfolio[f'{symbol} Weight'] = [Weight[counter] for Weight in stock_weights]
 
             # make a nice dataframe of the extended dictionary
             df = pd.DataFrame(portfolio)
 
             # get better labels for desired arrangement of columns
-            column_order = ['Portfolio Annual', 'Gini', 'Sharpe Ratio'] + [stock + ' Weight' for stock in stocks_names]
+            column_order = ['Portfolio Annual', 'Gini', 'Sharpe Ratio'] + [f'{stock} Weight' for stock in stocks_names]
 
             # reorder dataframe columns
             self._df = df[column_order]

@@ -44,7 +44,7 @@ class MarkowitzAndGini:
         for i in range(len(sectors)):
             for j in range(3):
                 weight = three_best_sectors_weights[2 - j][i] * 100
-                stocks[j] += sectors[i].name + "(" + str("{:.2f}".format(weight)) + "%),\n"
+                stocks[j] += f"{sectors[i].name}({'{:.2f}'.format(weight)}%,\n"
         return stocks
 
     @staticmethod
@@ -143,7 +143,7 @@ class EstimatedYield:
         for i in range(len(sectors)):
             name: str = sectors[i].name
             weight: float = sectors[i].weight * 100
-            stocks_str += name + "(" + str("{:.2f}".format(weight)) + "%),\n "
+            stocks_str += f"{name}({'{:.2f}'.format(weight)}%,\n"
         return stocks_str
 
 

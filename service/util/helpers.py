@@ -215,8 +215,7 @@ class Analyze:
                                                                                            forecast_out=forecast_out)
         return df, forecast_with_historical_returns_annual, expected_returns"""
 
-    def lstm_model(self, pct_change_mode=False, use_features=True) -> tuple[
-        pd.DataFrame, np.longdouble, np.longdouble]:
+    def lstm_model(self, pct_change_mode=False, use_features=True) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df_final, forecast_out = self.get_final_dataframe()
         start_date = self._table_index[0].strftime("%Y-%m-%d")
         end_date = self._table_index[-1].strftime("%Y-%m-%d")
@@ -267,9 +266,9 @@ class Analyze:
             # Sliding Window
             scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
             scaled_data = scaled_data[scaled_data['Label'] != 0]
-            scaled_data.to_csv(settings.RESEARCH_LOCATION + 'LSTM_Final-Runung.csv')
+            scaled_data.to_csv(f'{settings.RESEARCH_LOCATION}LSTM_Final-Runung.csv')
         else:
-            tickers_df = df_final.drop(['Date', forecast_col, 'Label'], axis=1)
+            tickers_df = df_final.drop(['Date', forecast_col, 'Label'], axis=1)  # TODO: unused
             scaled_data = df_final
             tickers_cols_to_scale = scaled_data.columns.drop(['Date', 'Label'])
             scaled_data[tickers_cols_to_scale] *= 100
@@ -328,7 +327,7 @@ class Analyze:
 
         # opt = Adam(lr=0.001, clipvalue=1.0)
 
-        optimizer = Adam(learning_rate=0.001) #
+        optimizer = Adam(learning_rate=0.001)
 
         # model.compile(loss='mse', optimizer=opt)
         model.compile(loss='mse', optimizer=optimizer)
@@ -347,7 +346,7 @@ class Analyze:
 
         # Results
         # Adjusted percentage change prediction
-        date_values = scaled_data.index
+        date_values = scaled_data.index  # TODO: unused
 
         scaled_data['Forecast'] = np.nan
 
@@ -372,7 +371,7 @@ class Analyze:
         plt.show()
 
         predictions_df = pd.DataFrame(predictions)
-        predictions_df.to_csv(settings.RESEARCH_LOCATION + 'lstm_predictions.csv')
+        predictions_df.to_csv(f'{settings.RESEARCH_LOCATION}lstm_predictions.csv')
 
         if not pct_change_mode:
             # Closing Price Prediction
@@ -408,7 +407,6 @@ class Analyze:
             ax.set_title('S&P 500 Closing Price Prediction')
             ax.set_xlabel('Date')
             ax.set_ylabel('Price')
-
 
         if use_features:
             lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)
@@ -578,13 +576,13 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     min_start_year = today.year - 10
     min_start_month = today.month
     min_start_day = today.day
-    min_date = str(min_start_year) + "-" + str(min_start_month) + "-" + str(min_start_day)
+    min_date: str = f"{min_start_year}-{min_start_month}-{min_start_day}"
 
     frame = {}
     yf.pdr_override()
     if start_date is None or end_date is None:
         start_date, end_date = get_from_and_to_dates(num_of_years_history)
-    file_url: str = location_saving + file_name + ".csv"
+    file_url: str = f'{location_saving}{file_name}.csv'
 
     for i, stock in enumerate(stocks_names):
         if isinstance(stock, float):
@@ -717,8 +715,8 @@ def get_from_and_to_dates(num_of_years) -> tuple[str, str]:
     end_year = today.year
     end_month = today.month
     end_day = today.day
-    from_date = str(start_year) + "-" + str(start_month) + "-" + str(start_day)
-    to_date = str(end_year) + "-" + str(end_month) + "-" + str(end_day)
+    from_date: str = f"{start_year}-{start_month}-{start_day}"
+    to_date: str = f"{end_year}-{end_month}-{end_day}"
     return from_date, to_date
 
 
@@ -748,12 +746,11 @@ def makes_yield_column(_yield, weighted_sum_column):
 
 
 # yfinance and israel tase impl:
-def get_israeli_symbol_data(command, start_date, end_date, israeli_symbol_name, is_index_type):
+def get_israeli_symbol_data(command: str, start_date, end_date, israeli_symbol_name: int, is_index_type: bool):
     if is_index_type:
-        data = \
-            tase_interaction.get_israeli_index_data(command, start_date, end_date, israeli_symbol_name)[
-                "indexEndOfDay"][
-                "result"]
+        data = tase_interaction.get_israeli_index_data(
+            command, start_date, end_date, israeli_symbol_name
+        )["indexEndOfDay"]["result"]
     else:
         data = tase_interaction.get_israeli_security_data(
             command, start_date, end_date, israeli_symbol_name)["securitiesEndOfDayTradingData"]["result"]
@@ -821,15 +818,15 @@ def get_israeli_indexes_list():
 
 
 def get_usa_stocks_table() -> pd.DataFrame:
-    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "nasdaq_all_stocks.csv")
+    return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}nasdaq_all_stocks.csv")
 
 
 def get_usa_indexes_table() -> pd.DataFrame:
-    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "usa_indexes.csv")
+    return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}usa_indexes.csv")
 
 
 def get_all_stocks_table():
-    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv")
+    return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}all_stocks_basic_data.csv")
 
 
 def get_sector_by_symbol(symbol):
@@ -881,7 +878,7 @@ def get_collection_json_data() -> dict[
     list[dict[list[object], float, float, int]]
 ]:
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        return convert_data_stream_to_json()['collections']
+        return convert_data_stream_to_json()['collections']  # TODO: add parameter to method call
     else:
         return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
@@ -974,7 +971,7 @@ def currency_exchange(from_currency="USD", to_currency="ILS"):
 
 
 def save_all_stocks():  # dont delete it
-    path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
+    path: str = f"{settings.CONFIG_RESOURCE_LOCATION}all_stocks_basic_data.csv"
     sectors_data = get_sectors_data_from_file()
     # Assuming you have lists named list_symbol, list_sector, and list_description
     list_symbol = []
@@ -1022,7 +1019,7 @@ def save_usa_indexes_table():  # dont delete it
         all_keys.update(stock_data.keys())
 
     # Define the CSV file path
-    csv_file_path = settings.CONFIG_RESOURCE_LOCATION + 'usa_indexes.csv'
+    csv_file_path: str = f'{settings.CONFIG_RESOURCE_LOCATION}usa_indexes.csv'
 
     # Write the data to a CSV file
     with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
@@ -1033,8 +1030,8 @@ def save_usa_indexes_table():  # dont delete it
             writer.writerow(stock_data)
 
 
-def save_json_data(path, sectors_json_file):
-    with open(path + ".json", 'w', encoding='utf-8') as f:
+def save_json_data(path: str, sectors_json_file) -> None:
+    with open(f"{path}.json", 'w', encoding='utf-8') as f:
         json.dump(sectors_json_file, f, ensure_ascii=False, indent=4)
 
 
@@ -1133,8 +1130,10 @@ def lstm_add_interest_rate(df_final, start_date, end_date):
     interest_rate_series_id = "DGS10"  # Example: 10-year Treasury constant maturity rate
 
     # The Economic Research Division of the Federal Reserve Bank of St. Louis website
-    interest_rate_url = (f"https://api.stlouisfed.org/fred/series/observations?series_id="
-                         f"{interest_rate_series_id}&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}")
+    interest_rate_url = (
+        f"https://api.stlouisfed.org/fred/series/observations?series_id={interest_rate_series_id}"
+        f"&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}"
+    )
 
     try:
         # Send a GET request to the FRED API for interest rates
@@ -1172,11 +1171,13 @@ def lstm_add_interest_rate(df_final, start_date, end_date):
 def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key):
     # Add GDP growth
     # Define the series ID for GDP growth rate
-    gdp_growth_rate_series_id = "A191RL1Q225SBEA"
+    gdp_growth_rate_series_id: str = "A191RL1Q225SBEA"
 
     # The Economic Research Division of the Federal Reserve Bank of St. Louis website
-    gdp_growth_rate_url = (f"https://api.stlouisfed.org/fred/series/observations?series_id={gdp_growth_rate_series_id}"
-                           f"&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}")
+    gdp_growth_rate_url: str = (
+        f"https://api.stlouisfed.org/fred/series/observations?series_id={gdp_growth_rate_series_id}"
+        f"&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}"
+    )
 
     try:
         # Send a GET request to the FRED API for GDP growth rate
@@ -1217,6 +1218,7 @@ def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key):
 
 def lstm_fill_na_values(df_final):
     # Fill NA Values
+    # TODO: unused
     zero_mask_columns = df_final.eq('.').any(axis=0)
 
     # Convert the column to numeric, treating '.' as NaN
@@ -1270,7 +1272,7 @@ def lstm_show_data_plot_wth_labels(df_final, forecast_col):
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
     # data plot
-    ax = df_final.plot(x='Date', y='Label');
+    ax = df_final.plot(x='Date', y='Label')
     ax.set_xlabel('Year')
 
     ax.set_ylabel('Price')
@@ -1308,7 +1310,8 @@ def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     # Initialize JS visualization code
     shap.initjs()
 
-    feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
+    # TODO unused
+    # feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
 
     # Define a predict function wrapper to handle 3D input
     def lstm_predict_wrapper(x):

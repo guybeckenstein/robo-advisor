@@ -79,7 +79,7 @@ def get_json_data_of_symbol(app_url):
 # Auth
 def get_base_64_token():
 
-    token: str = israeli_tase.KEY + ':' + israeli_tase.SECRET
+    token: str = f'{israeli_tase.KEY}:{israeli_tase.SECRET}'
     base_64_token = base64.b64encode(token.encode('ascii')).decode('ascii')
     return base_64_token
 
@@ -97,8 +97,8 @@ def get_tase_access_token():
 
 
 # BUILD URL FOR REQUEST
-def get_app_url_without_date(app_name):
-    return israeli_tase.PREFIX_URL + '/' + app_name
+def get_app_url_without_date(app_name: str) -> str:
+    return f'{israeli_tase.PREFIX_URL}/{app_name}'
 
 
 def get_app_url_with_date_and_index(app_name, start_year, start_month, start_day,

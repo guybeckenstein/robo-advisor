@@ -26,13 +26,11 @@ class TestManualMainFromTerminal:
         tables = data_management.get_extended_data_from_db(
             stocks_symbols, self.is_machine_learning, self.model_option, self.stocks_collection_number,
         )
-        sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
-            pct_change_table, yield_list = tables
-        first_question_score = 2  # medium risk
-        second_question_score = 2  # medium risk
-        third_question_score = 2  # medium risk
-        sum_of_score = first_question_score + second_question_score + third_question_score
-        level_of_risk = data_management.get_level_of_risk_by_score(sum_of_score)
+        first_question_score: int = 2  # medium risk
+        second_question_score: int = 2  # medium risk
+        third_question_score: int = 2  # medium risk
+        sum_of_score: int = first_question_score + second_question_score + third_question_score
+        level_of_risk: int = data_management.get_level_of_risk_by_score(sum_of_score)
 
         # creates new user with portfolio details
         portfolio = data_management.create_new_user_portfolio(
@@ -81,12 +79,10 @@ class TestManualMainFromTerminal:
             plt_instance = research.forecast_specific_stock(str(self.stock_name), settings.MACHINE_LEARNING_MODEL[i],
                                                             models_data, self.num_of_years_history)
             operation = '_forecast'
-            research.save_user_specific_stock(self.stock_name, operation, plt_instance)
+            research.save_user_specific_stock(stock=self.stock_name, operation=operation, plt_instance=plt_instance)
 
             if self.show_result:
-                data_management.plot_image(
-                    settings.RESEARCH_IMAGES + self.stock_name + operation + '.png'
-                )
+                data_management.plot_image(file_name=f'{settings.RESEARCH_IMAGES}{self.stock_name}{operation}.png')
 
     def test_bb_strategy(self):
 
@@ -96,8 +92,7 @@ class TestManualMainFromTerminal:
         research.save_user_specific_stock(self.stock_name, operation, plt_instance)
 
         if self.show_result:
-            data_management.plot_image(
-                settings.RESEARCH_IMAGES + self.stock_name + operation + '.png')
+            data_management.plot_image(f'{settings.RESEARCH_IMAGES}{self.stock_name}{operation}.png')
 
     def test_top_stock_sector(self):
         filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
@@ -125,4 +120,5 @@ class TestManualMainFromTerminal:
 
         if self.show_result:
             data_management.plot_image(
-                settings.GRAPH_IMAGES + sub_folder + settings.MODEL_NAME[self.model_option] + '_all_options' + '.png')
+                f'{settings.GRAPH_IMAGES}{sub_folder}{settings.MODEL_NAME[self.model_option]}_all_options.png'
+            )

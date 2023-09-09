@@ -1,14 +1,14 @@
 # google drive
-import base64
 import io
 import os
-from PIL import Image
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from service.config import settings
-ACCESS_FILE = settings.CONFIG_RESOURCE_LOCATION + 'google_drive_access.json'
-MAIN_FOLDER_ID = '1j5GnvPfMrDJpV07fV3YDvoitwBpfZhr6'
+
+# Global variables
+ACCESS_FILE: str = f'{settings.CONFIG_RESOURCE_LOCATION}google_drive_access.json'
+MAIN_FOLDER_ID: str = '1j5GnvPfMrDJpV07fV3YDvoitwBpfZhr6'
 
 
 def connect_to_google_drive():

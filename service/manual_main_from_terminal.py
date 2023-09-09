@@ -21,7 +21,7 @@ if __name__ == '__main__':
     selection = data_management.get_menu_choice()
     exit_loop_operation = 8
     user_id: int = 1
-    user_name: int = 'yarden'  # data_management.get_name()
+    user_name: int | str = 'yarden'  # data_management.get_name()
     data_changed = False
 
     if settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
             # get stocks symbols from db and create sub folder for user
             stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
-            sub_folder = str(stocks_collection_number) + '/' + str(is_machine_learning) + str(model_option) + "/"
+            sub_folder: str = f'{stocks_collection_number}/{is_machine_learning}{model_option}/'
 
             # Extended data from datasets (CSV Tables)
             tables = data_management.get_extended_data_from_db(
@@ -111,9 +111,7 @@ if __name__ == '__main__':
             research.save_user_specific_stock(stock_name, operation, plt_instance)
 
             # show result
-            data_management.plot_image(
-                settings.RESEARCH_IMAGES + stock_name + operation + '.png'
-            )
+            data_management.plot_image(file_name=f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
 
         elif selection == 5:  # plotbb_strategy_stock for specific stock
             stock_name = data_management.get_name()
@@ -124,7 +122,7 @@ if __name__ == '__main__':
             research.save_user_specific_stock(stock_name, operation, plt_instance)
 
             # show result
-            data_management.plot_image(settings.RESEARCH_IMAGES + stock_name + operation + '.png')
+            data_management.plot_image(file_name=f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
 
         elif selection == 6:  # discover good stocks
             filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
@@ -141,10 +139,9 @@ if __name__ == '__main__':
 
         elif selection == 7:  # plot stat model graph(scatter points)
             # get choices from user
-            is_machine_learning, model_option, stocks_collection_number = \
-                data_management.get_basic_data_from_user()
+            is_machine_learning, model_option, stocks_collection_number = data_management.get_basic_data_from_user()
             num_of_years_history = settings.NUM_OF_YEARS_HISTORY
-            sub_folder = str(stocks_collection_number) + '/' + str(is_machine_learning) + str(model_option) + "/"
+            sub_folder = f'{stocks_collection_number}/{is_machine_learning}{model_option}/'
 
             stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
             basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
@@ -155,8 +152,7 @@ if __name__ == '__main__':
                 closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder)
 
             # show result
-            data_management.plot_image(
-                settings.GRAPH_IMAGES + sub_folder + 'all_options' + '.png')
+            data_management.plot_image(f'{settings.GRAPH_IMAGES}{sub_folder}all_options.png')
 
         elif selection == 9:  # dynamic commands for programmers
             data_management.update_files_from_google_drive()
