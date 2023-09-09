@@ -185,8 +185,8 @@ class Portfolio:
         self._annual_returns = annual_returns
         self._annual_volatility = annual_volatility
         self._annual_sharpe = annual_sharpe
-        pct_change_table["weighted_sum_selected"] = pct_change_table["weighted_sum_" + str(self._risk_level)]
-        pct_change_table["yield_selected"] = pct_change_table["yield_" + str(self._risk_level)]
+        pct_change_table["weighted_sum_selected"] = pct_change_table[f"weighted_sum_{self._risk_level}"]
+        pct_change_table["yield_selected"] = pct_change_table[f"yield_{self._risk_level}"]
 
         # self.set_sectors(self._sectors)
         for i in range(len(self._stocks_symbols)):

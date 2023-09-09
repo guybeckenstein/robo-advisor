@@ -1,4 +1,3 @@
-from service.config import settings
 from service.util import helpers
 from watchlist.models import TopStock
 
@@ -10,7 +9,8 @@ class Migration(migrations.Migration):
         ('watchlist', '0001_initial'),
     ]
 
-    def generate_watchlist_data(apps, schema_editor):
+    @staticmethod
+    def generate_watchlist_data():
         test_data: list = helpers.get_sectors_names_list()
         with transaction.atomic():
             for i, sector_name in enumerate(test_data):

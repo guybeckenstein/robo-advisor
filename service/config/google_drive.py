@@ -1,14 +1,16 @@
 # google drive
-import base64
 import io
 import os
-from PIL import Image
+
+import googleapiclient.http
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from service.config import settings
-ACCESS_FILE = settings.CONFIG_RESOURCE_LOCATION + 'google_drive_access.json'
-MAIN_FOLDER_ID = '1j5GnvPfMrDJpV07fV3YDvoitwBpfZhr6'
+
+# Global variables
+ACCESS_FILE: str = f'{settings.CONFIG_RESOURCE_LOCATION}google_drive_access.json'
+MAIN_FOLDER_ID: str = '1j5GnvPfMrDJpV07fV3YDvoitwBpfZhr6'
 
 
 def connect_to_google_drive():
@@ -19,7 +21,7 @@ def connect_to_google_drive():
         creds = service_account.Credentials.from_service_account_file(
             credentials_file, scopes=['https://www.googleapis.com/auth/drive'])
         # Create a Drive API service
-        service = build('drive', 'v3', credentials=creds)
+        service = build(serviceName='drive', version='v3', credentials=creds)
     except Exception as e:
         print(e)
         service = None
@@ -44,29 +46,27 @@ class GoogleDriveInstance:
                 request = self.service.files().get_media(fileId=file['id'])
                 request.execute()
 
-    def upload_file(self, full_file_path, short_file_path):
-        folder_id = self.find_file_id_by_path_name(short_file_path, folder_type=True)
-        file_name = short_file_path.split('/')[-1]
-        media = MediaFileUpload(full_file_path, resumable=True)
-        file_metadata = {
+    def upload_file(self, fully_qualified_file_path: str, shortened_file_path: str):
+        folder_id: str = self.find_file_id_by_path_name(shortened_file_path, folder_type=True)
+        file_name = shortened_file_path.split('/')[-1]
+        media: googleapiclient.http.MediaFileUpload = MediaFileUpload(fully_qualified_file_path, resumable=True)
+        file_metadata: dict[str] = {
             'name': file_name,
         }
 
         # Check if a file with the same name exists in the folder
-        existing_file_id = self.find_file_id_by_path_name(short_file_path)
+        existing_file_id: str = self.find_file_id_by_path_name(shortened_file_path)
 
         if existing_file_id:
-
+            # Add the new parent folder
             self.service.files().update(
-                body=file_metadata, media_body=media, fileId=existing_file_id,
-                addParents=folder_id  # Add the new parent folder
+                body=file_metadata, media_body=media, fileId=existing_file_id, addParents=folder_id
             ).execute()
         else:
             # Create the file and specify the parent folder using addParents
             file_metadata['parents'] = [folder_id]
             self.service.files().create(
-                body=file_metadata, media_body=media, fields='id',
-                supportsAllDrives=True
+                body=file_metadata, media_body=media, fields='id', supportsAllDrives=True
             ).execute()
 
     def find_file_id_by_path_name(self, file_path, folder_type=False):

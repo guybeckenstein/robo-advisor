@@ -22,7 +22,8 @@ class Migration(migrations.Migration):
         ('socialaccount', '0001_initial'),
     ]
 
-    def generate_site_data(apps, schema_editor):
+    @staticmethod
+    def generate_site_data():
         site_data: list[tuple] = [
             (
                 f'http://{env("WEB_DOMAIN", default="localhost")}:8000/',
@@ -37,7 +38,8 @@ class Migration(migrations.Migration):
                 )
                 site.save()
 
-    def generate_socialapp_data(apps, schema_editor):
+    @staticmethod
+    def generate_socialapp_data():
         socialapp_data: list[tuple] = [
             (
                 'facebook',

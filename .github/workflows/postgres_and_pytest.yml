@@ -60,7 +60,7 @@ jobs:
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         POSTGRES_HOST: db
         POSTGRES_PORT: 5432
-        POSTGRES_DB: robo_advisor
+        POSTGRES_DB: roboadvisor
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
         DATABASE: postgres
@@ -78,7 +78,7 @@ jobs:
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         POSTGRES_HOST: db
         POSTGRES_PORT: 5432
-        POSTGRES_DB: robo_advisor
+        POSTGRES_DB: roboadvisor
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
         DATABASE: postgres

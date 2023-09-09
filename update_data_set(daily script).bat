@@ -1,1 +1,0 @@
-python -m service.update_data_set

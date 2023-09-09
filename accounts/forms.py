@@ -1,5 +1,4 @@
 from allauth.account.forms import LoginForm, ResetPasswordForm
-from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, HTML
 from django import forms

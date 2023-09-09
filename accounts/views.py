@@ -63,7 +63,6 @@ class SignUpView(SignupView):
         return render(request, self.template_name, context=context)
 
     def non_field_errors(self) -> list[str]:
-        errors = super().non_field_errors()
         if 'email' in self.errors and 'already exists' in self.errors['email'][0]:
             errors = ["A user is already assigned with this email. Please use a different email address."]
             return errors
