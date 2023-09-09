@@ -102,7 +102,7 @@ def bb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
 
 
 def three_portfolios_graph(max_returns_portfolio, sharpe_portfolio, min_variance_portfolio, three_best_sectors_weights,
-                           sectors: list[Sector], pct_change_table: pd.DataFrame) -> plt:
+                           sectors: list[Sector], pct_change_table: pd.DataFrame) -> plt: # second graph
     plt.figure()  # Create a new plot instance
     # plot frontier, max sharpe & min Volatility values with a scatterplot
     plt.style.use(SEABORN_STYLE)
@@ -117,7 +117,7 @@ def three_portfolios_graph(max_returns_portfolio, sharpe_portfolio, min_variance
     return plt
 
 
-def portfolio_distribution(yields) -> plt:
+def portfolio_distribution(yields) -> plt:  # first graph
     plt.figure()  # Creates a new plot instance
     plt.subplots(figsize=FIG_SIZE1)
     plt.subplots_adjust(bottom=BOTTOM)
@@ -169,12 +169,12 @@ def portfolio_distribution(yields) -> plt:
 
             # Content figtext
             plt.figtext(
-                x=x, y=y_content, s=s_content, bbox=bbox, fontsize=content_fontsize, style=STYLE, ha=HA, va=VA,
+                x=x, y=y_content, s=s_content, bbox=bbox, fontsize=content_fontsize, style=STYLE, ha=HA, multialignment='left', va=VA,
                 fontname=FONT_NAME, wrap=WRAP,
             )
             # Header figtext
             plt.figtext(
-                x=x, y=y_header, s=f'{s_params[i]} Risk', fontsize=header_fontsize, fontweight=FONT_WEIGHT,
+                x=x, y=y_header, s=f'{s_params[i]}', fontsize=header_fontsize, fontweight=FONT_WEIGHT,
                 ha=HA, fontname=FONT_NAME, wrap=WRAP,
             )
 
