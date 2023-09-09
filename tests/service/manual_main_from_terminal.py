@@ -58,7 +58,10 @@ class TestManualMainFromTerminal:
     def test_add_investment(self):
         investment_amount: int = 500
         if investment_amount is not None:
-            __, investments_list = data_management.add_new_investment(self.user_name, investment_amount)
+            _, investments_list = data_management.add_new_investment(self.user_name, investment_amount)
+        else:
+            self.show_result = False
+            investments_list = None
 
         if self.show_result:
             data_management.plot_investments_history(self.user_id, investments_list)
@@ -101,7 +104,7 @@ class TestManualMainFromTerminal:
         sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
             intersection, filters
         )
-        data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name, research.labels)
+        data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name, research.LABELS)
         prefix_str = 'Top Stocks - '
 
         if self.show_result:
@@ -115,8 +118,9 @@ class TestManualMainFromTerminal:
         closing_prices_table_path = f'{basic_stock_collection_repository_dir}{self.stocks_collection_number}/'
         data_management.plot_stat_model_graph(
             stocks_symbols=stocks_symbols, is_machine_learning=self.is_machine_learning,
-            model_name=settings.MODEL_NAME[self.model_option], num_of_years_history=self.num_of_years_history,
-            closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder)
+            model_name=settings.MODEL_NAME[self.model_option], closing_prices_table_path=closing_prices_table_path,
+            sub_folder=sub_folder
+        )
 
         if self.show_result:
             data_management.plot_image(

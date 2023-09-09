@@ -224,6 +224,8 @@ class Analyze:
         if not pct_change_mode:
             closing_price_df = df_final
             df_final = df_final.pct_change()
+        else:
+            closing_price_df = None
         forecast_col = "Forecast"
         df_final[forecast_col] = df_final['Col']
 
@@ -249,9 +251,11 @@ class Analyze:
         if use_features:
             lstm_show_data_plot_wth_labels(df_final, forecast_col)
             # feature for scaling
-            df_final = lstm_add_unemployment_rate_and_cpi(df_final, start_date, end_date)
-            df_final = lstm_add_interest_rate(df_final, start_date, end_date)
-            df_final = lstm_add_gdp_growth_rate(df_final, start_date, end_date)
+            df_final = lstm_add_unemployment_rate_and_cpi(df_final=df_final, start_date=start_date, end_date=end_date)
+            df_final = lstm_add_interest_rate(df_final=df_final, start_date=start_date, end_date=end_date)
+            df_final = lstm_add_gdp_growth_rate(
+                merged_df=df_final, start_date=start_date, end_date=end_date, api_key=None  # TODO: add API Key
+            )
             lstm_confusion_matrix(df_final, forecast_col)
 
             # Scaling
@@ -268,7 +272,7 @@ class Analyze:
             scaled_data = scaled_data[scaled_data['Label'] != 0]
             scaled_data.to_csv(f'{settings.RESEARCH_LOCATION}LSTM_Final-Runung.csv')
         else:
-            tickers_df = df_final.drop(['Date', forecast_col, 'Label'], axis=1)  # TODO: unused
+            # tickers_df = df_final.drop(['Date', forecast_col, 'Label'], axis=1)  # TODO: unused
             scaled_data = df_final
             tickers_cols_to_scale = scaled_data.columns.drop(['Date', 'Label'])
             scaled_data[tickers_cols_to_scale] *= 100
@@ -333,8 +337,8 @@ class Analyze:
         model.compile(loss='mse', optimizer=optimizer)
 
         # Train the model
-        model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.15,
-                  callbacks=[early_stopping])  # add the early stopping callback here)
+        # add the early stopping callback here
+        model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.15, callbacks=[early_stopping])
 
         # Predict on the test data
         predictions = model.predict(X_test)
@@ -346,7 +350,7 @@ class Analyze:
 
         # Results
         # Adjusted percentage change prediction
-        date_values = scaled_data.index  # TODO: unused
+        # date_values = scaled_data.index  # TODO: unused
 
         scaled_data['Forecast'] = np.nan
 
@@ -373,7 +377,7 @@ class Analyze:
         predictions_df = pd.DataFrame(predictions)
         predictions_df.to_csv(f'{settings.RESEARCH_LOCATION}lstm_predictions.csv')
 
-        if not pct_change_mode:
+        if not pct_change_mode and closing_price_df:
             # Closing Price Prediction
             closing_price_df = closing_price_df.dropna()
             last_price = closing_price_df.iloc[-1]
@@ -509,9 +513,8 @@ class Analyze:
         return self._returns_stock
 
 
-def update_daily_change_with_machine_learning(
-        returns_stock, table_index: pd.Index, models_data: dict, closing_prices_mode: bool = False
-):
+def update_daily_change_with_machine_learning(returns_stock, table_index: pd.Index, models_data: dict,
+                                              closing_prices_mode: bool = False) -> tuple:
     # Calculate offset of the table (get sub-table)
     offset_row, record_percent_to_predict = get_daily_change_sub_table_offset(models_data, table_index)
 
@@ -527,8 +530,8 @@ def update_daily_change_with_machine_learning(
     if len(columns) == 0:
         raise AttributeError('columns length is invalid - 0. Should be at least 1')
     else:
-        # annual_return = None
         excepted_returns = None
+        annual_return_with_forecast = None
 
         for i, stock in enumerate(columns):
             if is_ndarray_mode:
@@ -555,7 +558,6 @@ def update_daily_change_with_machine_learning(
                 raise ValueError('Invalid machine model')
             if df['Label'][offset_row:].values.size == returns_stock[stock_name].size:
                 returns_stock[stock_name] = df['Label'][offset_row:].values
-
             else:
                 returns_stock[stock_name] = df['Label'].values
 
@@ -599,24 +601,18 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
                 df: pd.DataFrame = get_israeli_symbol_data(
                     'get_past_10_years_history', start_date, end_date, stock, is_index_type
                 )
+                # list to DateFrame
+                df["tradeDate"] = pd.to_datetime(df["tradeDate"])
+                df.set_index("tradeDate", inplace=True)
+                if is_index_type:
+                    price = df[["closingIndexPrice"]]
+                else:
+                    price = df[["closingPrice"]]
+                frame[stocks_names[i]] = price
             except ValueError:
                 print('Invalid start_date or end_date format, should be %Y-%m-%d')
-                df = pd.DataFrame(df)
-            except AttributeError:
+            except (AttributeError, IndexError):
                 print(f"Error in stock: {stock}")
-                df = pd.DataFrame(df)
-            except IndexError:
-                print(f"Error in stock: {stock}")
-                df = pd.DataFrame(df)
-            # list to DateFrame
-            df = pd.DataFrame(df)
-            df["tradeDate"] = pd.to_datetime(df["tradeDate"])
-            df.set_index("tradeDate", inplace=True)
-            if is_index_type:
-                price = df[["closingIndexPrice"]]
-            else:
-                price = df[["closingPrice"]]
-            frame[stocks_names[i]] = price
         else:  # US stock
             try:
                 df: pd.DataFrame = yf.download(stock, start=start_date, end=end_date)
@@ -878,7 +874,7 @@ def get_collection_json_data() -> dict[
     list[dict[list[object], float, float, int]]
 ]:
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        return convert_data_stream_to_json()['collections']  # TODO: add parameter to method call
+        return convert_data_stream_to_json(file_stream=None)['collections']  # TODO: add parameter to method call
     else:
         return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
@@ -1153,22 +1149,24 @@ def lstm_add_interest_rate(df_final, start_date, end_date):
             for observation in interest_rate_observations:
                 date = observation["date"]
                 value = observation["value"]
-                df_interest_rates = df_interest_rates._append({"Date": date, "Interest Rate": value},
-                                                              ignore_index=True)
+                df_interest_rates = df_interest_rates._append({"Date": date, "Interest Rate": value}, ignore_index=True)
 
         else:
+            df_interest_rates = None
             print("Error occurred while fetching interest rate data from the API.")
     except requests.exceptions.RequestException as e:
+        df_interest_rates = None
         print("An error occurred:", e)
 
-    df_interest_rates['Date'] = pd.to_datetime(df_interest_rates["Date"])
+    if df_interest_rates:
+        df_interest_rates['Date'] = pd.to_datetime(df_interest_rates["Date"])
 
     merged_df = pd.merge(df_final, df_interest_rates, left_on='Date', right_on='Date', how='left')
     merged_df = lstm_fill_na_values(merged_df)
     return merged_df
 
 
-def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key):
+def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key) -> pd.DataFrame | None:
     # Add GDP growth
     # Define the series ID for GDP growth rate
     gdp_growth_rate_series_id: str = "A191RL1Q225SBEA"
@@ -1182,44 +1180,42 @@ def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key):
     try:
         # Send a GET request to the FRED API for GDP growth rate
         gdp_growth_rate_response = requests.get(gdp_growth_rate_url)
-
         # Check if the request was successful
         if gdp_growth_rate_response.status_code == 200:
             gdp_growth_rate_data = gdp_growth_rate_response.json()
-
             # Extract historical GDP growth rate observations
             gdp_growth_rate_observations = gdp_growth_rate_data["observations"]
-
             # Create an empty DataFrame
             df_gdp_growth_rate = pd.DataFrame(columns=["Date", "GDP Growth Rate"])
-
             # Populate the DataFrame with the GDP growth rate data
             for observation in gdp_growth_rate_observations:
                 date = observation["date"]
                 value = float(observation["value"])
-                df_gdp_growth_rate = df_gdp_growth_rate._append({"Date": date, "GDP Growth Rate": value},
-                                                                ignore_index=True)
-
+                df_gdp_growth_rate = df_gdp_growth_rate._append(
+                    {"Date": date, "GDP Growth Rate": value}, ignore_index=True
+                )
             # Convert "Date" column to datetime format
             df_gdp_growth_rate["Date"] = pd.to_datetime(df_gdp_growth_rate["Date"])
-
         else:
+            df_gdp_growth_rate = None
             print("Error occurred while fetching GDP growth rate data from the API.")
     except requests.exceptions.RequestException as e:
+        df_gdp_growth_rate = None
         print("An error occurred:", e)
     # Join the data using the available GDP growth observations
-    joined_df = pd.merge_asof(merged_df, df_gdp_growth_rate, on="Date", direction="backward")
-
-    # Perform data alignment and fill missing values
-    joined_df["GDP Growth Rate"] = joined_df["GDP Growth Rate"].ffill()
-
-    return joined_df
+    if df_gdp_growth_rate:
+        joined_df = pd.merge_asof(merged_df, df_gdp_growth_rate, on="Date", direction="backward")
+        # Perform data alignment and fill missing values
+        joined_df["GDP Growth Rate"] = joined_df["GDP Growth Rate"].ffill()
+        return joined_df
+    else:
+        return None
 
 
 def lstm_fill_na_values(df_final):
     # Fill NA Values
     # TODO: unused
-    zero_mask_columns = df_final.eq('.').any(axis=0)
+    # zero_mask_columns = df_final.eq('.').any(axis=0)
 
     # Convert the column to numeric, treating '.' as NaN
     df_final['Interest Rate'] = pd.to_numeric(df_final['Interest Rate'], errors='coerce')

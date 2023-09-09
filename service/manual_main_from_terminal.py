@@ -1,10 +1,7 @@
 # Add the root directory of your project to the sys.path list
-import pandas as pd
 import sys
 import os
-import subprocess
 
-from service.util import helpers
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(project_root)
 
@@ -131,7 +128,7 @@ if __name__ == '__main__':
             sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
                 intersection, filters)
             data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name,
-                                                 research.labels)
+                                                 research.LABELS)
             prefix_str = 'Top Stocks - '
 
             # show result
@@ -148,8 +145,9 @@ if __name__ == '__main__':
             closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
             data_management.plot_stat_model_graph(
                 stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
-                model_name=settings.MODEL_NAME[model_option], num_of_years_history=num_of_years_history,
-                closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder)
+                model_name=settings.MODEL_NAME[model_option], closing_prices_table_path=closing_prices_table_path,
+                sub_folder=sub_folder
+            )
 
             # show result
             data_management.plot_image(f'{settings.GRAPH_IMAGES}{sub_folder}all_options.png')

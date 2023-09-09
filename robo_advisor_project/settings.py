@@ -204,13 +204,13 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
-    "site_title": "Library Admin",
+    "site_title": "RoboAdvisor Admin",
 
     # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    "site_header": "Library",
+    "site_header": "RoboAdvisor",
 
     # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    "site_brand": "Library",
+    "site_brand": "RoboAdvisor",
 
     # Logo to use for your site, must be present in static files, used for brand on top left
     "site_logo": "img/Logo-sm.png",
@@ -228,13 +228,13 @@ JAZZMIN_SETTINGS = {
     "site_icon": "img/Logo.png",
 
     # Welcome text on the login screen
-    "welcome_sign": "Welcome to the library",
+    "welcome_sign": "Welcome to the RoboAdvisor admin form",
 
     # Copyright on the footer
-    "copyright": "Acme Library Ltd",
+    "copyright": "RoboAdvisor © 2023",
 
     # List of model admins to search from the search bar, search bar omitted if excluded
-    # If you want to use a single search field you don't need to use a list, you can use a simple string
+    # In case you want to use a single search field you don't need to use a list, you can use a simple string
     "search_model": ["auth.User", "auth.Group"],
 
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user

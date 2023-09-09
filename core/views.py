@@ -219,7 +219,7 @@ def capital_market_investment_preferences_form(request):
                 investor_user.daily_change = daily_change
             except InvestorUser.DoesNotExist:
                 # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
-                InvestorUser.objects.create(
+                investor_user = InvestorUser.objects.create(
                     user=request.user,
                     risk_level=risk_level,
                     total_investment_amount=0,

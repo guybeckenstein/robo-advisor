@@ -19,7 +19,7 @@ if __name__ == '__main__':
     all_stats_data_list_of_lists, unified_table_data, unified_table_data_list = research.get_all_best_stocks()
     # update stocks.json file according to the new stocks intersection
     research.update_collections_file(
-        all_stats_data_list_of_lists, unified_table_data, unified_table_data_list
+        all_stats_data_list_of_lists, unified_table_data,  # TODO: unused unified_table_data_list
     )
     # upload top stocks images to google drive
     research.upload_top_stocks_to_google_drive()

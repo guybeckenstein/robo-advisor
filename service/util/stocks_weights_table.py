@@ -15,7 +15,7 @@ def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[fl
         raise ValueError("Input lists must have the same length.")
     image, draw = create_blank_image(num_rows=len(symbols))
     draw_table_header(draw=draw, header_text=header_text)
-    draw_table_rows(num_rows=len(values), symbols=symbols, values=values, descriptions=descriptions,
+    draw_table_rows(symbols=symbols, values=values, descriptions=descriptions,
                     draw=draw, percent_mode=percent_mode)
     image.save(f"{file_name}.png")  # Save the image
 
@@ -43,8 +43,8 @@ def draw_table_header(draw: ImageDraw, header_text: ImageFont.truetype) -> None:
         draw.text(xy=(x0 + 5, y0 + 5), text=header_text[col_idx], fill="black", font=header_font)
 
 
-def draw_table_rows(num_rows: int, symbols: list[str], values: list[float], descriptions: list[str],
-                    draw: ImageDraw, percent_mode: bool) -> None:
+def draw_table_rows(symbols: list[str], values: list[float], descriptions: list[str], draw: ImageDraw,
+                    percent_mode: bool) -> None:
     x0: list[int, int, int] = [
         calculate_cumulative_col_offset(0) + TABLE_PADDING,
         calculate_cumulative_col_offset(1) + TABLE_PADDING,

@@ -1,4 +1,3 @@
-import math
 from service.impl.user import User
 import numpy as np
 import pandas as pd
@@ -14,7 +13,7 @@ from accounts.models import InvestorUser, CustomUser
 from django.conf import settings as django_settings
 
 # email imports
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 
 

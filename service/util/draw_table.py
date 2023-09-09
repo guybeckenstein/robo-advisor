@@ -1,12 +1,9 @@
-import os
 import textwrap
 import platform
 import pandas as pd
 
-import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from service.config import settings
 from service.util import helpers
 
 # Global constants
@@ -36,8 +33,7 @@ def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[fl
         raise ValueError("Input lists must have the same length.")
     image, draw = _create_blank_image(num_rows=len(symbols))
     _draw_table_header(draw=draw, header_text=header_text)
-    _draw_table_rows(num_rows=len(values), symbols=symbols, values=values, descriptions=descriptions,
-                     draw=draw, percent_mode=percent_mode)
+    _draw_table_rows(symbols=symbols, values=values, descriptions=descriptions, draw=draw, percent_mode=percent_mode)
     image.save(f"{file_name}.png")  # Save the image
 
 
@@ -64,7 +60,7 @@ def _draw_table_header(draw: ImageDraw, header_text: ImageFont.truetype) -> None
         draw.text(xy=(x0 + 5, y0 + 5), text=header_text[col_idx], fill="black", font=header_font)
 
 
-def _draw_table_rows(num_rows: int, symbols: list[str], values: list[float], descriptions: list[str],
+def _draw_table_rows(symbols: list[str], values: list[float], descriptions: list[str],
                      draw: ImageDraw, percent_mode: bool = False) -> None:
     x0: list[int, int, int] = [
         _calculate_cumulative_col_offset(0) + TABLE_PADDING,
@@ -187,13 +183,13 @@ def draw_research_table(path, intersection_data, labels, sort_by_option: bool = 
 def _draw_research_graph(path, data_tuple_list, labels):
     annual_returns_table_data = data_tuple_list[0].sort_values(by=labels[3], ascending=True).head(3)
     # TODO: unused
-    annual_returns_descriptions = helpers.get_stocks_descriptions(annual_returns_table_data.index.values)[1:]
+    # annual_returns_descriptions = helpers.get_stocks_descriptions(annual_returns_table_data.index.values)[1:]
     volatility_intersection_data = data_tuple_list[1].sort_values(by=labels[7], ascending=False).head(3)
     # TODO: unused
-    volatility_descriptions = helpers.get_stocks_descriptions(volatility_intersection_data.index.values)[1:]
+    # volatility_descriptions = helpers.get_stocks_descriptions(volatility_intersection_data.index.values)[1:]
     sharpe_intersection_data = data_tuple_list[2].sort_values(by=labels[11], ascending=False).head(3)
     # TODO: unused
-    sharpe_descriptions = helpers.get_stocks_descriptions(sharpe_intersection_data.index.values)[1:]
+    # sharpe_descriptions = helpers.get_stocks_descriptions(sharpe_intersection_data.index.values)[1:]
     resulting_dataframe = pd.concat([
         annual_returns_table_data, volatility_intersection_data, sharpe_intersection_data
     ])

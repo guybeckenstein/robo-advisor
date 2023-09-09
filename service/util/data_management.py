@@ -12,7 +12,7 @@ from service.impl.portfolio import Portfolio
 from service.impl.sector import Sector
 from service.impl.stats_models import StatsModels
 from service.impl.user import User
-from service.util import helpers, console_handler, stocks_weights_table
+from service.util import helpers, console_handler
 from service.util.helpers import Analyze
 from service.util.graph import image_methods as graph_image_methods
 from service.util.graph import plot_methods as graph_plot_methods
@@ -20,8 +20,6 @@ from service.util.pillow import plot_methods as pillow_plot_methods
 from service.config import google_drive
 import os
 from PIL import Image
-import io
-# django imports
 import django
 from django.db.models import QuerySet
 from service.util import draw_table
@@ -73,9 +71,9 @@ def update_data_frame_tables(collection_json_data, path,
     stocks_symbols = collection_json_data['stocksSymbols']
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
         # TODO: unused variable
-        last_updated_date_closing_prices = get_file_from_google_drive(
-            f'{helpers.get_sorted_path(path, num_of_last_elements=3)}lastUpdatedDftables.txt'
-        ).getvalue().decode('utf-8')
+        # last_updated_date_closing_prices = get_file_from_google_drive(
+        #     f'{helpers.get_sorted_path(path, num_of_last_elements=3)}lastUpdatedDftables.txt'
+        # ).getvalue().decode('utf-8')
         pass
     else:
         with open(f"{path}lastUpdatedDftables.txt", "r") as file:
@@ -302,7 +300,7 @@ def get_closing_prices_table(path) -> pd.DataFrame:
     else:
         closing_prices_table: pd.DataFrame = pd.read_csv(filepath_or_buffer=f'{path}closing_prices.csv', index_col=0)
     # Check if there's a key with a numeric value in the table
-        numeric_keys: list[str] = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
+    numeric_keys: list[str] = [key for key in closing_prices_table.keys() if key.strip().isnumeric()]
     if len(numeric_keys) > 0:
         closing_prices_table = closing_prices_table.iloc[1:]
     else:
@@ -467,8 +465,7 @@ def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') 
 
 
 def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
-                          num_of_years_history, closing_prices_table_path: str, sub_folder: str) -> None:
-    # TODO: `num_of_years_history` is unused
+                          closing_prices_table_path: str, sub_folder: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
 
     if isinstance(model_name, int):
@@ -505,10 +502,10 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
                                    f'{settings.GRAPH_IMAGES}{sub_folder}all_options')
 
 
-def plot_research_graphs(data_tuple_list: list, intersection_data, sector_name: str, labels: list[str]) -> None:
+def plot_research_graphs(data_tuple_list: list, table_data, sector_name: str, labels: list[str]) -> None:
     prefix_str = "Top Stocks - "
     path = f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}'
-    draw_table.draw_research_table(path, intersection_data, labels)
+    draw_table.draw_research_table(path, table_data, labels)
 
     colors = ["lightgray", "red", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green",
               "green", "green"]
@@ -655,7 +652,7 @@ def plot_image(file_name) -> None:
 
 
 def get_stocks_from_json_file() -> dict[list]:
-    stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)  # TODO: unused
+    # stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)  # TODO: unused
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     stocks: dict[list] = {}
     for i in range(1, len(models_data)):
@@ -727,7 +724,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
-    models_data = helpers.get_collection_json_data()  # TODO: unused
+    # models_data = helpers.get_collection_json_data()  # TODO: unused
     """if is_machine_learning:  # TODO maybe remove
         weighted_sum = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
@@ -817,16 +814,17 @@ return:
     return total_capital, total_portfolio_profit, total_profit, total_investments_value
 
 
-def show_investments_from_json_file(login_name: str):
-    investments_list = get_user_investments_from_json_file(login_name)
-    if len(investments_list) == 0:
-        print("No investments yet")
-        return None
-
-    graph_plot_methods.plot_investments_graph(investments_list)
-    print("Investments:")
-    for investment in investments_list:
-        print(investment)
+# TODO: unused method
+# def show_investments_from_json_file(login_name: str):
+#     investments_list = get_user_investments_from_json_file(login_name)
+#     if len(investments_list) == 0:
+#         print("No investments yet")
+#         return None
+#
+#     graph_plot_methods.plot_investments_graph(investments_list)
+#     print("Investments:")
+#     for investment in investments_list:
+#         print(investment)
 
 
 # console functions
@@ -855,7 +853,7 @@ def get_stat_model_option() -> int:
 
 
 def get_machine_learning_model() -> str:  # for forecast graph 4 options
-    option: int = console_handler.get_machine_learning_mdoel()
+    option: int = console_handler.get_machine_learning_model()
     return settings.MACHINE_LEARNING_MODEL[option - 1]
 
 
@@ -914,8 +912,9 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
     # display stat model graph (matplotlib)
     plot_stat_model_graph(
         stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
-        model_name=settings.MODEL_NAME[model_option], num_of_years_history=settings.NUM_OF_YEARS_HISTORY,
-        closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder)
+        model_name=settings.MODEL_NAME[model_option], closing_prices_table_path=closing_prices_table_path,
+        sub_folder=sub_folder
+    )
 
     # show result
     plot_image(f'{settings.GRAPH_IMAGES}{sub_folder}all_options.png')

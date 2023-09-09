@@ -19,6 +19,7 @@ django-environ==0.10.0
 django-htmx==1.16.0
 django-jazzmin==2.6.0
 django-phonenumber-field==7.1.0
+django-stubs==4.2.4
 drf-spectacular==0.26.4
 flake8==6.1.0
 fonttools==4.42.1

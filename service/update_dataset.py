@@ -6,7 +6,7 @@ from service.config import settings
 
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(project_root)
-
+# flake8 --disable-noqa
 from impl.user import User
 from util import data_management
 
