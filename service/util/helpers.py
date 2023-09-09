@@ -10,22 +10,17 @@ import os
 
 from bidi import algorithm as bidi_algorithm
 
-import days
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from functools import reduce
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 import pmdarima as pm
-from sklearn.ensemble import GradientBoostingRegressor
 from prophet import Prophet
 
-import boto3
-
-from service.config import settings, aws, google_drive
+from service.config import settings
 from service.impl.sector import Sector
 from service.util import tase_interaction
 
@@ -33,18 +28,12 @@ from PIL import Image
 
 # lstm imports
 import seaborn as sns
-from tensorflow import keras
-from functools import reduce
-from tensorflow.keras.layers import Bidirectional, Dropout, Activation, Dense, LSTM,BatchNormalization,Flatten,Dropout,Conv2D
-from tensorflow.compat.v1.keras.layers import CuDNNLSTM
-from tensorflow.keras.models import Sequential
-from sklearn.metrics import mean_squared_error
 import tensorflow as tf
+from tensorflow.python.keras.models import Sequential
 from keras import regularizers
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.python.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error
 from keras.optimizers import Adam
-from pylab import rcParams
 import shap
 
 # Global variables
@@ -424,7 +413,7 @@ class Analyze:
         df_final = df_final.dropna(subset=['label'])
         df_final = df_final[df_final['label'] != 0.0]
         df_final['Date'] = df_final.index
-# montly graph
+        # montly graph
         df_final['Year'] = df_final['Date'].dt.year
         df_final['Month'] = df_final['Date'].dt.month
         df_monthly = df_final.groupby(['Year', 'Month']).apply(lambda x: ((1 + x['label'].mean()) ** 21 - 1) * 100)
@@ -454,8 +443,8 @@ class Analyze:
         df_final = drop_weekends(df_final)
 
 
-# Graphs
-"""
+        # Graphs
+        """
         rcParams['figure.figsize'] = 14, 8
         sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
@@ -466,7 +455,7 @@ class Analyze:
         ax.set_ylabel('Price')
         ax.set_title('S&P 500 Price Over Time')
 
-# price by years
+        # price by years
         # Extract the year from the 'Date' column and create a new 'Year' column
         tickers_df['Year'] = tickers_df['Date'].dt.year
 
@@ -475,7 +464,7 @@ class Analyze:
         sns.boxplot(x='Year', y=forecast_col, data=tickers_df)
         plt.title('S&P 500 Price by Year')
         plt.show()
-# price by years with lables
+        # price by years with lables
         tickers_df = tickers_df.drop(['Date', 'Year', forecast_col], axis=1)
 
         # Selecting only columns that start with 'ADJ_PCT_change_'
@@ -491,7 +480,7 @@ class Analyze:
         plt.title('Adjusted Percentage Change by Ticker')
         plt.xticks(rotation=90)  # Rotate x-axis labels for better readability if they're long
         plt.show()
-"""
+        """
 
         # merged_df = add_unemployment_rate_and_cpi(df_final, start_date, end_date)
         # merged_df = add_interest_rate(merged_df)
@@ -552,23 +541,23 @@ class Analyze:
 
         model = Sequential()
 
-        model.add(LSTM(units=days, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
-        model.add(BatchNormalization())
-        model.add(Dropout(rate=dropout))
+        model.add(tf.keras.layers.LSTM(units=days, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
+        model.add(tf.keras.layers.BatchNormalization())
+        model.add(tf.keras.layers.Dropout(rate=dropout))
 
-        model.add(LSTM(units=days, return_sequences=True))
-        model.add(BatchNormalization())
-        model.add(Dropout(rate=dropout))
+        model.add(tf.keras.layers.LSTM(units=days, return_sequences=True))
+        model.add(tf.keras.layers.BatchNormalization())
+        model.add(tf.keras.layers.Dropout(rate=dropout))
 
-        model.add(LSTM(units=days, return_sequences=False))
-        model.add(BatchNormalization())
-        model.add(Dropout(rate=dropout))
+        model.add(tf.keras.layers.LSTM(units=days, return_sequences=False))
+        model.add(tf.keras.layers.BatchNormalization())
+        model.add(tf.keras.layers.Dropout(rate=dropout))
 
-        model.add(Flatten())
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dense(16, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
-        model.add(Dense(units=1))
+        model.add(tf.keras.layers.Flatten())
+        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(32, activation='relu'))
+        model.add(tf.keras.layers.Dense(16, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
+        model.add(tf.keras.layers.Dense(units=1))
 
 
         # takes long time
@@ -1173,43 +1162,6 @@ def convert_company_name_to_israeli_security_number(companyName: str) -> str:
               item['companyName'] == companyName]
 
     return result[0]
-
-
-class AwsInstance:
-    def __init__(self):
-        # aws
-        self.app_name = aws.APP_NAME
-        self._aws_access_key_id = aws.AWS_ACCESS_KEY_ID
-        self._aws_secret_access_key = aws.AWS_SECRET_ACCESS_KEY
-        self._region_name = aws.REGION_NAME
-
-    def connect_to_s3(self):  # -> boto3.client:
-        # s3 = boto3.resource(
-        #     service_name='s3',
-        #     region_name=self._region_name,
-        #     aws_secret_access_key=self._aws_secret_access_key,
-        #     aws_access_key_id=self._aws_access_key_id
-        # )
-
-        """s3_client = boto3.client(
-            service_name='s3',
-            region_name=self._region_name,
-            aws_access_key_id=self._aws_access_key_id,
-            aws_secret_access_key=self._aws_secret_access_key,
-        )
-        return s3_client"""
-
-    """def upload_file_to_s3(self, file_path, bucket_name, s3_object_key, s3_client) -> None:
-        # Local folder path to upload
-        # local_folder_path = 'path/to/your/local/folder'
-
-        for root, dirs, files in os.walk(local_folder_path):
-            for file in files:
-                local_file_path = os.path.join(root, file)
-                s3_object_key = os.path.relpath(local_file_path, local_folder_path)
-                upload_file_to_s3(local_file_path, bucket_name, s3_object_key)
-
-        s3_client.upload_file(file_path, bucket_name, s3_object_key)"""
 
 
 def get_symbols_names_list() -> list[str]:

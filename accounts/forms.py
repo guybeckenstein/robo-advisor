@@ -251,7 +251,6 @@ class UpdateInvestorUserForm(forms.ModelForm):
     )
     stocks_symbols = forms.MultipleChoiceField(widget=forms.SelectMultiple, required=False)
 
-
     def __init__(self, *args, disabled_project=True, **kwargs):
         investor_user_instance: InvestorUser = kwargs.pop('investor_user_instance', None)
         collection_number: str = str(investor_user_instance.stocks_collection_number)
@@ -274,7 +273,7 @@ class UpdateInvestorUserForm(forms.ModelForm):
         instance = super().save(commit=False)
 
         collection_number: int = self.cleaned_data.get('stocks_collection_number', -1)
-        print("collection number in save button " +str(collection_number))
+        print(f"collection number in save button {collection_number}")
         stocks_symbols: list[str] = get_stocks_symbols_from_json_file(collection_number=collection_number)
 
         # Convert the list to a formatted string

@@ -24,16 +24,10 @@ if __name__ == '__main__':
     user_name: int = 'yarden'  # data_management.get_name()
     data_changed = False
 
-
-
-
-
-
     if settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
         data_management.update_files_from_google_drive()
 
     while selection != exit_loop_operation:
-
         if selection == 1:  # create new user and build portfolio
 
             # get choices from user
@@ -78,7 +72,6 @@ if __name__ == '__main__':
             data_management.save_user_portfolio(user)
 
         elif selection == 2:  # add new investment to user
-
             investment_amount: int = data_management.get_investment_amount()  # get from terminal
             if investment_amount is not None:
                 __, investments_list = data_management.add_new_investment(user_name, investment_amount)
@@ -108,7 +101,6 @@ if __name__ == '__main__':
             data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/estimated_yield_graph.png')
 
         elif selection == 4:  # forecast specific stock using machine learning
-
             stock_name = data_management.get_name()
             num_of_years_history = data_management.get_num_of_years_history()
             machine_learning_model = data_management.get_machine_learning_model()
@@ -124,7 +116,6 @@ if __name__ == '__main__':
             )
 
         elif selection == 5:  # plotbb_strategy_stock for specific stock
-
             stock_name = data_management.get_name()
             num_of_years_history = data_management.get_num_of_years_history()
             staring_date, today_date = data_management.get_from_and_to_date(num_of_years_history)
@@ -149,7 +140,6 @@ if __name__ == '__main__':
             data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name} (Graphs).png')
 
         elif selection == 7:  # plot stat model graph(scatter points)
-
             # get choices from user
             is_machine_learning, model_option, stocks_collection_number = \
                 data_management.get_basic_data_from_user()
@@ -169,11 +159,7 @@ if __name__ == '__main__':
                 settings.GRAPH_IMAGES + sub_folder + 'all_options' + '.png')
 
         elif selection == 9:  # dynamic commands for programmers
-            # data_management.upload_file_to_google_drive(settings.DATASET_LOCATION + "stocks.json", 2)
-            # all_data_tuple, intersection, unified_intersection_data_tuple = research.get_all_best_stocks(settings.RESEARCH_FILTERS)
-            # research.upload_top_stocks_to_google_drive()
             data_management.update_files_from_google_drive()
-            # helpers.AwsInstance().connect_to_s3()
 
         else:
             break

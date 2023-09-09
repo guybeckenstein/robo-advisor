@@ -143,7 +143,8 @@ class HtmxLoginView(LoginView):
                     if service_settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
                         data_management.update_files_from_google_drive()
                     """
-                    Dataset and static images are updated daily, only when the date of the last update is different from today,
+                    Dataset and static images are updated daily, only when the date of the last update is different
+                    from today
                     """
                     # it will be displayed if the last date for the change is different from today's date
 

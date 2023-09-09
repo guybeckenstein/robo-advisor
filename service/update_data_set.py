@@ -12,6 +12,3 @@ from config import settings
 if __name__ == '__main__':
     data_management.upload_file_to_google_drive(settings.USERS_JSON_NAME + ".json", 2)
     data_management.update_all_tables(settings.NUM_OF_YEARS_HISTORY, is_daily_running=True)
-
-
-

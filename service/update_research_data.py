@@ -11,8 +11,8 @@ download_data = False
 
 if __name__ == '__main__':
     if download_data:
-        research.download_data_for_research(settings.NUM_OF_YEARS_HISTORY)  # download 10 years history data for all stocks
-    # research.update_volume_and_cap() # TODO: update volume and cap
+        # download 10 years history data for all stocks
+        research.download_data_for_research(settings.NUM_OF_YEARS_HISTORY)
         research.save_stocks_intersection_to_csv()  # save stocks intersection to csv file
         research.update_stocks_names_tables()  # update stocks names tables
     all_stats_data_list_of_lists, unified_intersection_data, unified_intersection_data_tuple = research.get_all_best_stocks(settings.RESEARCH_FILTERS)  # filters stocks and save top stocks images

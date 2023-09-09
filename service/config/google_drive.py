@@ -33,7 +33,6 @@ class GoogleDriveInstance:
 
     def get_files(self):
         # List files and subfolders in the folder
-        old_file_id = self.find_file_id_by_name('Top Stocks Israel general bonds indexes intersection.png')
         results = self.service.files().list(q=f"'{MAIN_FOLDER_ID}' in parents").execute()
         files = results.get('files', [])
         if not files:
@@ -43,7 +42,7 @@ class GoogleDriveInstance:
             for file in files:
                 # Download the image
                 request = self.service.files().get_media(fileId=file['id'])
-                image_data = request.execute()
+                request.execute()
 
     def upload_file(self, full_file_path, short_file_path):
         folder_id = self.find_file_id_by_path_name(short_file_path, folder_type=True)
@@ -65,7 +64,7 @@ class GoogleDriveInstance:
         else:
             # Create the file and specify the parent folder using addParents
             file_metadata['parents'] = [folder_id]
-            file = self.service.files().create(
+            self.service.files().create(
                 body=file_metadata, media_body=media, fields='id',
                 supportsAllDrives=True
             ).execute()
@@ -154,5 +153,3 @@ class GoogleDriveInstance:
                 csv_files_list.append({'name': file['name'], 'data': self.get_file_by_id(file['id'])})
 
             return csv_files_list
-
-
