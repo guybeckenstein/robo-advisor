@@ -36,7 +36,7 @@ _Final project for the Fintech workshop by Zevin_
       Make these configurations:
     </h4>
     <small style="color: red;">
-      * You must configure a database called `robo_advisor` in your postgres! Otherwise, it won't work. Use pgAdmin 4 or PSQL for it.
+      * You must configure a database called `roboadvisor` in your postgres! Otherwise, it won't work. Use pgAdmin 4 or PSQL for it.
       <br>
       ** You should also create a file called `.env.dev` in the root folder (robo-advisor), and add environment variables there
     </small>
@@ -59,7 +59,7 @@ _Final project for the Fintech workshop by Zevin_
           <br>
           POSTGRES_PORT=5432
           <br>
-          POSTGRES_DB=robo_advisor
+          POSTGRES_DB=roboadvisor
           <br>
           POSTGRES_USER=PUT_HERE_YOUR_LOCAL_POSTGRES_USERNAME
           <br>

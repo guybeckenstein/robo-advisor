@@ -139,9 +139,11 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'robo_advisor'),
+        'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor'),
         'USER': os.environ.get('POSTGRES_USER', 'postgres'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        # TODO: AWS:
+        #  'HOST': 'https://djangoec2.cbtwoylmye6q.us-east-1.rds.amazonaws.com/',
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
@@ -232,7 +234,7 @@ JAZZMIN_SETTINGS = {
     "copyright": "Acme Library Ltd",
 
     # List of model admins to search from the search bar, search bar omitted if excluded
-    # If you want to use a single search field you dont need to use a list, you can use a simple string
+    # If you want to use a single search field you don't need to use a list, you can use a simple string
     "search_model": ["auth.User", "auth.Group"],
 
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user

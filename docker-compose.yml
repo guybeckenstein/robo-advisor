@@ -11,7 +11,7 @@ services:
       timeout: 3s
       retries: 3
     environment:
-      - POSTGRES_DB=robo_advisor
+      - POSTGRES_DB=roboadvisor
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
@@ -36,7 +36,7 @@ services:
       - DEBUG=1
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=robo_advisor
+      - POSTGRES_DB=roboadvisor
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - DATABASE=postgres
