@@ -1,19 +1,15 @@
 import codecs
 import csv
 import datetime
-import io
 import requests
 from datetime import datetime as data_time, timedelta
 import json
 import math
-import os
-
-from bidi import algorithm as bidi_algorithm
 
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -26,7 +22,7 @@ from service.util import tase_interaction
 
 from PIL import Image
 
-# lstm imports
+# LSTM imports
 import matplotlib.dates as mdates
 import seaborn as sns
 import tensorflow as tf
@@ -35,7 +31,6 @@ from keras import regularizers
 from tensorflow.python.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error
 from keras.optimizers import Adam
-import shap
 
 # Global variables
 SINGLE_DAY: int = 86400
@@ -787,6 +782,8 @@ def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
 
 
 def convert_israeli_symbol_number_to_name(symbol_number: int, is_index_type: bool, is_reverse_mode: bool = True) -> str:
+    from bidi import algorithm as bidi_algorithm
+
     if is_index_type:
         json_data = get_json_data(settings.INDICES_LIST_JSON_NAME)
         hebrew_text = [item['name'] for item in json_data['indicesList']['result'] if item['id'] == symbol_number][0]
@@ -908,6 +905,7 @@ def get_descriptions_list() -> list[str]:
 
 
 def create_graphs_folders() -> None:
+    import os
     try:
         os.mkdir(f'{settings.GRAPH_IMAGES}')
     except FileExistsError:
@@ -1037,6 +1035,7 @@ def convert_data_stream_to_pd(file_stream):
 
 
 def convert_data_stream_to_png(file_stream):
+    import io
     # Create an Image object from the binary stream
     return Image.open(io.BytesIO(file_stream.read()))
 
@@ -1264,6 +1263,8 @@ def lstm_show_plt_graph(df_final, mode):
 
 
 def lstm_show_data_plot_wth_labels(df_final, forecast_col):
+    from matplotlib import rcParams
+
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
@@ -1302,6 +1303,7 @@ def lstm_show_data_plot_wth_labels(df_final, forecast_col):
 
 
 def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
+    import shap
     # shap          takes too long time
     # Initialize JS visualization code
     shap.initjs()

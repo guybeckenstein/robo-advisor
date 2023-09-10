@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     # Created apps
     'accounts',
     'core',
@@ -104,8 +105,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django_htmx.middleware.HtmxMiddleware",
-    "accounts.middleware.DynamicSiteIDMiddleware",
+    'django_htmx.middleware.HtmxMiddleware',
+    'accounts.middleware.DynamicSiteIDMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -141,10 +143,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor'),
         'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-        # TODO: AWS:
-        #  'HOST': 'https://djangoec2.cbtwoylmye6q.us-east-1.rds.amazonaws.com/',
-        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PASSWORD': 'postgres',  # os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com',  # os.environ.get('POSTGRES_HOST', 'postgres'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
@@ -370,3 +370,14 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+# AWS
+AWS_ACCESS_KEY_ID: str = os.environ.get('AWS_ACCESS_KEY_ID', ValueError)
+AWS_SECRET_ACCESS_KEY: str = os.environ.get('AWS_SECRET_ACCESS_KEY', ValueError)
+AWS_STORAGE_BUCKET_NAME: str = 'roboadvisorbucket'
+AWS_S3_SIGNATURE_NAME: str = 's3v4'
+AWS_S3_REGION_NAME: str = 'us-east-1'
+AWS_S3_FILE_OVERWRITE: bool = False
+AWS_DEFAULT_ACL = None
+AWS_S3_VERITY: bool = True
+DEFAULT_FILE_STORAGE: str = 'storages.backends.s3boto3.S3Boto3Storage'
