@@ -1,7 +1,6 @@
 import codecs
 import csv
 import datetime
-import io
 import requests
 from datetime import datetime as data_time, timedelta
 import json
@@ -14,7 +13,7 @@ from functools import reduce
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -27,7 +26,7 @@ from service.util import tase_interaction
 
 from PIL import Image
 
-# lstm imports
+# LSTM imports
 import matplotlib.dates as mdates
 import seaborn as sns
 import tensorflow as tf
@@ -222,13 +221,13 @@ class Analyze:
             df_final[['CPI', 'unemployment_rate']] /= 30
             df_final[['GDP Growth Rate']] /= 90
             scaled_data = df_final
-
             # all tickers columns
             tickers_cols_to_scale = scaled_data.columns.drop(['Label', 'Date'] + cols_to_scale)
             scaled_data[tickers_cols_to_scale] *= 100
             # Sliding Window
             scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
             scaled_data = scaled_data[scaled_data['Label'] != 0]
+            scaled_data.to_csv(f'{settings.RESEARCH_LOCATION}LSTM_Final-Runung.csv')
         else:
             scaled_data = df_final
             # tickers_cols_to_scale = scaled_data.columns.drop(['Date', 'Label'])
@@ -451,9 +450,8 @@ class Analyze:
         return self._returns_stock
 
 
-def update_daily_change_with_machine_learning(
-        returns_stock, table_index: pd.Index, models_data: dict, closing_prices_mode: bool = False
-):
+def update_daily_change_with_machine_learning(returns_stock, table_index: pd.Index, models_data: dict,
+                                              closing_prices_mode: bool = False) -> tuple:
     # Calculate offset of the table (get sub-table)
     offset_row, record_percent_to_predict = get_daily_change_sub_table_offset(models_data, table_index)
 
@@ -469,10 +467,10 @@ def update_daily_change_with_machine_learning(
     if len(columns) == 0:
         raise AttributeError('columns length is invalid - 0. Should be at least 1')
     else:
-        # annual_return = None
         excepted_returns = None
+        annual_return_with_forecast = None
 
-        for i, stock in enumerate(columns):  # TODO - sepreate for lstm
+        for i, stock in enumerate(columns):
             if is_ndarray_mode:
                 stock_name = 0
             else:
@@ -497,7 +495,6 @@ def update_daily_change_with_machine_learning(
                 raise ValueError('Invalid machine model')
             if df['Label'][offset_row:].values.size == returns_stock[stock_name].size:
                 returns_stock[stock_name] = df['Label'][offset_row:].values
-
             else:
                 returns_stock[stock_name] = df['Label'].values
 
@@ -518,13 +515,13 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     min_start_year = today.year - 10
     min_start_month = today.month
     min_start_day = today.day
-    min_date = str(min_start_year) + "-" + str(min_start_month) + "-" + str(min_start_day)
+    min_date: str = f"{min_start_year}-{min_start_month}-{min_start_day}"
 
     frame = {}
     yf.pdr_override()
     if start_date is None or end_date is None:
         start_date, end_date = get_from_and_to_dates(num_of_years_history)
-    file_url: str = location_saving + file_name + ".csv"
+    file_url: str = f'{location_saving}{file_name}.csv'
 
     for i, stock in enumerate(stocks_names):
         if isinstance(stock, float):
@@ -541,24 +538,18 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
                 df: pd.DataFrame = get_israeli_symbol_data(
                     'get_past_10_years_history', start_date, end_date, stock, is_index_type
                 )
+                # list to DateFrame
+                df["tradeDate"] = pd.to_datetime(df["tradeDate"])
+                df.set_index("tradeDate", inplace=True)
+                if is_index_type:
+                    price = df[["closingIndexPrice"]]
+                else:
+                    price = df[["closingPrice"]]
+                frame[stocks_names[i]] = price
             except ValueError:
                 print('Invalid start_date or end_date format, should be %Y-%m-%d')
-                df = pd.DataFrame(df)
-            except AttributeError:
+            except (AttributeError, IndexError):
                 print(f"Error in stock: {stock}")
-                df = pd.DataFrame(df)
-            except IndexError:
-                print(f"Error in stock: {stock}")
-                df = pd.DataFrame(df)
-            # list to DateFrame
-            df = pd.DataFrame(df)
-            df["tradeDate"] = pd.to_datetime(df["tradeDate"])
-            df.set_index("tradeDate", inplace=True)
-            if is_index_type:
-                price = df[["closingIndexPrice"]]
-            else:
-                price = df[["closingPrice"]]
-            frame[stocks_names[i]] = price
         else:  # US stock
             try:
                 df: pd.DataFrame = yf.download(stock, start=start_date, end=end_date)
@@ -657,8 +648,8 @@ def get_from_and_to_dates(num_of_years) -> tuple[str, str]:
     end_year = today.year
     end_month = today.month
     end_day = today.day
-    from_date = str(start_year) + "-" + str(start_month) + "-" + str(start_day)
-    to_date = str(end_year) + "-" + str(end_month) + "-" + str(end_day)
+    from_date: str = f"{start_year}-{start_month}-{start_day}"
+    to_date: str = f"{end_year}-{end_month}-{end_day}"
     return from_date, to_date
 
 
@@ -688,12 +679,11 @@ def makes_yield_column(_yield, weighted_sum_column):
 
 
 # yfinance and israel tase impl:
-def get_israeli_symbol_data(command, start_date, end_date, israeli_symbol_name, is_index_type):
+def get_israeli_symbol_data(command: str, start_date, end_date, israeli_symbol_name: int, is_index_type: bool):
     if is_index_type:
-        data = \
-            tase_interaction.get_israeli_index_data(command, start_date, end_date, israeli_symbol_name)[
-                "indexEndOfDay"][
-                "result"]
+        data = tase_interaction.get_israeli_index_data(
+            command, start_date, end_date, israeli_symbol_name
+        )["indexEndOfDay"]["result"]
     else:
         data = tase_interaction.get_israeli_security_data(
             command, start_date, end_date, israeli_symbol_name)["securitiesEndOfDayTradingData"]["result"]
@@ -761,15 +751,15 @@ def get_israeli_indexes_list():
 
 
 def get_usa_stocks_table() -> pd.DataFrame:
-    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "nasdaq_all_stocks.csv")
+    return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}nasdaq_all_stocks.csv")
 
 
 def get_usa_indexes_table() -> pd.DataFrame:
-    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "usa_indexes.csv")
+    return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}usa_indexes.csv")
 
 
 def get_all_stocks_table():
-    return pd.read_csv(settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv")
+    return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}all_stocks_basic_data.csv")
 
 
 def get_sector_by_symbol(symbol):
@@ -821,7 +811,7 @@ def get_collection_json_data() -> dict[
     list[dict[list[object], float, float, int]]
 ]:
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        return convert_data_stream_to_json()['collections']
+        return convert_data_stream_to_json(file_stream=None)['collections']  # TODO: add parameter to method call
     else:
         return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
@@ -924,7 +914,7 @@ def currency_exchange(from_currency="USD", to_currency="ILS"):
 
 
 def save_all_stocks():  # dont delete it
-    path = settings.CONFIG_RESOURCE_LOCATION + "all_stocks_basic_data.csv"
+    path: str = f"{settings.CONFIG_RESOURCE_LOCATION}all_stocks_basic_data.csv"
     sectors_data = get_sectors_data_from_file()
     # Assuming you have lists named list_symbol, list_sector, and list_description
     list_symbol = []
@@ -972,7 +962,7 @@ def save_usa_indexes_table():  # dont delete it
         all_keys.update(stock_data.keys())
 
     # Define the CSV file path
-    csv_file_path = settings.CONFIG_RESOURCE_LOCATION + 'usa_indexes.csv'
+    csv_file_path: str = f'{settings.CONFIG_RESOURCE_LOCATION}usa_indexes.csv'
 
     # Write the data to a CSV file
     with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
@@ -983,8 +973,8 @@ def save_usa_indexes_table():  # dont delete it
             writer.writerow(stock_data)
 
 
-def save_json_data(path, sectors_json_file):
-    with open(path + ".json", 'w', encoding='utf-8') as f:
+def save_json_data(path: str, sectors_json_file) -> None:
+    with open(f"{path}.json", 'w', encoding='utf-8') as f:
         json.dump(sectors_json_file, f, ensure_ascii=False, indent=4)
 
 
@@ -1083,8 +1073,10 @@ def lstm_add_interest_rate(df_final, start_date, end_date):
     interest_rate_series_id = "DGS10"  # Example: 10-year Treasury constant maturity rate
 
     # The Economic Research Division of the Federal Reserve Bank of St. Louis website
-    interest_rate_url = (f"https://api.stlouisfed.org/fred/series/observations?series_id="
-                         f"{interest_rate_series_id}&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}")
+    interest_rate_url = (
+        f"https://api.stlouisfed.org/fred/series/observations?series_id={interest_rate_series_id}"
+        f"&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}"
+    )
 
     try:
         # Send a GET request to the FRED API for interest rates
@@ -1104,70 +1096,73 @@ def lstm_add_interest_rate(df_final, start_date, end_date):
             for observation in interest_rate_observations:
                 date = observation["date"]
                 value = observation["value"]
-                df_interest_rates = df_interest_rates._append({"Date": date, "Interest Rate": value},
-                                                              ignore_index=True)
+                df_interest_rates = df_interest_rates._append({"Date": date, "Interest Rate": value}, ignore_index=True)
 
         else:
+            df_interest_rates = None
             print("Error occurred while fetching interest rate data from the API.")
     except requests.exceptions.RequestException as e:
+        df_interest_rates = None
         print("An error occurred:", e)
 
-    df_interest_rates['Date'] = pd.to_datetime(df_interest_rates["Date"])
+    if df_interest_rates:
+        df_interest_rates['Date'] = pd.to_datetime(df_interest_rates["Date"])
 
     merged_df = pd.merge(df_final, df_interest_rates, left_on='Date', right_on='Date', how='left')
     merged_df = lstm_fill_na_values(merged_df)
     return merged_df, api_key
 
 
-def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key):
+def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key) -> pd.DataFrame | None:
     # Add GDP growth
     # Define the series ID for GDP growth rate
-    gdp_growth_rate_series_id = "A191RL1Q225SBEA"
+    gdp_growth_rate_series_id: str = "A191RL1Q225SBEA"
 
     # The Economic Research Division of the Federal Reserve Bank of St. Louis website
-    gdp_growth_rate_url = (f"https://api.stlouisfed.org/fred/series/observations?series_id={gdp_growth_rate_series_id}"
-                           f"&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}")
+    gdp_growth_rate_url: str = (
+        f"https://api.stlouisfed.org/fred/series/observations?series_id={gdp_growth_rate_series_id}"
+        f"&api_key={api_key}&file_type=json&observation_start={start_date}&observation_end={end_date}"
+    )
 
     try:
         # Send a GET request to the FRED API for GDP growth rate
         gdp_growth_rate_response = requests.get(gdp_growth_rate_url)
-
         # Check if the request was successful
         if gdp_growth_rate_response.status_code == 200:
             gdp_growth_rate_data = gdp_growth_rate_response.json()
-
             # Extract historical GDP growth rate observations
             gdp_growth_rate_observations = gdp_growth_rate_data["observations"]
-
             # Create an empty DataFrame
             df_gdp_growth_rate = pd.DataFrame(columns=["Date", "GDP Growth Rate"])
-
             # Populate the DataFrame with the GDP growth rate data
             for observation in gdp_growth_rate_observations:
                 date = observation["date"]
                 value = float(observation["value"])
-                df_gdp_growth_rate = df_gdp_growth_rate._append({"Date": date, "GDP Growth Rate": value},
-                                                                ignore_index=True)
-
+                df_gdp_growth_rate = df_gdp_growth_rate._append(
+                    {"Date": date, "GDP Growth Rate": value}, ignore_index=True
+                )
             # Convert "Date" column to datetime format
             df_gdp_growth_rate["Date"] = pd.to_datetime(df_gdp_growth_rate["Date"])
-
         else:
+            df_gdp_growth_rate = None
             print("Error occurred while fetching GDP growth rate data from the API.")
     except requests.exceptions.RequestException as e:
+        df_gdp_growth_rate = None
         print("An error occurred:", e)
     # Join the data using the available GDP growth observations
-    joined_df = pd.merge_asof(merged_df, df_gdp_growth_rate, on="Date", direction="backward")
-
-    # Perform data alignment and fill missing values
-    joined_df["GDP Growth Rate"] = joined_df["GDP Growth Rate"].ffill()
-
-    return joined_df
+    if df_gdp_growth_rate:
+        joined_df = pd.merge_asof(merged_df, df_gdp_growth_rate, on="Date", direction="backward")
+        # Perform data alignment and fill missing values
+        joined_df["GDP Growth Rate"] = joined_df["GDP Growth Rate"].ffill()
+        return joined_df
+    else:
+        return None
 
 
 def lstm_fill_na_values(df_final):
     # Fill NA Values
-    zero_mask_columns = df_final.eq('.').any(axis=0)
+    # TODO: unused
+    # zero_mask_columns = df_final.eq('.').any(axis=0)
 
     # Convert the column to numeric, treating '.' as NaN
     df_final['Interest Rate'] = pd.to_numeric(df_final['Interest Rate'], errors='coerce')
@@ -1215,12 +1210,12 @@ def lstm_show_plt_graph(df_final, mode):
     plt.show()
 
 
-def lstm_show_data_plot_wth_labels(df_final, tickers_df, forecast_col):
+def lstm_show_data_plot_wth_labels(df_final, forecast_col):
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
     # data plot
-    ax = df_final.plot(x='Date', y='Label');
+    ax = df_final.plot(x='Date', y='Label')
     ax.set_xlabel('Year')
 
     ax.set_ylabel('Price')
@@ -1228,7 +1223,7 @@ def lstm_show_data_plot_wth_labels(df_final, tickers_df, forecast_col):
 
     # price by years
     # Extract the year from the 'Date' column and create a new 'Year' column
-    tickers_df['Year'] = df_final['Date'].dt.year
+    df_final['Year'] = df_final['Date'].dt.year
 
     # Create boxplot
     plt.figure(figsize=(20, 10))  # Optional, for adjusting figure size
@@ -1257,7 +1252,8 @@ def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     # Initialize JS visualization code
     shap.initjs()
 
-    feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
+    # TODO unused
+    # feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
 
     # Define a predict function wrapper to handle 3D input
     def lstm_predict_wrapper(x):

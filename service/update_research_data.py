@@ -15,6 +15,11 @@ if __name__ == '__main__':
         research.download_data_for_research(settings.NUM_OF_YEARS_HISTORY)
         research.save_stocks_intersection_to_csv()  # save stocks intersection to csv file
         research.update_stocks_names_tables()  # update stocks names tables
-    all_stats_data_list_of_lists, unified_intersection_data, unified_intersection_data_tuple = research.get_all_best_stocks(settings.RESEARCH_FILTERS)  # filters stocks and save top stocks images
-    research.update_collections_file(all_stats_data_list_of_lists, unified_intersection_data, unified_intersection_data_tuple)  # update stocks.json file according to the new stocks intersection
-    research.upload_top_stocks_to_google_drive()  # upload top stocks images to google drive
+    # filters stocks and save top stocks images
+    all_stats_data_list_of_lists, unified_table_data, unified_table_data_list = research.get_all_best_stocks()
+    # update stocks.json file according to the new stocks intersection
+    research.update_collections_file(
+        all_stats_data_list_of_lists, unified_table_data,  # TODO: unused unified_table_data_list
+    )
+    # upload top stocks images to google drive
+    research.upload_top_stocks_to_google_drive()

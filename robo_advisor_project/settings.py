@@ -1,23 +1,7 @@
 import os
-from pathlib import Path
-
-import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Load and read .env file
-# OS environment variables take precedence over variables from .env
-env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, './.env'))
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Load and read .env file
-# OS environment variables take precedence over variables from .env
-env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, './.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -51,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     # Created apps
     'accounts',
     'core',
@@ -104,8 +89,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django_htmx.middleware.HtmxMiddleware",
-    "accounts.middleware.DynamicSiteIDMiddleware",
+    'django_htmx.middleware.HtmxMiddleware',
+    'accounts.middleware.DynamicSiteIDMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -116,7 +102,7 @@ ROOT_URLCONF = 'robo_advisor_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,13 +122,18 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+aws_mode = False
+if aws_mode:
+    host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'
+else:
+    host_name = os.environ.get('POSTGRES_HOST', 'postgres')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'robo_advisor'),
+        'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor'),
         'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PASSWORD': 'postgres',  # os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': host_name,
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
@@ -202,13 +193,13 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
-    "site_title": "Library Admin",
+    "site_title": "RoboAdvisor Admin",
 
     # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    "site_header": "Library",
+    "site_header": "RoboAdvisor",
 
     # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    "site_brand": "Library",
+    "site_brand": "RoboAdvisor",
 
     # Logo to use for your site, must be present in static files, used for brand on top left
     "site_logo": "img/Logo-sm.png",
@@ -226,13 +217,13 @@ JAZZMIN_SETTINGS = {
     "site_icon": "img/Logo.png",
 
     # Welcome text on the login screen
-    "welcome_sign": "Welcome to the library",
+    "welcome_sign": "Welcome to the RoboAdvisor admin form",
 
     # Copyright on the footer
-    "copyright": "Acme Library Ltd",
+    "copyright": "RoboAdvisor © 2023",
 
     # List of model admins to search from the search bar, search bar omitted if excluded
-    # If you want to use a single search field you dont need to use a list, you can use a simple string
+    # In case you want to use a single search field you don't need to use a list, you can use a simple string
     "search_model": ["auth.User", "auth.Group"],
 
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
@@ -368,3 +359,14 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+# AWS
+AWS_ACCESS_KEY_ID: str = os.environ.get('AWS_ACCESS_KEY_ID', ValueError)
+AWS_SECRET_ACCESS_KEY: str = os.environ.get('AWS_SECRET_ACCESS_KEY', ValueError)
+AWS_STORAGE_BUCKET_NAME: str = 'roboadvisorbucket'
+AWS_S3_SIGNATURE_NAME: str = 's3v4'
+AWS_S3_REGION_NAME: str = 'us-east-1'
+AWS_S3_FILE_OVERWRITE: bool = False
+AWS_DEFAULT_ACL = None
+AWS_S3_VERITY: bool = True
+DEFAULT_FILE_STORAGE: str = 'storages.backends.s3boto3.S3Boto3Storage'

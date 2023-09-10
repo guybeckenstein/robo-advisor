@@ -24,8 +24,8 @@ class User:
         return self._portfolio
 
     @staticmethod
-    def get_json_data(name):
-        with codecs.open(name + ".json", mode="r", encoding="utf-8") as file:
+    def get_json_data(name: str):
+        with codecs.open(filename=f"{name}.json", mode="r", encoding="utf-8") as file:
             json_data = json.load(file)
         return json_data
 
@@ -63,5 +63,5 @@ class User:
             # Update existing user entry
             user_entry[0] = user_entry_dict
 
-        with open(json_name + ".json", 'w') as f:
+        with open(f"{json_name}.json", 'w') as f:
             json.dump(json_data, f, indent=4)

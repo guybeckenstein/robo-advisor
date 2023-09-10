@@ -3,47 +3,34 @@
 {% load crispy_forms_tags %}
 
 {% block extrahead %}
-<style>
-
-
-.htmx-indicator {
-    opacity: 0;
-    transition: opacity 500ms ease-in;
-}
-.htmx-request .htmx-indicator {
-    opacity: 1;
-}
-.htmx-request.htmx-indicator {
-    opacity: 1;
-}
-</style>
+  <style>
+    .htmx-indicator {
+      opacity: 0;
+      transition: opacity 500ms ease-in;
+    }
+  .htmx-request .htmx-indicator {
+      opacity: 1;
+    }
+  .htmx-request.htmx-indicator {
+      opacity: 1;
+    }
+  </style>
 {% endblock extrahead %}
 
 {% block content %}
-
 <div class="content card mx-auto w-75">
-    <div class="row justify-content-center p-3">
-        <div class="border border-light-subtle" style="background-color: #fafafa; width: 98%;">
-
-            <form hx-post="{% url 'capital_market_investment_preferences_form' %}" hx-replace-url="true" hx-indicator="#spinner">
-
-                {% csrf_token %}
-                {% crispy form %}
-                <button type="submit" class="btn btn-primary">
-                    Save
-
-                </button>
-                     <img style="width: 50px; height: 50px;" id="spinner" class="htmx-indicator" src="{% static 'img/spinner1.svg' %}">
-            </form>
+  <div class="row justify-content-center p-3">
+    <div class="border border-light-subtle" style="background-color: #fafafa; width: 98%;">
+      <form hx-post="{% url 'capital_market_investment_preferences_form' %}" hx-replace-url="true" hx-indicator="#spinner">
+        {% csrf_token %}
+        {% crispy form %}
+        <button type="submit" class="btn btn-primary">
+          Save
+        </button>
+        <img style="width: 50px; height: 50px;" id="spinner" class="htmx-indicator" src="{% static 'img/spinner1.svg' %}">
+      </form>
 {#            {% endif %}#}
-
-        </div>
     </div>
+  </div>
 </div>
 {% endblock %}
-
-{% block extrascript %}
-<script>
-// Add your additional JavaScript here if needed
-</script>
-{% endblock extrascript %}

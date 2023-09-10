@@ -187,10 +187,10 @@ def capital_market_investment_preferences_form(request):
                 stocks_collections_number: str = investor_user.stocks_collection_number
             except InvestorUser.DoesNotExist:
                 stocks_collections_number: str = '1'
-            answer_1_value = int(form.cleaned_data['answer_1'])
-            answer_2_value = int(form.cleaned_data['answer_2'])
-            answer_3_value = int(form.cleaned_data['answer_3'])
-            answers_sum = answer_1_value + answer_2_value + answer_3_value
+            answer_1_value: int = int(form.cleaned_data['answer_1'])
+            answer_2_value: int = int(form.cleaned_data['answer_2'])
+            answer_3_value: int = int(form.cleaned_data['answer_3'])
+            answers_sum: int = answer_1_value + answer_2_value + answer_3_value
             # Form instance
             questionnaire_b: QuestionnaireB = form.instance
             questionnaire_b.user = request.user
@@ -219,7 +219,7 @@ def capital_market_investment_preferences_form(request):
                 investor_user.daily_change = daily_change
             except InvestorUser.DoesNotExist:
                 # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
-                InvestorUser.objects.create(
+                investor_user = InvestorUser.objects.create(
                     user=request.user,
                     risk_level=risk_level,
                     total_investment_amount=0,

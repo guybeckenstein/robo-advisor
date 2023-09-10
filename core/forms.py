@@ -194,8 +194,9 @@ class InvestmentPreferencesForm(forms.ModelForm):
         basic_stock_collection_repository_dir: str = settings_service.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
         closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
         data_management.plot_stat_model_graph(
-            stocks_symbols, int(ml_answer), int(model_answer), settings_service.NUM_OF_YEARS_HISTORY,
-            closing_prices_table_path, sub_folder=sub_folder)
+            stocks_symbols=stocks_symbols, is_machine_learning=int(ml_answer), model_name=int(model_answer),
+            closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder
+        )
         plt.clf()
         plt.cla()
         plt.close()

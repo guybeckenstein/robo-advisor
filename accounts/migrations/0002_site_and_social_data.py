@@ -1,6 +1,5 @@
 import os
 
-import environ
 from allauth.socialaccount.models import SocialApp
 from django.db import migrations, transaction
 

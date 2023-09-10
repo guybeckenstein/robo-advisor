@@ -1,4 +1,3 @@
-from service.config import settings
 from service.util import helpers
 from watchlist.models import TopStock
 

@@ -9,7 +9,7 @@ from investment.models import Investment
 
 @pytest.fixture(scope='function')
 def user_factory() -> Callable[[str, str, str, str, str], CustomUser]:
-    def _create_user(**kwargs):
+    def _create_user(**kwargs) -> CustomUser:
         user: CustomUser = CustomUser.objects.create(
             id=kwargs.get('id', -1),
             first_name=kwargs.get('first_name', 'test'),
@@ -26,7 +26,7 @@ def user_factory() -> Callable[[str, str, str, str, str], CustomUser]:
 
 @pytest.fixture(scope='function')
 def superuser_factory() -> Callable[[str, str, str, str, str], CustomUser]:
-    def _create_superuser(**kwargs):
+    def _create_superuser(**kwargs) -> CustomUser:
         user: CustomUser = CustomUser.objects.create_superuser(
             email=kwargs.get('email', 'test@example.ac.il'),
             password=kwargs.get('password', 'django1234'),

@@ -1,6 +1,6 @@
 from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import BadRequest, ValidationError
+from django.core.exceptions import BadRequest
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import QuerySet
 from django.http import Http404

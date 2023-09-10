@@ -35,17 +35,33 @@ def successful_get_request_as_guest(client: Client, url_name: str, template_src:
     return response
 
 
-def redirection_get_request_as_logged_user(client: Client, user_factory: Callable, url_name: str) -> None:
+def redirection_get_request_as_admin(client: Client, superuser_factory: Callable, url_name: str,
+                                           url: str = None) -> None:
+    reversed_url: str = reverse(url_name)
+    login_user(client, superuser_factory)
+    response = client.get(reversed_url)
+    if not url:
+        url = '/'
+    _assert_redirection_status_code_for_get_request(response, url=url)
+
+
+def redirection_get_request_as_logged_user(client: Client, user_factory: Callable, url_name: str,
+                                           url: str = None) -> None:
     reversed_url: str = reverse(url_name)
     login_user(client, user_factory)
     response = client.get(reversed_url)
-    _assert_redirection_status_code_for_get_request(response, url='/')
+    if not url:
+        url = '/'
+    _assert_redirection_status_code_for_get_request(response, url=url)
 
 
-def redirection_get_request_as_guest(client: Client, url_name: str) -> None:
+def redirection_get_request_as_guest(client: Client, url_name: str, url: str = None) -> None:
     reversed_url: str = reverse(url_name)
     response = client.get(reversed_url)
-    _assert_redirection_status_code_for_get_request(response, url=f"{reverse('account_login')}?next={reversed_url}")
+    if url:
+        _assert_redirection_status_code_for_get_request(response, url=url)
+    else:
+        _assert_redirection_status_code_for_get_request(response, url=f"{reverse('account_login')}?next={reversed_url}")
 
 
 def page_not_found_get_request_as_logged_user(client: Client, user_factory: Callable, url_name: str) -> None:
