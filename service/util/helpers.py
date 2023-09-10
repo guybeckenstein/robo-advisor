@@ -1,6 +1,7 @@
 import codecs
 import csv
 import datetime
+import io
 import requests
 from datetime import datetime as data_time, timedelta
 import json
@@ -13,7 +14,7 @@ from functools import reduce
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, rcParams
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -28,15 +29,17 @@ from PIL import Image
 
 # LSTM imports
 import matplotlib.dates as mdates
-import seaborn as sns
+"""import seaborn as sns
 import tensorflow as tf
 from keras.models import Sequential
 from keras import regularizers
 from tensorflow.python.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error
 from keras.optimizers import Adam
+from keras.layers import Dense, Dropout, LSTM, BatchNormalization"""
 import shap
-from keras.layers import Dense, Dropout, LSTM, BatchNormalization
+import seaborn as sns
+
 
 # Global variables
 SINGLE_DAY: int = 86400
@@ -190,7 +193,7 @@ class Analyze:
 
     def lstm_model(self, pct_change_mode=False, use_features=False) -> tuple[
         pd.DataFrame, np.longdouble, np.longdouble]:
-        np.random.seed(1)
+        """np.random.seed(1)
         df_final, forecast_out = self.get_final_dataframe()
         start_date = self._table_index[0].strftime("%Y-%m-%d")
         end_date = self._table_index[-1].strftime("%Y-%m-%d")
@@ -350,7 +353,8 @@ class Analyze:
         return df_final, annual_return, excepted_annual_return
 
         if use_features:
-            lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)
+            lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)"""
+        return None, None, None
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
         df, forecast_out = self.get_final_dataframe()
@@ -1210,7 +1214,7 @@ def lstm_show_plt_graph(df_final, mode):
     plt.show()
 
 
-def lstm_show_data_plot_wth_labels(df_final, forecast_col):
+def lstm_show_data_plot_wth_labels(df_final, tickers_df,  forecast_col):
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
