@@ -589,7 +589,7 @@ def plot_investments_history(login_id, investments_list) -> plt:  # from json fi
         description = f'Date:{purchase_date}, Status:{status}, Model:{mode}'
         descriptions.append(description)
 
-    curr_user_directory = settings.USER_IMAGES + login_id
+    curr_user_directory = settings.USER_IMAGES + str(login_id)
     try:
         os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
     except FileExistsError:  # Ignore the exception
@@ -627,7 +627,7 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
         description = f'{currency}, {helpers.get_stocks_descriptions([stock])[1:][0]}'
         descriptions.append(description)
 
-    curr_user_directory = settings.USER_IMAGES + login_id
+    curr_user_directory = settings.USER_IMAGES + str(login_id)
     try:
         os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
     except FileExistsError:  # Ignore the exception

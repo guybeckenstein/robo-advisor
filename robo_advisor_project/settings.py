@@ -1,7 +1,5 @@
 import os
 
-aws_mode = True
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -124,6 +122,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+aws_mode = False
 if aws_mode:
     host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'
 else:
