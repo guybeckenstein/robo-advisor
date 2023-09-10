@@ -1,8 +1,12 @@
 import os
 
+import environ
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, '.env'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -91,6 +95,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'accounts.middleware.DynamicSiteIDMiddleware',
+    # 'allauth.account.middleware.AccountMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
@@ -102,7 +107,7 @@ ROOT_URLCONF = 'robo_advisor_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,14 +130,16 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 aws_mode = False
 if aws_mode:
     host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'
+    password = 'postgres'
 else:
-    host_name = os.environ.get('POSTGRES_HOST', 'postgres')
+    host_name = os.environ.get('POSTGRES_HOST', 'localhost')
+    password = env("POSTGRES_PASSWORD", default="postgres")
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor'),
         'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': 'postgres',  # os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'PASSWORD': password,
         'HOST': host_name,
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
