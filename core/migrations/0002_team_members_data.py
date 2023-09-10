@@ -8,8 +8,7 @@ class Migration(migrations.Migration):
         ('core', '0001_initial'),
     ]
 
-    @staticmethod
-    def generate_team_members_data():
+    def generate_team_members_data(apps, schema_editor):
         test_data: list[tuple[str, str]] = [
             ('Guy Beckenstein', 'guybeckenstein',),
             ('Yarden Agami', 'yardet',),

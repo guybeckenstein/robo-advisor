@@ -1,7 +1,6 @@
 import codecs
 import csv
 import datetime
-import io
 import requests
 from datetime import datetime as data_time, timedelta
 import json
@@ -14,7 +13,7 @@ from functools import reduce
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -27,7 +26,7 @@ from service.util import tase_interaction
 
 from PIL import Image
 
-# lstm imports
+# LSTM imports
 import matplotlib.dates as mdates
 import seaborn as sns
 import tensorflow as tf
@@ -222,7 +221,6 @@ class Analyze:
             df_final[['CPI', 'unemployment_rate']] /= 30
             df_final[['GDP Growth Rate']] /= 90
             scaled_data = df_final
-
             # all tickers columns
             tickers_cols_to_scale = scaled_data.columns.drop(['Label', 'Date'] + cols_to_scale)
             scaled_data[tickers_cols_to_scale] *= 100
@@ -1212,7 +1210,7 @@ def lstm_show_plt_graph(df_final, mode):
     plt.show()
 
 
-def lstm_show_data_plot_wth_labels(df_final, tickers_df, forecast_col):
+def lstm_show_data_plot_wth_labels(df_final, forecast_col):
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
@@ -1225,7 +1223,7 @@ def lstm_show_data_plot_wth_labels(df_final, tickers_df, forecast_col):
 
     # price by years
     # Extract the year from the 'Date' column and create a new 'Year' column
-    tickers_df['Year'] = df_final['Date'].dt.year
+    df_final['Year'] = df_final['Date'].dt.year
 
     # Create boxplot
     plt.figure(figsize=(20, 10))  # Optional, for adjusting figure size

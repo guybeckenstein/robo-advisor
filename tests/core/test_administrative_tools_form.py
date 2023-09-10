@@ -44,4 +44,3 @@ class TestAdministrativeToolsForm:
         helper_methods.post_request(
             client, url_name='administrative_tools_form', data=models_data, status_code=302
         )
-        # helper_methods.assert_attributes(response, attributes=["Successfully updated models' data."])

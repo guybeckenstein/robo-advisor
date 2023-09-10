@@ -9,8 +9,7 @@ class Migration(migrations.Migration):
         ('watchlist', '0001_initial'),
     ]
 
-    @staticmethod
-    def generate_watchlist_data():
+    def generate_watchlist_data(apps, schema_editor):
         test_data: list = helpers.get_sectors_names_list()
         with transaction.atomic():
             for i, sector_name in enumerate(test_data):
