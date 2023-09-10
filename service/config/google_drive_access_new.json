@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "robo-advisor-398612",
+  "private_key_id": "859424c24c2ce3c4bdd062e55460c56defcb17c0",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCNH7Lr9umUh0Qc\nRJE2DzB+nXOpKahGiu7jKPM4ZZDHWclI4/BjKcQFo2ME50AbidlQNiSvmyrbbRDy\nfpex2AZADE5LDUFe7y1ZSgHTOez6zhdo68a1H5rTsI+r9acmugeuu0WiLtpOXuq/\nvRxIwmta0iv2U69j7oC+TK0nyFSVM2D/hnyaGSfnAvVCcRrJlqVmNNP5R6t0g382\nGJRz0mFPeUnHbnVX/EWcw8NMVMFU7kgQjqG1odUylP7MgiA6SvoO4E06NV+JyRNL\nKs9K8TAVyseIQ7AMFWkGyMZn4TSrsVaeNPR3EHdZotDY0TFOJn6nfk+GPh1QtcO3\nDznaYverAgMBAAECggEAMzQNpIzdWi0r+r+sGjuvojj5pqZ9Lj8phtUsTkmXmqUK\nob5GUYxtWYhbHIPVIEjHRtGmROrdRWkQrZNd8cKKHgH5BEUmc03/m7Z87AlH4QYW\nu1RUsBHsCKO2tTM3txbnQ7AiB0LNpYLN1MzGLuYPso+wMLtTV0RJhQJoDxeiDNHh\n9v1xC2UE//NLE3Vseg28bFqbpWSZZalLkpnb0nSrgjtyNhyRqmJcYpMDJrcwquLX\n0CUdD41oTRjarjeZx8bsf8/jQfkVjKbuN4mI3sOKAYZbs8gAvlrOFc1uHoJ4obtR\nRyQ0KcrM6YiPUn2lBONnuZQ1tnu47a4kFkIAFnX+VQKBgQDFlbtk+Mx8GAsxvMuq\nkQctHuQO9WHD1oQzKujJ8ZSbpfhCnfveqjtO+olrdePT8E7KoJajCb0gIg8CbkD9\npNH4Po6ULU3IUEusphJFJ3KjmZjA6GUgHITnZ4w6rXpSN2FRGEOpUxneQRg3owck\nc7Eyqg1vMotxJGUjGxg/otfqVwKBgQC22LH4KwoUOR4iM4BfIq/cFCTsyPDOwA8T\n2J0vfD6lASJ0VCzKGQgUtZS4s9oBSFBJnX/B8aLU32r4ikNPUsvlqzcf57hyL9f8\n27bvj+uDo+Fliqs6xGyquF0/m4pD/20mIkraUsTbVeyZCY1QRRXzoMSFEQ6Sg2lP\nnhRPpVQwzQKBgC7mL6jz9XWvL1kK+zztV8q5/mAelqopjQ+oK8FjembHqnoFjfd4\naMOCbIP5Y66257zpCViBw0aRTwbArOSH7t8B2k4JwuC9TnkYolWP24JBvyRrBTXu\nDw3uYja7XsGNK6hYHhdfBlDfGqR6KgPZAkKIYs/2K2sbvHXsxIC2YpHZAoGAKPnx\nEFuc26FdRm7iQu/EF38QM1xo0vyppFn0B/NBGrthXE6M5xGrBPEYjjgIECeDjqvU\nOMONKUWUdHSP1xQIC8VOCkFkzXo5XjpjCdboAc1VMutbqkTg0XWVuC6EUu7IKDah\nLcJEyZ688iL431dMLxgFUojbCiyXCjez95Fmh7UCgYB8Ivc1UrzMe2gMvmecLHgW\nACLQZWt4uiBEhUaz0CoWhFFwAf2sr/JQqC3/xXjgxeq38lRkwJ7CqDzALa6emcBZ\nzzvvMroDWlMke1Fak3nXdLfaGB/QVTpFxphhj59KNqayv+3X9jrzNl9UsCpXyrhH\nIGgae7pNz7VUpqWekUS6gg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "robo-advisor@robo-advisor-398612.iam.gserviceaccount.com",
+  "client_id": "102458940743843828714",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/robo-advisor%40robo-advisor-398612.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
