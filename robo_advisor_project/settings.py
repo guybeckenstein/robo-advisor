@@ -130,7 +130,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 aws_mode = True
 if aws_mode:
     host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'  # guy
-    host_name = 'roboadvisordb.cnoslfwsfqox.us-east-1.rds.amazonaws.com'  # guy
+    host_name = 'roboadvisordb..rds.amazonaws.com'  # guy
     password = 'postgres'
     name = 'roboadvisordb' #  yarden
     user = 'postgres'  # yarden
