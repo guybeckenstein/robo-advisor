@@ -127,18 +127,23 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-aws_mode = False
+aws_mode = True
 if aws_mode:
-    host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'
+    host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'  # guy
+    host_name = 'roboadvisordb.cnoslfwsfqox.us-east-1.rds.amazonaws.com'  # guy
     password = 'postgres'
+    name = 'roboadvisordb' #  yarden
+    user = 'postgres'  # yarden
 else:
     host_name = os.environ.get('POSTGRES_HOST', 'localhost')
     password = env("POSTGRES_PASSWORD", default="postgres")
+    name = os.environ.get('POSTGRES_DB', 'roboadvisor')
+    user = os.environ.get('POSTGRES_USER', 'postgres')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor'),
-        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'NAME': name,
+        'USER': user,
         'PASSWORD': password,
         'HOST': host_name,
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
