@@ -1,5 +1,7 @@
 import os
 
+aws_mode=False
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -102,7 +104,7 @@ ROOT_URLCONF = 'robo_advisor_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,13 +124,17 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+if aws_mode:
+    host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'
+else:
+    host_name = os.environ.get('POSTGRES_HOST', 'postgres')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor'),
         'USER': os.environ.get('POSTGRES_USER', 'postgres'),
         'PASSWORD': 'postgres',  # os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-        'HOST': 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com',  # os.environ.get('POSTGRES_HOST', 'postgres'),
+        'HOST': host_name,
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
