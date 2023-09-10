@@ -70,11 +70,9 @@ def update_data_frame_tables(collection_json_data, path,
                              is_daily_running: bool = True):
     stocks_symbols = collection_json_data['stocksSymbols']
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        # TODO: unused variable
-        # last_updated_date_closing_prices = get_file_from_google_drive(
-        #     f'{helpers.get_sorted_path(path, num_of_last_elements=3)}lastUpdatedDftables.txt'
-        # ).getvalue().decode('utf-8')
-        pass
+        last_updated_date_closing_prices = get_file_from_google_drive(
+             f'{helpers.get_sorted_path(path, num_of_last_elements=3)}lastUpdatedDftables.txt'
+         ).getvalue().decode('utf-8')
     else:
         with open(f"{path}lastUpdatedDftables.txt", "r") as file:
             last_updated_df_tables = file.read().strip()
@@ -652,7 +650,6 @@ def plot_image(file_name) -> None:
 
 
 def get_stocks_from_json_file() -> dict[list]:
-    # stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)  # TODO: unused
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     stocks: dict[list] = {}
     for i in range(1, len(models_data)):
@@ -724,7 +721,6 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
-    # models_data = helpers.get_collection_json_data()  # TODO: unused
     """if is_machine_learning:  # TODO maybe remove
         weighted_sum = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
@@ -813,18 +809,6 @@ return:
 
     return total_capital, total_portfolio_profit, total_profit, total_investments_value
 
-
-# TODO: unused method
-# def show_investments_from_json_file(login_name: str):
-#     investments_list = get_user_investments_from_json_file(login_name)
-#     if len(investments_list) == 0:
-#         print("No investments yet")
-#         return None
-#
-#     graph_plot_methods.plot_investments_graph(investments_list)
-#     print("Investments:")
-#     for investment in investments_list:
-#         print(investment)
 
 
 # console functions

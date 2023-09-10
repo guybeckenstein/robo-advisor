@@ -2,6 +2,7 @@ import os
 
 import environ
 
+aws_mode = False
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -94,10 +95,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
-    'accounts.middleware.DynamicSiteIDMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # allauth was in comment TODO
+    'accounts.middleware.DynamicSiteIDMiddleware',  # allauth was in comment TODO
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+if aws_mode:
+    MIDDLEWARE.append('allauth.account.middleware.AccountMiddleware')
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 PHONENUMBER_DEFAULT_REGION = "IL"
@@ -127,12 +130,11 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-aws_mode = True
 if aws_mode:
     host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'  # guy
-    host_name = 'roboadvisordb.cnoslfwsfqox.us-east-1.rds.amazonaws.com'  # guy
+    host_name = 'roboadvisxordb.cnoslfwsfqox.us-east-1.rds.amazonaws.com'  # guy
     password = 'postgres'
-    name = 'roboadvisordb' #  yarden
+    name = 'roboadvisordb'  # yarden
     user = 'postgres'  # yarden
 else:
     host_name = os.environ.get('POSTGRES_HOST', 'localhost')
