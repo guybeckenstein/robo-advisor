@@ -36,8 +36,8 @@ from keras import regularizers
 from tensorflow.python.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error
 from keras.optimizers import Adam
-from keras.layers import Dense, Dropout, LSTM, BatchNormalization"""
-import shap
+from keras.layers import Dense, Dropout, LSTM, BatchNormalization
+import shap"""
 import seaborn as sns
 
 
@@ -1254,6 +1254,7 @@ def lstm_show_data_plot_wth_labels(df_final, tickers_df,  forecast_col):
 def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     # shap          takes too long time
     # Initialize JS visualization code
+    """
     shap.initjs()
 
     # TODO unused
@@ -1282,4 +1283,4 @@ def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     aggregated_shap_values = shap_values_reshaped.sum(axis=1)
 
     # Create a summary plot of the aggregated SHAP values
-    shap.summary_plot(aggregated_shap_values, feature_names=input_features)
+    shap.summary_plot(aggregated_shap_values, feature_names=input_features)"""
