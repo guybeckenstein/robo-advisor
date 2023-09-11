@@ -60,7 +60,8 @@ def update_closing_prices_tables(stocks_symbols, path, is_daily_running: bool):
             path, settings.CLOSING_PRICES_FILE_NAME, stocks_symbols, settings.NUM_OF_YEARS_HISTORY, save_to_csv=True
         )
         for file_path in [f'{path}{settings.CLOSING_PRICES_FILE_NAME}.csv', f'{path}lastUpdatedClosingPrice.txt']:
-            upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
+            if settings.UPLOAD_TO_GOOGLE_DRIVE:
+                upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
         with open(f'{path}lastUpdatedClosingPrice.txt', "w") as file:
             file.write(formatted_date_today)
 
@@ -97,7 +98,8 @@ def update_data_frame_tables(collection_json_data, path,
             )
 
         file_path: str = f"{path}lastUpdatedDftables.txt"
-        upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
+        if settings.UPLOAD_TO_GOOGLE_DRIVE:
+            upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
         with open(file_path, "w") as file:
             file.write(formatted_date_today)
 
@@ -164,7 +166,8 @@ def update_specific_data_frame_table(is_machine_learning: bool, model_name: str,
     )
     df: pd.DataFrame = stats_models.df
     file_path: str = f'{location_for_saving}{model_name}_df_{risk_level}.csv'
-    upload_file_to_google_drive(file_path, num_of_elements=4)
+    if settings.UPLOAD_TO_GOOGLE_DRIVE:
+        upload_file_to_google_drive(file_path, num_of_elements=4)
     df.to_csv(file_path)
     print(f'Updated DataFrame -> (ML - {is_machine_learning}; Model Name - {model_name}; Risk Level - {risk_level})')
 

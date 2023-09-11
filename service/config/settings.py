@@ -9,6 +9,7 @@ CURRENCY_LIST: list[str, str, str] = ['₪', '$', '€']
 FILE_ACCESS_TYPE: list[str, str] = ["google_drive", "local"]
 FILE_ACCESS_SELECTED: str = FILE_ACCESS_TYPE[1]
 GOOGLE_DRIVE_DAILY_DOWNLOAD: bool = False
+UPLOAD_TO_GOOGLE_DRIVE: bool = False
 NUM_OF_YEARS_HISTORY: int = 10  # the number of history years data - default
 BASE_SERVICE_DIR: str = f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/'
 DJANGO_DIR: str = BASE_SERVICE_DIR
