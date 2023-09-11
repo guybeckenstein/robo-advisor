@@ -43,7 +43,7 @@ def update_all_tables(is_daily_running: bool = True):  # build DB for withdraw
         stocks_symbols = curr_collection['stocksSymbols']
         path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{str(i)}/'  # where to save the datasets
         update_closing_prices_tables(stocks_symbols, path, is_daily_running)
-        update_data_frame_tables(curr_collection, path, models_data, str(i), is_daily_running)
+        update_dataframe_tables(curr_collection, path, models_data, str(i), is_daily_running)
 
 
 def update_closing_prices_tables(stocks_symbols, path, is_daily_running: bool):
@@ -65,14 +65,15 @@ def update_closing_prices_tables(stocks_symbols, path, is_daily_running: bool):
             file.write(formatted_date_today)
 
 
-def update_data_frame_tables(collection_json_data, path,
-                             models_data: dict[dict, list, list, list, list], collection_num,
-                             is_daily_running: bool = True):
+def update_dataframe_tables(collection_json_data, path,
+                            models_data: dict[dict, list, list, list, list], collection_num,
+                            is_daily_running: bool = True):
     stocks_symbols = collection_json_data['stocksSymbols']
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
-        last_updated_date_closing_prices = get_file_from_google_drive(
-             f'{helpers.get_sorted_path(path, num_of_last_elements=3)}lastUpdatedDftables.txt'
-         ).getvalue().decode('utf-8')
+        # last_updated_date_closing_prices = get_file_from_google_drive(
+        #      f'{helpers.get_sorted_path(path, num_of_last_elements=3)}lastUpdatedDftables.txt'
+        #  ).getvalue().decode('utf-8')
+        pass
     else:
         with open(f"{path}lastUpdatedDftables.txt", "r") as file:
             last_updated_df_tables = file.read().strip()
@@ -808,7 +809,6 @@ return:
     total_profit = total_investments_value - total_capital
 
     return total_capital, total_portfolio_profit, total_profit, total_investments_value
-
 
 
 # console functions

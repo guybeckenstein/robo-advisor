@@ -28,7 +28,6 @@ class TestAdminLoginAndIndex:
             client, superuser_factory, url_name=self.login_url_name, url='/admin/'
         )
 
-
     def test_successful_get_request_as_logged_user(self, client: Client, user_factory: Callable):
         helper_methods.login_user(client, user_factory)
         self.successful_get_request_non_admin(client)

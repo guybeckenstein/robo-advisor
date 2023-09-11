@@ -63,9 +63,8 @@ class MarkowitzAndGini:
                       f"Sharpe Ratio: {str(round(portfolios[i][2], 2))}\n"
                       "     Weights\n"
                       f"{stocks[i]}",
-                    bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=10, style=STYLE, ha=HA, multialignment='left', va=VA,
-                    fontname=FONT_NAME,
-                    wrap=WRAP,
+                    bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=10, style=STYLE, ha=HA, multialignment='left',
+                    va=VA, fontname=FONT_NAME, wrap=WRAP,
                 )
 
                 plt.figtext(
@@ -74,10 +73,7 @@ class MarkowitzAndGini:
                 )
 
 
-
-
 class ThreePortfolios:
-
     @staticmethod
     def main_plot(pct_change_table: pd.DataFrame) -> tuple[list[str, str, str], list[str, str, str]]:
         plt.xlabel("Date")
@@ -97,6 +93,7 @@ class ThreePortfolios:
             )
         plt.legend(frameon=True, facecolor='white')  # Adjust legend background color
         return labels, colors
+
     @staticmethod
     def sub_plots(colors: list[str, str, str], labels: list[str, str, str], max_returns_portfolio, sharpe_portfolio,
                   min_variance_portfolio, sectors, three_best_sectors_weights):
@@ -135,6 +132,8 @@ class ThreePortfolios:
                     x=x, y=0.28, s=f"{fig_text_data['name'][i]} Portfolio:", fontsize=14,
                     fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
                 )
+
+
 class EstimatedYield:
     @staticmethod
     def get_stocks_as_str(sectors: list[Sector]) -> str:

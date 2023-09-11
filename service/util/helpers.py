@@ -191,8 +191,8 @@ class Analyze:
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
         return df, forecast_with_historical_returns_annual, expected_returns
 
-    def lstm_model(self, pct_change_mode=False, use_features=False) -> tuple[
-        pd.DataFrame, np.longdouble, np.longdouble]:
+    def lstm_model(self, pct_change_mode: bool = False,
+                   use_features: bool = False) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         """np.random.seed(1)
         df_final, forecast_out = self.get_final_dataframe()
         start_date = self._table_index[0].strftime("%Y-%m-%d")
@@ -1214,7 +1214,7 @@ def lstm_show_plt_graph(df_final, mode):
     plt.show()
 
 
-def lstm_show_data_plot_wth_labels(df_final, tickers_df,  forecast_col):
+def lstm_show_data_plot_wth_labels(df_final: pd.DataFrame, tickers_df: pd.DataFrame, forecast_col):
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
