@@ -169,7 +169,15 @@
                 "statModelName": "Gini",
                 "machineLearningOpt": 1,
                 "stocksCollectionNumber": "2",
-                "id": 1
+                "id": 1,
+                "investments_list": [
+                    {
+                        "amount": 1000,
+                        "date": "2023-09-10",
+                        "status": true,
+                        "automatic_investment": false
+                    }
+                ]
             }
         ],
         "hanael": [
