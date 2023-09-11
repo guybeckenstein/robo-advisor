@@ -17,7 +17,7 @@ from service.util.helpers import Analyze
 from service.util.graph import image_methods as graph_image_methods
 from service.util.graph import plot_methods as graph_plot_methods
 from service.util.pillow import plot_methods as pillow_plot_methods
-from service.config import google_drive
+from service.impl import google_drive
 import os
 from PIL import Image
 import django
