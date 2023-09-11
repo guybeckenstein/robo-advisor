@@ -300,7 +300,7 @@ class Analyze:
         # model.compile(loss='mse', optimizer=opt)
 
         # Train the model
-        model.fit(X_train, y_train, epochs=3, batch_size=64, validation_split=0.15,
+        model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.15,
                   callbacks=[early_stopping])  # add the early stopping callback here)
 
         # Predict on the test data
@@ -1220,7 +1220,7 @@ def lstm_show_plt_graph(df_final, mode):
     plt.show()
 
 
-def lstm_show_data_plot_wth_labels(df_final, tickers_df,  forecast_col):
+def lstm_show_data_plot_wth_labels(df_final: pd.DataFrame, tickers_df: pd.DataFrame, forecast_col):
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 

@@ -36,7 +36,7 @@ def successful_get_request_as_guest(client: Client, url_name: str, template_src:
 
 
 def redirection_get_request_as_admin(client: Client, superuser_factory: Callable, url_name: str,
-                                           url: str = None) -> None:
+                                     url: str = None) -> None:
     reversed_url: str = reverse(url_name)
     login_user(client, superuser_factory)
     response = client.get(reversed_url)

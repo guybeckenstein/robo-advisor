@@ -2,7 +2,6 @@ import os
 
 import environ
 
-aws_mode = False
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -16,10 +15,9 @@ SECRET_KEY = 'django-insecure-7a2qi##$sth7^53imychx^@6!k6stk054zo!3@-fr)h^d-!*$1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DEBUG', True))
-# DEBUG = True
 
-# ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", 'localhost 127.0.0.1 [::1]').split(" ")
+ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", 'localhost 127.0.0.1 [::1]').split(" ")
 
 SITE_ID: int = None
 # Application definition
@@ -87,6 +85,7 @@ SOCIALACCOUNT_PROVIDERS = {
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
 MIDDLEWARE = [
+    # Automatic apps
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -94,13 +93,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Third party apps
+    'accounts.middleware.DynamicSiteIDMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
-    'accounts.middleware.DynamicSiteIDMiddleware',  # allauth was in comment TODO
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
-
-if aws_mode:
-    MIDDLEWARE.append('allauth.account.middleware.AccountMiddleware')
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 PHONENUMBER_DEFAULT_REGION = "IL"
@@ -130,24 +128,13 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-if aws_mode:
-    host_name = 'roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'  # guy
-    host_name = 'roboadvisxordb.cnoslfwsfqox.us-east-1.rds.amazonaws.com'  # guy
-    password = 'postgres'
-    name = 'roboadvisordb'  # yarden
-    user = 'postgres'  # yarden
-else:
-    host_name = os.environ.get('POSTGRES_HOST', 'localhost')
-    password = env("POSTGRES_PASSWORD", default="postgres")
-    name = os.environ.get('POSTGRES_DB', 'roboadvisor')
-    user = os.environ.get('POSTGRES_USER', 'postgres')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': name,
-        'USER': user,
-        'PASSWORD': password,
-        'HOST': host_name,
+        'NAME': 'roboadvisor',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': env('AWS_RDS_URL'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
