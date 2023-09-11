@@ -29,7 +29,7 @@ from PIL import Image
 
 # LSTM imports
 import matplotlib.dates as mdates
-"""import seaborn as sns
+import seaborn as sns
 import tensorflow as tf
 from keras.models import Sequential
 from keras import regularizers
@@ -37,8 +37,7 @@ from tensorflow.python.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error
 from keras.optimizers import Adam
 from keras.layers import Dense, Dropout, LSTM, BatchNormalization
-import shap"""
-import seaborn as sns
+import shap
 
 
 # Global variables
@@ -191,9 +190,9 @@ class Analyze:
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
         return df, forecast_with_historical_returns_annual, expected_returns
 
-    def lstm_model(self, pct_change_mode: bool = False,
-                   use_features: bool = False) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        """np.random.seed(1)
+    def lstm_model(self, pct_change_mode=False, use_features=True) -> tuple[
+        pd.DataFrame, np.longdouble, np.longdouble]:
+        np.random.seed(1)
         df_final, forecast_out = self.get_final_dataframe()
         start_date = self._table_index[0].strftime("%Y-%m-%d")
         end_date = self._table_index[-1].strftime("%Y-%m-%d")
@@ -353,7 +352,7 @@ class Analyze:
         return df_final, annual_return, excepted_annual_return
 
         if use_features:
-            lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)"""
+            lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)
         return None, None, None
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
@@ -516,6 +515,9 @@ def get_daily_change_sub_table_offset(models_data, table_index) -> tuple[int, fl
 
 def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_years_history, save_to_csv,
                            start_date: str = None, end_date: str = None):
+
+    df: pd.DataFrame = pd.DataFrame({})
+
     # for israeli stocks
     today = datetime.datetime.now()
     min_start_year = today.year - 10
@@ -544,7 +546,14 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
                 df: pd.DataFrame = get_israeli_symbol_data(
                     'get_past_10_years_history', start_date, end_date, stock, is_index_type
                 )
+
+            except ValueError:
+                print('Invalid start_date or end_date format, should be %Y-%m-%d')
+            except (AttributeError, IndexError):
+                print(f"Error in stock: {stock}")
+            finally:
                 # list to DateFrame
+                df = pd.DataFrame(df)
                 df["tradeDate"] = pd.to_datetime(df["tradeDate"])
                 df.set_index("tradeDate", inplace=True)
                 if is_index_type:
@@ -552,10 +561,6 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
                 else:
                     price = df[["closingPrice"]]
                 frame[stocks_names[i]] = price
-            except ValueError:
-                print('Invalid start_date or end_date format, should be %Y-%m-%d')
-            except (AttributeError, IndexError):
-                print(f"Error in stock: {stock}")
         else:  # US stock
             try:
                 df: pd.DataFrame = yf.download(stock, start=start_date, end=end_date)
@@ -1256,11 +1261,11 @@ def lstm_show_data_plot_wth_labels(df_final: pd.DataFrame, tickers_df: pd.DataFr
 def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     # shap          takes too long time
     # Initialize JS visualization code
-    """
+
     shap.initjs()
 
     # TODO unused
-    # feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
+    feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
 
     # Define a predict function wrapper to handle 3D input
     def lstm_predict_wrapper(x):
@@ -1285,4 +1290,4 @@ def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     aggregated_shap_values = shap_values_reshaped.sum(axis=1)
 
     # Create a summary plot of the aggregated SHAP values
-    shap.summary_plot(aggregated_shap_values, feature_names=input_features)"""
+    shap.summary_plot(aggregated_shap_values, feature_names=input_features)

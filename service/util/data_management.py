@@ -60,7 +60,8 @@ def update_closing_prices_tables(stocks_symbols, path, is_daily_running: bool):
             path, settings.CLOSING_PRICES_FILE_NAME, stocks_symbols, settings.NUM_OF_YEARS_HISTORY, save_to_csv=True
         )
         for file_path in [f'{path}{settings.CLOSING_PRICES_FILE_NAME}.csv', f'{path}lastUpdatedClosingPrice.txt']:
-            upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
+            if settings.UPLOAD_TO_GOOGLE_DRIVE:
+                upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
         with open(f'{path}lastUpdatedClosingPrice.txt', "w") as file:
             file.write(formatted_date_today)
 
@@ -98,7 +99,8 @@ def update_dataframe_tables(collection_json_data, path,
             )
 
         file_path: str = f"{path}lastUpdatedDftables.txt"
-        upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
+        if settings.UPLOAD_TO_GOOGLE_DRIVE:
+            upload_file_to_google_drive(file_path=file_path, num_of_elements=3)
         with open(file_path, "w") as file:
             file.write(formatted_date_today)
 
@@ -135,9 +137,9 @@ def update_specific_data_frame_table(is_machine_learning: bool, model_name: str,
     gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
 
     if is_machine_learning:
-        location_for_saving: str = f'{path}settings.MACHINE_LEARNING_LOCATION'
+        location_for_saving: str = f'{path}{settings.MACHINE_LEARNING_LOCATION}'
     else:
-        location_for_saving: str = f'{path}settings.NON_MACHINE_LEARNING_LOCATION'
+        location_for_saving: str = f'{path}{settings.NON_MACHINE_LEARNING_LOCATION}'
 
     if max_percent_commodity <= 0:
         stock_sectors = helpers.setStockSectors(stocks_symbols, sectors)
@@ -165,7 +167,8 @@ def update_specific_data_frame_table(is_machine_learning: bool, model_name: str,
     )
     df: pd.DataFrame = stats_models.df
     file_path: str = f'{location_for_saving}{model_name}_df_{risk_level}.csv'
-    upload_file_to_google_drive(file_path, num_of_elements=4)
+    if settings.UPLOAD_TO_GOOGLE_DRIVE:
+        upload_file_to_google_drive(file_path, num_of_elements=4)
     df.to_csv(file_path)
     print(f'Updated DataFrame -> (ML - {is_machine_learning}; Model Name - {model_name}; Risk Level - {risk_level})')
 

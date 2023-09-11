@@ -65,9 +65,11 @@ def chosen_stock(request):
         overview: str = f"https://finance.yahoo.com/quote/{symbol}/?p = {symbol}"
         conversation_link: str = f"https://finance.yahoo.com/quote/{symbol}/community?p = {symbol}"
         more_statistics: str = f"https://finance.yahoo.com/quote/{symbol}/key-statistics?p = {symbol}"
+        is_israeli_stock: bool = False
 
         # israeli stock
         if isinstance(symbol, int) or symbol.isnumeric():
+            is_israeli_stock = True
             num_of_digits = len(str(symbol))
             conversation_link = f"https://www.sponser.co.il/Tag.aspx?id={symbol}"
             if num_of_digits > 3:
@@ -89,6 +91,7 @@ def chosen_stock(request):
         'more_statistics': more_statistics,
         'overview': overview,
         'conversation': conversation_link,
+        'is_israeli_stock': is_israeli_stock,
 
     }
     return render(request, 'watchlist/chosen_stock.html', context=context)
