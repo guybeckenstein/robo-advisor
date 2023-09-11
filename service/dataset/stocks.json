@@ -48,10 +48,10 @@
                     "LQD",
                     "GLD",
                     "127",
+                    "143",
                     "603",
                     "702",
                     "712",
-                    "13",
                     "170",
                     "OIL",
                     "701"
@@ -67,14 +67,15 @@
                 "stocksSymbols": [
                     170,
                     603,
+                    601,
                     690,
                     637,
                     704,
-                    700,
+                    701,
+                    714,
                     "XLK",
                     "XLV",
                     "XOP",
-                    "XLU",
                     "QQQ",
                     "SHV",
                     273011,
@@ -87,9 +88,9 @@
                     "FMY",
                     "EOI"
                 ],
-                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 1,
+                "LIMIT_PERCENT_MEDIUM_RISK_STOCKS": 0.7,
                 "LIMIT_PERCENT_MEDIUM_RISK_COMMODITY": 0.1,
-                "LIMIT_PERCENT_LOW_RISK_STOCKS": 1,
+                "LIMIT_PERCENT_LOW_RISK_STOCKS": 0.5,
                 "LIMIT_PERCENT_LOW_RISK_COMMODITY": 0.02
             }
         ],
