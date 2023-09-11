@@ -21,21 +21,21 @@ import seaborn as sns
 from service.config import settings
 
 
-def Lstm(df=None, forecast_out=20, pct_change_mode=False, use_features=True) -> tuple[
+def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
     pd.DataFrame, np.longdouble, np.longdouble]:
     np.random.seed(1)
     start_date = df.index[0].strftime("%Y-%m-%d")
     end_date = df.index[-1].strftime("%Y-%m-%d")
     forecast_col = "Forecast"
     df[forecast_col] = df['Col']
-    days = 72
+    days = 20
     df['Label'] = df[forecast_col].pct_change().shift(-forecast_out)
     df = df.dropna(subset=['Label'])
     df = df[df['Label'] != 0.0]
 
     df_final = df.copy()
+    df_final = df_final.drop(['Forecast'], axis=1)
     df_final["Col"] = df_final["Col"].pct_change()
-    df_final["Forecast"] = df_final["Forecast"].pct_change()
 
     # drop weekends
     df_final['Date'] = pd.to_datetime(df_final.index)
@@ -57,7 +57,7 @@ def Lstm(df=None, forecast_out=20, pct_change_mode=False, use_features=True) -> 
         df_final[['GDP Growth Rate']] /= 90
         scaled_data = df_final
         # all tickers columns
-        tickers_cols_to_scale = scaled_data.columns.drop(['Label', 'Date', forecast_col, 'Col'] + cols_to_scale)
+        tickers_cols_to_scale = scaled_data.columns.drop(['Label', 'Date'] + cols_to_scale)
         scaled_data[tickers_cols_to_scale] *= 100
         # Sliding Window
         scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
@@ -109,7 +109,7 @@ def Lstm(df=None, forecast_out=20, pct_change_mode=False, use_features=True) -> 
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.Dropout(rate=dropout))
     model.add(tf.keras.layers.LSTM(units=days, return_sequences=False))
-    # model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.Dropout(rate=dropout))
     model.add(tf.keras.layers.Flatten())
     model.add(tf.keras.layers.Dense(64, activation='relu'))
@@ -120,7 +120,7 @@ def Lstm(df=None, forecast_out=20, pct_change_mode=False, use_features=True) -> 
     # create an early stopping callback
     early_stopping = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=50)
 
-    opt = tf.keras.optimizers.legacy.Adam(lr=0.001, clipvalue=1.0)
+    opt = tf.keras.optimizers.legacy.Adam(learning_rate=0.001, clipvalue=1.0)
     # Compile model
     model.compile(
         loss='sparse_categorical_crossentropy',
@@ -130,7 +130,7 @@ def Lstm(df=None, forecast_out=20, pct_change_mode=False, use_features=True) -> 
     # model.compile(loss='mse', optimizer=opt)
 
     # Train the model
-    model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.15,
+    model.fit(X_train, y_train, epochs=5, batch_size=64, validation_split=0.15,
               callbacks=[early_stopping])  # add the early stopping callback here)
 
     # Predict on the test data
@@ -146,7 +146,7 @@ def Lstm(df=None, forecast_out=20, pct_change_mode=False, use_features=True) -> 
     date_values = scaled_data.index
 
     scaled_data['Forecast'] = np.nan
-    df_final[forecast_col] = np.nan
+    df[forecast_col] = np.nan
 
     last_date = scaled_data.iloc[-1].name
     last_unix = last_date.timestamp()
@@ -154,37 +154,23 @@ def Lstm(df=None, forecast_out=20, pct_change_mode=False, use_features=True) -> 
     next_unix = last_unix + one_day
 
     predictions = np.concatenate(predictions)
-    last_price = df_final["Col"].iloc[-1]
+    last_price = df["Col"].iloc[-1]
     predictions_df = pd.DataFrame(predictions)
     for i in predictions:
         next_date = datetime.datetime.fromtimestamp(next_unix)
         next_unix += 86400
         scaled_data.loc[next_date] = [np.nan for _ in range(len(scaled_data.columns) - 1)] + [i]
-        df_final.loc[next_date] = [np.nan for _ in range(len(df_final.columns) - 1)] + [i]
+        df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        current_val = (1 + i) * last_price
+        current_val = (1 + i)/100 * last_price
 
         last_price = current_val
         # print(last_price)
-        df_final[forecast_col].loc[next_date] = current_val
+        df[forecast_col].loc[next_date] = current_val
 
-    # daily change and forecast
-    scaled_data['Label'].plot()
-    scaled_data['Forecast'].plot()
-    plt.legend(loc=4)
-    plt.xlabel('Date')
-    plt.ylabel('Precentage Change')
-    plt.show()
+    return df
 
-    annual_return = ((1 + df_final["Col"].mean()) ** 254 - 1) * 100
-    real_change = scaled_data['Forecast'].mean()
-    excepted_annual_return = ((1 + real_change) ** 254 - 1) * 100
 
-    return df_final, annual_return, excepted_annual_return
-
-    if use_features:
-        lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)
-    return None, None, None
 
 
 # lstm helpers functions
@@ -466,11 +452,6 @@ def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     # shap          takes too long time
     # Initialize JS visualization code
 
-    shap.initjs()
-
-    # TODO unused
-    feature_names = [f"{feature}_{t}" for t in range(seq_len) for feature in input_features]
-
     # Define a predict function wrapper to handle 3D input
     def lstm_predict_wrapper(x):
         x = x.reshape((x.shape[0], seq_len, len(input_features)))  # Reshape to [samples, timesteps, features]
@@ -495,3 +476,6 @@ def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
 
     # Create a summary plot of the aggregated SHAP values
     shap.summary_plot(aggregated_shap_values, feature_names=input_features)
+
+    # Save the plot to a file
+    plt.savefig(f'{settings.RESEARCH_LOCATION}LSTM_Final-Running.png')

@@ -182,7 +182,7 @@ class Analyze:
     def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
         df.index = pd.to_datetime(self._table_index)
-        df = models.Lstm(df=df, forecast_out=forecast_out, pct_change_mode=False, use_features=True)
+        df = models.Lstm(df=df, forecast_out=forecast_out, use_features=True)
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
 
         return df, forecast_with_historical_returns_annual, expected_returns
