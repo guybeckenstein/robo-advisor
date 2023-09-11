@@ -97,15 +97,16 @@ class ThreePortfolios:
         return labels, colors
 
     @staticmethod
-    def sub_plots(colors: list[str, str, str], labels: list[str, str, str], max_returns_portfolio, sharpe_portfolio,
-                  min_variance_portfolio, sectors, three_best_sectors_weights):
+    def sub_plots(colors, labels, max_returns_portfolio, sharpe_portfolio, min_variance_portfolio, sectors,
+                  three_best_sectors_weights):
         plt.subplots_adjust(bottom=BOTTOM)
-        stocks_y: list[str, str, str] = ['', '', '']
+        stocks_y = ['', '', '']
         for i in range(len(sectors)):
             for j in range(3):
                 weight = three_best_sectors_weights[j][i] * 100
                 stocks_y[j] += f"{sectors[i].name} ({weight:.2f}%),\n"
         stocks_y = [stock_y[:-2] for stock_y in stocks_y]
+<<<<<<< HEAD
         with pd.option_context("display.float_format", "%{:,.2f}".format):
             fig_text_data: dict = {
                 'name': labels,
@@ -135,6 +136,64 @@ class ThreePortfolios:
                     fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
                 )
 
+=======
+
+        fig_text_data = {
+            'name': labels,
+            'portfolio': [min_variance_portfolio.iloc[0], sharpe_portfolio.iloc[0], max_returns_portfolio.iloc[0]],
+            'stocks': stocks_y,
+            'facecolor': colors
+        }
+
+        plt.rcParams['font.family'] = 'monospace'  # Set a monospaced font
+        for i in range(3):
+            x = 0.2 + 0.3 * i
+            portfolio = fig_text_data['portfolio'][i]
+
+            # Format the text string with right alignment for numerical values
+            s = (
+                f"Annual Returns: {portfolio[0]:.2f}%\n"
+                f"Annual Volatility: {portfolio[1]:.2f}%\n"
+                f"Annual Max Loss: {portfolio[0] - 1.65 * portfolio[1]:.2f}%\n"
+                f"Annual Sharpe Ratio: {portfolio[2]:.2f}\n"
+                "    Weights\n"
+                f"{fig_text_data['stocks'][i]}"
+            )
+            s = spaces.add_spaces_to_each_line(s)
+
+            bbox = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}
+            plt.figtext(
+                x=x, y=0.15, s=s, bbox=bbox, fontsize=10.5, style=STYLE, ha=HA,  multialignment='left', va=VA,
+                fontname=FONT_NAME, wrap=WRAP,
+            )
+            plt.figtext(
+                x=x, y=0.29, s=f"{fig_text_data['name'][i]} Portfolio:", fontsize=14,
+                fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
+            )
+
+class spaces:
+    @staticmethod
+    def add_spaces_to_each_line(s):
+                lines = s.split('\n')
+
+                # Find the length of the longest line
+                max_line_length = max(len(line) for line in lines)
+
+                # Create a formatted version of each line with added spaces
+                formatted_lines = []
+                for line in lines:
+                    # Calculate the number of spaces needed to match the length of the longest line
+                    spaces_needed = max_line_length - len(line)
+
+                    # Add spaces to the line
+                    formatted_line = f"{line}{' ' * spaces_needed}"
+
+                    formatted_lines.append(formatted_line)
+
+                    # Join the formatted lines back into a single string
+                formatted_s = '\n'.join(formatted_lines)
+                return formatted_s
+>>>>>>> origin/yarden_gazit_new
 
 class EstimatedYield:
     @staticmethod

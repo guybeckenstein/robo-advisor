@@ -155,13 +155,13 @@ def portfolio_distribution(yields) -> plt:  # first graph
 
     # Creates subplots under the main graph
     with pd.option_context("display.float_format", "%{:,.2f}".format):
-        y_header: float = 0.23
+        y_header: float = 0.25
         y_content: float = 0.15
         alpha: float = 0.5
         s_params: list[str] = labels
         colors: list[str] = colors
         header_fontsize: int = 14
-        content_fontsize: int = 10
+        content_fontsize: int = 12
         for i in range(3):
             x = 0.2 + 0.3 * i
             s_content = df_describes[i].to_string()

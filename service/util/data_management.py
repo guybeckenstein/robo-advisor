@@ -657,6 +657,7 @@ def plot_image(file_name) -> None:
 
 
 def get_stocks_from_json_file() -> dict[list]:
+    stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     stocks: dict[list] = {}
     for i in range(1, len(models_data)):

@@ -377,7 +377,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 
 EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_HOST_USER = "apikey"
+EMAIL_HOST_USER = "mwepxsnhsvkpkzzo"
 EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = 'noreply.robo.advisor@gmail.com'
 

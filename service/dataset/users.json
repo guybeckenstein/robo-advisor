@@ -179,6 +179,16 @@
                 "statModelName": "Markowitz",
                 "machineLearningOpt": 0,
                 "stocksCollectionNumber": "3",
+                "annualReturns": 5.200790027535351,
+                "annualMaxLoss": -2.553106625216781,
+                "annualVolatility": 4.699331304698262,
+                "annualSharpe": 1.1067085273038195,
+                "totalChange": 91.132266279813,
+                "monthlyChange": 1.668123861787607,
+                "dailyChange": 0.0030206745867228492,
+                "statModelName": "Gini",
+                "machineLearningOpt": 1,
+                "stocksCollectionNumber": "2",
                 "id": 1,
                 "investments_list": [
                     {
