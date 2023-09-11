@@ -2,7 +2,6 @@ import os
 
 import environ
 
-aws_mode = False
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -86,6 +85,7 @@ SOCIALACCOUNT_PROVIDERS = {
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
 MIDDLEWARE = [
+    # Automatic apps
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -93,14 +93,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_htmx.middleware.HtmxMiddleware',
+    # Third party apps
     'accounts.middleware.DynamicSiteIDMiddleware',
-    # 'allauth.account.middleware.AccountMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
-
-if aws_mode:
-    MIDDLEWARE.append('allauth.account.middleware.AccountMiddleware')
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 PHONENUMBER_DEFAULT_REGION = "IL"
@@ -130,23 +128,13 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-if aws_mode:
-    host_name = env('AWS_RDS_URL', default='roboadvisor.cbtwoylmye6q.us-east-1.rds.amazonaws.com'),
-    password = 'postgres'
-    name = 'roboadvisordb'  # yarden
-    user = 'postgres'  # yarden
-else:
-    host_name = os.environ.get('POSTGRES_HOST', 'localhost')
-    password = env("POSTGRES_PASSWORD", default="postgres")
-    name = os.environ.get('POSTGRES_DB', 'roboadvisor')
-    user = os.environ.get('POSTGRES_USER', 'postgres')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': name,
-        'USER': user,
-        'PASSWORD': password,
-        'HOST': host_name,
+        'NAME': 'roboadvisor',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': env('AWS_RDS_URL'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
