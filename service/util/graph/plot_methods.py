@@ -141,10 +141,10 @@ def portfolio_distribution(yields) -> plt:  # first graph
                                                                    '50%': '50%(Median)', '25%': '25%(Q1)',
                                                                    '75%': '75%(Q3)', 'max': 'Max', 'min': 'Min'})
         df_describes[i].index = df_describes[i].index.str.capitalize()
-        ax = sns.distplot(a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False,
-                          color=colors[i],
-                          label=labels[i],
-                          )
+        ax = sns.distplot(
+            a=monthly_changes[i], kde=True, hist_kws={'alpha': 0.2}, norm_hist=False, rug=False, color=colors[i],
+            label=labels[i],
+        )
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:.0%}".format(x)))
 
     plt.legend(frameon=True, facecolor='white')  # Adjust legend background color
@@ -212,7 +212,7 @@ def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float
               f"Annual Volatility: {str(round(volatility, 2))}%\n"
               f"Max Loss: {str(round(max_loss, 2))}%\n"
               f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
-              "    Weights\n"  # Label text without underlining
+              "\tWeights\n"  # Label text without underlining
               f"{stocks_str.strip()}",
             bbox=dict(facecolor="0.8", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, multialignment='left', va=VA,
             fontname=FONT_NAME, wrap=WRAP,

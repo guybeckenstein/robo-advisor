@@ -6,3 +6,5 @@ def save_graph(plt_instance, file_name) -> None:
     # Adjust font size of the table cells
     plt_instance.savefig(f'{file_name}.png', format='png', transparent=True)
     plt_instance.clf()  # Clear the figure after saving
+    plt_instance.cla()
+    plt_instance.close()

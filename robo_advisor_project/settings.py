@@ -17,7 +17,12 @@ SECRET_KEY = 'django-insecure-7a2qi##$sth7^53imychx^@6!k6stk054zo!3@-fr)h^d-!*$1
 DEBUG = bool(os.environ.get('DEBUG', True))
 
 ALLOWED_HOSTS = ['*']
-# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", 'localhost 127.0.0.1 [::1]').split(" ")
+
+IP: str = '127.0.0.1'
+
+# INTERNAL_IPS = [
+#     IP,
+# ]
 
 SITE_ID: int = None
 # Application definition
@@ -28,6 +33,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     "crispy_bootstrap5",
     "crispy_forms",
+    "debug_toolbar",
     "jazzmin",
     "phonenumber_field",
     # Automatic apps
@@ -96,6 +102,7 @@ MIDDLEWARE = [
     # Third party apps
     'accounts.middleware.DynamicSiteIDMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
@@ -138,6 +145,13 @@ DATABASES = {
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": f"redis://{IP}:6379",
+#     }
+# }
 
 ACCOUNT_FORMS = {
     'login': 'accounts.forms.CustomLoginForm',

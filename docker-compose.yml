@@ -18,9 +18,19 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     networks:
       - web_network
+  redis:
+    image: redis:6.2
+    container_name: Redis_Container
+    restart: always
+    ports:
+      - '6379:6379'
+    networks:
+      - web_network
   web:
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     links:
        - db:db

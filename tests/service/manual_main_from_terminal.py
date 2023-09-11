@@ -116,7 +116,7 @@ class TestManualMainFromTerminal:
         stocks_symbols = data_management.get_stocks_symbols_from_collection(self.stocks_collection_number)
         basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
         closing_prices_table_path = f'{basic_stock_collection_repository_dir}{self.stocks_collection_number}/'
-        data_management.plot_stat_model_graph(
+        data_management.plot_stats_model_graph(
             stocks_symbols=stocks_symbols, is_machine_learning=self.is_machine_learning,
             model_name=settings.MODEL_NAME[self.model_option], closing_prices_table_path=closing_prices_table_path,
             sub_folder=sub_folder

@@ -188,8 +188,8 @@ def create_new_user_portfolio(stocks_symbols: list, investment_amount: int, is_m
     )
 
     portfolio.update_stocks_data(
-        closing_prices_table, pct_change_table, final_portfolio.iloc[0][3:],
-        final_portfolio.iloc[0][0], final_portfolio.iloc[0][1], final_portfolio.iloc[0][2]
+        closing_prices_table, pct_change_table, final_portfolio.iloc[0].iloc[3:],
+        final_portfolio.iloc[0].iloc[0], final_portfolio.iloc[0].iloc[1], final_portfolio.iloc[0].iloc[2]
     )
 
     return portfolio
@@ -277,12 +277,13 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
     closing_prices_table: pd.DataFrame = get_closing_prices_table(path)
     df = get_three_levels_df_tables(is_machine_learning, settings.MODEL_NAME[model_option], path)
     three_best_portfolios = helpers.get_best_portfolios(df, model_name=settings.MODEL_NAME[model_option])
-    best_stocks_weights_column = helpers.get_best_weights_column(stocks_symbols, sectors, three_best_portfolios,
-                                                                 closing_prices_table.pct_change())
+    best_stocks_weights_column = helpers.get_best_weights_column(
+        stocks_symbols, sectors, three_best_portfolios, closing_prices_table.ffill().pct_change()
+    )
     three_best_stocks_weights = helpers.get_three_best_weights(three_best_portfolios)
     three_best_sectors_weights = helpers.get_three_best_sectors_weights(sectors,
                                                                         three_best_stocks_weights)
-    pct_change_table: pd = closing_prices_table.pct_change()
+    pct_change_table: pd = closing_prices_table.ffill().pct_change()
     yields: list = update_pct_change_table(best_stocks_weights_column, pct_change_table)
 
     return sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
@@ -463,8 +464,8 @@ def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') 
     return plt_instance
 
 
-def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
-                          closing_prices_table_path: str, sub_folder: str) -> None:
+def plot_stats_model_graph(stocks_symbols: list[object], is_machine_learning: int, model_name: str,
+                           closing_prices_table_path: str, sub_folder: str) -> None:
     sectors: list = set_sectors(stocks_symbols)
 
     if isinstance(model_name, int):
@@ -497,8 +498,7 @@ def plot_stat_model_graph(stocks_symbols: list[object], is_machine_learning: int
             max_portfolios_annual_portfolio=three_best_portfolios[2], df=union_df
         )
 
-    graph_image_methods.save_graph(plt_instance,
-                                   f'{settings.GRAPH_IMAGES}{sub_folder}all_options')
+    graph_image_methods.save_graph(plt_instance, file_name=f'{settings.GRAPH_IMAGES}{sub_folder}all_options')
 
 
 def plot_research_graphs(data_tuple_list: list, table_data, sector_name: str, labels: list[str]) -> None:
@@ -648,6 +648,9 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
 
 def plot_image(file_name) -> None:
     pillow_plot_methods.plot_image(file_name)
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def get_stocks_from_json_file() -> dict[list]:
@@ -892,9 +895,12 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
         three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
     )
     plot_image(f'{settings.GRAPH_IMAGES}{sub_folder}three_portfolios.png')
+    plt.clf()
+    plt.cla()
+    plt.close()
 
     # display stat model graph (matplotlib)
-    plot_stat_model_graph(
+    plot_stats_model_graph(
         stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
         model_name=settings.MODEL_NAME[model_option], closing_prices_table_path=closing_prices_table_path,
         sub_folder=sub_folder
@@ -902,6 +908,9 @@ def get_level_of_risk_according_to_questionnaire_form_from_console(sub_folder, t
 
     # show result
     plot_image(f'{settings.GRAPH_IMAGES}{sub_folder}all_options.png')
+    plt.clf()
+    plt.cla()
+    plt.close()
 
     third_question_score = get_score_by_answer_from_user(string_to_show)
 

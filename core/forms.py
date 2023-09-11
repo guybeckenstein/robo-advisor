@@ -5,7 +5,8 @@ from django import forms
 from django.utils.html import format_html
 from matplotlib import pyplot as plt
 
-from accounts.models import InvestorUser
+from accounts.models import InvestorUser, CustomUser
+from core import views
 from service.util import data_management
 from service.config import settings as settings_service
 from core.models import QuestionnaireA, QuestionnaireB
@@ -85,7 +86,8 @@ class InvestmentPreferencesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         questionnaire_a: QuestionnaireA = kwargs.pop('user_preferences_instance', None)
-        self.get_questionnaire_graphs(questionnaire_a)
+        user: CustomUser = kwargs.pop('user', None)
+        self.get_questionnaire_graphs(user, questionnaire_a)
 
         # Form
         form_type = kwargs.pop('form_type', 'create')
@@ -101,23 +103,25 @@ class InvestmentPreferencesForm(forms.ModelForm):
         ml_answer: int = questionnaire_a.ml_answer
         model_answer: int = questionnaire_a.model_answer
         # Sub folder for current user to fetch its relevant graphs
-        sub_folder = f'{stocks_collections_number}/{str(ml_answer)}{str(model_answer)}'
+        sub_folder = f'{stocks_collections_number}/{ml_answer}{model_answer}'
         first_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/distribution_graph.png"
-        self.fields['answer_2'].label = format_html('<span class="capital-market-form-label">'
-                                                    'Question #2: Which distribution do you prefer?'
-                                                    '</span>'
-                                                    f'<div class="capital-market-form-label capital-market-form-img">'
-                                                    f'<img src="{first_graph}">'
-                                                    f'</div>')
         second_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/three_portfolios.png"
-        three_graphs = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
+        third_graph = f"{settings.STATIC_URL}img/graphs/{sub_folder}/all_options.png"
+        self.fields['answer_2'].label = format_html(
+            '<span class="capital-market-form-label">'
+            'Question #2: Which distribution do you prefer?'
+            '</span>'
+            f'<div class="capital-market-form-label capital-market-form-img">'
+            f'<img src="{first_graph}">'
+            f'</div>'
+        )
         self.fields['answer_3'].label = format_html(
             '<span class="capital-market-form-label">'
             'Question #3: What is your preferable graph?'
             '</span>'
             '<div class="capital-market-form-label capital-market-form-img position-relative">'
-            f'<img class="capital-market-form-img" id="capital-market-img" data-second-graph="{second_graph}"'
-            f'data-third-graph="{three_graphs}" src="{second_graph}">'
+            f'<img class="capital-market-form-img" id="capital-market-img" src="{second_graph}" '
+            f'data-second-graph="{second_graph}" data-third-graph="{third_graph}">'
             '<div class="position-absolute top-50" style="height: 10%; width: 100%;">'
             '<button type="button" class="carousel carousel-prev" aria-label="" style="left: 0;">'
             '<svg class="rounded-circle switch-img" role="presentation" viewBox="0 0 128 128">'
@@ -147,7 +151,6 @@ class InvestmentPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),
             )
-            # self.helper.add_input(Submit('submit', 'Submit', css_class='btn-dark'))
         elif form_type == 'update':
             self.helper.layout = Layout(
                 HTML(main_header),
@@ -158,10 +161,9 @@ class InvestmentPreferencesForm(forms.ModelForm):
                 Div(InlineRadios('answer_2', css_class='capital-market-form-radio')),
                 Div(InlineRadios('answer_3', css_class='capital-market-form-radio')),
             )
-            # self.helper.add_input(Submit('submit', 'Update', css_class='btn-dark'))
 
     @staticmethod
-    def get_questionnaire_graphs(questionnaire_a: QuestionnaireA):
+    def get_questionnaire_graphs(user: CustomUser, questionnaire_a: QuestionnaireA):
         # User preferences
         ml_answer = questionnaire_a.ml_answer
         model_answer = questionnaire_a.model_answer
@@ -177,23 +179,38 @@ class InvestmentPreferencesForm(forms.ModelForm):
         sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, \
             pct_change_table, yields = db_tuple
         # Saves three graphs
-        # distribution graph
+        try:
+            if views.check_is_user_last_login_was_up_to_yesterday(user=user):
+                InvestmentPreferencesForm.save_three_graphs(
+                    ml_answer, model_answer, pct_change_table, sectors, stocks_collection_number, stocks_symbols,
+                    three_best_portfolios, three_best_sectors_weights, yields
+                )
+        except InvestorUser.DoesNotExist:
+            InvestmentPreferencesForm.save_three_graphs(
+                ml_answer, model_answer, pct_change_table, sectors, stocks_collection_number, stocks_symbols,
+                three_best_portfolios, three_best_sectors_weights, yields
+            )
+
+    @staticmethod
+    def save_three_graphs(ml_answer, model_answer, pct_change_table, sectors, stocks_collection_number, stocks_symbols,
+                          three_best_portfolios, three_best_sectors_weights, yields):
         sub_folder = f'{str(stocks_collection_number)}/{str(ml_answer)}{str(model_answer)}/'
+        # Portfolios' distribution graph
         data_management.plot_distribution_of_portfolio(yields, sub_folder=sub_folder)
         plt.clf()
         plt.cla()
         plt.close()
-        # three portfolios graph
+        # Three best portfolios' graph
         data_management.plot_three_portfolios_graph(
             three_best_portfolios, three_best_sectors_weights, sectors, pct_change_table, sub_folder=sub_folder
         )
         plt.clf()
         plt.cla()
         plt.close()
-        # stat model graph
+        # Stats model graph
         basic_stock_collection_repository_dir: str = settings_service.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
         closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
-        data_management.plot_stat_model_graph(
+        data_management.plot_stats_model_graph(
             stocks_symbols=stocks_symbols, is_machine_learning=int(ml_answer), model_name=int(model_answer),
             closing_prices_table_path=closing_prices_table_path, sub_folder=sub_folder
         )

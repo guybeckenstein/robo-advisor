@@ -32,7 +32,7 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
     # get the closing prices table
     closing_prices_table: pd.DataFrame = get_closing_prices_table(
         path=f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{investor_user.stocks_collection_number}/'
-    )
+    ).ffill()
     pct_change_table: pd.DataFrame = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     # models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()

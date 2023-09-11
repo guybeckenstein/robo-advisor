@@ -1,3 +1,6 @@
+import datetime
+
+import pytz
 from django.db.models import QuerySet
 from numbers import Number
 
@@ -17,7 +20,7 @@ from service.util import web_actions
 from service.util import data_management
 from core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from core.models import TeamMember, QuestionnaireA, QuestionnaireB
-from accounts.models import InvestorUser
+from accounts.models import InvestorUser, CustomUser
 
 
 def homepage(request):
@@ -146,8 +149,9 @@ def capital_market_investment_preferences_form(request):
                 'title': 'Fill Form',
                 'form': InvestmentPreferencesForm(
                     form_type='create',
-                    user_preferences_instance=questionnaire_a,
                     collections_number=stocks_collections_number,
+                    user=request.user,
+                    user_preferences_instance=questionnaire_a,
                 ),
                 'form_type': 'create',
             }
@@ -159,26 +163,31 @@ def capital_market_investment_preferences_form(request):
                 'form': InvestmentPreferencesForm(
                     form_type='update',
                     instance=questionnaire_b,
-                    user_preferences_instance=questionnaire_a,
                     collections_number=stocks_collections_number,
+                    user=request.user,
+                    user_preferences_instance=questionnaire_a,
                 ),
                 'form_type': 'update',
             }
             return render(request, 'core/capital_market_investment_preferences_form.html', context=context)
 
     elif request.method == 'POST':
-        if questionnaire_b is None:  # CREATE
-            form = InvestmentPreferencesForm(
-                request.POST,
-                user_preferences_instance=questionnaire_a
-            )
-        else:  # UPDATE
+        if questionnaire_b is None:
+            # CREATE
             form = InvestmentPreferencesForm(
                 request.POST,
                 user_preferences_instance=questionnaire_a,
-                instance=questionnaire_b
+                user=request.user,
             )
-        if form.is_valid():  # CREATE and UPDATE
+        else:
+            # UPDATE
+            form = InvestmentPreferencesForm(
+                request.POST,
+                instance=questionnaire_b,
+                user_preferences_instance=questionnaire_a,
+                user=request.user,
+            )
+        if form.is_valid():
             # DEBUGGING, without this the code won't work
             print("", form.errors)
             # Sum answers' values
@@ -198,9 +207,8 @@ def capital_market_investment_preferences_form(request):
             questionnaire_b.save()
             form.save()
 
-            (
-                annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-                risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio) \
+            annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change, \
+                risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio \
                 = web_actions.create_portfolio_and_get_data(answers_sum, stocks_collections_number, questionnaire_a)
             try:
                 investor_user = InvestorUser.objects.get(user=request.user)
@@ -269,3 +277,16 @@ def make_investments_inactive(investments: QuerySet[Investment]) -> None:
             if investment.mode == Investment.Mode.USER:
                 affected_investments += 1
             investment.save()
+
+
+def check_is_user_last_login_was_up_to_yesterday(user: CustomUser) -> bool:
+    InvestorUser.objects.get(user=user)
+    # Can only proceed if there is an InvestorUser instance
+    if user.last_login is not None:
+        last_login = user.last_login.astimezone(pytz.timezone('Asia/Jerusalem'))
+        current: datetime.datetime = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
+        if (current - last_login).days > 0:
+            return True
+        return False
+    else:
+        raise AttributeError('Invalid logic - InvestorUser exists before the user has logged in!')

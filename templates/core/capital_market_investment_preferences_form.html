@@ -2,7 +2,8 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-{% block extrahead %}
+{% block extra_js %}
+  <script src="{% static 'js/capitalMarketInvestmentPreferencesForm.js' %}"></script>
   <style>
     .htmx-indicator {
       opacity: 0;
@@ -15,7 +16,7 @@
       opacity: 1;
     }
   </style>
-{% endblock extrahead %}
+{% endblock %}
 
 {% block content %}
 <div class="content card mx-auto w-75">

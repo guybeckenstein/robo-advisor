@@ -26,6 +26,7 @@ from investment.models import Investment
 from service.util import web_actions, data_management
 from service.config import settings as service_settings
 from accounts import forms as account_forms
+from core import views as core_views
 
 from .forms import CustomLoginForm
 from .models import InvestorUser, CustomUser
@@ -132,23 +133,15 @@ class HtmxLoginView(LoginView):
         except CustomUser.DoesNotExist:
             raise ValueError(f'No user with email - `{email}`')
         try:
-            InvestorUser.objects.get(user=user)
-            # Can only proceed if there is an InvestorUser instance
-            if user.last_login is not None:
-                last_login = user.last_login.astimezone(pytz.timezone('Asia/Jerusalem'))
-                current: datetime.datetime = datetime.datetime.now(tz=pytz.timezone('Asia/Jerusalem'))
-                if (current - last_login).days > 0:
-                    web_actions.save_three_user_graphs_as_png(user=user)
-                    if service_settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
-                        data_management.update_files_from_google_drive()
-                    """
-                    Dataset and static images are updated daily, only when the date of the last update is different
-                    from today
-                    """
-                    # it will be displayed if the last date for the change is different from today's date
-
-            else:
-                raise AttributeError('Invalid logic - InvestorUser exists before the user has logged in!')
+            if core_views.check_is_user_last_login_was_up_to_yesterday(user=user):
+                # it will be displayed if the last date for the change is different from today's date
+                web_actions.save_three_user_graphs_as_png(user=user)
+                if service_settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
+                    data_management.update_files_from_google_drive()
+                """
+                Dataset and static images are updated daily, only when the date of the last update is different
+                from today
+                """
         except InvestorUser.DoesNotExist:
             pass
         return super().form_valid(form)

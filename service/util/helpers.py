@@ -110,11 +110,11 @@ def return_sectors_weights_according_to_stocks_weights(sectors: list, stocks_wei
                 first_component_int = int(first_component)
                 # The first component is a valid integer, use it for integer comparison
                 if first_component_int in sectors[i].stocks:
-                    sectors_weights[i] += stocks_weights[j]
+                    sectors_weights[i] += stocks_weights.iloc[j]
             except ValueError:
                 # The first component is not a valid integer, use it for string comparison
                 if first_component in sectors[i].stocks:
-                    sectors_weights[i] += stocks_weights[j]
+                    sectors_weights[i] += stocks_weights.iloc[j]
 
     return sectors_weights
 
@@ -442,10 +442,12 @@ class Analyze:
 
         if self._is_closing_prices_mode:
             logged_label_mean: np.ndarray = np.log1p(
-                df['Label'].pct_change().mean())  # Generates RuntimeWarning: invalid value encountered in log1p
+                df['Label'].ffill().pct_change().mean()
+            )  # Generates RuntimeWarning: invalid value encountered in log1p
             forecast_with_historical_returns_annual: np.longdouble = (np.exp(longdouble * logged_label_mean) - 1) * 100
             logged_forecast_mean: np.ndarray = np.log1p(
-                df['Forecast'].pct_change().mean())  # Generates RuntimeWarning: invalid value encountered in log1p
+                df['Forecast'].ffill().pct_change().mean()
+            )  # Generates RuntimeWarning: invalid value encountered in log1p
             expected_returns: np.longdouble = (np.exp(longdouble * logged_forecast_mean) - 1) * 100
         return forecast_with_historical_returns_annual, expected_returns
 

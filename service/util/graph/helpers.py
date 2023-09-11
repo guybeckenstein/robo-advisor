@@ -17,6 +17,8 @@ BOTTOM: float = 0.4
 ALPHA: float = 0.5
 SEABORN_STYLE: str = 'seaborn-v0_8-dark'
 
+plt.rcParams['font.family'] = 'Arial'
+
 
 class MarkowitzAndGini:
     @staticmethod
@@ -48,7 +50,7 @@ class MarkowitzAndGini:
         return stocks
 
     @staticmethod
-    def plot_markowitz_or_gini_graph(portfolios, stocks, text1: str, text2: str) -> None:
+    def plot_markowitz_or_gini_graph(portfolios: list[pd.Series], stocks, text1: str, text2: str) -> None:
         colors: list[str, str, str] = ['orange', 'green', 'red']
         portfolios_names: list[str, str, str] = ['Safest Portfolio', 'Sharpest Portfolio', 'Max Returns Portfolio']
         with pd.option_context("display.float_format", "%{:,.2f}".format):
@@ -57,11 +59,11 @@ class MarkowitzAndGini:
                 plt.figtext(
                     x=x,
                     y=0.15,
-                    s=f"{text1}: {str(round(portfolios[i][0], 2))}%\n"
-                      f"{text2}: {str(round(portfolios[i][1], 2))}%\n"
-                      f"Annual Max Loss: {str(round(portfolios[i][0] - 1.65 * portfolios[i][1], 2))}%\n"
-                      f"Sharpe Ratio: {str(round(portfolios[i][2], 2))}\n"
-                      "     Weights\n"
+                    s=f"{text1}: {str(round(portfolios[i].iloc[0], 2))}%\n"
+                      f"{text2}: {str(round(portfolios[i].iloc[1], 2))}%\n"
+                      f"Annual Max Loss: {str(round(portfolios[i].iloc[0] - 1.65 * portfolios[i].iloc[1], 2))}%\n"
+                      f"Sharpe Ratio: {str(round(portfolios[i].iloc[2], 2))}\n"
+                      "\tWeights\n"
                       f"{stocks[i]}",
                     bbox=dict(facecolor=colors[i], alpha=ALPHA), fontsize=10, style=STYLE, ha=HA, multialignment='left',
                     va=VA, fontname=FONT_NAME, wrap=WRAP,
@@ -116,11 +118,11 @@ class ThreePortfolios:
                 x: float = 0.2 + 0.3 * i
                 portfolio = fig_text_data['portfolio'][i]
                 s: str = (
-                    f"Annual Returns: {portfolio[0]:.2f}%\n"  # Left-aligned (default)
-                    f"Annual Volatility: {portfolio[1]:.2f}%\n"  # Left-aligned (default)
-                    f"Annual Max Loss: {portfolio[0] - 1.65 * portfolio[1]:.2f}%\n"  # Left-aligned (default)
-                    f"Annual Sharpe Ratio: {portfolio[2]:.2f}\n"  # Left-aligned (default)
-                    "    Weights\n"  # Left-aligned (default)
+                    f"Annual Returns: {portfolio.iloc[0]:.2f}%\n"  # Left-aligned (default)
+                    f"Annual Volatility: {portfolio.iloc[1]:.2f}%\n"  # Left-aligned (default)
+                    f"Annual Max Loss: {portfolio.iloc[0] - 1.65 * portfolio.iloc[1]:.2f}%\n"  # Left-aligned (default)
+                    f"Annual Sharpe Ratio: {portfolio.iloc[2]:.2f}\n"  # Left-aligned (default)
+                    "\tWeights\n"  # Left-aligned (default)
                     f"{fig_text_data['stocks'][i]}"  # Left-aligned (default)
                 )
                 bbox: dict = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}

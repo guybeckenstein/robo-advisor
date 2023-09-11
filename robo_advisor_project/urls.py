@@ -1,3 +1,4 @@
+import debug_toolbar
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -12,6 +13,8 @@ urlpatterns = [
     path('', include('core.urls')),
     path('', include('investment.urls')),
     path('', include('watchlist.urls')),
+    # Third party apps
+    path('__debug__', include(debug_toolbar.urls))
 ]
 
 if settings.DEBUG:

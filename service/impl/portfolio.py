@@ -150,7 +150,7 @@ class Portfolio:
         self._pct_change_table['yield_selected'].index = pd.to_datetime(self._pct_change_table['yield_selected'].index)
         monthly_yields = self._pct_change_table['yield_selected'].resample('M').first()
         monthly_changes = monthly_yields.pct_change().dropna() * 100
-        return monthly_changes[-1]
+        return monthly_changes.iloc[-1]
 
     def get_daily_change(self):
         return self._pct_change_table['weighted_sum_selected'].iloc[-1]
