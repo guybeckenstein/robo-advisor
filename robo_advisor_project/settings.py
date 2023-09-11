@@ -4,7 +4,6 @@ import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-AWS_MODE = False
 
 env = environ.Env()
 env.read_env(os.path.join(BASE_DIR, '.env'))
@@ -137,29 +136,14 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-if AWS_MODE:
-    # yarden
-    host_name = 'roboadvisxordb.cnoslfwsfqox.us-east-1.rds.amazonaws.com'
-    name = 'roboadvisordb'  # yarden
 
-    # guy
-    host_name = env('AWS_RDS_URL')
-    name = 'roboadvisor'
-
-    user = 'postgres'
-    password = 'postgres'
-else:
-    host_name = os.environ.get('POSTGRES_HOST', 'localhost')
-    password = env("POSTGRES_PASSWORD", default="postgres")
-    name = os.environ.get('POSTGRES_DB', 'roboadvisor')
-    user = os.environ.get('POSTGRES_USER', 'postgres')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': name,
-        'USER': user,
-        'PASSWORD': password,
-        'HOST': host_name,
+        'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
+        'USER': os.environ.get('POSTGRES_USER', 'roboadvisor'),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD", "postgres"),
+        'HOST': 'localhost',  # os.environ.get('AWS_RDS_URL', 'localhost'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }

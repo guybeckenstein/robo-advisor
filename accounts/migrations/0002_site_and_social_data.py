@@ -2,20 +2,10 @@ import os
 
 from allauth.socialaccount.models import SocialApp
 
-import environ
 from django.db import migrations, transaction
 
 from django.contrib.sites.models import Site
 from django.db.models import QuerySet
-
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Load and read .env file
-# OS environment variables take precedence over variables from .env
-env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, '../../.env.oauth'))
 
 
 class Migration(migrations.Migration):
@@ -27,7 +17,7 @@ class Migration(migrations.Migration):
     def generate_site_data(apps, schema_editor):
         site_data: list[tuple] = [
             (
-                f'http://{env("WEB_DOMAIN", default="localhost")}:8000/',
+                f'http://{os.environ.get("WEB_IP", "localhost")}:8000/',
                 'RoboAdvisor',
             ),
         ]
@@ -43,30 +33,38 @@ class Migration(migrations.Migration):
         socialapp_data: list[tuple] = [
             (
                 'facebook',
+                'Facebook',
+                os.environ.get("FACEBOOK_CLIENT_ID", ValueError),
+                os.environ.get("FACEBOOK_CLIENT_SECRET", ValueError),
+                '',
                 'facebook',
-                env("FACEBOOK_CLIENT_ID", default=ValueError),
-                env("FACEBOOK_CLIENT_SECRET", default=ValueError),
             ),
             (
                 'google',
+                'Google',
+                os.environ.get("GMAIL_CLIENT_ID", ValueError),
+                os.environ.get("GMAIL_CLIENT_SECRET", ValueError),
+                '',
                 'google',
-                env("GMAIL_CLIENT_ID", default=ValueError),
-                env("GMAIL_CLIENT_SECRET", default=ValueError),
             ),
             (
                 'github',
+                'GitHub',
+                os.environ.get("GITHUB_CLIENT_ID", ValueError),
+                os.environ.get("GITHUB_CLIENT_SECRET", ValueError),
+                '',
                 'github',
-                env("GITHUB_CLIENT_ID", default=ValueError),
-                env("GITHUB_CLIENT_SECRET", default=ValueError),
             ),
         ]
         with transaction.atomic():
-            for i, (provider, name, client_id, secret_key) in enumerate(socialapp_data):
+            for i, (provider, name, client_id, secret_key, key, provider_id) in enumerate(socialapp_data):
                 social_app: SocialApp = SocialApp(
                     provider=provider,
                     name=name,
                     client_id=client_id,
                     secret=secret_key,
+                    key=key,
+                    provider_id=provider_id,
                 )
                 social_app.save()
 

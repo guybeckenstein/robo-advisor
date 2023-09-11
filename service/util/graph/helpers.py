@@ -125,7 +125,7 @@ class ThreePortfolios:
                     "## Weights: ##\n"
                     f"{fig_text_data['stocks'][i]}"
                 )
-                s = spaces.add_spaces_to_each_line(s)
+                s = Spaces.add_spaces_to_each_line(s)
                 bbox: dict = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}
                 plt.figtext(
                     x=x, y=0.15, s=s, bbox=bbox, fontsize=10.5, style=STYLE, ha=HA, multialignment='left', va=VA,
@@ -136,28 +136,30 @@ class ThreePortfolios:
                     fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
                 )
 
-class spaces:
+
+class Spaces:
     @staticmethod
     def add_spaces_to_each_line(s):
-                lines = s.split('\n')
+        lines = s.split('\n')
 
-                # Find the length of the longest line
-                max_line_length = max(len(line) for line in lines)
+        # Find the length of the longest line
+        max_line_length = max(len(line) for line in lines)
 
-                # Create a formatted version of each line with added spaces
-                formatted_lines = []
-                for line in lines:
-                    # Calculate the number of spaces needed to match the length of the longest line
-                    spaces_needed = max_line_length - len(line)
+        # Create a formatted version of each line with added spaces
+        formatted_lines = []
+        for line in lines:
+            # Calculate the number of spaces needed to match the length of the longest line
+            spaces_needed = max_line_length - len(line)
 
-                    # Add spaces to the line
-                    formatted_line = f"{line}{' ' * spaces_needed}"
+            # Add spaces to the line
+            formatted_line = f"{line}{' ' * spaces_needed}"
 
-                    formatted_lines.append(formatted_line)
+            formatted_lines.append(formatted_line)
 
-                    # Join the formatted lines back into a single string
-                formatted_s = '\n'.join(formatted_lines)
-                return formatted_s
+            # Join the formatted lines back into a single string
+        formatted_s = '\n'.join(formatted_lines)
+        return formatted_s
+
 
 class EstimatedYield:
     @staticmethod

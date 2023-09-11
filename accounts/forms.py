@@ -44,11 +44,6 @@ class UserRegisterForm(UserCreationForm):
         model = CustomUser
         fields = ('email', 'first_name', 'last_name', 'phone_number', 'password1', 'password2')
         widgets = {
-            # 'first_name': forms.TextInput(attrs={
-            #     'hx-get': reverse_lazy('check_first_name'),
-            #     'hx-target': '#div_id_first_name',
-            #     'hx-trigger': 'keyup[target.value.length > 4]'
-            # }),
             'email': forms.TextInput(attrs={
                 'hx-get': reverse_lazy('check_email'),
                 'hx-target': '#div_id_email',
@@ -63,16 +58,21 @@ class UserRegisterForm(UserCreationForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-
         try:
             ac_il_email_validator(email)
         except ValidationError as e:
             raise forms.ValidationError(str(e))
-
         if CustomUser.objects.filter(email=email).exists():
             raise forms.ValidationError("User with this email address is already registered.")
-
         return email
+
+    # Name check (must be English letters)
+    def clean_first_name(self):
+        first_name = self.cleaned_data['first_name']
+        # Add your validation logic here
+        if not first_name.replace(" ", "").isalpha():
+            raise forms.ValidationError("Only alphabetic characters and spaces are allowed.")
+        return first_name
 
     def clean_last_name(self):
         last_name = self.cleaned_data['last_name']
@@ -80,13 +80,6 @@ class UserRegisterForm(UserCreationForm):
         if not last_name.replace(" ", "").isalpha():
             raise forms.ValidationError("Only alphabetic characters and spaces are allowed.")
         return last_name
-
-    def clean_first_name(self):
-        first_name = self.cleaned_data['first_name']
-        # Add your validation logic here
-        if not first_name.replace(" ", "").isalpha():
-            raise forms.ValidationError("Only alphabetic characters and spaces are allowed.")
-        return first_name
 
 
 class CustomLoginForm(LoginForm):
