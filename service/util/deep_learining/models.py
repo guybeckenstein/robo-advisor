@@ -130,7 +130,7 @@ def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
     # model.compile(loss='mse', optimizer=opt)
 
     # Train the model
-    model.fit(X_train, y_train, epochs=5, batch_size=64, validation_split=0.15,
+    model.fit(X_train, y_train, epochs=4, batch_size=64, validation_split=0.15,
               callbacks=[early_stopping])  # add the early stopping callback here)
 
     # Predict on the test data
@@ -162,10 +162,9 @@ def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
         scaled_data.loc[next_date] = [np.nan for _ in range(len(scaled_data.columns) - 1)] + [i]
         df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        current_val = (1 + i)/100 * last_price
+        current_val = (1 + i/20) * last_price
 
         last_price = current_val
-        # print(last_price)
         df[forecast_col].loc[next_date] = current_val
 
     return df
