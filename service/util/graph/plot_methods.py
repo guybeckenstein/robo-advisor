@@ -212,7 +212,7 @@ def investment_portfolio_estimated_yield(df: pd.DataFrame, annual_returns: float
               f"Annual Volatility: {str(round(volatility, 2))}%\n"
               f"Max Loss: {str(round(max_loss, 2))}%\n"
               f"Annual Sharpe Ratio: {str(round(sharpe, 2))}\n"
-              "\tWeights\n"  # Label text without underlining
+              "## Weights: ##\n"
               f"{stocks_str.strip()}",
             bbox=dict(facecolor="0.8", alpha=ALPHA), fontsize=11, style=STYLE, ha=HA, multialignment='left', va=VA,
             fontname=FONT_NAME, wrap=WRAP,
