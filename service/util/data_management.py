@@ -137,9 +137,9 @@ def update_specific_data_frame_table(is_machine_learning: bool, model_name: str,
     gini_v_value: float = float(models_data["models_data"]['gini_v_value'])
 
     if is_machine_learning:
-        location_for_saving: str = f'{path}settings.MACHINE_LEARNING_LOCATION'
+        location_for_saving: str = f'{path}{settings.MACHINE_LEARNING_LOCATION}'
     else:
-        location_for_saving: str = f'{path}settings.NON_MACHINE_LEARNING_LOCATION'
+        location_for_saving: str = f'{path}{settings.NON_MACHINE_LEARNING_LOCATION}'
 
     if max_percent_commodity <= 0:
         stock_sectors = helpers.setStockSectors(stocks_symbols, sectors)
