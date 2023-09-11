@@ -465,8 +465,6 @@ def get_top_stocks_by_label_and_sector(sector_name: str = "unified", label: str 
 
 def update_collections_file(all_stats_data_list_of_lists: list[list[pd.Series]],
                             unified_table_data: pd.DataFrame) -> None:
-                            # TODO: unused
-                            # unified_table_data_tuple: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]) -> None:
     """
     updates stocks.json file with the new stocks according to the research
     :return: None
@@ -508,9 +506,6 @@ def update_collections_file(all_stats_data_list_of_lists: list[list[pd.Series]],
 
     # save to collections file
     # Find the intersection of the four lists
-    # TODO: unused
-    # intersection_stocks = list(set((top_stocks_annual_return + top_stocks_monthly_return + top_stocks_annual_sharpe)))
-    # intersection_stocks = list(set(intersection_stocks) & set(top_stocks_volatility))
     collections_file = helpers.get_json_data(f'{settings.DATASET_LOCATION}stocks')
 
     collections_file['collections']['2'][0]["stocksSymbols"] = list(

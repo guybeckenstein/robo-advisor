@@ -1,15 +1,20 @@
 import codecs
 import csv
 import datetime
+import io
 import requests
 from datetime import datetime as data_time, timedelta
 import json
 import math
+import os
+
+from bidi import algorithm as bidi_algorithm
+from functools import reduce
 
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, rcParams
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -24,13 +29,17 @@ from PIL import Image
 
 # LSTM imports
 import matplotlib.dates as mdates
-import seaborn as sns
+"""import seaborn as sns
 import tensorflow as tf
-from tensorflow.python.keras.models import Sequential
+from keras.models import Sequential
 from keras import regularizers
 from tensorflow.python.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error
 from keras.optimizers import Adam
+from keras.layers import Dense, Dropout, LSTM, BatchNormalization
+import shap"""
+import seaborn as sns
+
 
 # Global variables
 SINGLE_DAY: int = 86400
@@ -182,76 +191,32 @@ class Analyze:
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
         return df, forecast_with_historical_returns_annual, expected_returns
 
-    """def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        df, forecast_out = self.get_final_dataframe()
-
-        df.index = pd.to_datetime(self._table_index)
-
-        # Perform GBM forecasting
-        model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
-        X = np.arange(len(df))[:, None]  # Use a simple sequence as features for demonstration
-        y = df['Col'].values
-        model.fit(X, y)
-        forecast = model.predict(np.arange(len(df), len(df) + forecast_out)[:, None])
-        df['Forecast'] = np.nan
-        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast
-
-        # add dates
-        last_date = df.iloc[-1].name
-        last_unix: pd.Timestamp = last_date.timestamp()
-        next_unix: float = last_unix + SINGLE_DAY
-
-        for i in forecast:
-            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
-            next_unix += SINGLE_DAY
-            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
-
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df,
-                                                                                           forecast_out=forecast_out)
-        return df, forecast_with_historical_returns_annual, expected_returns"""
-
-    def lstm_model(self, pct_change_mode=False, use_features=True) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+    def lstm_model(self, pct_change_mode=False, use_features=False) -> tuple[
+        pd.DataFrame, np.longdouble, np.longdouble]:
+        """np.random.seed(1)
         df_final, forecast_out = self.get_final_dataframe()
         start_date = self._table_index[0].strftime("%Y-%m-%d")
         end_date = self._table_index[-1].strftime("%Y-%m-%d")
-        days = forecast_out
-        df_final.index = pd.to_datetime(self._table_index)
-        if not pct_change_mode:
-            closing_price_df = df_final
-            df_final = df_final.pct_change()
-        else:
-            closing_price_df = None
         forecast_col = "Forecast"
         df_final[forecast_col] = df_final['Col']
-
-        df_final.fillna(value=-0, inplace=True)
-        df_final['Label'] = df_final[forecast_col].shift(-forecast_out)
-
+        days = 72
+        df_final['Label'] = df_final[forecast_col].shift(-forecast_out).pct_change()
         df_final = df_final.dropna(subset=['Label'])
         df_final = df_final[df_final['Label'] != 0.0]
-        df_final['Date'] = df_final.index
-
-        # lstm_show_plt_graph(df_final, mode='M')
-        # lstm_show_plt_graph(df_final, mode='Y')
-
-        # Count the number of zeroes in each row
-        zero_counts = (df_final == 0.0).sum(axis=1)
-        # df_final = df_final.drop(['Month', 'Year'], axis=1)
-        # Filter rows with fewer or equal to 5 zeroes
-        df_final = df_final[zero_counts <= 5]
-
         # drop weekends
+        df_final['Date'] = pd.to_datetime(df_final.index)
+        df_final['Year'] = df_final['Date'].dt.year
+        df_final['Month'] = df_final['Date'].dt.month
         df_final = drop_weekends(df_final)
 
+        # show data graph
+        # lstm_show_data_plot_wth_labels(df_final, tickers_df, forecast_col)
         if use_features:
-            lstm_show_data_plot_wth_labels(df_final, forecast_col)
             # feature for scaling
-            df_final = lstm_add_unemployment_rate_and_cpi(df_final=df_final, start_date=start_date, end_date=end_date)
-            df_final = lstm_add_interest_rate(df_final=df_final, start_date=start_date, end_date=end_date)
-            df_final = lstm_add_gdp_growth_rate(
-                merged_df=df_final, start_date=start_date, end_date=end_date, api_key=None  # TODO: add API Key
-            )
-            lstm_confusion_matrix(df_final, forecast_col)
+            df_final = lstm_add_unemployment_rate_and_cpi(df_final, start_date, end_date)
+            df_final, api_key = lstm_add_interest_rate(df_final, start_date, end_date)
+            df_final = lstm_add_gdp_growth_rate(df_final, start_date, end_date, api_key)
+            # lstm_confusion_matrix(df_final, forecast_col)
 
             # Scaling
             cols_to_scale = ['CPI', 'unemployment_rate', 'Interest Rate', 'GDP Growth Rate']
@@ -267,10 +232,12 @@ class Analyze:
             scaled_data = scaled_data[scaled_data['Label'] != 0]
             scaled_data.to_csv(f'{settings.RESEARCH_LOCATION}LSTM_Final-Runung.csv')
         else:
-            # tickers_df = df_final.drop(['Date', forecast_col, 'Label'], axis=1)  # TODO: unused
             scaled_data = df_final
-            tickers_cols_to_scale = scaled_data.columns.drop(['Date', 'Label'])
-            scaled_data[tickers_cols_to_scale] *= 100
+            # tickers_cols_to_scale = scaled_data.columns.drop(['Date', 'Label'])
+            # scaled_data[tickers_cols_to_scale] *= 100
+            # Sliding Window
+            scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
+            scaled_data = scaled_data[scaled_data['Label'] != 0]
             # Sliding Window
             scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
             scaled_data = scaled_data[scaled_data['Label'] != 0]
@@ -320,20 +287,21 @@ class Analyze:
         model.add(tf.keras.layers.Dense(16, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
         model.add(tf.keras.layers.Dense(units=1))
 
-        # takes long time
         # create an early stopping callback
         early_stopping = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=50)
 
-        # opt = Adam(lr=0.001, clipvalue=1.0)
-
-        optimizer = Adam(learning_rate=0.001)
-
+        opt = tf.keras.optimizers.legacy.Adam(lr=0.001, clipvalue=1.0)
+        # Compile model
+        model.compile(
+            loss='sparse_categorical_crossentropy',
+            optimizer=opt,
+            metrics=['accuracy']
+        )
         # model.compile(loss='mse', optimizer=opt)
-        model.compile(loss='mse', optimizer=optimizer)
 
         # Train the model
-        # add the early stopping callback here
-        model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.15, callbacks=[early_stopping])
+        model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.15,
+                  callbacks=[early_stopping])  # add the early stopping callback here)
 
         # Predict on the test data
         predictions = model.predict(X_test)
@@ -345,9 +313,10 @@ class Analyze:
 
         # Results
         # Adjusted percentage change prediction
-        # date_values = scaled_data.index  # TODO: unused
+        date_values = scaled_data.index
 
         scaled_data['Forecast'] = np.nan
+        df_final[forecast_col] = np.nan
 
         last_date = scaled_data.iloc[-1].name
         last_unix = last_date.timestamp()
@@ -355,11 +324,19 @@ class Analyze:
         next_unix = last_unix + one_day
 
         predictions = np.concatenate(predictions)
-
+        last_price = df_final["Col"].iloc[-1]
+        predictions_df = pd.DataFrame(predictions)
         for i in predictions:
             next_date = datetime.datetime.fromtimestamp(next_unix)
             next_unix += 86400
             scaled_data.loc[next_date] = [np.nan for _ in range(len(scaled_data.columns) - 1)] + [i]
+            df_final.loc[next_date] = [np.nan for _ in range(len(df_final.columns) - 1)] + [i]
+
+            current_val = (1 + i) * last_price
+
+            last_price = current_val
+            # print(last_price)
+            df_final[forecast_col].loc[next_date] = current_val
 
         # daily change and forecast
         scaled_data['Label'].plot()
@@ -369,46 +346,15 @@ class Analyze:
         plt.ylabel('Precentage Change')
         plt.show()
 
-        predictions_df = pd.DataFrame(predictions)
-        predictions_df.to_csv(f'{settings.RESEARCH_LOCATION}lstm_predictions.csv')
+        annual_return = ((1 + df_final["Col"].mean()) ** 254 - 1) * 100
+        real_change = scaled_data['Forecast'].mean()
+        excepted_annual_return = ((1 + real_change) ** 254 - 1) * 100
 
-        if not pct_change_mode and closing_price_df:
-            # Closing Price Prediction
-            closing_price_df = closing_price_df.dropna()
-            last_price = closing_price_df.iloc[-1]
-
-            forecast_price = []
-            for i in list(predictions):
-                current_val = (1 + i) * last_price
-
-                last_price = current_val
-                # print(last_price)
-                forecast_price.append(last_price)
-            print(((1 + df_final['ADJ_PCT_change_SPY'].mean()) ** 254 - 1) * 100)
-            # print(((1+df_final['ADJ_PCT_change_SPY'].std())*(254**0.5)))
-            realchancg = scaled_data['Forecast'].mean()
-            print((1 + realchancg) ** 254 - 1)
-
-            # plot only forecast closing price graph
-            new_dates = scaled_data.dropna(subset='Forecast').index
-
-            new_spy_forecast_price = pd.Series(closing_price_df, index=new_dates)
-
-            fig, ax = plt.subplots(figsize=(14, 5))
-
-            # Plot the actual and predicted values
-            ax.plot(new_spy_forecast_price, label='Predictions')
-
-            # Format the x-axis to display only month and year
-            ax.xaxis.set_major_locator(mdates.MonthLocator(interval=5))
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
-
-            ax.set_title('S&P 500 Closing Price Prediction')
-            ax.set_xlabel('Date')
-            ax.set_ylabel('Price')
+        return df_final, annual_return, excepted_annual_return
 
         if use_features:
-            lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)
+            lstm_show_snap_graph(seq_len, input_features, X_test, shap_days=1, model=model)"""
+        return None, None, None
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
         df, forecast_out = self.get_final_dataframe()
@@ -782,8 +728,6 @@ def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
 
 
 def convert_israeli_symbol_number_to_name(symbol_number: int, is_index_type: bool, is_reverse_mode: bool = True) -> str:
-    from bidi import algorithm as bidi_algorithm
-
     if is_index_type:
         json_data = get_json_data(settings.INDICES_LIST_JSON_NAME)
         hebrew_text = [item['name'] for item in json_data['indicesList']['result'] if item['id'] == symbol_number][0]
@@ -905,7 +849,6 @@ def get_descriptions_list() -> list[str]:
 
 
 def create_graphs_folders() -> None:
-    import os
     try:
         os.mkdir(f'{settings.GRAPH_IMAGES}')
     except FileExistsError:
@@ -934,20 +877,30 @@ def create_graphs_folders() -> None:
 
 
 # Drop Weekends and Fill Nan
-def drop_weekends(df):
-    for col in df.columns:
-        not_nan_indices = df[col].dropna().index
-        for i in df[col].index:
-            if pd.isna(df.at[i, col]):
-                previous_indices = not_nan_indices[not_nan_indices < i]
-                next_indices = not_nan_indices[not_nan_indices > i]
-                if previous_indices.empty:
-                    df.at[i, col] = df.at[next_indices[0], col]
-                elif next_indices.empty:
-                    df.at[i, col] = df.at[previous_indices[-1], col]
-                else:
-                    df.at[i, col] = (df.at[previous_indices[-1], col] + df.at[next_indices[0], col]) / 2
-    return df
+def drop_weekends(df_final):
+    def fillna_custom(df):
+        for col in df.columns:
+            not_nan_indices = df[col].dropna().index
+            for i in df[col].index:
+                if pd.isna(df.at[i, col]):
+                    previous_indices = not_nan_indices[not_nan_indices < i]
+                    next_indices = not_nan_indices[not_nan_indices > i]
+                    if previous_indices.empty:
+                        df.at[i, col] = df.at[next_indices[0], col]
+                    elif next_indices.empty:
+                        df.at[i, col] = df.at[previous_indices[-1], col]
+                    else:
+                        df.at[i, col] = (df.at[previous_indices[-1], col] + df.at[next_indices[0], col]) / 2
+        return df
+
+    # Count the number of zeroes in each row
+    zero_counts = (df_final == 0.0).sum(axis=1)
+
+    df_final = df_final.drop(['Month', 'Year'], axis=1)
+    # Filter rows with fewer or equal to 5 zeroes
+    df_final = df_final[zero_counts <= 5]
+    df_final = fillna_custom(df_final)
+    return df_final
 
 
 def currency_exchange(from_currency="USD", to_currency="ILS"):
@@ -1035,7 +988,6 @@ def convert_data_stream_to_pd(file_stream):
 
 
 def convert_data_stream_to_png(file_stream):
-    import io
     # Create an Image object from the binary stream
     return Image.open(io.BytesIO(file_stream.read()))
 
@@ -1162,7 +1114,7 @@ def lstm_add_interest_rate(df_final, start_date, end_date):
 
     merged_df = pd.merge(df_final, df_interest_rates, left_on='Date', right_on='Date', how='left')
     merged_df = lstm_fill_na_values(merged_df)
-    return merged_df
+    return merged_df, api_key
 
 
 def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key) -> pd.DataFrame | None:
@@ -1262,9 +1214,7 @@ def lstm_show_plt_graph(df_final, mode):
     plt.show()
 
 
-def lstm_show_data_plot_wth_labels(df_final, forecast_col):
-    from matplotlib import rcParams
-
+def lstm_show_data_plot_wth_labels(df_final, tickers_df,  forecast_col):
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
@@ -1285,11 +1235,10 @@ def lstm_show_data_plot_wth_labels(df_final, forecast_col):
     plt.title('Price by Year')
     plt.show()
     # price by years with lables
-    tickers_df = df_final.drop(['Date', 'Year', forecast_col], axis=1)
+    tickers_df = tickers_df.drop(['Date', 'Year', forecast_col], axis=1)
 
     # Selecting only columns that start with 'ADJ_PCT_change_'
-    # columns_to_plot = [col for col in tickers_df.columns if col.startswith('ADJ_PCT_change_')]
-    columns_to_plot = tickers_df.columns
+    columns_to_plot = [col for col in tickers_df.columns if col.startswith('ADJ_PCT_change_')]
     # Melting the dataframe to have a format suitable for boxplots for multiple columns
     df_melted = pd.melt(tickers_df, value_vars=columns_to_plot)
 
@@ -1303,9 +1252,9 @@ def lstm_show_data_plot_wth_labels(df_final, forecast_col):
 
 
 def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
-    import shap
     # shap          takes too long time
     # Initialize JS visualization code
+    """
     shap.initjs()
 
     # TODO unused
@@ -1334,4 +1283,4 @@ def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
     aggregated_shap_values = shap_values_reshaped.sum(axis=1)
 
     # Create a summary plot of the aggregated SHAP values
-    shap.summary_plot(aggregated_shap_values, feature_names=input_features)
+    shap.summary_plot(aggregated_shap_values, feature_names=input_features)"""
