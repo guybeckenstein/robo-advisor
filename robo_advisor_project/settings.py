@@ -147,7 +147,7 @@ DATABASES = {
 # CACHES = {
 #     "default": {
 #         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-#         "LOCATION": f"redis://{IP}:6379",
+#         "LOCATION": f'redis://{os.environ.get("HOST_IP", "localhost")}:6379',
 #     }
 # }
 
