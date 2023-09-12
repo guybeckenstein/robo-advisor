@@ -70,10 +70,12 @@ def add_investment_view(request):
 
             # send report to user in email
             subject: str = 'Investment Report From RoboAdvisor'
-            message: str = ('Here is your investment report.\n'
-                       f'You have invested {amount} dollars.\n\n\n'
-                       'Sincerely yours,\n'
-                       'RoboAdvisor team')
+            message: str = (
+                'Here is your investment report.\n'
+                f'You have invested {amount} dollars.\n\n\n'
+                'Sincerely yours,\n'
+                'RoboAdvisor team'
+            )
             recipient_list: list[str] = [request.user.email]
             attachment_path: str = f'{settings.USER_IMAGES}{str(request.user.id)}/Investment Report.png'
             web_actions.send_email(

@@ -707,7 +707,6 @@ def create_graphs_folders_locally() -> None:
             pass
 
 
-
 def create_graphs_folders_aws_s3(bucket_name: str) -> None:
     import boto3
 

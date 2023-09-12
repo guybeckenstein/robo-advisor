@@ -91,7 +91,7 @@ def _calculate_cumulative_col_offset(col_idx: int) -> int:
 
 
 def draw_all_and_save_as_png_aws_s3(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
-                                     header_text, percent_mode: bool = True) -> None:
+                                    header_text, percent_mode: bool = True) -> None:
     import io
     import boto3
     from robo_advisor_project.settings import AWS_STORAGE_BUCKET_NAME

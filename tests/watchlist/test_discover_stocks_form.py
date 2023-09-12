@@ -19,10 +19,8 @@ class TestDiscoverStocksForm:
         )
         helper_methods.assert_attributes(
             response,
-            attributes=[
-                           'Discover stocks', 'Ml model', 'Symbol', 'Start Date to End Date', 'submit-id-submit',
-                           'Submit', f"{user.first_name}{DASHBOARD}"
-                       ] + settings.MACHINE_LEARNING_MODEL
+            attributes=['Discover stocks', 'Ml model', 'Symbol', 'Start Date to End Date', 'submit-id-submit',
+                        'Submit', f"{user.first_name}{DASHBOARD}"] + settings.MACHINE_LEARNING_MODEL
         )
 
     def test_redirection_get_request_as_guest(self, client: Client):
