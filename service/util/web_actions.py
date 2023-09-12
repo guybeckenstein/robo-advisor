@@ -1,23 +1,16 @@
-from service.impl.user import User
-import numpy as np
-import pandas as pd
-from django.shortcuts import get_object_or_404
-
 from service.impl.portfolio import Portfolio
 from service.util import data_management
 from service.config import settings
-from service.util import helpers
-from service.util.data_management import get_closing_prices_table
-from core.models import QuestionnaireA, QuestionnaireB
+from core.models import QuestionnaireA
 from accounts.models import InvestorUser, CustomUser
-from django.conf import settings as django_settings
-
-# email imports
-from django.core.mail import EmailMultiAlternatives
-from django.utils.html import strip_tags
 
 
 def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None) -> None:
+    from service.impl.user import User
+    import numpy as np
+    import pandas as pd
+    from service.util import helpers
+
     investor_user: InvestorUser = get_investor_user(user)
 
     # get portfolio data
@@ -30,12 +23,11 @@ def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None)
             __, __, is_machine_learning = portfolio.get_portfolio_data()
 
     # get the closing prices table
-    closing_prices_table: pd.DataFrame = get_closing_prices_table(
+    closing_prices_table: pd.DataFrame = data_management.get_closing_prices_table(
         path=f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{investor_user.stocks_collection_number}/'
     ).ffill()
     pct_change_table: pd.DataFrame = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
-    # models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     weighted_sum: np.ndarray = np.dot(stocks_weights, pct_change_table.T)
     pct_change_table[f"weighted_sum_{str(risk_level)}"] = weighted_sum
 
@@ -93,6 +85,10 @@ def create_portfolio_and_get_data(answers_sum: int, stocks_collection_number: st
 
 
 def create_portfolio_instance(user: CustomUser):
+    from django.shortcuts import get_object_or_404
+
+    from core.models import QuestionnaireB
+
     try:
         investor_user: InvestorUser = InvestorUser.objects.get(user=user)
     except InvestorUser.DoesNotExist:
@@ -117,6 +113,11 @@ def create_portfolio_instance(user: CustomUser):
 
 
 def send_email(subject, message, recipient_list, attachment_path=None):
+    from django.conf import settings as django_settings
+    # email imports
+    from django.core.mail import EmailMultiAlternatives
+    from django.utils.html import strip_tags
+
     from_email = django_settings.DEFAULT_FROM_EMAIL
     # Send the email with attachment
     text_content = strip_tags(message)

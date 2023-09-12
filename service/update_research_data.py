@@ -4,12 +4,12 @@ import os
 from impl.user import User
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(project_root)
-
-from util import research
-from config import settings
-download_data = False
+download_data: bool = False
 
 if __name__ == '__main__':
+    from util import research
+    from config import settings
+
     if download_data:
         # download 10 years history data for all stocks
         research.download_data_for_research(settings.NUM_OF_YEARS_HISTORY)

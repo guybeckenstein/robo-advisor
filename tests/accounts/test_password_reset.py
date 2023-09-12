@@ -11,7 +11,7 @@ from accounts.models import CustomUser
 from tests import helper_methods
 
 # Global const variables
-RESET_LINK_URL = f'http://{os.environ.get("WEB_IP", "localhost")}:8000/accounts/password/reset/key/1-111111/'
+RESET_LINK_URL = f'http://{os.environ.get("HOST_IP", "localhost")}:8000/accounts/password/reset/key/1-111111/'
 
 
 @pytest.mark.django_db

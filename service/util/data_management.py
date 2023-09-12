@@ -17,17 +17,17 @@ from service.util.helpers import Analyze
 from service.util.graph import image_methods as graph_image_methods
 from service.util.graph import plot_methods as graph_plot_methods
 from service.util.pillow import plot_methods as pillow_plot_methods
-from service.impl import google_drive
-import os
 from PIL import Image
-import django
 from django.db.models import QuerySet
 from service.util import draw_table
+from accounts.models import InvestorUser
 
-# Set up Django settings
+from service.impl import google_drive
+import django
+import os
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
 django.setup()
-from accounts.models import InvestorUser
 
 google_drive_instance = google_drive.GoogleDriveInstance()
 today = datetime.date.today()
@@ -246,7 +246,7 @@ def add_new_investment(user_id: int | str, investment_amount: int, is_automatic_
     investments.append(new_investment)
 
     # save the new investment to the db  (json file)
-    save_investment_to_json_File(user_id, investments)
+    save_investment_to_json_file(user_id, investments)
 
     return new_investment, investments
 
@@ -454,7 +454,7 @@ def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_
         pct_change_table=pct_change_table
     )
     fully_qualified_name: str = f'{settings.GRAPH_IMAGES}{sub_folder}three_portfolios'
-    graph_image_methods.save_graph(plt_instance_three_graph, fully_qualified_name)
+    graph_image_methods.save_graph_locally(plt_instance_three_graph, fully_qualified_name)
 
     return plt_instance_three_graph
 
@@ -462,7 +462,7 @@ def plot_three_portfolios_graph(three_best_portfolios: list, three_best_sectors_
 def plot_distribution_of_portfolio(distribution_graph, sub_folder: str = '00/') -> plt:
     plt_instance = graph_plot_methods.portfolio_distribution(distribution_graph)
     fully_qualified_name: str = f'{settings.GRAPH_IMAGES}{sub_folder}distribution_graph'
-    graph_image_methods.save_graph(plt_instance, fully_qualified_name)
+    graph_image_methods.save_graph_locally(plt_instance, fully_qualified_name)
 
     return plt_instance
 
@@ -501,35 +501,36 @@ def plot_stats_model_graph(stocks_symbols: list[object], is_machine_learning: in
             max_portfolios_annual_portfolio=three_best_portfolios[2], df=union_df
         )
 
-    graph_image_methods.save_graph(plt_instance, file_name=f'{settings.GRAPH_IMAGES}{sub_folder}all_options')
+    graph_image_methods.save_graph_locally(plt_instance, file_name=f'{settings.GRAPH_IMAGES}{sub_folder}all_options')
 
 
-def plot_research_graphs(data_tuple_list: list, table_data, sector_name: str, labels: list[str]) -> None:
+def plot_research_graphs(table_data, sector_name: str, labels: list[str]) -> None:
     prefix_str = "Top Stocks - "
     path = f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}'
-    draw_table.draw_research_table(path, table_data, labels)
+    colors = [
+        "lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray",
+        "lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray"
+    ]
+    draw_table.draw_research_table(
+        path=path, table_data=table_data, labels=labels, sort_by_option=True, ending_file_name="(Table)", colors=colors
+    )
 
     colors = ["lightgray", "red", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green",
               "green", "green"]
-    draw_table.draw_research_table(path, data_tuple_list, labels, False, "(Graphs)", colors)
+    draw_table.draw_research_table(
+        path=path, table_data=table_data, labels=labels, sort_by_option=False, ending_file_name="(Graphs)",
+        colors=colors
+    )
 
 
 def save_user_portfolio(user: User) -> None:
     # Creating directories
-    curr_user_directory = settings.USER_IMAGES + user.id
+    curr_user_directory: str = f'{settings.USER_IMAGES}{user.id}'
     models_data = get_models_data_from_collections_file()
     record_percent_to_predict = models_data['record_percent_to_predict']
     test_size_machine_learning = models_data['test_size_machine_learning']
 
-    try:
-        os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
-    except FileExistsError:  # Ignore the exception
-        pass
-
-    try:
-        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
-    except FileExistsError:  # Ignore the exception
-        pass
+    create_user_image_directory_locally(curr_user_directory)
 
     # get data from user
     portfolio: Portfolio = user.portfolio
@@ -540,14 +541,16 @@ def save_user_portfolio(user: User) -> None:
         weights=portfolio.get_sectors_weights(), names=portfolio.get_sectors_names()
     )
 
-    graph_image_methods.save_graph(plt_sectors_component, file_name=f'{curr_user_directory}/sectors_weights_graph')
+    graph_image_methods.save_graph_locally(
+        plt_sectors_component, file_name=f'{curr_user_directory}/sectors_weights_graph'
+    )
     plt.clf()
     plt.cla()
     plt.close()
 
     # Table of stocks weights
     header_text: list[str, str, str] = ['Stock', 'Weight', 'Description']
-    draw_table.draw_all_and_save_as_png(
+    draw_table.draw_all_and_save_as_png_locally(
         file_name=f'{curr_user_directory}/stocks_weights_graph',
         symbols=stocks_symbols,
         values=portfolio.stocks_weights,
@@ -574,10 +577,38 @@ def save_user_portfolio(user: User) -> None:
         df=df, annual_returns=annual_returns, volatility=volatility, sharpe=sharpe, max_loss=max_loss,
         total_change=total_change, sectors=portfolio.sectors, excepted_returns=excepted_returns
     )
-    graph_image_methods.save_graph(plt_yield_graph, file_name=f'{curr_user_directory}/estimated_yield_graph')
+    graph_image_methods.save_graph_locally(plt_yield_graph, file_name=f'{curr_user_directory}/estimated_yield_graph')
     plt.clf()
     plt.cla()
     plt.close()
+
+
+def create_user_image_directory_locally(curr_user_directory: str) -> None:
+    try:
+        os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+    try:
+        os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
+    except FileExistsError:  # Ignore the exception
+        pass
+
+
+def create_user_image_directory_aws_s3(curr_user_directory: str) -> None:
+    import boto3
+    from robo_advisor_project.settings import AWS_STORAGE_BUCKET_NAME
+
+    # Initialize the S3 client
+    s3 = boto3.client('s3')
+
+    # Define the S3 bucket name
+    bucket_name = AWS_STORAGE_BUCKET_NAME
+
+    try:
+        # Create a placeholder object to represent the user directory (folder)
+        s3.put_object(Bucket=bucket_name, Key=curr_user_directory)
+    except Exception as e:
+        print(f"Error creating S3 user directory: {e}")
 
 
 def plot_investments_history(login_id, investments_list) -> plt:  # from json file
@@ -591,7 +622,7 @@ def plot_investments_history(login_id, investments_list) -> plt:  # from json fi
         description = f'Date:{purchase_date}, Status:{status}, Model:{mode}'
         descriptions.append(description)
 
-    curr_user_directory = settings.USER_IMAGES + str(login_id)
+    curr_user_directory = f'{settings.USER_IMAGES}{login_id}'
     try:
         os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
     except FileExistsError:  # Ignore the exception
@@ -602,7 +633,7 @@ def plot_investments_history(login_id, investments_list) -> plt:  # from json fi
     except FileExistsError:  # Ignore the exception
         pass
 
-    draw_table.draw_all_and_save_as_png(
+    draw_table.draw_all_and_save_as_png_locally(
         file_name=file_name,
         symbols=[f'{i + 1}' for i in range(len(investments_list))],
         values=[investment["amount"] for investment in investments_list],
@@ -629,7 +660,7 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
         description = f'{currency}, {helpers.get_stocks_descriptions([stock])[1:][0]}'
         descriptions.append(description)
 
-    curr_user_directory = settings.USER_IMAGES + str(login_id)
+    curr_user_directory = f'{settings.USER_IMAGES}{login_id}'
     try:
         os.mkdir(settings.USER_IMAGES)  # Creates 'static/img/user' folder
     except FileExistsError:  # Ignore the exception
@@ -639,7 +670,7 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
         os.mkdir(curr_user_directory)  # Creates 'static/img/user/<USER_ID>' folder
     except FileExistsError:  # Ignore the exception
         pass
-    draw_table.draw_all_and_save_as_png(
+    draw_table.draw_all_and_save_as_png_locally(
         file_name=file_name,
         symbols=stocks_symbols,
         values=values,
@@ -657,7 +688,6 @@ def plot_image(file_name) -> None:
 
 
 def get_stocks_from_json_file() -> dict[list]:
-    stocks_json_path = helpers.get_sorted_path(settings.STOCKS_JSON_NAME, num_of_last_elements=2)
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
     stocks: dict[list] = {}
     for i in range(1, len(models_data)):
@@ -728,12 +758,12 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     pct_change_table: pd = closing_prices_table.pct_change()
     pct_change_table.dropna(inplace=True)
     weighted_sum = np.dot(stocks_weights, pct_change_table.T)
-    pct_change_table["weighted_sum_" + str(risk_level)] = weighted_sum
+    pct_change_table[f"weighted_sum_{risk_level}"] = weighted_sum
     """if is_machine_learning:  # TODO maybe remove
         weighted_sum = helpers.update_daily_change_with_machine_learning(
             [weighted_sum], pct_change_table.index, models_data
         )[0][0]"""
-    yield_column: str = "yield_" + str(risk_level)
+    yield_column: str = f"yield_{risk_level}"
     pct_change_table[yield_column] = weighted_sum
     pct_change_table[yield_column] = makes_yield_column(pct_change_table[yield_column], weighted_sum)
     portfolio.update_stocks_data(closing_prices_table, pct_change_table, stocks_weights, annual_returns,
@@ -744,7 +774,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
     return user
 
 
-def save_investment_to_json_File(user_id, investments):
+def save_investment_to_json_file(user_id, investments):
     if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
         stocks_json_path: str = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
         json_data = helpers.convert_data_stream_to_json(get_file_from_google_drive(f'{stocks_json_path}.json'))

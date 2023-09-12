@@ -6,7 +6,6 @@ from service.util.graph import helpers
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 import seaborn as sns
 
 # Global Const Variables
@@ -78,6 +77,8 @@ def gini_graph(sectors: list[Sector], three_best_sectors_weights, min_variance_p
 
 
 def bb_strategy_stock(stock_prices, buy_price, sell_price) -> plt:
+    import numpy as np
+
     stock_prices[['Adj Close', 'Lower', 'Upper']].plot(figsize=FIG_SIZE2)
     plt.scatter(stock_prices.index, buy_price, marker='^', color='green', label='BUY', s=200)
     plt.scatter(stock_prices.index, sell_price, marker='v', color='red', label='SELL', s=200)

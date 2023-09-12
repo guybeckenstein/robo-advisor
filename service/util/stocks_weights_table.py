@@ -6,18 +6,18 @@ CELL_HEIGHT = 40
 TABLE_PADDING = 10
 
 
-def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
-                             header_text, percent_mode: bool = True) -> None:
-    """
-    Stocks Representation
-    """
-    if len(values) != len(symbols) or len(values) != len(descriptions):
-        raise ValueError("Input lists must have the same length.")
-    image, draw = create_blank_image(num_rows=len(symbols))
-    draw_table_header(draw=draw, header_text=header_text)
-    draw_table_rows(symbols=symbols, values=values, descriptions=descriptions,
-                    draw=draw, percent_mode=percent_mode)
-    image.save(f"{file_name}.png")  # Save the image
+# def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
+#                              header_text, percent_mode: bool = True) -> None:
+#     """
+#     Stocks Representation
+#     """
+#     if len(values) != len(symbols) or len(values) != len(descriptions):
+#         raise ValueError("Input lists must have the same length.")
+#     image, draw = create_blank_image(num_rows=len(symbols))
+#     draw_table_header(draw=draw, header_text=header_text)
+#     draw_table_rows(symbols=symbols, values=values, descriptions=descriptions,
+#                     draw=draw, percent_mode=percent_mode)
+#     image.save(f"{file_name}.png")  # Save the image
 
 
 def create_blank_image(num_rows: int) -> tuple[Image, ImageDraw]:

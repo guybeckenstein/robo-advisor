@@ -3,7 +3,7 @@
 import os
 
 MODEL_NAME: list[str, str] = ['Markowitz', 'Gini']
-MACHINE_LEARNING_MODEL: list[str, str, str, str] = ['Linear Regression', 'Arima', 'LSTM', 'Prophet']
+MACHINE_LEARNING_MODEL: list[str, str, str, str] = ['Linear Regression', 'ARIMA', 'LSTM', 'Prophet']
 LEVEL_OF_RISK_LIST: list[str, str, str] = ["low", "medium", "high"]
 CURRENCY_LIST: list[str, str, str] = ['₪', '$', '€']
 FILE_ACCESS_TYPE: list[str, str] = ["google_drive", "local"]

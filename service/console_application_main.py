@@ -5,15 +5,13 @@ import os
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(project_root)
 
-from impl.user import User
-from util import data_management, research
-from config import settings
-
 if __name__ == '__main__':
+    from impl.user import User
+    from util import data_management, research
+    from config import settings
 
     # Specify the path to your batch file
     # batch_file_path = rf'{project_root}/../get_data_from_google_drive.bat'
-
     data_management.show_main_menu()
     selection = data_management.get_menu_choice()
     exit_loop_operation = 8
@@ -84,7 +82,7 @@ if __name__ == '__main__':
                 data_management.view_investment_report(user_id, investment_amount,
                                                        stocks_weights, stocks_symbols)
                 # show result
-                data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/investment report.png')
+                data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/Investment Report.png')
 
         elif selection == 3:  # show user portfolio graphs
             json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
@@ -104,7 +102,7 @@ if __name__ == '__main__':
             models_data: dict = data_management.get_models_data_from_collections_file()
             plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
                                                             models_data, num_of_years_history)
-            operation = '_forecast'
+            operation = 'Forecast'
             research.save_user_specific_stock(stock_name, operation, plt_instance)
 
             # show result
@@ -115,7 +113,7 @@ if __name__ == '__main__':
             num_of_years_history = data_management.get_num_of_years_history()
             staring_date, today_date = data_management.get_from_and_to_date(num_of_years_history)
             plt_instance = research.plot_bb_strategy_stock(str(stock_name), staring_date, today_date)
-            operation = '_bb_strategy'
+            operation = 'BBS Strategy'
             research.save_user_specific_stock(stock_name, operation, plt_instance)
 
             # show result
@@ -127,8 +125,7 @@ if __name__ == '__main__':
             intersection = research.get_stocks_stats(sector_name)
             sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
                 intersection, filters)
-            data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name,
-                                                 research.LABELS)
+            data_management.plot_research_graphs(intersection_with_filters, sector_name, research.LABELS)
             prefix_str = 'Top Stocks - '
 
             # show result

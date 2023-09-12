@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
     def generate_site_data(apps, schema_editor):
         site_data: list[tuple] = [
             (
-                f'http://{os.environ.get("WEB_IP", "localhost")}:8000/',
+                f'http://{os.environ.get("HOST_IP", "localhost")}:8000/',
                 'RoboAdvisor',
             ),
         ]
@@ -33,38 +33,30 @@ class Migration(migrations.Migration):
         socialapp_data: list[tuple] = [
             (
                 'facebook',
-                'Facebook',
+                'facebook',
                 os.environ.get("FACEBOOK_CLIENT_ID", ValueError),
                 os.environ.get("FACEBOOK_CLIENT_SECRET", ValueError),
-                '',
-                'facebook',
             ),
             (
                 'google',
-                'Google',
+                'google',
                 os.environ.get("GMAIL_CLIENT_ID", ValueError),
                 os.environ.get("GMAIL_CLIENT_SECRET", ValueError),
-                '',
-                'google',
             ),
             (
                 'github',
-                'GitHub',
+                'github',
                 os.environ.get("GITHUB_CLIENT_ID", ValueError),
                 os.environ.get("GITHUB_CLIENT_SECRET", ValueError),
-                '',
-                'github',
             ),
         ]
         with transaction.atomic():
-            for i, (provider, name, client_id, secret_key, key, provider_id) in enumerate(socialapp_data):
+            for i, (provider, name, client_id, secret_key) in enumerate(socialapp_data):
                 social_app: SocialApp = SocialApp(
                     provider=provider,
                     name=name,
                     client_id=client_id,
                     secret=secret_key,
-                    key=key,
-                    provider_id=provider_id,
                 )
                 social_app.save()
 

@@ -141,7 +141,7 @@ class TestProfile:
                 response, template_src=TestProfile.capital_market_algorithm_preferences_template
             )
             helper_methods.assert_attributes(response, attributes=[
-                "alert alert-info",
+                "alert alert-warning",
                 "Your account details have been updated successfully.",
                 "No investments with your previous stocks",
                 "collection found, thus no stocks are affected.",
@@ -176,9 +176,8 @@ class TestProfile:
                 response, template_src=TestProfile.capital_market_algorithm_preferences_template
             )
             helper_methods.assert_attributes(response, attributes=[
-                "alert alert-success",
+                "alert alert-warning",
                 "Your account details have been updated successfully.",
-                "A single investment is affected by this, and became inactive.",
             ])
 
         def test_post_request_with_same_stocks_collection_number(self, client: Client, user_factory: Callable,

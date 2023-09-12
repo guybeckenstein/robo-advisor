@@ -24,8 +24,8 @@ else:
     ]
 
 
-def draw_all_and_save_as_png(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
-                             header_text, percent_mode: bool = True) -> None:
+def draw_all_and_save_as_png_locally(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
+                                     header_text, percent_mode: bool = True) -> None:
     """
     Stocks Representation
     """
@@ -90,15 +90,43 @@ def _calculate_cumulative_col_offset(col_idx: int) -> int:
     return res_sum
 
 
-def draw_research_table(path, intersection_data, labels, sort_by_option: bool = True,
-                        ending_file_name: str = "(Table)", colors: list[str] = None) -> None:
+def draw_all_and_save_as_png_aws_s3(file_name: str, symbols: list[str], values: list[float], descriptions: list[str],
+                                     header_text, percent_mode: bool = True) -> None:
+    import io
+    import boto3
+    from robo_advisor_project.settings import AWS_STORAGE_BUCKET_NAME
+
+    """
+    Stocks Representation
+    """
+    if len(values) != len(symbols) or len(values) != len(descriptions):
+        raise ValueError("Input lists must have the same length.")
+    image, draw = _create_blank_image(num_rows=len(symbols))
+    _draw_table_header(draw=draw, header_text=header_text)
+    _draw_table_rows(symbols=symbols, values=values, descriptions=descriptions, draw=draw, percent_mode=percent_mode)
+
+    # Save the image to an in-memory buffer
+    image_buffer = io.BytesIO()
+    image.save(image_buffer, format="PNG")
+    image_buffer.seek(0)
+
+    # Upload the image buffer to S3
+    s3 = boto3.client('s3')
+    bucket_name = AWS_STORAGE_BUCKET_NAME
+    s3_key = f"{file_name}.png"  # S3 object key
+
+    try:
+        s3.upload_fileobj(image_buffer, bucket_name, s3_key)
+    except Exception as e:
+        print(f"Error uploading image to S3: {e}")
+
+
+def draw_research_table(path, table_data, labels, sort_by_option: bool,
+                        ending_file_name: str, colors: list[str]) -> None:
     if sort_by_option:
-        intersection_data = intersection_data.sort_values(by=labels[0], ascending=False).head(10)
-    if colors is None:
-        colors = ["lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray",
-                  "lightgray", "lightgray", "lightgray", "lightgray", "lightgray", "lightgray"]
+        table_data = table_data.sort_values(by=labels[0], ascending=False).head(10)
     num_of_stocks_showing = 10
-    descriptions = helpers.get_stocks_descriptions(intersection_data.index.values)[1:]
+    descriptions = helpers.get_stocks_descriptions(table_data.index.values)[1:]
 
     # Add "Stock" column to intersection_data.columns
     column_headers = ['Stock'] + labels
@@ -115,8 +143,8 @@ def draw_research_table(path, intersection_data, labels, sort_by_option: bool = 
     value_font = ImageFont.truetype(font=FONTS[2], size=VALUE_FONT_SIZE)
 
     # Calculate image dimensions based on the number of rows and columns
-    num_rows = min(num_of_stocks_showing, len(intersection_data)) + 1
-    num_cols = len(intersection_data.columns) + 1
+    num_rows = min(num_of_stocks_showing, len(table_data)) + 1
+    num_cols = len(table_data.columns) + 1
     image_width = CELL_WIDTH * num_cols + TABLE_PADDING
     image_height = CELL_HEIGHT * num_rows + TABLE_PADDING
 
@@ -125,7 +153,7 @@ def draw_research_table(path, intersection_data, labels, sort_by_option: bool = 
     draw = ImageDraw.Draw(image)
 
     # Draw headers
-    headers = ['Stock'] + list(intersection_data.columns)
+    headers = ['Stock'] + list(table_data.columns)
     for col_idx, header in enumerate(headers):
         x0 = col_idx * CELL_WIDTH + TABLE_PADDING
         y0 = 0
@@ -151,7 +179,7 @@ def draw_research_table(path, intersection_data, labels, sort_by_option: bool = 
             if col_name == "Stock":
                 value = str(descriptions[row_idx])
             else:
-                value = round(intersection_data.values[row_idx][col_idx - 1], 2)
+                value = round(table_data.values[row_idx][col_idx - 1], 2)
             x0 = (col_idx + 0) * CELL_WIDTH + TABLE_PADDING
             y1 = (row_idx + 2) * CELL_HEIGHT + TABLE_PADDING
             x1 = (col_idx + 1) * CELL_WIDTH + TABLE_PADDING
@@ -178,23 +206,3 @@ def draw_research_table(path, intersection_data, labels, sort_by_option: bool = 
             )
     # Save the image Table
     image.save(f"{path} {ending_file_name}.png")
-
-
-def _draw_research_graph(path, data_tuple_list, labels):
-    annual_returns_table_data = data_tuple_list[0].sort_values(by=labels[3], ascending=True).head(3)
-    # TODO: unused
-    # annual_returns_descriptions = helpers.get_stocks_descriptions(annual_returns_table_data.index.values)[1:]
-    volatility_intersection_data = data_tuple_list[1].sort_values(by=labels[7], ascending=False).head(3)
-    # TODO: unused
-    # volatility_descriptions = helpers.get_stocks_descriptions(volatility_intersection_data.index.values)[1:]
-    sharpe_intersection_data = data_tuple_list[2].sort_values(by=labels[11], ascending=False).head(3)
-    # TODO: unused
-    # sharpe_descriptions = helpers.get_stocks_descriptions(sharpe_intersection_data.index.values)[1:]
-    resulting_dataframe = pd.concat([
-        annual_returns_table_data, volatility_intersection_data, sharpe_intersection_data
-    ])
-    colors = ["lightgray", "red", "red", "red", "red", "yellow", "yellow", "yellow", "yellow",
-              "green", "green", "green", "green"]
-    draw_research_table(
-        path, resulting_dataframe, labels, sort_by_option=False, ending_file_name="(Graphs)", colors=colors
-    )

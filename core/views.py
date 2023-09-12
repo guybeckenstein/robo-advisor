@@ -91,6 +91,7 @@ def capital_market_algorithm_preferences_form(request):
                 'title': 'Fill Form',
                 'form': AlgorithmPreferencesForm(form_type='create'),
                 'form_type': 'create',
+                'is_update': False,
             }
             return render(request, 'core/capital_market_algorithm_preferences_form.html', context=context)
         else:  # UPDATE
@@ -98,6 +99,7 @@ def capital_market_algorithm_preferences_form(request):
                 'title': 'Update Filled Form',
                 'form': AlgorithmPreferencesForm(form_type='update', instance=preferences),
                 'form_type': 'update',
+                'is_update': True,
             }
             return render(request, 'core/capital_market_algorithm_preferences_form.html', context=context)
     elif request.method == 'POST':
@@ -154,6 +156,7 @@ def capital_market_investment_preferences_form(request):
                     user_preferences_instance=questionnaire_a,
                 ),
                 'form_type': 'create',
+                'is_update': False,
             }
 
             return render(request, 'core/capital_market_investment_preferences_form.html', context=context)
@@ -168,6 +171,7 @@ def capital_market_investment_preferences_form(request):
                     user_preferences_instance=questionnaire_a,
                 ),
                 'form_type': 'update',
+                'is_update': True,
             }
             return render(request, 'core/capital_market_investment_preferences_form.html', context=context)
 

@@ -102,7 +102,7 @@ class GoogleDriveInstance:
         else:
             return files[0]['id']
 
-    def get_file_by_id(self, file_id):
+    def get_file_by_id(self, file_id: str):
         request = self.service.files().get_media(fileId=file_id)
         # Create an in-memory binary stream to store the downloaded content
         file_stream = io.BytesIO()

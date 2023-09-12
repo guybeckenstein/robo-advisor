@@ -13,10 +13,10 @@ cryptography==41.0.3
 cycler==0.11.0
 defusedxml==0.7.1
 Django~=4.2.4
-django-allauth==0.56.1
+django-allauth==0.54.0
 django-crispy-forms==2.0
 django-debug-toolbar==4.2.0
-django-environ==0.11.2
+python-dotenv==1.0.0
 django-htmx==1.16.0
 django-jazzmin==2.6.0
 django-phonenumber-field==7.1.0
