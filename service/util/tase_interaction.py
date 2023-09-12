@@ -1,7 +1,5 @@
 import http.client
 import json
-import requests
-import base64
 import datetime
 from service.config import israeli_tase
 
@@ -76,6 +74,7 @@ def get_json_data_of_symbol(app_url):
 
 # Auth
 def get_base_64_token():
+    import base64
 
     token: str = f'{israeli_tase.KEY}:{israeli_tase.SECRET}'
     base_64_token = base64.b64encode(token.encode('ascii')).decode('ascii')
@@ -83,10 +82,9 @@ def get_base_64_token():
 
 
 def get_tase_access_token():
+    import requests
+
     base_64_token = get_base_64_token()
-
-    # tokenUrl = "https://openapigw.tase.co.il/tase/prod/oauth/oauth2/token"
-
     payload = 'grant_type=client_credentials&scope=tase'
     headers = {'Authorization': 'Basic ' + base_64_token, 'Content-Type': 'application/x-www-form-urlencoded'}
     response = requests.request('POST', israeli_tase.TOKEN_URL, headers=headers, data=payload)

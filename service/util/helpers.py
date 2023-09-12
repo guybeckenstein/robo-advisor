@@ -1,13 +1,9 @@
 import codecs
 import csv
 import datetime
-import io
 from datetime import datetime as data_time, timedelta
 import json
 import math
-import os
-
-from bidi import algorithm as bidi_algorithm
 
 import numpy as np
 import pandas as pd
@@ -24,7 +20,6 @@ from service.impl.sector import Sector
 from service.util import tase_interaction
 from service.util.deep_learining import models
 
-from PIL import Image
 SINGLE_DAY: int = 86400
 
 
@@ -177,7 +172,7 @@ class Analyze:
     def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
         df.index = pd.to_datetime(self._table_index)
-        df = models.Lstm(df=df, forecast_out=forecast_out, use_features=True)
+        df = models.lstm_model(df=df, forecast_out=forecast_out, use_features=True)
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
 
         return df, forecast_with_historical_returns_annual, expected_returns
@@ -561,6 +556,8 @@ def get_stocks_descriptions(stocks_symbols: list, is_reverse_mode: bool = True):
 
 
 def convert_israeli_symbol_number_to_name(symbol_number: int, is_index_type: bool, is_reverse_mode: bool = True) -> str:
+    from bidi import algorithm as bidi_algorithm
+
     if is_index_type:
         json_data = get_json_data(settings.INDICES_LIST_JSON_NAME)
         hebrew_text = [item['name'] for item in json_data['indicesList']['result'] if item['id'] == symbol_number][0]
@@ -681,7 +678,8 @@ def get_descriptions_list() -> list[str]:
     return descriptions_list
 
 
-def create_graphs_folders() -> None:
+def create_graphs_folders_locally() -> None:
+    import os
     try:
         os.mkdir(f'{settings.GRAPH_IMAGES}')
     except FileExistsError:
@@ -707,6 +705,39 @@ def create_graphs_folders() -> None:
             os.mkdir(f'{settings.GRAPH_IMAGES}{i}/11/')
         except FileExistsError:
             pass
+
+
+def create_graphs_folders_aws_s3(bucket_name: str) -> None:
+    import boto3
+
+    # Create an S3 client
+    s3 = boto3.client('s3')
+    # Define the folder structure you want to create
+    folders = [
+        '1/',
+        '1/00/',
+        '1/01/',
+        '1/10/',
+        '1/11/',
+        '2/',
+        '2/00/',
+        '2/01/',
+        '2/10/',
+        '2/11/',
+        '3/',
+        '3/00/',
+        '3/01/',
+        '3/10/',
+        '3/11/',
+        '4/',
+        '4/00/',
+        '4/01/',
+        '4/10/',
+        '4/11/',
+    ]
+    # Create empty objects with the folder prefixes
+    for folder in folders:
+        s3.put_object(Bucket=bucket_name, Key=f'{settings.GRAPH_IMAGES}{folder}')
 
 
 def currency_exchange(from_currency="USD", to_currency="ILS"):
@@ -794,6 +825,8 @@ def convert_data_stream_to_pd(file_stream):
 
 
 def convert_data_stream_to_png(file_stream):
+    import io
+    from PIL import Image
     # Create an Image object from the binary stream
     return Image.open(io.BytesIO(file_stream.read()))
 

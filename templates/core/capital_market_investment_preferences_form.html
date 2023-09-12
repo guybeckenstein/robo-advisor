@@ -26,7 +26,11 @@
         {% csrf_token %}
         {% crispy form %}
         <button type="submit" class="btn btn-primary">
-          Save
+          {% if is_update %}
+            Update
+          {% else %}
+            Submit
+          {% endif %}
         </button>
         <img style="width: 50px; height: 50px;" id="spinner" class="htmx-indicator" src="{% static 'img/spinner1.svg' %}">
       </form>

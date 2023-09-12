@@ -1,27 +1,24 @@
 import os
 
-import environ
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, '.env'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7a2qi##$sth7^53imychx^@6!k6stk054zo!3@-fr)h^d-!*$1'  # os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY', ValueError)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DEBUG', True))
 
 ALLOWED_HOSTS = ['*']
 
-IP: str = '127.0.0.1'
-
 # INTERNAL_IPS = [
-#     IP,
+#     os.environ.get("HOST_IP", "localhost"),
 # ]
 
 SITE_ID: int = None
@@ -101,7 +98,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Third party apps
     'accounts.middleware.DynamicSiteIDMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -142,18 +138,18 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
         'USER': os.environ.get('POSTGRES_USER', 'roboadvisor'),
-        'PASSWORD': os.environ.get("POSTGRES_PASSWORD", "postgres"),
-        'HOST': 'localhost',  # os.environ.get('AWS_RDS_URL', 'localhost'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-#         "LOCATION": f"redis://{IP}:6379",
-#     }
-# }
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{IP}:6379",
+    }
+}
 
 ACCOUNT_FORMS = {
     'login': 'accounts.forms.CustomLoginForm',
@@ -357,8 +353,7 @@ LOGIN_REDIRECT_URL = 'homepage'
 LOGIN_URL = 'account_login'
 LOGOUT_REDIRECT_URL = 'account_logout'
 
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "email"
+# SMTP
 
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_HOST_USER = "mwepxsnhsvkpkzzo"
@@ -369,6 +364,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+
 AUTHENTICATION_BACKENDS = [
     # Needed to log in by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
@@ -377,13 +375,13 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# AWS
+# AWS S3 Instance - won't work with the free academic user
 AWS_ACCESS_KEY_ID: str = os.environ.get('AWS_ACCESS_KEY_ID', ValueError)
 AWS_SECRET_ACCESS_KEY: str = os.environ.get('AWS_SECRET_ACCESS_KEY', ValueError)
 AWS_STORAGE_BUCKET_NAME: str = 'roboadvisorbucket'
 AWS_S3_SIGNATURE_NAME: str = 's3v4'
 AWS_S3_REGION_NAME: str = 'us-east-1'
-AWS_S3_FILE_OVERWRITE: bool = False
+AWS_S3_FILE_OVERWRITE: bool = True
 AWS_DEFAULT_ACL = None
 AWS_S3_VERITY: bool = True
 DEFAULT_FILE_STORAGE: str = 'storages.backends.s3boto3.S3Boto3Storage'

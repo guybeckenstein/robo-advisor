@@ -1,28 +1,27 @@
-menu_operations = ["build a new portfolio", "add investment", "Plot portfolio's data",
-                   "forecast specific stock", "Plot specific stock with bb_strategy",
-                   "makes scanner and find stocks with good result", "plot stat model graph(scatter points)",
-                   "Exit"]
+menu_operations: list[str] = ["build a new portfolio", "add investment", "Plot portfolio's data",
+                              "forecast specific stock", "Plot specific stock with bb_strategy",
+                              "makes scanner and find stocks with good result", "plot stat model graph(scatter points)",
+                              "Exit"]
 
 
 def get_name() -> str:
     print("enter name")
-    name = input()
-
+    name: str = input()
     return name
 
 
 def get_investment_amount() -> int:
     print("enter amount of money to invest")
-    amount = int(input())
+    amount: int = int(input())
     while amount < 1:
-        print("enter amount of money to invest")
+        print("Enter an amount of money to invest. Must be at least 1")
         amount = int(input())
 
     return amount
 
 
 def get_machine_learning_option() -> int:
-    print("Interested in using machine learning? 0-no, 1-yes")
+    print("Interested in using machine learning? 0 - no, 1 - yes")
     is_machine_learning: int = None
     invalid: bool = True
     while invalid:
@@ -40,31 +39,33 @@ def get_machine_learning_option() -> int:
 
 
 def get_machine_learning_model() -> int:
-    print("choose machine learning model:\n"
-          "\t1 - Linear Regression\n"
-          "\t2 - ARIMA\n"
-          "\t3 - LSTM\n"
-          "\t4- Prophet\n")
+    print(
+        "Choose machine learning model:\n"
+        "\t1 - Linear Regression\n"
+        "\t2 - ARIMA\n"
+        "\t3 - LSTM\n"
+        "\t4- Prophet\n"
+    )
     model_option = int(input())
     while model_option <= 0 or model_option >= 5:
-        print("Please enter option between 1 to 4")
+        print("Please enter an option between 1 to 4")
         model_option = int(input())
 
     return model_option
 
 
 def get_num_of_years_history() -> int:
-    print("enter number of years for history")
+    print("Enter number of years for history")
     num_of_years = int(input())
     while num_of_years < 1:
-        print("enter number of years for history")
+        print("Enter number of years for history")
         num_of_years = int(input())
 
     return num_of_years
 
 
 def get_stat_model_option() -> int:
-    print("choose model: 0 - Markowitz, 1 - Gini\n")
+    print("Choose model: 0 - Markowitz, 1 - Gini\n")
     model_option = int(input())
     while model_option != 0 and model_option != 1:
         print("Please enter 0 or 1")
@@ -74,8 +75,7 @@ def get_stat_model_option() -> int:
 
 
 def get_collection_number(stocks: list[object]) -> str:
-    collection_description = ["indexes(recommended)", "top indexes", "indexes and stocks",
-                              "top stocks"]
+    collection_description: list[str] = ["indexes(recommended)", "top indexes", "indexes and stocks", "top stocks"]
     print("Choose a collection of stocks:")
     for i, collection in enumerate(stocks):
         print(f"{i + 1} - {collection_description[i]}")
@@ -151,5 +151,4 @@ def show_main_menu() -> None:
     print("Welcome to the stock market simulator")
     print("Please select one of the following options:")
     for i, option in enumerate(menu_operations):
-        print(f"{i + 1} - {option}")
-        print()
+        print(f"{i + 1} - {option}\n")

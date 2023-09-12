@@ -383,22 +383,22 @@ def update_data(form, investor_user, request, investments):
         make_investments_inactive(investments=investments)
 
         if affected_investments == 0:
-            message = 'Your account details have been updated successfully.' \
+            message = 'Your account details have been updated successfully. \n' \
                       'You must complete the two forms so changes will be made over your' \
                       "investments and stocks' collection number. Otherwise, it won't change data."
         elif affected_investments == 1:
-            message = 'Your account details have been updated successfully.\n' \
+            message = 'Your account details have been updated successfully. \n' \
                       'A single investment is affected by this, and became inactive.\n' \
                       'You must complete the two forms so changes will be made over your' \
                       "investments and stocks' collection number. Otherwise, it won't change data."
         else:
-            message = 'Your account details have been updated successfully.\n' \
+            message = 'Your account details have been updated successfully. \n' \
                       f'{affected_investments} investments are affected by this, and became inactive.' \
                       'You must complete the two forms so changes will be made over your' \
                       "investments and stocks' collection number. Otherwise, it won't change data."
 
     else:
-        message = 'Your account details have been updated successfully.\n' \
+        message = 'Your account details have been updated successfully. \n' \
                   "No investments with your previous stocks' collection found, thus no stocks are affected."
     # Update Form Data
     form.save()

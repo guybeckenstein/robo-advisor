@@ -1,28 +1,23 @@
-import datetime
-import math
 import requests
 import json
-from functools import reduce
-import yfinance as yf
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt, rcParams
-import tensorflow as tf
-from keras.models import Sequential
-from keras import regularizers
-from tensorflow.python.keras.callbacks import EarlyStopping
-from sklearn.metrics import mean_squared_error
-from keras.optimizers import Adam
-from keras.layers import Dense, Dropout, LSTM, BatchNormalization
-import shap
+from matplotlib import pyplot as plt
 import seaborn as sns
 
 from service.config import settings
 
 
-def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
-    pd.DataFrame, np.longdouble, np.longdouble]:
+def lstm_model(df=None, forecast_out: int = 20,
+               use_features: bool = True) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+    import datetime
+    import tensorflow as tf
+    from keras.models import Sequential
+    from keras import regularizers
+    from tensorflow.python.keras.callbacks import EarlyStopping
+    from sklearn.metrics import mean_squared_error
+
     np.random.seed(1)
     start_date = df.index[0].strftime("%Y-%m-%d")
     end_date = df.index[-1].strftime("%Y-%m-%d")
@@ -62,7 +57,7 @@ def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
         # Sliding Window
         scaled_data = scaled_data.dropna(thresh=(scaled_data.shape[1] - 5))
         scaled_data = scaled_data[scaled_data['Label'] != 0]
-        scaled_data.to_csv(f'{settings.RESEARCH_LOCATION}LSTM_Final-Runung.csv')
+        scaled_data.to_csv(f'{settings.RESEARCH_LOCATION}LSTM_Final-Running.csv')
     else:
         scaled_data = df_final
         # Sliding Window
@@ -130,8 +125,8 @@ def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
     # model.compile(loss='mse', optimizer=opt)
 
     # Train the model
-    model.fit(X_train, y_train, epochs=5, batch_size=64, validation_split=0.15,
-              callbacks=[early_stopping])  # add the early stopping callback here)
+    model.fit(X_train, y_train, epochs=4, batch_size=64, validation_split=0.15,
+              callbacks=[early_stopping])  # add the early stopping callback here
 
     # Predict on the test data
     predictions = model.predict(X_test)
@@ -143,8 +138,6 @@ def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
 
     # Results
     # Adjusted percentage change prediction
-    date_values = scaled_data.index
-
     scaled_data['Forecast'] = np.nan
     df[forecast_col] = np.nan
 
@@ -155,25 +148,21 @@ def Lstm(df=None, forecast_out=20, use_features=True) -> tuple[
 
     predictions = np.concatenate(predictions)
     last_price = df["Col"].iloc[-1]
-    predictions_df = pd.DataFrame(predictions)
     for i in predictions:
         next_date = datetime.datetime.fromtimestamp(next_unix)
         next_unix += 86400
         scaled_data.loc[next_date] = [np.nan for _ in range(len(scaled_data.columns) - 1)] + [i]
         df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        current_val = (1 + i)/100 * last_price
+        current_val = (1 + i / 20) * last_price
 
         last_price = current_val
-        # print(last_price)
         df[forecast_col].loc[next_date] = current_val
 
     return df
 
 
-
-
-# lstm helpers functions
+# LSTM helpers functions
 def lstm_add_unemployment_rate_and_cpi(df_final, start_date, end_date):
     # Add unemployment rate and Consumer Price Index maybe not relevant
     # Your API key from the BLS website goes here
@@ -280,7 +269,7 @@ def lstm_add_interest_rate(df_final, start_date, end_date):
         df_interest_rates = None
         print("An error occurred:", e)
 
-    if df_interest_rates is not None or not df_interest_rates.empty:
+    if df_interest_rates is not None and not df_interest_rates.empty:
         df_interest_rates['Date'] = pd.to_datetime(df_interest_rates["Date"])
 
     merged_df = pd.merge(df_final, df_interest_rates, left_on='Date', right_on='Date', how='left')
@@ -325,7 +314,7 @@ def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key) -> pd.Dat
         df_gdp_growth_rate = None
         print("An error occurred:", e)
     # Join the data using the available GDP growth observations
-    if df_gdp_growth_rate is not None or not df_gdp_growth_rate.empty:
+    if df_gdp_growth_rate is not None and not df_gdp_growth_rate.empty:
         joined_df = pd.merge_asof(merged_df, df_gdp_growth_rate, on="Date", direction="backward")
         # Perform data alignment and fill missing values
         joined_df["GDP Growth Rate"] = joined_df["GDP Growth Rate"].ffill()
@@ -334,22 +323,7 @@ def lstm_add_gdp_growth_rate(merged_df, start_date, end_date, api_key) -> pd.Dat
         return None
 
 
-def drop_weekends(df_final):
-    def fillna_custom(df):
-        for col in df.columns:
-            not_nan_indices = df[col].dropna().index
-            for i in df[col].index:
-                if pd.isna(df.at[i, col]):
-                    previous_indices = not_nan_indices[not_nan_indices < i]
-                    next_indices = not_nan_indices[not_nan_indices > i]
-                    if previous_indices.empty:
-                        df.at[i, col] = df.at[next_indices[0], col]
-                    elif next_indices.empty:
-                        df.at[i, col] = df.at[previous_indices[-1], col]
-                    else:
-                        df.at[i, col] = (df.at[previous_indices[-1], col] + df.at[next_indices[0], col]) / 2
-        return df
-
+def drop_weekends(df_final: pd.DataFrame):
     # Count the number of zeroes in each row
     zero_counts = (df_final == 0.0).sum(axis=1)
 
@@ -360,11 +334,23 @@ def drop_weekends(df_final):
     return df_final
 
 
-def lstm_fill_na_values(df_final):
-    # Fill NA Values
-    # TODO: unused
-    # zero_mask_columns = df_final.eq('.').any(axis=0)
+def fillna_custom(df: pd.DataFrame):
+    for col in df.columns:
+        not_nan_indices = df[col].dropna().index
+        for i in df[col].index:
+            if pd.isna(df.at[i, col]):
+                previous_indices = not_nan_indices[not_nan_indices < i]
+                next_indices = not_nan_indices[not_nan_indices > i]
+                if previous_indices.empty:
+                    df.at[i, col] = df.at[next_indices[0], col]
+                elif next_indices.empty:
+                    df.at[i, col] = df.at[previous_indices[-1], col]
+                else:
+                    df.at[i, col] = (df.at[previous_indices[-1], col] + df.at[next_indices[0], col]) / 2
+    return df
 
+
+def lstm_fill_na_values(df_final):
     # Convert the column to numeric, treating '.' as NaN
     df_final['Interest Rate'] = pd.to_numeric(df_final['Interest Rate'], errors='coerce')
 
@@ -390,6 +376,9 @@ def lstm_confusion_matrix(merged_df, forecast_col):
 
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
     plt.show()
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def lstm_show_plt_graph(df_final, mode):
@@ -409,9 +398,14 @@ def lstm_show_plt_graph(df_final, mode):
 
     plt.ylabel('Return (%)')
     plt.show()
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def lstm_show_data_plot_wth_labels(df_final: pd.DataFrame, tickers_df: pd.DataFrame, forecast_col):
+    from matplotlib import rcParams
+
     rcParams['figure.figsize'] = 14, 8
     sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 
@@ -431,7 +425,10 @@ def lstm_show_data_plot_wth_labels(df_final: pd.DataFrame, tickers_df: pd.DataFr
     sns.boxplot(x='Year', y=forecast_col, data=df_final)
     plt.title('Price by Year')
     plt.show()
-    # price by years with lables
+    plt.clf()
+    plt.cla()
+    plt.close()
+    # price by years with labels
     tickers_df = tickers_df.drop(['Date', 'Year', forecast_col], axis=1)
 
     # Selecting only columns that start with 'ADJ_PCT_change_'
@@ -446,12 +443,15 @@ def lstm_show_data_plot_wth_labels(df_final: pd.DataFrame, tickers_df: pd.DataFr
     plt.title('Adjusted Percentage Change by Ticker')
     plt.xticks(rotation=90)  # Rotate x-axis labels for better readability if they're long
     plt.show()
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def lstm_show_snap_graph(seq_len, input_features, X_test, shap_days, model):
-    # shap          takes too long time
-    # Initialize JS visualization code
+    import shap
 
+    # Initialize JS visualization code
     # Define a predict function wrapper to handle 3D input
     def lstm_predict_wrapper(x):
         x = x.reshape((x.shape[0], seq_len, len(input_features)))  # Reshape to [samples, timesteps, features]

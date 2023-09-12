@@ -5,8 +5,6 @@ import yfinance as yf
 from matplotlib import pyplot as plt
 from service.config import settings
 from service.util import helpers, data_management
-from service.util.helpers import Analyze
-from service.util.graph import image_methods as graph_image_methods
 from service.util.graph import plot_methods as graph_plot_methods
 
 # Global static variables
@@ -30,9 +28,9 @@ groups: list = ["all", "annual_return", "volatility", "sharpe"]
 
 
 def save_user_specific_stock(stock: str, operation: str, plt_instance: plt) -> None:
-    curr_user_directory = settings.RESEARCH_IMAGES
+    from service.util.graph import image_methods as graph_image_methods
     # Saving files
-    graph_image_methods.save_graph(plt_instance, file_name=curr_user_directory + stock + operation)
+    graph_image_methods.save_graph_locally(plt_instance, file_name=f'{settings.RESEARCH_IMAGES}{stock}{operation}')
     plt.clf()
     plt.cla()
     plt.close()
@@ -40,6 +38,8 @@ def save_user_specific_stock(stock: str, operation: str, plt_instance: plt) -> N
 
 def forecast_specific_stock(stock: str, machine_learning_model: str, models_data: dict, num_of_years_history: int,
                             start_date: str = None, end_date: str = None):
+    from service.util.helpers import Analyze
+
     plt = None
     file_name: str = f'{str(stock)}.csv'
     description = helpers.get_stocks_descriptions([stock])[1]
@@ -66,7 +66,7 @@ def forecast_specific_stock(stock: str, machine_learning_model: str, models_data
     )
     if machine_learning_model == settings.MACHINE_LEARNING_MODEL[0]:  # Linear Regression
         df, annual_return_with_forecast, excepted_returns = analyze.linear_regression_model(test_size_machine_learning)
-    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
+    elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[1]:  # ARIMA
         df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
     elif machine_learning_model == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
         df, annual_return_with_forecast, excepted_returns = analyze.lstm_model()
@@ -126,11 +126,11 @@ def plot_bb_strategy_stock(stock_name: str, start="2009-01-01", end="2023-01-01"
     stock_name: str
         A name of a stock that is being plotted
     start: date
-        A starting date for the graph_plot_methods
+        A starting date for the graph
     end: date
-        An ending date for the graph_plot_methods
+        An ending date for the graph
     Return value:
-        Returns the graph_plot_methods instance
+        Returns the graph instance
     """
 
     if isinstance(stock_name, int) or stock_name.isnumeric():  # israeli stock
@@ -326,23 +326,22 @@ def sort_good_stocks(all_data_lists, filters=None) -> tuple:
 
     # sort values and filters
     all_data_sorted = []
-    intersection_groups_list = []
+    table_groups_list = []
     for i in range(len(all_data_lists)):
         if filters is not None:
             filters = [min_filters_list[i], max_filters_list[i]]
-        all_data_sorted.append(get_sorted_list_by_parameters(all_data_lists[i],
-                                                             ascending=ascending_list[i],
-                                                             filters=filters,
-                                                             top_stocks_numbers=top_stocks_numbers))
+        all_data_sorted.append(get_sorted_list_by_parameters(
+            all_data_lists[i], ascending=ascending_list[i], filters=filters, top_stocks_numbers=top_stocks_numbers
+        ))
 
-    intersection_without_filters = create_intersection(all_data_lists)
+    table_without_filters = create_intersection(all_data_lists)
     # makes intersections per groups
     for group_name in groups:
-        intersection_groups_list.append(make_intersection_by_group(all_data_sorted, group_name,
-                                                                   min_list_occurrences_intersections,
-                                                                   intersection_without_filters))
+        table_groups_list.append(make_intersection_by_group(
+            all_data_sorted, group_name, min_list_occurrences_intersections, table_without_filters
+        ))
 
-    return intersection_groups_list[1:], intersection_groups_list[0], intersection_without_filters
+    return table_groups_list[1:], table_groups_list[0], table_without_filters
 
 
 def make_union_of_table_groups(data_tuple_list):
@@ -410,7 +409,7 @@ def get_all_best_stocks() -> tuple[list[list[pd.Series]], pd.DataFrame, tuple[pd
         sharpe_table_data = pd.concat([sharpe_table_data, sorted_data_tuple[2]])
 
         sorted_data_tuple = make_union_of_table_groups(sorted_data_tuple)
-        data_management.plot_research_graphs(sorted_data_tuple, filtered_table, sector_name, LABELS)
+        data_management.plot_research_graphs(filtered_table, sector_name, LABELS)
 
         unified_table_data = pd.concat([unified_table_data, filtered_table])
         unified_table_data_tuple = pd.concat([unified_table_data_tuple, sorted_data_tuple])
@@ -419,7 +418,7 @@ def get_all_best_stocks() -> tuple[list[list[pd.Series]], pd.DataFrame, tuple[pd
         [annual_returns_table_data, volatility_table_data, sharpe_table_data]
     )
 
-    data_management.plot_research_graphs(sorted_data_tuple, unified_table_data, "All", LABELS)
+    data_management.plot_research_graphs(unified_table_data, "All", LABELS)
     unified_table_data_list: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame] = [
         annual_returns_table_data, volatility_table_data, sharpe_table_data
     ]
@@ -511,12 +510,6 @@ def update_collections_file(all_stats_data_list_of_lists: list[list[pd.Series]],
     collections_file['collections']['2'][0]["stocksSymbols"] = list(
         set(top_indexes_annual_return + top_indexes_annual_sharpe)
     )
-    # collections_file['collections']['3'][0]["stocksSymbols"] = list(
-    #     set(top_indexes_monthly_return + top_indexes_annual_sharpe)
-    # )
-    # collections_file['collections']['4'][0]["stocksSymbols"] = list(unified_intersection_data.sort_values(
-    #     by=LABELS[3], ascending=False
-    # ).head(5).sort_values(by=LABELS[4], ascending=True).keys().values)
 
     # save collection file
     helpers.save_json_data(f"{settings.DATASET_LOCATION}stocks", collections_file)

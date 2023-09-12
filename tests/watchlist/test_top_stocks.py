@@ -23,9 +23,7 @@ class TestTopStocks:
         top_stocks: QuerySet[TopStock] = TopStock.objects.all()
         for top_stock in top_stocks:
             assert top_stock.sector_name in response.content.decode()
-            base_dir: str = settings.RESEARCH_TOP_STOCKS_IMAGES
-            image_name: str = f"{base_dir}Top Stocks - {top_stock.sector_name}".split('research')[1][1:]
-            assert image_name.replace(' ', '%20') in response.content.decode()
+            assert top_stock.sector_as_variable in response.content.decode()
 
     def test_redirection_get_request_as_guest(self, client: Client):
         helper_methods.redirection_get_request_as_guest(client, url_name='top_stocks')

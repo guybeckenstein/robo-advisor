@@ -3,6 +3,7 @@ from typing import Callable
 import pytest
 from django.test import Client
 
+from service.config import settings
 from tests import helper_methods
 
 # Global constant variables
@@ -16,10 +17,11 @@ class TestDiscoverStocksForm:
         response, user = helper_methods.successful_get_request_as_logged_user(
             client, user_factory, url_name='discover_stocks_form', template_src='watchlist/discover_stocks.html'
         )
-        helper_methods.assert_attributes(response, attributes=[
-            'Discover stocks', 'Ml model', 'Symbol', 'Start Date to End Date', 'submit-id-submit', 'Submit',
-            f"{user.first_name}{DASHBOARD}", 'Linear Regression', 'ARIMA', 'Gradient Boosting Regressor', 'Prophet'
-        ])
+        helper_methods.assert_attributes(
+            response,
+            attributes=['Discover stocks', 'Ml model', 'Symbol', 'Start Date to End Date', 'submit-id-submit',
+                        'Submit', f"{user.first_name}{DASHBOARD}"] + settings.MACHINE_LEARNING_MODEL
+        )
 
     def test_redirection_get_request_as_guest(self, client: Client):
         helper_methods.redirection_get_request_as_guest(client, 'discover_stocks_form')

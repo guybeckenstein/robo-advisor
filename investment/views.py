@@ -65,15 +65,22 @@ def add_investment_view(request):
             stocks_weights = investor_user.stocks_weights
             stocks_symbols = investor_user.stocks_symbols
 
-            # save image
+            # Save image
             data_management.view_investment_report(str(request.user.id), amount, stocks_weights, stocks_symbols)
 
             # send report to user in email
-            subject = 'Investment Report - Robot Advisor'
-            message = 'Here is your investment report.\n' + f'you invested {amount} dollars.\n'
-            recipient_list = [request.user.email]
-            attachment_path = f'{settings.USER_IMAGES}{str(request.user.id)}/investment report.png'
-            web_actions.send_email(subject, message, recipient_list, attachment_path)
+            subject: str = 'Investment Report From RoboAdvisor'
+            message: str = (
+                'Here is your investment report.\n'
+                f'You have invested {amount} dollars.\n\n\n'
+                'Sincerely yours,\n'
+                'RoboAdvisor team'
+            )
+            recipient_list: list[str] = [request.user.email]
+            attachment_path: str = f'{settings.USER_IMAGES}{str(request.user.id)}/Investment Report.png'
+            web_actions.send_email(
+                subject=subject, message=message, recipient_list=recipient_list, attachment_path=attachment_path
+            )
 
             return redirect('my_investments_history')
         else:

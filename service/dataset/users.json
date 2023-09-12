@@ -169,16 +169,6 @@
                     0.0607590118668252,
                     0.0122816182053759
                 ],
-                "annualReturns": 10.000597015910772,
-                "annualMaxLoss": -3.613320124294244,
-                "annualVolatility": 8.250858872851525,
-                "annualSharpe": 1.212067394440178,
-                "totalChange": 171.4675616668315,
-                "monthlyChange": 0.8836675007935613,
-                "dailyChange": 0.0007006001559619055,
-                "statModelName": "Markowitz",
-                "machineLearningOpt": 0,
-                "stocksCollectionNumber": "3",
                 "annualReturns": 5.200790027535351,
                 "annualMaxLoss": -2.553106625216781,
                 "annualVolatility": 4.699331304698262,
@@ -326,13 +316,13 @@
                     0.0101453010547319,
                     0.0050647795274525
                 ],
-                "annualReturns": 3.074453939331523,
-                "annualMaxLoss": -2.6985703903407803,
-                "annualVolatility": 3.49880262404382,
-                "annualSharpe": 0.8787160265068491,
-                "totalChange": 50.2506403830005,
-                "monthlyChange": 0.7516279395030079,
-                "dailyChange": -0.002598012388396432,
+                "annualReturns": 3.031609507608035,
+                "annualMaxLoss": -2.752949901625608,
+                "annualVolatility": 3.5057935813537235,
+                "annualSharpe": 0.864742728645596,
+                "totalChange": 50.41878686162431,
+                "monthlyChange": -0.1843278049654562,
+                "dailyChange": 0.0022216291420533037,
                 "statModelName": "Gini",
                 "machineLearningOpt": 1,
                 "stocksCollectionNumber": "1",
@@ -340,19 +330,7 @@
                 "investments_list": [
                     {
                         "amount": 500,
-                        "date": "2023-08-23",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 500,
-                        "date": "2023-08-24",
-                        "status": true,
-                        "automatic_investment": false
-                    },
-                    {
-                        "amount": 500,
-                        "date": "2023-08-27",
+                        "date": "2023-09-12",
                         "status": true,
                         "automatic_investment": false
                     }

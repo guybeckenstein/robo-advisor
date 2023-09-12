@@ -6,17 +6,17 @@ from service.util import data_management, research
 
 
 @pytest.mark.django_db
-class TestManualMainFromTerminal:
+class TestConsoleApplicationMain:
     user_id: int = -1
     user_name: str = 'test'  # data_management.get_name()
     data_changed = False
     is_machine_learning: int = 1
-    model_option: int = 1  # gini
+    model_option: int = 1  # Gini
     stocks_collection_number: str = "1"  # 1 default
     stock_name: str = 'AAPL'
     num_of_years_history: int = 10
     show_result: bool = False
-    data_management.update_files_from_google_drive()
+    # data_management.update_files_from_google_drive()  # TODO: not working
 
     def test_creates_new_user(self):
 
@@ -81,7 +81,7 @@ class TestManualMainFromTerminal:
 
             plt_instance = research.forecast_specific_stock(str(self.stock_name), settings.MACHINE_LEARNING_MODEL[i],
                                                             models_data, self.num_of_years_history)
-            operation = '_forecast'
+            operation = 'Forecast'
             research.save_user_specific_stock(stock=self.stock_name, operation=operation, plt_instance=plt_instance)
 
             if self.show_result:
@@ -91,7 +91,7 @@ class TestManualMainFromTerminal:
 
         staring_date, today_date = data_management.get_from_and_to_date(self.num_of_years_history)
         plt_instance = research.plot_bb_strategy_stock(str(self.stock_name), staring_date, today_date)
-        operation = '_bb_strategy'
+        operation = 'BBS Strategy'
         research.save_user_specific_stock(self.stock_name, operation, plt_instance)
 
         if self.show_result:
@@ -101,17 +101,17 @@ class TestManualMainFromTerminal:
         filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
         sector_name = "US Stocks"
         intersection = research.get_stocks_stats(sector_name)
-        sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
+        sorted_data_tuple, intersection_with_filters, _ = research.sort_good_stocks(
             intersection, filters
         )
-        data_management.plot_research_graphs(sorted_data_tuple, intersection_with_filters, sector_name, research.LABELS)
+        data_management.plot_research_graphs(intersection_with_filters, sector_name, research.LABELS)
         prefix_str = 'Top Stocks - '
 
         if self.show_result:
             data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name}.png')
 
     def test_stat_model_scatter_graph(self):
-        sub_folder = f'{self.stocks_collection_number}{self.is_machine_learning}{self.model_option}/'
+        sub_folder = f'{self.stocks_collection_number}/{self.is_machine_learning}{self.model_option}/'
 
         stocks_symbols = data_management.get_stocks_symbols_from_collection(self.stocks_collection_number)
         basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR

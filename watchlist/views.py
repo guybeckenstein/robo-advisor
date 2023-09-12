@@ -1,3 +1,5 @@
+import os
+
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import BadRequest
@@ -52,32 +54,32 @@ def chosen_stock(request):
             start_date=start_date,
             end_date=end_date,
         )
-        research.save_user_specific_stock(stock=symbol, operation='_forecast', plt_instance=forecast_plt)
+        research.save_user_specific_stock(stock=f'{symbol} ', operation='Forecast', plt_instance=forecast_plt)
         plt.clf()
         plt.cla()
         plt.close()
         bb_strategy_plt = research.plot_bb_strategy_stock(stock_name=symbol, start=start_date, end=end_date)
-        research.save_user_specific_stock(stock=symbol, operation='_bb_strategy', plt_instance=bb_strategy_plt)
+        research.save_user_specific_stock(stock=f'{symbol} ', operation='BBS Strategy', plt_instance=bb_strategy_plt)
         plt.clf()
         plt.cla()
         plt.close()
 
-        overview: str = f"https://finance.yahoo.com/quote/{symbol}/?p = {symbol}"
-        conversation_link: str = f"https://finance.yahoo.com/quote/{symbol}/community?p = {symbol}"
-        more_statistics: str = f"https://finance.yahoo.com/quote/{symbol}/key-statistics?p = {symbol}"
+        overview_link: str = f"https://finance.yahoo.com/quote/{symbol}/?p={symbol}"
+        conversation_link: str = f"https://finance.yahoo.com/quote/{symbol}/community?p={symbol}"
+        more_statistics_link: str = f"https://finance.yahoo.com/quote/{symbol}/key-statistics?p={symbol}"
         is_israeli_stock: bool = False
 
         # israeli stock
         if isinstance(symbol, int) or symbol.isnumeric():
-            is_israeli_stock = True
-            num_of_digits = len(str(symbol))
-            conversation_link = f"https://www.sponser.co.il/Tag.aspx?id={symbol}"
+            is_israeli_stock: bool = True
+            num_of_digits: int = len(str(symbol))
+            conversation_link: str = f"https://www.sponser.co.il/Tag.aspx?id={symbol}"
             if num_of_digits > 3:
-                overview = f"https://market.tase.co.il/he/market_data/security/{symbol}/major_data"
-                more_statistics = f"https://market.tase.co.il/he/market_data/security/{symbol}/statistics"
+                category_name: str = 'security'
             else:
-                overview = f"https://market.tase.co.il/he/market_data/index/{symbol}/major_data"
-                more_statistics = f"https://market.tase.co.il/he/market_data/index/{symbol}/statistics"
+                category_name: str = 'index'
+            overview_link = f"https://market.tase.co.il/he/market_data/{category_name}/{symbol}/major_data"
+            more_statistics_link = f"https://market.tase.co.il/he/market_data/{category_name}/{symbol}/statistics"
 
     else:
         raise BadRequest
@@ -86,10 +88,10 @@ def chosen_stock(request):
         'is_chosen_stock_template': True,
         'title': 'Discover Stocks',
         'symbol': symbol,
-        'bb_strategy_img_name': f'{settings.RESEARCH_IMAGES}{symbol}_bb_strategy.png',
-        'forecast_stock_img_name': f'{settings.RESEARCH_IMAGES}{symbol}_forecast.png',
-        'more_statistics': more_statistics,
-        'overview': overview,
+        'bbs_strategy_img_name': f'img/research/{symbol} BBS Strategy.png',
+        'forecast_stock_img_name': f'img/research/{symbol} Forecast.png',
+        'more_statistics': more_statistics_link,
+        'overview': overview_link,
         'conversation': conversation_link,
         'is_israeli_stock': is_israeli_stock,
 
@@ -100,7 +102,7 @@ def chosen_stock(request):
 @login_required
 def top_stocks(request):
     top_stocks: QuerySet[TopStock] = TopStock.objects.all()
-    top_stocks_list: list[dict] = list()
+    top_stocks_list: list[dict[str, str]] = list()
     for stock in top_stocks:
         top_stocks_list.append(
             {
