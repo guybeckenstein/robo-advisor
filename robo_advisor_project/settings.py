@@ -144,12 +144,12 @@ DATABASES = {
     }
 }
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-#         "LOCATION": f"redis://{IP}:6379",
-#     }
-# }
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{IP}:6379",
+    }
+}
 
 ACCOUNT_FORMS = {
     'login': 'accounts.forms.CustomLoginForm',
