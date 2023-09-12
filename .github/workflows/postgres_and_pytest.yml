@@ -76,7 +76,7 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-        POSTGRES_HOST: db
+        POSTGRES_HOST: ${{ secrets.AWS_RDS_URL }}
         POSTGRES_PORT: 5432
         POSTGRES_DB: roboadvisor
         POSTGRES_USER: postgres
