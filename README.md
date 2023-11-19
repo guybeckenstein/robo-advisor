@@ -65,9 +65,7 @@ _Final project for the Fintech workshop by Zevin_
           <br>
           POSTGRES_PASSWORD=PUT_HERE_YOUR_LOCAL_POSTGRES_PASSWORD
           <br>
-          DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-          <br>
-          CSRF_TRUSTED_ORIGINS=http://localhost:1337
+          CSRF_TRUSTED_ORIGINS=http://0.0.0.0:1337
         </code>
       </li>
       <li>

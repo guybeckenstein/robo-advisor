@@ -55,7 +55,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - DATABASE=postgres
-      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
     env_file:
       - .env.oauth
     volumes:
