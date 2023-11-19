@@ -26,6 +26,7 @@ class TestLoginAndLogout:
             'email', 'password', 'Login', 'Forgot Password?', "Don't have an account?", 'Sign up here'
         ])
 
+    # This test requires running Redis container!
     def test_login_invalid_credentials(self, client: Client, user_factory: Callable):
         user: CustomUser = user_factory()
 
@@ -33,6 +34,7 @@ class TestLoginAndLogout:
         helper_methods.post_request(client, url_name='account_login', data=data, status_code=200)
         assert '_auth_user_id' not in client.session
 
+    # This test requires running Redis container!
     def test_user_successful_login_and_logout(self, client: Client, user_factory: Callable):
         # Create a test user
         user: CustomUser = user_factory()

@@ -644,7 +644,7 @@ def get_collection_json_data() -> dict[
     list[dict[list[object], float, float, int]],
     list[dict[list[object], float, float, int]]
 ]:
-    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE["google_drive"]:
         return convert_data_stream_to_json(file_stream=None)['collections']  # TODO: add parameter to method call
     else:
         return get_json_data(settings.STOCKS_JSON_NAME)['collections']

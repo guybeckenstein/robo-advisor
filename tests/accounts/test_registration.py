@@ -26,6 +26,7 @@ class TestRegistration:
             'Enter the same password as before, for verification.', 'Submit', 'Already Have An Account?', 'Login'
         ])
 
+    # This test requires running Redis container!
     def test_successful_post_request_as_guest(self, client: Client, user_factory: Callable):
         # Test user registration
         data = {
@@ -45,6 +46,7 @@ class TestRegistration:
         assert CustomUser.objects.filter(email='test@example.ac.il').exists()
         helper_methods.post_request(client, url_name='signup', data=data, status_code=200)
 
+    # This test requires running Redis container!
     def test_invalid_input_post_request(self, client: Client):
         data: list[dict[str]] = [
             {

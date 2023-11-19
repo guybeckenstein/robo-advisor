@@ -1,0 +1,1 @@
+python -m ..service.console_application_main

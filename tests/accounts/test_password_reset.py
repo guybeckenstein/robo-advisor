@@ -25,6 +25,7 @@ class TestPasswordReset:
         ]:
             assert attribute in response.content.decode()
 
+    # This test requires running Redis container!
     def test_reset_done_user_successful_password_reset(self, client: Client, user_factory: Callable):
         """
         It is including `account_reset_password_done` URL

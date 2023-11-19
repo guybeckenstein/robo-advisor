@@ -47,7 +47,7 @@ def update_all_tables(is_daily_running: bool = True):  # build DB for withdraw
 
 
 def update_closing_prices_tables(stocks_symbols, path, is_daily_running: bool):
-    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE["google_drive"]:
         last_updated_date_closing_prices = get_file_from_google_drive(
             file_path=f'{helpers.get_sorted_path(full_path=path, num_of_last_elements=3)}lastUpdatedClosingPrice.txt'
         ).getvalue().decode('utf-8')
@@ -70,7 +70,7 @@ def update_dataframe_tables(collection_json_data, path,
                             models_data: dict[dict, list, list, list, list], collection_num,
                             is_daily_running: bool = True):
     stocks_symbols = collection_json_data['stocksSymbols']
-    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE["google_drive"]:
         # last_updated_date_closing_prices = get_file_from_google_drive(
         #      f'{helpers.get_sorted_path(path, num_of_last_elements=3)}lastUpdatedDftables.txt'
         #  ).getvalue().decode('utf-8')
@@ -296,7 +296,7 @@ def get_extended_data_from_db(stocks_symbols: list, is_machine_learning: int, mo
 # Tables according to stocks symbols
 def get_closing_prices_table(path) -> pd.DataFrame:
     # closing_prices_table: pd.DataFrame = pd.read_csv(filepath_or_buffer=f'{path}closing_prices.csv', index_col=0)
-    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE["google_drive"]:
         closing_price_path: str = helpers.get_sorted_path(full_path=f'{path}closing_prices', num_of_last_elements=3)
         closing_prices_table = helpers.convert_data_stream_to_pd(
             get_file_from_google_drive(f'{closing_price_path}.csv'))
@@ -332,7 +332,7 @@ def get_df_table(is_machine_learning: int, model_name, level_of_risk: str, colle
         collection_path += settings.MACHINE_LEARNING_LOCATION
     else:
         collection_path += settings.NON_MACHINE_LEARNING_LOCATION
-    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE["google_drive"]:
         google_drive_table_path = helpers.get_sorted_path(
             full_path=f'{collection_path}{model_name}_df_{level_of_risk}', num_of_last_elements=4
         )
@@ -652,10 +652,10 @@ def view_investment_report(login_id, investment_amount, stocks_weights, stocks_s
     ils_to_usd: float = helpers.currency_exchange(from_currency="USD", to_currency="ILS")
     for i, stock in enumerate(stocks_symbols):
         if isinstance(stock, int) or stock.isnumeric():
-            currency = f'{settings.CURRENCY_LIST[0]}'
+            currency = f'{settings.CURRENCY_LIST["SHEKEL"]}'
             values.append(stocks_weights[i] * investment_amount * ils_to_usd)
         else:
-            currency = f'{settings.CURRENCY_LIST[1]}'
+            currency = f'{settings.CURRENCY_LIST["DOLLAR"]}'
             values.append(stocks_weights[i] * investment_amount)
         description = f'{currency}, {helpers.get_stocks_descriptions([stock])[1:][0]}'
         descriptions.append(description)
@@ -775,7 +775,7 @@ def get_user_from_db(user_id: int, user_name: str):  # users.json file
 
 
 def save_investment_to_json_file(user_id, investments):
-    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE["google_drive"]:
         stocks_json_path: str = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
         json_data = helpers.convert_data_stream_to_json(get_file_from_google_drive(f'{stocks_json_path}.json'))
     else:
@@ -792,7 +792,7 @@ def save_investment_to_json_file(user_id, investments):
 
 
 def get_user_investments_from_json_file(user_id):
-    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE[0]:
+    if settings.FILE_ACCESS_SELECTED == settings.FILE_ACCESS_TYPE["google_drive"]:
         stocks_json_path = helpers.get_sorted_path(settings.USERS_JSON_NAME, num_of_last_elements=2)
         json_data = helpers.convert_data_stream_to_json(get_file_from_google_drive(f'{stocks_json_path}.json'))
     else:

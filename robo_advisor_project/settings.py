@@ -139,7 +139,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
         'USER': os.environ.get('POSTGRES_USER', 'roboadvisor'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
+        'HOST': 'localhost',  # os.environ.get('AWS_RDS_URL', 'localhost'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
