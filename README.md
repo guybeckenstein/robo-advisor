@@ -5,8 +5,8 @@ _Final project for the Fintech workshop by Zevin_
   </h1>
   <!-- Without Docker -->
   <div>
-    <h1>
-      WITHOUT DOCKER
+    <h1 style="color: rgb(255, 0, 0);">
+      No Docker Installed on Your PC
     </h1>
     <!-- Installation prerequisites -->
     <h3>
@@ -26,7 +26,7 @@ _Final project for the Fintech workshop by Zevin_
         PyTest
       </li>
       <li>
-        Docker + Redis DockerHub image (otherwise tests will break)
+        * Not mandatory: Docker + Redis DockerHub image (otherwise tests will break)
       </li>
     </ol>
     <!-- Configurations -->
