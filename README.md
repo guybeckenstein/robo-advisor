@@ -50,52 +50,38 @@ _Final project for the Fintech workshop by Zevin_
       <li>
         Add the following lines:
         <br>
-        <code>
-          DEBUG=1
-          <br>
-          SECRET_KEY=PUT_HERE_YOUR_PREVIOUS_PROJECT_SECRET_KEY
-          <br>
-          POSTGRES_HOST=db
-          <br>
-          POSTGRES_PORT=5432
-          <br>
-          POSTGRES_DB=roboadvisor
-          <br>
-          POSTGRES_USER=PUT_HERE_YOUR_LOCAL_POSTGRES_USERNAME
-          <br>
-          POSTGRES_PASSWORD=PUT_HERE_YOUR_LOCAL_POSTGRES_PASSWORD
-          <br>
-          CSRF_TRUSTED_ORIGINS=http://0.0.0.0:1337
-        </code>
+        <code>DEBUG=1</code>
+        <br>
+        <code>SECRET_KEY=PUT_HERE_YOUR_PREVIOUS_PROJECT_SECRET_KEY</code>
+        <br>
+        <code>POSTGRES_HOST=db</code>
+        <br>
+        <code>POSTGRES_PORT=5432</code>
+        <br>
+        <code>POSTGRES_DB=roboadvisor</code>
+        <br>
+        <code>POSTGRES_USER=PUT_HERE_YOUR_LOCAL_POSTGRES_USERNAME</code>
+        <br>
+        <code>POSTGRES_PASSWORD=PUT_HERE_YOUR_LOCAL_POSTGRES_PASSWORD</code>
+        <br>
+        <code>CSRF_TRUSTED_ORIGINS=http://0.0.0.0:1337</code>
       </li>
       <li>
         Update the values of these environment variables according to you:
-        <code>
-          PUT_HERE_YOUR_PREVIOUS_PROJECT_SECRET_KEY
-        </code>
-        <code>
-          PUT_HERE_YOUR_LOCAL_POSTGRES_USERNAME
-        </code>
-        <code>
-          PUT_HERE_YOUR_LOCAL_POSTGRES_PASSWORD
-        </code>
+        <code>PUT_HERE_YOUR_PREVIOUS_PROJECT_SECRET_KEY</code>
+        <code>PUT_HERE_YOUR_LOCAL_POSTGRES_USERNAME</code>
+        <code>PUT_HERE_YOUR_LOCAL_POSTGRES_PASSWORD</code>
       </li>
     </ol>
     <!-- Commands -->
     <h3>
       Run these commands:
     </h3>
-    <code>
-      pip install -r requirements.txt
-    </code>
+    <code>pip install -r requirements.txt</code>
     <br>
-    <code>
-      python manage.py migrate
-    </code>
+    <code>python manage.py migrate</code>
     <br>
-    <code>
-      python manage.py runserver
-    </code>
+    <code>python manage.py runserver</code>
     <a href="localhost:8000">
       <h3>
         Now enter this link!
@@ -104,4 +90,3 @@ _Final project for the Fintech workshop by Zevin_
   </div>
   <!-- With Docker -->
 </body>
-
