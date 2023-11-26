@@ -1,0 +1,47 @@
+# Exclude common version control directories
+.git
+.svn
+
+# Exclude editor-specific files
+.vscode
+.idea
+
+# Exclude Python-related artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Exclude other cache folders
+.cache
+
+# Exclude local development files
+*.log
+*.db
+
+# Exclude virtual environment directories
+venv/
+env/
+
+# Exclude build artifacts
+*.pyc
+*.pyo
+*.pyd
+service/*.py
+service/dataset/last_updated_google_drive.txt
+
+# Exclude documentation files
+docs/
+
+# Ignore all markdown files (md) beside all README*.md other than README-secret.md
+*.md
+!README*.md
+README-secret.md
+
+# Exclude Docker-specific files
+.dockerignore
+Dockerfile
+
+# Exclude any other files/directories not needed in the image
+static/img/user
+static/img/user/*

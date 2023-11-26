@@ -10,8 +10,6 @@ if __name__ == '__main__':
     from util import data_management, research
     from config import settings
 
-    # Specify the path to your batch file
-    # batch_file_path = rf'{project_root}/../get_data_from_google_drive.bat'
     data_management.show_main_menu()
     selection = data_management.get_menu_choice()
     exit_loop_operation = 8

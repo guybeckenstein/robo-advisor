@@ -406,17 +406,6 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     return closing_prices_table
 
 
-def choose_portfolio_by_risk_score(optional_portfolios_list, risk_score):
-    if 0 < risk_score <= 4:
-        return optional_portfolios_list[0]
-    elif 5 < risk_score <= 7:
-        return optional_portfolios_list[1]
-    elif risk_score > 7:
-        return optional_portfolios_list[2]
-    else:
-        raise ValueError
-
-
 def get_json_data(name: str):
     with codecs.open(f"{name}.json", "r", encoding="utf-8") as file:
         json_data = json.load(file)
@@ -572,17 +561,6 @@ def convert_israeli_symbol_number_to_name(symbol_number: int, is_index_type: boo
 
 
 # get directly from tase api instead of json file config
-def get_israeli_companies_list():
-    json_data = tase_interaction.get_israeli_companies_list()
-    securities_list = json_data["tradeSecuritiesList"]["result"]
-    return securities_list
-
-
-def get_israeli_indexes_list():
-    json_data = tase_interaction.get_israeli_indexes_list()
-    indexes_list = json_data['indicesList']['result']
-    return indexes_list
-
 
 def get_usa_stocks_table() -> pd.DataFrame:
     return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}nasdaq_all_stocks.csv")
@@ -594,12 +572,6 @@ def get_usa_indexes_table() -> pd.DataFrame:
 
 def get_all_stocks_table():
     return pd.read_csv(f"{settings.CONFIG_RESOURCE_LOCATION}all_stocks_basic_data.csv")
-
-
-def get_sector_by_symbol(symbol):
-    all_stocks_Data = get_all_stocks_table()
-    sector = all_stocks_Data.loc[all_stocks_Data['Symbol'] == str(symbol), 'sector'].item()
-    return sector
 
 
 def get_description_by_symbol(symbol):
@@ -650,28 +622,6 @@ def get_collection_json_data() -> dict[
         return get_json_data(settings.STOCKS_JSON_NAME)['collections']
 
 
-def convert_israeli_security_number_to_company_name(israeli_security_number: str) -> str:
-    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
-    result = [item['companyName'] for item in securities_list if
-              item['securityId'] == israeli_security_number]
-
-    return result[0]
-
-
-def convert_company_name_to_israeli_security_number(companyName: str) -> str:
-    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
-    result = [item['securityId'] for item in securities_list if
-              item['companyName'] == companyName]
-
-    return result[0]
-
-
-def get_symbols_names_list() -> list[str]:
-    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
-    symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
-    return symbols_list
-
-
 def get_descriptions_list() -> list[str]:
     all_stocks_Data: pd.DataFrame = get_all_stocks_table()
     descriptions_list: list[str] = all_stocks_Data['description'].unique().tolist()
@@ -707,6 +657,149 @@ def create_graphs_folders_locally() -> None:
             pass
 
 
+def currency_exchange(from_currency="USD", to_currency="ILS"):
+    start_date = (data_time.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
+
+    ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol
+    data = yf.download(ticker, start=start_date, end=end_date)
+
+    if not data.empty:
+        latest_exchange_rate = data['Close'].iloc[-1]
+        return latest_exchange_rate
+    else:
+        raise ValueError("No exchange rate data available for the given date range.")
+
+
+def save_json_data(path: str, sectors_json_file) -> None:
+    with open(f"{path}.json", 'w', encoding='utf-8') as f:
+        json.dump(sectors_json_file, f, ensure_ascii=False, indent=4)
+
+
+def convert_data_stream_to_pd(file_stream):
+    # Convert the binary content directly to a Pandas DataFrame
+    return pd.read_csv(file_stream, encoding='utf-8', index_col=0)
+
+
+def convert_data_stream_to_json(file_stream):
+    # Convert the binary content directly to a Pandas DataFrame
+    return json.load(file_stream)
+
+
+def get_sorted_path(full_path, num_of_last_elements):
+    split_path = full_path.split('/')
+    return '/'.join(split_path[-num_of_last_elements:])
+
+
+# Functions not in normal use, but used only by a programmer, activating them when necessary (think about how to
+# solve this issue) TODO
+
+def save_all_stocks():
+    path: str = f"{settings.CONFIG_RESOURCE_LOCATION}all_stocks_basic_data.csv"
+    sectors_data = get_sectors_data_from_file()
+    # Assuming you have lists named list_symbol, list_sector, and list_description
+    list_symbol = []
+    list_sector = []
+    list_description = []
+
+    # Assuming you have lists named list_symbol, list_sector, and list_description
+
+    for i in range(len(sectors_data)):
+        sector_name = sectors_data[i]["name"]
+        stocks_data = sectors_data[i]["stocks"]
+
+        for stock_symbol in stocks_data:
+            list_symbol.append(stock_symbol)
+            list_sector.append(sector_name)
+            description = get_stocks_descriptions([stock_symbol], is_reverse_mode=False)[1]
+            list_description.append(description)
+
+    data = list(zip(list_symbol, list_sector, list_description))
+
+    with open(path, 'w', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['Symbol', 'sector', 'description'])
+
+        # Write data rows
+        for row in data:
+            csv_writer.writerow(row)
+
+    print("CSV file created successfully!")
+
+
+def save_usa_indexes_table():
+    sectors_data = get_sectors_data_from_file()
+    stock_data_list = []
+    # create table
+    for i in range(3, 6):
+        stocks = sectors_data[i]["stocks"]
+        for j in range(len(stocks)):
+            stock_info = yf.Ticker(stocks[j]).info
+            stock_data_list.append(stock_info)
+
+    # Create a set of all keys present in the stock data dictionaries
+    all_keys = set()
+    for stock_data in stock_data_list:
+        all_keys.update(stock_data.keys())
+
+    # Define the CSV file path
+    csv_file_path: str = f'{settings.CONFIG_RESOURCE_LOCATION}usa_indexes.csv'
+
+    # Write the data to a CSV file
+    with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=all_keys)
+
+        writer.writeheader()
+        for stock_data in stock_data_list:
+            writer.writerow(stock_data)
+
+
+def convert_data_stream_to_png(file_stream):
+    import io
+    from PIL import Image
+    # Create an Image object from the binary stream
+    return Image.open(io.BytesIO(file_stream.read()))
+
+
+def convert_israeli_security_number_to_company_name(israeli_security_number: str) -> str:
+    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
+    result = [item['companyName'] for item in securities_list if
+              item['securityId'] == israeli_security_number]
+
+    return result[0]
+
+
+def convert_company_name_to_israeli_security_number(companyName: str) -> str:
+    securities_list = get_json_data(settings.SECURITIES_LIST_JSON_NAME)["tradeSecuritiesList"]["result"]
+    result = [item['securityId'] for item in securities_list if
+              item['companyName'] == companyName]
+
+    return result[0]
+
+
+def get_symbols_names_list() -> list[str]:
+    all_stocks_Data: pd.DataFrame = get_all_stocks_table()
+    symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
+    return symbols_list
+
+def get_sector_by_symbol(symbol):
+    all_stocks_Data = get_all_stocks_table()
+    sector = all_stocks_Data.loc[all_stocks_Data['Symbol'] == str(symbol), 'sector'].item()
+    return sector
+
+
+def get_israeli_companies_list():
+    json_data = tase_interaction.get_israeli_companies_list()
+    securities_list = json_data["tradeSecuritiesList"]["result"]
+    return securities_list
+
+
+def get_israeli_indexes_list():
+    json_data = tase_interaction.get_israeli_indexes_list()
+    indexes_list = json_data['indicesList']['result']
+    return indexes_list
+
+
 def create_graphs_folders_aws_s3(bucket_name: str) -> None:
     import boto3
 
@@ -740,102 +833,4 @@ def create_graphs_folders_aws_s3(bucket_name: str) -> None:
         s3.put_object(Bucket=bucket_name, Key=f'{settings.GRAPH_IMAGES}{folder}')
 
 
-def currency_exchange(from_currency="USD", to_currency="ILS"):
-    start_date = (data_time.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-    end_date = (data_time.now() + timedelta(days=1)).strftime('%Y-%m-%d')  # To ensure we get today's data
 
-    ticker = f'{from_currency}{to_currency}=X'  # Yahoo Finance symbol
-    data = yf.download(ticker, start=start_date, end=end_date)
-
-    if not data.empty:
-        latest_exchange_rate = data['Close'].iloc[-1]
-        return latest_exchange_rate
-    else:
-        raise ValueError("No exchange rate data available for the given date range.")
-
-
-def save_all_stocks():  # dont delete it
-    path: str = f"{settings.CONFIG_RESOURCE_LOCATION}all_stocks_basic_data.csv"
-    sectors_data = get_sectors_data_from_file()
-    # Assuming you have lists named list_symbol, list_sector, and list_description
-    list_symbol = []
-    list_sector = []
-    list_description = []
-
-    # Assuming you have lists named list_symbol, list_sector, and list_description
-
-    for i in range(len(sectors_data)):
-        sector_name = sectors_data[i]["name"]
-        stocks_data = sectors_data[i]["stocks"]
-
-        for stock_symbol in stocks_data:
-            list_symbol.append(stock_symbol)
-            list_sector.append(sector_name)
-            description = get_stocks_descriptions([stock_symbol], is_reverse_mode=False)[1]
-            list_description.append(description)
-
-    data = list(zip(list_symbol, list_sector, list_description))
-
-    with open(path, 'w', newline='', encoding='utf-8') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Symbol', 'sector', 'description'])
-
-        # Write data rows
-        for row in data:
-            csv_writer.writerow(row)
-
-    print("CSV file created successfully!")
-
-
-def save_usa_indexes_table():  # dont delete it
-    sectors_data = get_sectors_data_from_file()
-    stock_data_list = []
-    # create table
-    for i in range(3, 6):
-        stocks = sectors_data[i]["stocks"]
-        for j in range(len(stocks)):
-            stock_info = yf.Ticker(stocks[j]).info
-            stock_data_list.append(stock_info)
-
-    # Create a set of all keys present in the stock data dictionaries
-    all_keys = set()
-    for stock_data in stock_data_list:
-        all_keys.update(stock_data.keys())
-
-    # Define the CSV file path
-    csv_file_path: str = f'{settings.CONFIG_RESOURCE_LOCATION}usa_indexes.csv'
-
-    # Write the data to a CSV file
-    with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=all_keys)
-
-        writer.writeheader()
-        for stock_data in stock_data_list:
-            writer.writerow(stock_data)
-
-
-def save_json_data(path: str, sectors_json_file) -> None:
-    with open(f"{path}.json", 'w', encoding='utf-8') as f:
-        json.dump(sectors_json_file, f, ensure_ascii=False, indent=4)
-
-
-def convert_data_stream_to_pd(file_stream):
-    # Convert the binary content directly to a Pandas DataFrame
-    return pd.read_csv(file_stream, encoding='utf-8', index_col=0)
-
-
-def convert_data_stream_to_png(file_stream):
-    import io
-    from PIL import Image
-    # Create an Image object from the binary stream
-    return Image.open(io.BytesIO(file_stream.read()))
-
-
-def convert_data_stream_to_json(file_stream):
-    # Convert the binary content directly to a Pandas DataFrame
-    return json.load(file_stream)
-
-
-def get_sorted_path(full_path, num_of_last_elements):
-    split_path = full_path.split('/')
-    return '/'.join(split_path[-num_of_last_elements:])

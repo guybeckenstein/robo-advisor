@@ -145,3 +145,6 @@ app/static/img/research/*
 
 # Secret files
 app/secret/*
+
+# Self-documentation files
+service/dataset/last_updated_google_drive.txt
