@@ -1,9 +1,4 @@
 _Final project for the Fintech workshop by Zevin_
-<style>
-  h1, h3, h4 {
-    text-align: center;
-  }
-</style>
 <body>
   <h1 style="background-color: rgb(255, 100, 100); padding: 2px;">
     robo-advisor
