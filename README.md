@@ -30,6 +30,9 @@ _Final project for the Fintech workshop by Zevin_
       <li>
         PyTest
       </li>
+      <li>
+        Docker + Redis DockerHub image (otherwise tests will break)
+      </li>
     </ol>
     <!-- Configurations -->
     <h4 style="padding-top: 20px;">
@@ -68,8 +71,11 @@ _Final project for the Fintech workshop by Zevin_
       </li>
       <li>
         Update the values of these environment variables according to you:
+        <br>
         <code>PUT_HERE_YOUR_PREVIOUS_PROJECT_SECRET_KEY</code>
+        <br>
         <code>PUT_HERE_YOUR_LOCAL_POSTGRES_USERNAME</code>
+        <br>
         <code>PUT_HERE_YOUR_LOCAL_POSTGRES_PASSWORD</code>
       </li>
     </ol>
