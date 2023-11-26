@@ -3,6 +3,20 @@ _Final project for the Fintech workshop by Zevin_
   <h1>
     1. Project Technologies, Stacks & Details
   </h1>
+  <h2>Stacks</h2>
+  Python, Django, YAML, PostgreSQL, JavaScript, HTML, CSS, JSON, Docker, NGINX, GUnicorn
+  <h2>The Main Idea</h2>
+  This project offers an AI-based solution for smart investments in the capital market (mostly machine learning based, but also utilizes deep learning). Created within a group, used TDD approach, and logs for development.
+  <h2>Technologies</h2>
+  Built using Django Framework (MVT pattern), containerized in Docker (using docker-compose), using GitHub Actions (YAML).
+  <br>
+  Deployed to AWS EC2, within elastic IP, and with defined security groups, using Gunicorn (as WSGI – web server gateway interface) and NGINX (as a reverse-proxy). This project excludes domain usage, thus the only AWS’ security group was enabling requests to port 80 only (or other ports, for using other services).
+  <h2>Architecture</h2>
+  Uses services: web – using a Dockerfile image that mainly uses Python and other Linux configurations; db – using PostgreSQL service as database (or RDS when deployed to AWS); redis – for caching the SQL queries.
+  <h2>API usage</h2>
+  In this project, we were able to use Google API, Facebook API, and GitHub API for OAuth 2.0, and SendGrid service for sending non-spam-marked emails (using the DHCP protocol for sending automatic emails to users).
+  <h2>Testing</h2>
+  Includes many tests with PyTest, integrating with the SQL server, and tested on various OS and DB.
   <h1>
     2. robo-advisor Installation
   </h1>
