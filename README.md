@@ -39,16 +39,16 @@ _Final project for the Fintech workshop by Zevin_
       Make these configurations:
     </h4>
     <small style="color: red;">
-      * You must configure a database called `roboadvisor` in your postgres! Otherwise, it won't work. Use pgAdmin 4 or PSQL for it.
+      * You must configure a database called <b>roboadvisor</b> in your postgres! Otherwise, it won't work. Use pgAdmin 4 or PSQL for it.
       <br>
-      ** You should also create a file called `.env.dev` in the root folder (robo-advisor), and add environment variables there
+      ** You should also create a file called .env.dev in the root folder (robo-advisor), and add environment variables there
     </small>
     <ol type="1">
       <li>
-        Create a new Django project and go to `settings.py` that you've just created. Copy `SECRET_KEY` value
+        Create a new Django project and go to <b>settings.py</b> that you've just created. Copy <b>SECRET_KEY</b> value
       </li>
       <li>
-        Create a file in the root folder (robo-advisor) named `.env.dev` (exactly)
+        Create a file in the root folder (robo-advisor) named <b>.env.dev</b> (exactly)
       </li>
       <li>
         Add the following lines:
