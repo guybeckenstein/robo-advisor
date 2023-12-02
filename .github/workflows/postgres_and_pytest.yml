@@ -4,28 +4,28 @@ on: pull_request
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-
+    
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-
+    
     - name: Pre-installation of docker-compose
       run: |
         sudo apt-get install python3-dev libyaml-dev
-
+    
     - name: Upgrade pip
       run: |
         pip install --upgrade pip
-
+    
     - name: Install docker-compose
       run: |
         pip install drf-spectacular==0.26.4 pyyaml==5.3.1 docker-compose
-
+    
     - name: Set all environment variables
       run: |
         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
@@ -33,26 +33,26 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-
+    
     - name: psycopg2 prerequisites
       run: | 
         sudo apt-get install libpq-dev
-
+    
     - uses: harmon758/postgresql-action@v1
       with:
         postgresql version: '11'
-
+    
     - name: Remove Docker volumes
       run: |
         docker system prune
         sudo systemctl start postgresql.service
         sudo kill -9 $(sudo lsof -t -i:5432)
-
-    - name: Build and Run Docker Containers
+    
+    - name: Build and run all Docker containers
       run: |
         docker-compose up -d
-
-    - name: Run Flake8 Linter, and Test with PyTest
+    
+    - name: Run Flake8 linter
       run: |
         docker-compose exec -T web bash -c "flake8 --max-line-length 120 --ignore=E402,F401 --exclude=venv ."
       env:
@@ -64,8 +64,8 @@ jobs:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
         DATABASE: postgres
-
-    - name: Test with PyTest
+    
+    - name: Run PyTest
       run: |
         docker-compose exec -T web bash -c "
           python manage.py flush --no-input
@@ -82,3 +82,12 @@ jobs:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
         DATABASE: postgres
+    - name: Build & push Docker image
+      uses: mr-smithers-excellent/docker-build-push@v6
+      with:
+        image: guybeckenstein/robo-advisor
+        # tags: v1, latest
+        registry: docker.io
+        dockerfile: Dockerfile
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
