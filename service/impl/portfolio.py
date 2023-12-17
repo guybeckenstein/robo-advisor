@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import datetime
 import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
 from investment.models import Investment
 from service.impl.sector import Sector

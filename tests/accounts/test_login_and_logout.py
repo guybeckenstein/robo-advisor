@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 from django.template.response import TemplateResponse
 
-from accounts.models import CustomUser
+from accounts.models import CustomUser, UserSession
 from tests import helper_methods
 
 
@@ -21,7 +21,6 @@ class TestLoginAndLogout:
             url_name='account_login',
             template_src='account/guest/login.html',
         )
-        print(helper_methods.assert_attributes)
         helper_methods.assert_attributes(response, attributes=[
             'email', 'password', 'Login', 'Forgot Password?', "Don't have an account?", 'Sign up here'
         ])
@@ -38,17 +37,31 @@ class TestLoginAndLogout:
     def test_user_successful_login_and_logout(self, client: Client, user_factory: Callable):
         # Create a test user
         user: CustomUser = user_factory()
-        print(user.email)
 
         # Test user login
         data = {
             'login': user.email,
             'password': 'django1234',
         }
-        helper_methods.post_request(client, url_name='account_login', data=data, status_code=200)
+        session_key = user.id
+        client.session['_auth_user_id'] = str(session_key)
+        client.session.save()
+        helper_methods.post_request(client, url_name='account_login', data=data, status_code=302)
+
+        # Test post login session key
+        assert len(UserSession.objects.all()) == 1
 
         # Test user logout
-        response: TemplateResponse = helper_methods.post_request(
-            client, url_name='account_logout', data=None, status_code=200
+        response: TemplateResponse = helper_methods.successful_get_request_as_guest(
+            client, url_name='account_logout', template_src='account/authenticated/logout.html'
         )
         helper_methods.assert_attributes(response, attributes=['Logout', 'You have been logged out.', 'Login again'])
+        assert len(UserSession.objects.all()) == 0
+
+
+    def test_logout_exception_get_request_as_guest(self, client: Client):
+        # Test user logout
+        with pytest.raises(UserSession.DoesNotExist):
+            helper_methods.successful_get_request_as_guest(
+                client, url_name='account_logout', template_src='account/authenticated/logout.html'
+            )

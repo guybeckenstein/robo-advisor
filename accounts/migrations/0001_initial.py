@@ -106,6 +106,26 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name="UserSession",
+            fields=[
+                (
+                    "session_key",
+                    models.CharField(max_length=40, primary_key=True, serialize=False),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": 'User Session Key',
+                "verbose_name_plural": 'Users\' Session Key',
+                "db_table": "UserSession",
+            },
+        ),
+        migrations.CreateModel(
             name="InvestorUser",
             fields=[
                 (
@@ -170,7 +190,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 "verbose_name": "Investor User",
-                "verbose_name_plural": "Investor User",
+                "verbose_name_plural": "Investor Users",
                 "db_table": "InvestorUser",
             },
         ),
