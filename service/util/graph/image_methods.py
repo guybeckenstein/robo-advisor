@@ -14,7 +14,7 @@ def save_graph_aws_s3(plt_instance, file_name) -> None:
     import boto3
     import io
 
-    from robo_advisor_project import settings
+    from backend import settings
 
     # Create an S3 client
     s3 = boto3.client('s3')

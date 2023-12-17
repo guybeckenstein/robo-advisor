@@ -1,15 +1,13 @@
-import datetime
 import json
 
-import pytz
-
-from allauth.account.views import SignupView, LoginView
+from allauth.account.views import SignupView, LoginView, LogoutView
 from crispy_forms.templatetags.crispy_forms_filters import as_crispy_field
 from django import forms
-from django.contrib.auth import logout, login
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import BadRequest
 from django.core.files.storage import FileSystemStorage
+from django.db import IntegrityError
+from django.db.models import QuerySet
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -29,9 +27,10 @@ from accounts import forms as account_forms
 from core import views as core_views
 
 from .forms import CustomLoginForm
-from .models import InvestorUser, CustomUser
+from .models import InvestorUser, CustomUser, UserSession
 
 
+@require_http_methods(["GET", "POST"])
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class SignUpView(SignupView):
     """
@@ -67,6 +66,7 @@ class SignUpView(SignupView):
         if 'email' in self.errors and 'already exists' in self.errors['email'][0]:
             errors = ["A user is already assigned with this email. Please use a different email address."]
             return errors
+
 
 
 def check_email(request):
@@ -115,7 +115,8 @@ def check_password_confirmation(request):
     return render(request, 'partials/field.html', context)
 
 
-# @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+@require_http_methods(["GET", "POST"])
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class HtmxLoginView(LoginView):
     template_name = 'account/guest/login.html'
     form_class = CustomLoginForm
@@ -126,17 +127,30 @@ class HtmxLoginView(LoginView):
         context['title'] = 'Login'
         return context
 
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
     def form_valid(self, form):
         email: str = form.cleaned_data['login']
         try:
             user: CustomUser = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
             raise ValueError(f'No user with email - `{email}`')
+
+        # Create a new session and associate it with the user
+        session_key: str = self.request.session.session_key
+
+        try:
+            UserSession.objects.create(session_key=session_key, user=user)
+        except IntegrityError:
+            raise AttributeError('User already has a current session key which was not deleted during its logout.\n'
+                                 'Delete its previous session key')
+
         try:
             if core_views.check_is_user_last_login_was_up_to_yesterday(user=user):
                 # it will be displayed if the last date for the change is different from today's date
                 web_actions.save_three_user_graphs_as_png(user=user)
-                if service_settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:
+                if service_settings.GOOGLE_DRIVE_DAILY_DOWNLOAD:  # TODO: why do we need these two lines?
                     data_management.update_files_from_google_drive()
                 """
                 Dataset and static images are updated daily, only when the date of the last update is different
@@ -153,7 +167,6 @@ def check_login_email(request):
     User = CustomUser
     email = request.POST.get('login')
     print(email)
-    # print(form.cleaned_data.get['login'])
 
     try:
         User.objects.get(email=email)
@@ -167,8 +180,6 @@ def check_login_email(request):
         'valid': valid,
     }
     return render(request, 'partials/email_validation.html', context)
-
-    # return JsonResponse({'valid': valid})
 
 
 def check_login_email_reset(request):
@@ -177,7 +188,6 @@ def check_login_email_reset(request):
     User = CustomUser
     email = request.POST.get('email')
     print(email)
-    # print(form.cleaned_data.get['login'])
 
     try:
         User.objects.get(email=email)
@@ -187,33 +197,35 @@ def check_login_email_reset(request):
         valid = False
     context = {
         'field': form['login'],
-
         'valid': valid,
     }
-    return render(request, 'partials/email_validation.html', context)
+    return render(request, 'partials/email_validation.html', context=context)
 
 
-def custom_login_view(request):
-    if request.method == 'POST':
-        form = CustomLoginForm(request, data=request.POST)
-        if form.is_valid():
-            # Authenticate user
-            user = form.get_user()
-            login(request, user)
-            # Handle any additional logic
-            return redirect('home')  # Redirect to a different page after login
-    else:
-        form = CustomLoginForm()
-    return render(request, 'account/guest/login.html', {'form': form})
+@require_http_methods(["GET", "POST"])
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+class LogoutViewV2(LogoutView):
+    template_name = 'account/authenticated/logout.html'
 
+    def get(self, *args, **kwargs):
+        super().get(args, kwargs)
+        self.post(args, kwargs)
+        context = {
+            'title': "You Have Been Logged Out"
+        }
+        return render(self.request, 'account/authenticated/logout.html', context=context)
 
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def logout_view(request):
-    logout(request)
-    context = {
-        'title': "You Have Been Logged Out"
-    }
-    return render(request, 'account/authenticated/logout.html', context=context)
+    def post(self, *args, **kwargs):
+        user_id: int = self.request.user.id
+        user_instance: CustomUser = CustomUser.objects.filter(id=user_id).first()
+        user_sessions: QuerySet[UserSession] = UserSession.objects.filter(user=user_instance)
+        if user_sessions.exists():
+            user_sessions.delete()
+        else:
+            # Handle the case where the session key doesn't exist
+            print(f'Invalid session key! No user has been found!')
+            raise UserSession.DoesNotExist
+        return super().post(args, kwargs)
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -233,6 +245,7 @@ def profile_main(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
+@require_http_methods(["GET"])
 def profile_account(request):
     context = {
         'title': "Account Page"
@@ -262,6 +275,8 @@ def profile_account_details(request):
 
 
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+@login_required
+@require_http_methods(["GET", "POST"])
 class MyPasswordChangeForm(PasswordChangeView):
     form_class = account_forms.PasswordChangingForm
     template_name = 'account/authenticated/profile_account_password.html'
@@ -301,18 +316,13 @@ def profile_investor(request):
             if form.is_valid():
                 investments: Investment = Investment.objects.filter(investor_user=investor_user)
                 if len(investments) > 0:
-                    if int(old_collection_number) != int(
-                            form.cleaned_data['stocks_collection_number']):
-                        messege = update_data(form, investor_user, request, investments)
-                        messages.warning(
-                            request,
-                            messege
-                        )
+                    if int(old_collection_number) != int(form.cleaned_data['stocks_collection_number']):
+                        message = update_data(form, investor_user, request, investments)
+                        messages.warning(request, message)
                         return redirect('capital_market_algorithm_preferences_form')
                     else:
                         messages.warning(
-                            request,
-                            "You chose the same stocks' collection number you already had before.\n"
+                            request, "You chose the same stocks' collection number you already had before.\n"
                         )
                         context = {
                             'form': form,
@@ -322,11 +332,8 @@ def profile_investor(request):
                         }
                         return render(request, 'account/authenticated/profile_investor.html', context=context)
                 else:  # there are no investments
-                    messege = update_data(form, investor_user, request, investments)
-                    messages.warning(
-                        request,
-                        messege
-                    )
+                    message = update_data(form, investor_user, request, investments)
+                    messages.warning(request, message)
                     return redirect('capital_market_algorithm_preferences_form')
             else:
                 messages.info(

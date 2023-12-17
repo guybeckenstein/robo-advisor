@@ -782,6 +782,7 @@ def get_symbols_names_list() -> list[str]:
     symbols_list: list[str] = all_stocks_Data['Symbol'].unique().tolist()
     return symbols_list
 
+
 def get_sector_by_symbol(symbol):
     all_stocks_Data = get_all_stocks_table()
     sector = all_stocks_Data.loc[all_stocks_Data['Symbol'] == str(symbol), 'sector'].item()
@@ -831,6 +832,3 @@ def create_graphs_folders_aws_s3(bucket_name: str) -> None:
     # Create empty objects with the folder prefixes
     for folder in folders:
         s3.put_object(Bucket=bucket_name, Key=f'{settings.GRAPH_IMAGES}{folder}')
-
-
-

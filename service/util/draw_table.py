@@ -93,7 +93,7 @@ def draw_all_and_save_as_png_aws_s3(file_name: str, symbols: list[str], values: 
                                     header_text, percent_mode: bool = True) -> None:
     import io
     import boto3
-    from robo_advisor_project.settings import AWS_STORAGE_BUCKET_NAME
+    from backend.settings import AWS_STORAGE_BUCKET_NAME
 
     """
     Stocks Representation

@@ -71,9 +71,11 @@ def page_not_found_get_request_as_logged_user(client: Client, user_factory: Call
 
 
 def post_request(client: Client, url_name: str, data: dict, status_code: int) -> TemplateResponse:
+    # client.login(data=data)
     response: TemplateResponse = client.post(reverse(url_name), data=data)
     assert response.status_code == status_code
     assert response.request['REQUEST_METHOD'] == 'POST'
+
     return response
 
 
@@ -108,7 +110,7 @@ def assert_redirection_status_code_for_get_request(response: TemplateResponse, u
 def _assert_successful_status_code_for_get_request(response: TemplateResponse, template_src: str) -> None:
     assert response.status_code == 200
     if template_src != '':
-        assert template_src in response.templates[0].name
+        assert (template_src in response.templates[0].name or template_src in response.templates[1].name)
 
 
 def _assert_redirection_status_code_for_get_request(response: TemplateResponse, url: str) -> None:

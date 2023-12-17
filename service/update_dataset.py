@@ -3,6 +3,7 @@ import sys
 import os
 
 from service.config import settings
+from service.util import web_actions
 
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(project_root)
@@ -14,3 +15,4 @@ if __name__ == '__main__':
     if settings.UPLOAD_TO_GOOGLE_DRIVE:
         data_management.upload_file_to_google_drive(file_path=f'{settings.USERS_JSON_NAME}.json', num_of_elements=2)
     data_management.update_all_tables(is_daily_running=True)
+    web_actions.update_logged_users_graphs_and_files()

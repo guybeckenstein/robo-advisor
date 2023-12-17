@@ -12,7 +12,7 @@ from service.config import settings as settings_service
 from core.models import QuestionnaireA, QuestionnaireB
 from django.urls import reverse_lazy
 
-from robo_advisor_project import settings
+from backend import settings
 
 
 class AlgorithmPreferencesForm(forms.ModelForm):

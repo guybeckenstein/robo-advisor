@@ -11,7 +11,7 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from service.config import settings
 
 # Global variables
-ACCESS_FILE: str = f'{settings.CONFIG_RESOURCE_LOCATION}google_drive_access_new.json'
+ACCESS_FILE: str = f'{settings.CONFIG_RESOURCE_LOCATION}google_drive_access.json'
 MAIN_FOLDER_ID: str = '1yTCkRBihTdF-mTdKhZH_GrF3Ir7bHoL7'
 
 

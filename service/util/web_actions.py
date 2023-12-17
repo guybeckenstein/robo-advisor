@@ -1,8 +1,10 @@
+from django.db.models import QuerySet
+
 from service.impl.portfolio import Portfolio
 from service.util import data_management
 from service.config import settings
 from core.models import QuestionnaireA
-from accounts.models import InvestorUser, CustomUser
+from accounts.models import InvestorUser, CustomUser, UserSession
 
 
 def save_three_user_graphs_as_png(user: CustomUser, portfolio: Portfolio = None) -> None:
@@ -128,3 +130,19 @@ def send_email(subject, message, recipient_list, attachment_path=None):
         msg.attach_file(image_file.name, 'image/png')
 
     msg.send()
+
+
+def update_logged_users_graphs_and_files() -> None:
+    """
+    Updates the graphs for each user with an existing session. Users without a session will log in, and then
+    their graphs will update too
+    :return: None
+    """
+    from core import views as core_views
+
+    sessions: QuerySet[UserSession] = UserSession.objects.all()
+    for session in sessions:
+        user: CustomUser = CustomUser.objects.filter(user=session.user).first()
+        if core_views.check_is_user_last_login_was_up_to_yesterday(user=user):
+            # it will be displayed if the last date for the change is different from today's date
+            save_three_user_graphs_as_png(user=user)

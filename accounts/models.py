@@ -58,6 +58,20 @@ class CustomUser(AbstractUser):
         return self.email
 
 
+class UserSession(models.Model):
+    session_key = models.CharField(max_length=40, primary_key=True, null=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = 'accounts'
+        db_table = 'UserSession'
+        verbose_name = 'User Session Key'
+        verbose_name_plural = 'Users\' Session Key'
+
+    def __str__(self):
+        return f"{self.user.username}'s session"
+
+
 class InvestorUser(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
     user = models.OneToOneField(CustomUser, on_delete=models.RESTRICT)
@@ -81,7 +95,7 @@ class InvestorUser(models.Model):
         app_label = 'accounts'
         db_table = 'InvestorUser'
         verbose_name = 'Investor User'
-        verbose_name_plural = 'Investor User'
+        verbose_name_plural = 'Investor Users'
 
     def __str__(self):
         return self.user.email

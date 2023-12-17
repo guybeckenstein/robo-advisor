@@ -26,7 +26,7 @@ from service.impl import google_drive
 import django
 import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robo_advisor_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
 
 google_drive_instance = google_drive.GoogleDriveInstance()
@@ -596,7 +596,7 @@ def create_user_image_directory_locally(curr_user_directory: str) -> None:
 
 def create_user_image_directory_aws_s3(curr_user_directory: str) -> None:
     import boto3
-    from robo_advisor_project.settings import AWS_STORAGE_BUCKET_NAME
+    from backend.settings import AWS_STORAGE_BUCKET_NAME
 
     # Initialize the S3 client
     s3 = boto3.client('s3')
